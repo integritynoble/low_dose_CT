@@ -1,0 +1,297 @@
+%% =====================================================================
+%% Signal-Equivalence Framework Paper — Nature Methods submission
+%%
+%% Target venue: Nature Methods
+%% Format:       Article (Methods journal — Methods section is long-form,
+%%               results section is the worked examples)
+%% Template:     Springer Nature template. In development we use article
+%%               with sn-style; switch to sn-jnl.cls at submission.
+%%
+%% Status: v0.1 working draft. RESULTS / FIGURES are \todo{} placeholders
+%%         until WS-2 Phase 1 pilot (D9+90) and Phase 3 library validators
+%%         (D9+365) land.
+%%
+%% Build:  pdflatex manuscript && bibtex manuscript && pdflatex manuscript
+%% =====================================================================
+
+\documentclass[twoside,11pt]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage[margin=1in]{geometry}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{mathtools}
+\usepackage{siunitx}
+\usepackage{xcolor}
+\usepackage[colorlinks=true,linkcolor=blue,citecolor=blue,urlcolor=blue]{hyperref}
+\usepackage[round]{natbib}
+\usepackage{authblk}
+\usepackage{lineno}
+\linenumbers
+
+\newtheorem{definition}{Definition}
+\newtheorem{proposition}{Proposition}
+\newtheorem{theorem}{Theorem}
+
+\newcommand{\todo}[1]{\textcolor{red}{\textbf{[TODO: #1]}}}
+\newcommand{\Mref}{\mathcal{M}_{\textrm{ref}}}
+\newcommand{\Mred}{\mathcal{M}_{\textrm{red}}}
+\newcommand{\Sref}{S_{\textrm{ref}}}
+\newcommand{\Sred}{S_{\textrm{red}}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Pr}{\mathbb{P}}
+\newcommand{\E}{\mathbb{E}}
+
+\title{\textbf{Signal-Equivalence: A Probabilistic Framework for Comparing Reconstruction Methods Across Reduced-Signal Imaging Modalities}}
+
+\author[1,2]{\textit{Authors to be confirmed at submission}}
+\affil[1]{University of Texas Southwestern Medical Center, Dallas, TX, USA}
+\affil[2]{PWM Protocol Foundation}
+
+\date{Working draft v0.1 --- \today}
+
+\begin{document}
+\maketitle
+
+%% =====================================================================
+\begin{abstract}
+\noindent Vendor and academic claims about reduced-signal medical imaging --- ``50\% dose reduction in CT,'' ``4$\times$ acceleration in MRI,'' ``25\%-activity PET'' --- are routinely reported as single scalar percentages without specifying the diagnostic task, the patient subpopulation, the equivalence margin, or the statistical confidence over which the claim holds. The result is a literature in which performance reports are not comparable, not reproducible, and not actionable for clinical decision-making. Here we introduce \textbf{signal-equivalence}, a probabilistic framework that converts every such claim into a $5$-tuple credential of the form $(r, T, \varepsilon, \alpha, \Pi)$: a reconstruction method is signal-equivalent to a named reference method at signal-reduction ratio $r$, task $T$, equivalence margin $\varepsilon$, and significance level $\alpha$ over patient subpopulation $\Pi$ if and only if its expected task performance on reduced-signal scans is within $\varepsilon$ of the reference method's expected task performance on full-signal scans, with confidence at least $1-\alpha$. The framework is modality-general by construction: the same definition covers CT tube-current reduction, MRI $k$-space undersampling, and PET activity reduction, with modality-specific instantiations of the signal-reduction operator. We provide a paired-bootstrap estimator with finite-sample coverage guarantees, a closed-form sample-size formula for the canonical task-AUC and Dice cases, an open-source Python library (\texttt{pwm\_dose\_equivalence}) that produces 5-tuple credentials from any reconstruction method's image outputs, and three worked examples (CT lung-nodule detection, accelerated MRI knee-meniscus segmentation, low-activity PET phantom quantification) that demonstrate the framework's modality-general applicability. We further show that registering credential schemas as immutable cryptographic anchors on a public blockchain (PWM Registry) eliminates a class of bench\-mark-drift attacks that have undermined longitudinal comparison in the medical-imaging literature. Adopted as a reporting standard, signal-equivalence converts vendor marketing claims into reviewable scientific propositions and enables AI agents to verify those propositions automatically against published evidence.
+\end{abstract}
+
+%% =====================================================================
+\section{Introduction}
+
+A central question in modern medical imaging is whether a new reconstruction method delivers diagnostically equivalent images at reduced patient exposure or scan time. The question takes a specific form in each modality: in computed tomography it is asked of reduced tube current (``low-dose CT''); in magnetic resonance imaging of $k$-space undersampling (``accelerated MRI''); in positron emission tomography of reduced injected radiotracer activity (``low-activity PET''). Across modalities, the dominant evaluation protocol is to report a single scalar metric --- peak signal-to-noise ratio (PSNR), structural similarity (SSIM), root-mean-squared error (RMSE) --- alongside an unqualified claim such as ``$50\%$ dose reduction'' or ``$4\times$ acceleration.''
+
+This reporting practice has three interconnected failures.
+
+\paragraph{Failure 1: undefined task.} A reconstruction that preserves PSNR may smooth out the diagnostic feature it was supposed to preserve~\citep{kim2019smoothing,christianson2015}. Without specifying the downstream clinical task --- lung-nodule detection, lesion segmentation, organ quantification --- the equivalence claim is unanchored. A method may be ``dose-equivalent'' for lung-nodule detection while being ``dose-incompatible'' for ground-glass opacity characterization on the same scan.
+
+\paragraph{Failure 2: undefined subpopulation.} Methods optimized on adult chest scans frequently degrade on pediatric or oncology-followup populations because the noise statistics, anatomical priors, and lesion-prevalence distributions differ~\citep{fda_aiml_2024,larson2018pediatric}. An equivalence claim that does not specify the patient distribution over which it holds cannot be transferred to a new clinical context without re-validation.
+
+\paragraph{Failure 3: undefined statistics.} ``Equivalent'' as a binary verdict, without a margin $\varepsilon$ and a confidence level $\alpha$, is not testable. Test-of-equivalence statistics --- two one-sided tests (TOST), non-inferiority trial design --- have been the standard in pharmacokinetics and clinical-trial design for forty years~\citep{schuirmann1987tost,piaggio2012ni}, but have not been adopted as a methodological standard in medical-imaging methods papers.
+
+We argue these three failures share a single solution: every equivalence claim should be a structured, probabilistic, task-conditional, subpopulation-conditional $5$-tuple credential. We call this the \emph{signal-equivalence framework}. The framework is intentionally modality-general: rather than producing one definition for CT (with parameter ``mA ratio''), a second for MRI (``acceleration factor''), and a third for PET (``activity ratio''), we adopt a single signal-reduction parameter $r \in (0,1]$ and a modality-specific signal-reduction operator $T_r$. The framework is then identical across modalities, while each modality's instantiation of $T_r$ encodes its physics.
+
+The contributions of this paper are:
+
+\begin{enumerate}
+    \item A formal definition of signal-equivalence as a $5$-tuple credential, with the type signatures of every component made precise (Section~\ref{sec:framework}).
+    \item A paired-bootstrap estimator for the credential, with finite-sample coverage guarantees and a closed-form sample-size formula (Section~\ref{sec:methods-estimator}).
+    \item Three worked examples --- CT lung-nodule detection, MRI knee-meniscus segmentation, PET phantom quantification --- demonstrating modality-general applicability (Section~\ref{sec:results}).
+    \item An open-source Python library, \texttt{pwm\_dose\_equivalence}, that computes credentials from any reconstruction method's image outputs (Section~\ref{sec:methods-library}).
+    \item A mechanism for cryptographically anchoring credential-schema versions to public blockchain registries, eliminating a class of benchmark-drift attacks (Section~\ref{sec:anchoring}).
+\end{enumerate}
+
+%% =====================================================================
+\section{Results}
+\label{sec:results}
+
+\paragraph{Framework overview.} We define an \emph{imaging modality} as a triple $\mathcal{M} = (\mathcal{X}, \mathcal{S}, \mathcal{Y})$ consisting of a patient space $\mathcal{X}$, an acquisition space $\mathcal{S}$, and a reconstruction space $\mathcal{Y}$, together with a reference acquisition operator $\Sref: \mathcal{X} \to \mathcal{P}(\mathcal{S})$ (probabilistic; acquisition is noisy). A \emph{signal-reduction operator at level} $r \in (0,1]$ is a map $T_r: \mathcal{P}(\mathcal{S}) \to \mathcal{P}(\mathcal{S})$ with the interpretation that $T_r(\Sref(x))$ is the raw measurement distribution one would obtain at reference-level acquisition scaled by $r$ (Section~\ref{sec:framework} formalizes this; the modality-specific instantiations are in Table~\ref{tab:modality_Tr}).
+
+The signal-equivalence credential for a reconstruction method $M$ against a reference method $\Mref$ at the level $(r, T, \varepsilon, \alpha, \Pi)$ asserts that $M$'s expected task performance on reduced-signal scans is within $\varepsilon$ of $\Mref$'s expected task performance on full-signal scans, with confidence $\geq 1-\alpha$. The credential is computed via a paired bootstrap over patient draws from $\Pi$ (Section~\ref{sec:methods-estimator}); the verdict is one of \texttt{PASS}, \texttt{FAIL}, or \texttt{INDETERMINATE} (CI straddles the equivalence band).
+
+\paragraph{Worked example 1: CT lung-nodule detection at 25\% dose.} On the public LIDC-IDRI~\citep{lidc_idri} and AAPM-2016~\citep{aapm2016challenge} cohorts and the multi-vendor PWM-LDCT dataset~\citep{ws1dataset}, we computed signal-equivalence credentials for three baseline reconstruction methods (RED-CNN~\citep{chen2017redcnn}, a transformer-based reconstruction, a diffusion-based reconstruction) and the open-source PWM reference method~\citep{ws3reference} at $r = 0.25$. Performance metric: lung-nodule detection AUC at fixed FPR = 0.1, with ground truth from majority-vote radiologist annotation. Results are summarized in Table~\ref{tab:ct_results} \todo{populate after WS-2 Phase 1 pilot, D9+90}.
+
+\paragraph{Worked example 2: accelerated MRI knee-meniscus segmentation at $4\times$.} On the fastMRI knee dataset~\citep{fastmri}, we applied the framework with variable-density Cartesian undersampling at $R = 4$ (equivalently $r = 0.25$). Performance metric: meniscus segmentation Dice. Results in Table~\ref{tab:mri_results} \todo{populate after WS-2 Phase 3 MRI validator, D9+270}.
+
+\paragraph{Worked example 3: PET phantom quantification at 25\% activity.} On the NEMA NU-2 IQ phantom~\citep{nema_nu2} at full and reduced-activity acquisitions, we measured contrast-recovery coefficients for the six standard sphere sizes. Results in Table~\ref{tab:pet_results} \todo{populate after WS-2 Phase 3 PET validator}.
+
+\paragraph{Cross-modality consistency.} The same Python API call signature (Section~\ref{sec:methods-library}) produces a credential for each modality:
+
+\begin{verbatim}
+    from pwm_dose_equivalence import signal_equivalence_credential
+    cred = signal_equivalence_credential(
+        method=my_method,
+        test_set=load_test_set("AAPM-2016", task="lung_nodule_5mm"),
+        reference_method=load_reference("full_dose_FBP"),
+        signal_ratio=0.25,
+        modality="CT",
+        task=Task("lung_nodule_5mm", metric="auc", target=0.95),
+        epsilon=0.02, alpha=0.05,
+        bootstrap=10_000, seed=42,
+    )
+\end{verbatim}
+
+The same library reused with \texttt{modality="MRI"} or \texttt{modality="PET"} produces credentials of identical schema, illustrating that the framework is genuinely modality-general at the API level.
+
+%% =====================================================================
+\section{Discussion}
+
+The signal-equivalence framework converts vendor marketing claims into reviewable scientific propositions. A claim of the form ``$50\%$ dose reduction'' is unfalsifiable; a claim of the form ``signal-equivalent at $(r=0.5, T=\textrm{lung-nodule-AUC}, \varepsilon=0.02, \alpha=0.05, \Pi=\textrm{adult-chest-LIDC})$ against $\Mref = \textrm{FBP-at-full-dose}$'' is falsifiable: re-run the paired-bootstrap on the same $\Pi$ and the same $T$, and the CI either passes or fails the equivalence band.
+
+Three implications follow.
+
+\paragraph{Reviewer practice.} A methods paper that does not report a $5$-tuple credential, or that reports one with $\varepsilon$ or $\alpha$ left unspecified, is not making a comparable claim. Journals adopting the framework as a reporting standard --- analogous to CONSORT for randomized controlled trials~\citep{schulz2010consort} --- would force authors to make claims that subsequent researchers can verify.
+
+\paragraph{Regulatory practice.} The FDA's draft guidance on AI/ML-based software as a medical device~\citep{fda_aiml_2024} requires subgroup-stratified performance reporting; a $5$-tuple credential per subgroup operationalizes that requirement. A method certified at $(r, T, \varepsilon, \alpha, \Pi_{\textrm{adult}})$ but not at $\Pi_{\textrm{pediatric}}$ has explicit evidence of its subpopulation boundary, which is what regulatory reviewers ask for and rarely receive in current submissions.
+
+\paragraph{Agent practice.} As AI agents increasingly query published evidence~\citep{anthropic_mcp_2024}, they require evidence that is structured, machine-readable, and verifiable. A 5-tuple credential satisfies all three properties; a free-text claim ``the method is equivalent at 50\% dose'' satisfies none. Anchoring credential schemas to a public registry (Section~\ref{sec:anchoring}) makes the verification step cryptographic rather than reputational.
+
+\paragraph{Limitations.} The framework's aggregate formulation (Section~\ref{sec:framework}) matches clinical-trial endpoint reporting but is silent about per-patient regret. For settings where the cost of a single missed lesion dominates (rare disease, oncology screening), the per-patient strengthening of the credential should be opted into. The framework also makes no composition claims: if $M$ is equivalent to $\Mref$ at $r$ and $\Mref$ is equivalent to $\Mref'$ at $r'$, no statement is made about $M$ versus $\Mref'$ at $r \cdot r'$. We argue this is a feature: a composed claim should be re-evaluated, not derived. Multi-task and cross-subpopulation generalization bounds are deferred to future work.
+
+%% =====================================================================
+\section{Methods}
+
+\subsection{The framework, formally}
+\label{sec:framework}
+
+An imaging modality is a triple $\mathcal{M} = (\mathcal{X}, \mathcal{S}, \mathcal{Y})$ of measurable spaces (patient space, acquisition space, reconstruction space) together with:
+
+\begin{itemize}
+    \item A \emph{reference acquisition operator} $\Sref: \mathcal{X} \to \mathcal{P}(\mathcal{S})$. For each patient $x \in \mathcal{X}$, $\Sref(x)$ is the distribution over raw measurements that the full-signal scanner produces on $x$ (probabilistic because acquisition is noisy).
+    \item A family of \emph{signal-reduction operators} $\{T_r\}_{r \in (0,1]}$ with $T_r: \mathcal{P}(\mathcal{S}) \to \mathcal{P}(\mathcal{S})$. The interpretation: if $s \sim \Sref(x)$, then $s' \sim T_r(\Sref(x))$ is the raw measurement at reference-level scaled by $r$.
+\end{itemize}
+
+The modality-specific instantiations are given in Table~\ref{tab:modality_Tr}.
+
+\begin{table}[h]
+    \centering
+    \begin{tabular}{lp{9cm}}
+        \toprule
+        \textbf{Modality} & \textbf{$T_r$ instantiation} \\
+        \midrule
+        CT  & Poisson-thinning: if $s_{\textrm{ref}} \sim \textrm{Poisson}(\lambda(x))$, then $s_{\textrm{red}} \sim \textrm{Poisson}(r \cdot \lambda(x))$ \\
+        MRI & $k$-space subsampling: $s_{\textrm{red}} = \Omega_r \cdot s_{\textrm{ref}}$ with $|\Omega_r|/|\Omega_{\textrm{full}}| = r$ \\
+        PET & Poisson-thinning of list-mode counts at rate $r$ \\
+        Optical & Reduced exposure time: $s_{\textrm{red}} \sim \textrm{Poisson}(\phi(x) \cdot r \cdot t_{\textrm{ref}})$ \\
+        \bottomrule
+    \end{tabular}
+    \caption{Modality-specific signal-reduction operators. CT and PET share the Poisson-thinning model; MRI's $T_r$ is itself stochastic via the mask distribution.}
+    \label{tab:modality_Tr}
+\end{table}
+
+A \emph{reconstruction method} is a measurable map $M: \mathcal{S} \to \mathcal{Y}$. The composed map $M \circ T_r \circ \Sref: \mathcal{X} \to \mathcal{P}(\mathcal{Y})$ is ``reconstruct from a reduced-signal scan of patient $x$.'' We compare two such composed maps: $\Mred := M \circ T_r \circ \Sref$ (the method under evaluation, on reduced-signal data) and $\mathcal{M}_{\textrm{base}} \circ \Sref$ (a named reference method on full-signal data; we write $\Mref$ for shorthand).
+
+A \emph{task} is a measurable map $T: \mathcal{Y} \to \mathcal{D}$ from reconstructions to a clinical decision space $\mathcal{D}$ (binary detection, bounding boxes, per-voxel segmentation masks, scalar quantification, etc.). Ground truth $g(x) \in \mathcal{D}$ is established by a documented adjudication protocol (multiple board-certified radiologists, majority vote, biopsy confirmation), and the protocol is part of the credential.
+
+A \emph{performance metric} is a functional $P: \mathcal{D} \times \mathcal{D} \to \R$ evaluating ``how well the task output on a reconstruction agrees with ground truth.''
+
+A \emph{subpopulation} is a probability measure $\Pi$ on $\mathcal{X}$ together with an operational description (recruitment / inclusion criteria a trial coordinator could use to verify draws from $\Pi$).
+
+\begin{definition}[Signal-equivalence, aggregate formulation]
+\label{def:signal_equiv_aggregate}
+A reconstruction method $M$ is \emph{signal-equivalent} to a reference method $\Mref$ at level $(r, T, \varepsilon, \alpha)$ over subpopulation $\Pi$, written $M \equiv_{(r, T, \varepsilon, \alpha, \Pi)} \Mref$, iff
+\begin{equation}
+    \left| \E_{x \sim \Pi}\left[ \E_{y \sim \Mred(x)} P(T(y), g(x)) \right] - \E_{x \sim \Pi}\left[ \E_{y' \sim \Mref(x)} P(T(y'), g(x)) \right] \right| < \varepsilon \label{eq:signal_equiv_main}
+\end{equation}
+with confidence $\geq 1 - \alpha$ under the paired-bootstrap estimator of Section~\ref{sec:methods-estimator}.
+\end{definition}
+
+Definition~\ref{def:signal_equiv_aggregate} reads: \textit{``the population-mean task performance of $M$ on reduced-signal scans is within $\varepsilon$ of the population-mean task performance of $\Mref$ on full-signal scans, with confidence $1-\alpha$.''}
+
+We also define a strictly-stronger \emph{per-patient} formulation:
+
+\begin{definition}[Signal-equivalence, per-patient formulation]
+\label{def:signal_equiv_per_patient}
+A method $M$ is \emph{per-patient signal-equivalent} to $\Mref$ at level $(r, T, \varepsilon, \alpha)$ over $\Pi$ iff
+\begin{equation}
+    \Pr_{x \sim \Pi}\!\left[ \left| \E_{y \sim \Mred(x)} P(T(y), g(x)) - \E_{y' \sim \Mref(x)} P(T(y'), g(x)) \right| < \varepsilon \right] \geq 1 - \alpha.
+\end{equation}
+\end{definition}
+
+We adopt Definition~\ref{def:signal_equiv_aggregate} as canonical because it matches clinical-trial endpoint reporting. Definition~\ref{def:signal_equiv_per_patient} is an opt-in strengthening (e.g., for pediatric or rare-disease subpopulations where per-patient regret dominates).
+
+\subsection{Type signatures: six clarifications}
+\label{sec:framework_clarifications}
+
+A naive informal version of Equation~\eqref{eq:signal_equiv_main} conflates six distinctions that must be separated before any theorem can be cleanly stated. We list them here because reviewers may otherwise read the framework as a re-statement of TOST.
+
+\textbf{(C1) Patient vs image.} $T_r$ acts on the \emph{acquisition} of a patient, not on the patient. The patient $x \in \mathcal{X}$ is latent; the framework never observes $x$ directly.
+
+\textbf{(C2) $T_r$ is an operator, not a scalar multiplier.} Writing ``$\Sred = r \cdot \Sref$'' is dimensionally wrong: $\Sred$ is an operator-valued map, parameterized by $r$.
+
+\textbf{(C3) Reference acquisition $\neq$ reference algorithm.} ``Reference'' is ambiguous in the informal version. We separate $\Sref$ (the operator, full-signal scan) from $\Mref$ (the reconstruction method).
+
+\textbf{(C4) Performance is a function of $(T(y), g(x))$, not $(M, S, T)$.} The metric evaluates the task output against ground truth; the method, scan, and task generate the output but are not its arguments.
+
+\textbf{(C5) Subpopulation is a measure, not a label.} Two subpopulations with the same label but different operational definitions are different subpopulations.
+
+\textbf{(C6) Aggregate vs per-patient.} Definitions~\ref{def:signal_equiv_aggregate} and~\ref{def:signal_equiv_per_patient} are not equivalent; per-patient implies aggregate, but not conversely.
+
+\subsection{Estimator}
+\label{sec:methods-estimator}
+
+Given a test set $\{x_1, \ldots, x_n\}$ drawn i.i.d.\ from $\Pi$ with ground truth $\{g(x_k)\}$, and methods $M, \Mref$, we estimate Equation~\eqref{eq:signal_equiv_main} via a paired bootstrap on patients:
+
+\begin{enumerate}
+    \item For $k = 1, \ldots, n$: sample $s_{\textrm{red}} \sim T_r(\Sref(x_k))$, compute $a_k := P(T(M(s_{\textrm{red}})), g(x_k))$; sample $s_{\textrm{ref}} \sim \Sref(x_k)$, compute $b_k := P(T(\Mref(s_{\textrm{ref}})), g(x_k))$.
+    \item For $b = 1, \ldots, B$ bootstrap replicates: resample $(a_k, b_k)$ pairs with replacement; compute mean difference $\Delta_b := \overline{a} - \overline{b}$.
+    \item Compute the $(1-\alpha)$ percentile CI of $\{\Delta_b\}$. Verdict $\texttt{PASS}$ iff $\textrm{CI} \subset (-\varepsilon, \varepsilon)$; $\texttt{FAIL}$ iff $\textrm{CI} \cap (-\varepsilon, \varepsilon) = \emptyset$; otherwise $\texttt{INDETERMINATE}$.
+\end{enumerate}
+
+We use $B = 10{,}000$ as the default. Sampling pairs (rather than the two arms independently) is essential because $a_k$ and $b_k$ are correlated through the patient $x_k$.
+
+\paragraph{Sample-size formula.} For a target $(\varepsilon, \alpha)$ and a per-patient performance-difference standard deviation $\sigma$ with pairing correlation $\rho$, the leading-order normal-approximation bound is
+\begin{equation}
+    n \geq \left(\frac{z_{1-\alpha/2}}{\varepsilon}\right)^2 \sigma^2 (1 - \rho).
+\end{equation}
+For AUC-type metrics with $\sigma \approx 0.10$ and $\rho \approx 0.5$, the canonical target $(\varepsilon = 0.02, \alpha = 0.05)$ yields $n \geq 192$. We pre-register $n \geq 200$ patients per credential as the field default. A finite-sample Bernstein correction is documented in Supplementary Section~\todo{supp section}.
+
+\paragraph{Coverage of percentile CIs near boundary.} For AUC near $1.0$ the standard percentile bootstrap CI is anti-conservative. We provide a BCa option in \texttt{pwm\_dose\_equivalence} and recommend BCa for any credential with reported AUC $> 0.95$ on test sets with $n < 200$. The library prints a warning when this regime is detected.
+
+\subsection{Open-source library}
+\label{sec:methods-library}
+
+The \texttt{pwm\_dose\_equivalence} library (Apache~2.0, \url{https://pypi.org/project/pwm_dose_equivalence/}) implements Definition~\ref{def:signal_equiv_aggregate} for CT, MRI, and PET. The user-facing API is a single function call:
+
+\begin{verbatim}
+    cred = signal_equivalence_credential(
+        method            = M,                    # callable: scan -> image
+        reference_method  = Mref,                 # callable: scan -> image
+        test_set          = data,                 # iterable of (patient, gt)
+        signal_ratio      = r,                    # in (0, 1]
+        modality          = "CT" | "MRI" | "PET",
+        task              = Task(name, metric, target),
+        subpopulation     = "operational_description",
+        epsilon           = 0.02,
+        alpha             = 0.05,
+        formulation       = "aggregate" | "per_patient",
+        estimator         = "percentile" | "bca" | "delong",
+        bootstrap         = 10_000,
+        seed              = 42,
+    )
+\end{verbatim}
+
+Returns a \texttt{SignalEquivalenceCredential} object with the verdict (\texttt{PASS} / \texttt{FAIL} / \texttt{INDETERMINATE}), the bootstrap CI, the sample-size sanity check, and a JSON serialization conforming to the schema in Section~\ref{sec:anchoring}.
+
+\subsection{Cryptographic anchoring to public registry}
+\label{sec:anchoring}
+
+The credential schema is content-addressed and registered as an L2 specification on the PWM blockchain registry. A published credential identifies the framework version by hash:
+
+\begin{verbatim}
+    {
+      "schema_version": "pwm-signal-equivalence/v0.1",
+      "l2_framework_hash": "sha256:...",
+      "credential": { ... }
+    }
+\end{verbatim}
+
+The hash uniquely identifies the framework definition the credential commits to. A reader verifies the credential by (i) pulling the framework definition document by hash from the registry, (ii) re-running the paired bootstrap on the same test set, (iii) checking that the recomputed verdict matches the published verdict. This anchoring eliminates a class of benchmark-drift attacks where a method's reported performance is silently re-evaluated against a different framework version after submission.
+
+%% =====================================================================
+\section{Data and code availability}
+
+The framework is implemented in \texttt{pwm\_dose\_equivalence} (Apache 2.0; \url{https://pypi.org/project/pwm_dose_equivalence/}). The three worked examples use public datasets: LIDC-IDRI~\citep{lidc_idri} (NBIA registration), AAPM-2016~\citep{aapm2016challenge} (Mayo request), fastMRI~\citep{fastmri} (NYU registration), NEMA NU-2 phantom~\citep{nema_nu2} (manufacturer-provided). The multi-vendor CT validation cohort is the PWM-LDCT dataset~\citep{ws1dataset} on PhysioNet credentialed access. All scripts, configuration files, and Docker images are available at \url{https://github.com/integritynoble/low_dose_CT/tree/main/WS-2_framework}.
+
+%% =====================================================================
+\section*{Author contributions}
+\todo{Fill at submission per CRediT taxonomy.}
+
+\section*{Competing interests}
+\todo{Declare at submission.}
+
+\section*{Acknowledgments}
+\todo{Fill at submission.}
+
+%% =====================================================================
+\bibliographystyle{plainnat}
+\bibliography{refs}
+
+\end{document}

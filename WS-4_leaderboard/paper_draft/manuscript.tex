@@ -1,0 +1,240 @@
+%% =====================================================================
+%% WS-4 Annual Review Paper #1 — npj Digital Medicine submission
+%%
+%% Target venue: npj Digital Medicine (Nature Portfolio; clinical-AI scope)
+%% Fallback:     Medical Image Analysis (review article track)
+%% Template:     Nature-family. We use article in development; switch to
+%%               the Nature Portfolio sn-jnl.cls at submission.
+%%
+%% Status: v0.1 working draft — PROTOCOL ONLY. Year-1 results are
+%%         placeholders since the competition itself does not exist
+%%         until D9+730. This draft establishes the manuscript template
+%%         that will be cloned every year thereafter as the recurring
+%%         "State of the Field" annual review.
+%%
+%% Build:  pdflatex manuscript && bibtex manuscript && pdflatex manuscript
+%% =====================================================================
+
+\documentclass[twoside,11pt]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage[margin=1in]{geometry}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{amsmath,amssymb}
+\usepackage{xcolor}
+\usepackage[colorlinks=true,linkcolor=blue,citecolor=blue,urlcolor=blue]{hyperref}
+\usepackage[round]{natbib}
+\usepackage{authblk}
+
+\newcommand{\todo}[1]{\textcolor{red}{\textbf{[TODO: #1]}}}
+
+\title{\textbf{State of the Field: Year 1 of the PWM Low-Dose CT Challenge}}
+
+\author[1,2]{\textit{Authors to be confirmed at submission}}
+\affil[1]{University of Texas Southwestern Medical Center, Dallas, TX, USA}
+\affil[2]{PWM Protocol Foundation}
+
+\date{Working draft v0.1 --- \today \\ {\small (will be re-cut annually as new yearly editions; this draft is the Year-1 template.)}}
+
+\begin{document}
+\maketitle
+
+%% =====================================================================
+\begin{abstract}
+We review the first year of the PWM Low-Dose CT Challenge, a permanent, content-addressed, citation-standard competition for low-dose CT reconstruction methods, hosted on the PWM blockchain registry and evaluated against the multi-vendor PWM-LDCT benchmark~\citep{ws1dataset} using the signal-equivalence framework~\citep{ws2framework}. Between the public launch at \todo{RSNA/ISBI 2028} and the close of submissions on \todo{Year-1 deadline}, the challenge received $N_{\textrm{sub}} = $ \todo{N submissions} community submissions from \todo{N institutions} institutions across \todo{N countries} countries, including \todo{N vendors} industrial vendor entries. We characterize the year-1 submission set across five axes: reconstruction quality (PSNR / SSIM / LPIPS), downstream task performance (lung-nodule detection AUC), cross-vendor generalization, signal-equivalence credential coverage (the fraction of submissions reporting passing $(r, T, \varepsilon, \alpha, \Pi)$ credentials), and open-source license posture. We identify three trends: (i) the field has converged on \todo{trend 1}; (ii) credential coverage at $r = 0.25$ has reached \todo{X\%} but $r = 0.10$ remains uncertain; (iii) cross-vendor generalization remains the single largest unsolved problem, with a median PSNR drop of \todo{X dB} on the held-out vendor. We also identify three structural gaps in the field that the dataset, framework, or benchmark do not yet close, and we name the open problems we believe will define Year 2. This paper inaugurates an annual review series; future editions (\citealt{ws4yearN_template}) will follow the same template, cite every entry from the year covered, and provide a longitudinal snapshot of low-dose CT reconstruction as the field evolves.
+\end{abstract}
+
+%% =====================================================================
+\section{Introduction}
+
+The deep-learning era of low-dose CT reconstruction has produced a steady stream of incremental method papers without producing a citation standard. A new method published in 2023 typically reports a PSNR improvement of fractions of a decibel over the previous best, on the same dataset (the Mayo Clinic AAPM 2016 cohort~\citep{aapm2016challenge}), using the same evaluation metrics, with little or no cross-vendor evaluation, no per-pixel uncertainty quantification, and a license that varies from Apache 2.0 to ``available on request.'' A practitioner picking a method to deploy on data from a different scanner has no clear choice; a regulator evaluating an FDA submission has no shared reference; a researcher writing a follow-on paper cannot tell whether the previous-best number is from a comparable evaluation protocol.
+
+The PWM Low-Dose CT Challenge addresses these structural gaps by combining three artifacts that are individually well-established but rarely co-located: a \textbf{multi-vendor, paired-dose, on-chain-anchored benchmark dataset}~\citep{ws1dataset}; a \textbf{probabilistic, task-conditional, modality-general signal-equivalence framework}~\citep{ws2framework}; and a \textbf{permanent competition} whose submissions, evaluation, and scoring are reproducible end-to-end via PWM RunBundles~\citep{pwmregistry}. Submissions take the form of a sandboxed Docker container with a pinned eval entry point and a published \texttt{results.json}; the challenge's scoring service re-executes the container, verifies the published results against the live execution, and posts the verified score to a public leaderboard. The L3 dataset spec and the L2 framework spec are content-addressed on the PWM blockchain, so a result tied to \texttt{pwm\_l3\_spec:pwm\_low\_dose\_ct\_benchmark:1.0.0} and \texttt{pwm\_l2\_spec:dose\_equivalence\_v1:0.1.0} is bit-identically reproducible across years even as the dataset is later extended.
+
+This paper is the inaugural annual review of the challenge. It is the first of an intended sequence: each year, an analogous paper will summarize the cohort of new submissions, characterize cross-method trends, perform clinical-impact analysis (which dose levels are now diagnostically equivalent for which subpopulations), and identify the open problems that should define the next year's work. The recurring annual structure --- with consistent benchmark, framework, and reporting standards across years --- is the mechanism by which the field can finally measure longitudinal progress.
+
+\paragraph{Contributions of this Year-1 review.}
+\begin{enumerate}
+    \item A summary of the year-1 submission cohort across methodology classes, institutions, and reported metrics (Section~\ref{sec:year1_cohort}).
+    \item Cross-method trends across reconstruction quality, downstream task performance, cross-vendor generalization, and uncertainty quantification (Section~\ref{sec:trends}).
+    \item Clinical-impact analysis: which dose levels are now signal-equivalent under the framework of~\citep{ws2framework} for which clinical tasks (Section~\ref{sec:clinical_impact}).
+    \item A named list of open problems we believe define Year 2 (Section~\ref{sec:open_problems}).
+    \item A protocol for the year-2 challenge cycle (Section~\ref{sec:year2}).
+\end{enumerate}
+
+%% =====================================================================
+\section{The Challenge}
+\label{sec:challenge}
+
+\subsection{Benchmark dataset (L3 spec)}
+
+The challenge uses the PWM-LDCT dataset~\citep{ws1dataset}: \todo{N patient scans} paired-dose CT acquisitions across \todo{N vendors} vendor platforms at \todo{N sites} clinical sites. Each scan provides DICOM raw projections, image-space reconstructions at four dose levels (10\%, 25\%, 50\%, 100\%), and majority-vote radiologist annotations for lung-nodule detection and liver-lesion segmentation tasks. The dataset version evaluated in Year 1 is content-addressed at \texttt{pwm\_l3\_spec:pwm\_low\_dose\_ct\_benchmark:1.0.0}.
+
+\subsection{Evaluation framework (L2 spec)}
+
+Performance is reported through the signal-equivalence framework of~\citep{ws2framework}: every submission must declare its 5-tuple credentials of the form $(r, T, \varepsilon, \alpha, \Pi)$ for at least one canonical clinical task. The framework version evaluated in Year 1 is content-addressed at \texttt{pwm\_l2\_spec:dose\_equivalence\_v1:0.1.0}. Pixel-wise metrics (PSNR / SSIM / LPIPS) are reported as standard quality measures but are not the basis for leaderboard ranking; the leaderboard ranks by task-AUC on the canonical chest lung-nodule detection task.
+
+\subsection{Submission protocol}
+
+A submission is a PWM RunBundle: a content-addressed bundle containing a pinned Docker image, an eval entry point, a published \texttt{results.json}, and a corresponding 5-tuple credential JSON. The scoring service executes the RunBundle in a sandboxed container on the PWM-LDCT test split, verifies that the published \texttt{results.json} matches the live execution (within IEEE 754 FP tolerance), and posts the verified score. Failure to verify triggers an automatic rejection with a public failure-reason record. Tampered submissions are slashed via the standard PWM credential-violation protocol.
+
+\subsection{Prize structure}
+
+The Year-1 prize pool is \todo{N PWM tokens} (\$\todo{N USD equivalent}), distributed top-10:
+
+\begin{table}[h]
+    \centering
+    \begin{tabular}{cc}
+        \toprule
+        \textbf{Place} & \textbf{Share} \\
+        \midrule
+        1st      & 25\% \\
+        2nd      & 15\% \\
+        3rd      & 10\% \\
+        4th--10th & 50\% / 7 $\approx$ 7\% each \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+We chose top-10 distribution over winner-take-all to encourage broad participation. Participation rates are reported in Section~\ref{sec:year1_cohort}.
+
+%% =====================================================================
+\section{Year-1 cohort}
+\label{sec:year1_cohort}
+
+\paragraph{Submission counts.} We received $N_{\textrm{sub}} = $ \todo{} community submissions between the challenge launch and the Year-1 close date. Of these, \todo{N} were from academic institutions, \todo{N} from industrial vendors, and \todo{N} from independent or unaffiliated submitters.
+
+\paragraph{Methodology classes.} Submissions classified by architecture family in Table~\ref{tab:method_classes} \todo{populate}. Trend: \todo{e.g.\ diffusion-based reconstructions overtook transformer-based reconstructions in count}.
+
+\begin{table}[h]
+    \centering
+    \begin{tabular}{lc}
+        \toprule
+        \textbf{Architecture family} & \textbf{Count} \\
+        \midrule
+        Unrolled iterative           & \todo{} \\
+        Pure CNN (incl. encoder-decoder) & \todo{} \\
+        Transformer-based            & \todo{} \\
+        Diffusion / score-based      & \todo{} \\
+        Hybrid / other               & \todo{} \\
+        \midrule
+        \textbf{Total}               & \todo{} \\
+        \bottomrule
+    \end{tabular}
+    \caption{Year-1 submission distribution by architecture family.}
+    \label{tab:method_classes}
+\end{table}
+
+\paragraph{Verification statistics.} Of the \todo{} submissions, \todo{} passed bit-identical re-execution verification on first attempt; \todo{} required resubmission to fix reproducibility issues; \todo{} were rejected for unrecoverable verification failure. The most common verification failure was \todo{e.g.\ missing CUDA RNG seed propagation}.
+
+\paragraph{License posture.} \todo{N} submissions were released under Apache 2.0 or MIT licenses; \todo{N} under non-commercial or research-only licenses; \todo{N} did not declare a license (which is itself a leaderboard policy violation, flagged for the submitter).
+
+%% =====================================================================
+\section{Cross-method trends}
+\label{sec:trends}
+
+\subsection{Reconstruction quality}
+
+PSNR / SSIM / LPIPS distributions are shown in Figure~\ref{fig:psnr_distribution} \todo{generate}. Median PSNR at $r = 0.25$ across the cohort is \todo{X dB}; the top-3 submissions achieve \todo{Y dB}. The leaderboard top entry was \todo{submitter / method name} at \todo{Z dB}.
+
+\subsection{Downstream task performance}
+
+Lung-nodule detection AUC at fixed FPR = 0.1 is summarized in Figure~\ref{fig:task_auc} \todo{generate}. We observe that PSNR and task-AUC are \todo{strongly / weakly} correlated, with a Spearman $\rho = $ \todo{X} across the submission cohort. Notably, the top-PSNR submission is \todo{not / also} the top-task-AUC submission, illustrating that pixel-wise metrics are not interchangeable with clinical-task metrics.
+
+\subsection{Cross-vendor generalization}
+
+A subset of \todo{N} submissions reported cross-vendor results on the PWM-LDCT leave-one-vendor-out split. The median PSNR drop on the held-out vendor was \todo{X dB}; the best cross-vendor submission had a drop of only \todo{Y dB} (\todo{submitter / method}). The remaining \todo{N} submissions did not report cross-vendor results, which the leaderboard now records as a missing optional metric.
+
+\subsection{Uncertainty quantification}
+
+\todo{N submissions} reported per-pixel uncertainty; of these, \todo{N} provided calibration metrics (Spearman $\rho$ between predicted variance and observed error). The median calibration $\rho$ was \todo{X}. UQ remains underreported despite being one of the most clinically actionable supplementary outputs --- a recurring observation in Year 1 that we expect to inform Year-2 submission guidelines.
+
+\subsection{Signal-equivalence credential coverage}
+
+Per the framework of~\citep{ws2framework}, every submission was required to report at least one 5-tuple credential at $r = 0.25$. The distribution of credential verdicts is in Table~\ref{tab:credential_distribution} \todo{populate}. The $r = 0.10$ regime --- a more aggressive dose reduction --- is currently unsolved by most submissions, with only \todo{N\%} of credentials passing at that level.
+
+%% =====================================================================
+\section{Clinical-impact analysis}
+\label{sec:clinical_impact}
+
+We summarize, for each canonical clinical task in the challenge, the most aggressive dose-reduction ratio at which at least one Year-1 submission achieves a passing signal-equivalence credential, broken down by patient subpopulation:
+
+\begin{table}[h]
+    \centering
+    \footnotesize
+    \begin{tabular}{lccc}
+        \toprule
+        \textbf{Task} & \textbf{Subpopulation} & \textbf{Best passing $r$} & \textbf{Method} \\
+        \midrule
+        Lung nodule detection $\geq 5$mm & Adult chest, lung screening   & \todo{}    & \todo{} \\
+        Lung nodule detection $\geq 5$mm & Adult chest, oncology FU      & \todo{}    & \todo{} \\
+        Liver lesion segmentation        & Adult abdomen                  & \todo{}    & \todo{} \\
+        Liver lesion segmentation        & Adult oncology, post-chemo     & \todo{}    & \todo{} \\
+        Body habitus quantification      & Pediatric chest (Year-2 stretch) & N/A     & --- \\
+        \bottomrule
+    \end{tabular}
+    \caption{Most aggressive signal-equivalence-certified dose-reduction ratio by clinical task and subpopulation. ``Best passing $r$'' is the smallest $r$ at which at least one Year-1 submission reported a passing $(r, T, \varepsilon=0.02, \alpha=0.05, \Pi)$ credential.}
+\end{table}
+
+The clinical translation: a radiologist or physicist reading this table can map to the smallest dose at which their specific task (and their specific subpopulation) is currently supported by an open-source, cross-validated, signal-equivalence-credentialed reconstruction. Year-1 limitations are documented in Section~\ref{sec:open_problems}.
+
+%% =====================================================================
+\section{Open problems for Year 2}
+\label{sec:open_problems}
+
+We name three open problems we believe will define Year 2 of the challenge:
+
+\paragraph{Open Problem 1: Pediatric subpopulations.} The Year-1 dataset is adult-only. Pediatric chest CT carries the highest per-scan radiation risk per unit dose and is where dose reduction matters most~\citep{larson2018pediatric}. The Year-2 dataset extension will add a pediatric chest subpopulation, and we call on the community to submit methods specifically trained or fine-tuned for it.
+
+\paragraph{Open Problem 2: Cross-vendor at $r = 0.10$.} Methods that achieve passing credentials at $r = 0.25$ on the trained vendor often fail at $r = 0.10$ on a held-out vendor. We hypothesize this is a noise-statistics distribution-shift problem rather than an architecture problem; Year-2 submissions are encouraged to explicitly model the noise distribution across vendors.
+
+\paragraph{Open Problem 3: Real-time inference for ER deployment.} The Year-1 top submissions average \todo{X seconds per slice} on an A100; emergency-radiology deployment requires \todo{Y seconds}. This is fundamentally an architecture-choice / quantization / distillation problem and is open for Year 2.
+
+%% =====================================================================
+\section{Year-2 challenge protocol}
+\label{sec:year2}
+
+The Year-2 challenge cycle opens on \todo{date} and closes on \todo{date}. Changes from Year 1:
+
+\begin{enumerate}
+    \item \textbf{Pediatric subpopulation added.} The dataset is extended to L3 spec v1.1.0; submissions report credentials for both adult and pediatric subpopulations.
+    \item \textbf{Cross-vendor reporting becomes mandatory.} Every submission must report at least one cross-vendor leave-one-out result.
+    \item \textbf{Inference-latency reporting is added to the leaderboard.} Latency is not a tiebreaker for the headline rank, but it is reported alongside performance metrics so users can pick by deployment constraint.
+    \item \textbf{Industrial vendor invitation extended.} \todo{N vendors} were invited to Year 1; the Year-2 invitation list expands to all \todo{N vendors} major CT manufacturers.
+\end{enumerate}
+
+%% =====================================================================
+\section{Discussion}
+
+This paper inaugurates a publication mechanism that did not exist in the low-dose CT field before the launch of the PWM Challenge: a recurring, citable, peer-reviewed annual review whose content is reproducibly tied to a content-addressed benchmark and a content-addressed evaluation framework. Earlier surveys of low-dose CT reconstruction~\citep{wang2020deeplearningreview} have provided invaluable orientation to the field, but they are static snapshots; they cannot tell a reader whether a method published two years after the survey would still be ranked first on the same benchmark using the same evaluation protocol. The recurring annual review closes this gap.
+
+We emphasize three structural properties of the challenge that we believe other medical-imaging fields should consider replicating.
+
+\paragraph{Content-addressed benchmarks.} A benchmark version that can be silently re-extended, re-split, or re-cleaned between submissions makes year-over-year performance comparisons impossible. Anchoring the dataset version to a cryptographic hash registered on a public blockchain --- as the PWM Low-Dose CT Challenge does --- eliminates a class of benchmark-drift artifacts that have undermined longitudinal comparison.
+
+\paragraph{Probabilistic, task-conditional evaluation.} A scalar PSNR or SSIM cannot capture the clinical question --- is the reconstruction good enough for the radiologist to make the diagnostic decision? --- and the gap between pixel-wise metrics and task performance is well-documented~\citep{kim2019smoothing}. The signal-equivalence framework of~\citep{ws2framework} provides a reporting standard that ties every claim to a specific task, subpopulation, margin, and confidence.
+
+\paragraph{Re-executable submissions.} Bit-identical re-execution of every submission, verified by an automated scoring service, eliminates a separate class of reproducibility failures (cherry-picked random seeds, version-skew between training and reported eval, etc.). Adoption of this standard across medical-imaging benchmarks would substantially raise the field's reproducibility floor.
+
+%% =====================================================================
+\section*{Acknowledgments}
+
+We thank every Year-1 submitter and the radiologists who contributed annotations to the PWM-LDCT dataset. We thank the PWM Protocol Foundation for blockchain infrastructure and the open-source maintainers of \texttt{pwm\_core}, \texttt{pwm\_ldct\_loader}, and \texttt{pwm\_dose\_equivalence}.
+
+%% =====================================================================
+\section*{Author contributions}
+\todo{Fill at submission per CRediT taxonomy.}
+
+\section*{Competing interests}
+\todo{Declare at submission.}
+
+%% =====================================================================
+\bibliographystyle{plainnat}
+\bibliography{refs}
+
+\end{document}
