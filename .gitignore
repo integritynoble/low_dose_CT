@@ -20,3 +20,7 @@ Thumbs.db
 *~
 *.swp
 *.swo
+~$*
+
+# Local scratch (user's writing notes / Word docs)
+prompt/
