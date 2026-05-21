@@ -26,6 +26,8 @@
 \usepackage{multirow}
 \usepackage{amsmath,amssymb,amsthm}
 \usepackage{mathtools}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
 \usepackage{siunitx}
 \usepackage{xcolor}
 \usepackage[colorlinks=true,linkcolor=blue,citecolor=blue,urlcolor=blue]{hyperref}
@@ -71,7 +73,7 @@
 
 %% =====================================================================
 \begin{abstract}
-\noindent Vendor and academic claims about reduced-signal medical imaging --- ``50\% dose reduction in CT,'' ``4$\times$ acceleration in MRI,'' ``25\%-activity PET'' --- are routinely reported as single scalar percentages without specifying the diagnostic task, the patient subpopulation, the equivalence margin, or the statistical confidence over which the claim holds. The result is a literature in which performance reports are not comparable, not reproducible, and not actionable for clinical decision-making. Here we introduce \textbf{signal-equivalence}, a probabilistic framework that converts every such claim into a $5$-tuple credential of the form $(r, T, \varepsilon, \alpha, \Pi)$: a reconstruction method is signal-equivalent to a named reference method at signal-reduction ratio $r$, task $T$, equivalence margin $\varepsilon$, and significance level $\alpha$ over patient subpopulation $\Pi$ if and only if its expected task performance on reduced-signal scans is within $\varepsilon$ of the reference method's expected task performance on full-signal scans, with confidence at least $1-\alpha$. The framework is modality-general by construction: the same definition covers CT tube-current reduction, MRI $k$-space undersampling, and PET activity reduction, with modality-specific instantiations of the signal-reduction operator. We provide a paired-bootstrap estimator with finite-sample coverage guarantees, a closed-form sample-size formula for the canonical task-AUC and Dice cases, an open-source Python library (\texttt{pwm\_dose\_equivalence}) that produces 5-tuple credentials from any reconstruction method's image outputs, and three worked examples (CT lung-nodule detection, accelerated MRI knee-meniscus segmentation, low-activity PET phantom quantification) that demonstrate the framework's modality-general applicability. We further show that registering credential schemas as immutable cryptographic anchors on a public blockchain (PWM Registry) eliminates a class of bench\-mark-drift attacks that have undermined longitudinal comparison in the medical-imaging literature. Adopted as a reporting standard, signal-equivalence converts vendor marketing claims into reviewable scientific propositions and enables AI agents to verify those propositions automatically against published evidence.
+\noindent Vendor and academic claims about reduced-signal medical imaging --- ``50\% dose reduction in CT,'' ``4$\times$ acceleration in MRI,'' ``25\%-activity PET'' --- are routinely reported as single scalar percentages without specifying the diagnostic task, the patient subpopulation, the equivalence margin, or the statistical confidence over which the claim holds. The result is a literature in which performance reports are neither comparable, reproducible, nor actionable for clinical decision-making. We introduce \textbf{signal-equivalence}, a probabilistic framework that converts every such claim into a $5$-tuple credential $(r, T, \varepsilon, \alpha, \Pi)$: a reconstruction method is signal-equivalent to a named reference method at signal-reduction ratio $r$, task $T$, equivalence margin $\varepsilon$, and significance level $\alpha$ over patient subpopulation $\Pi$ if and only if its expected task performance on reduced-signal scans is within $\varepsilon$ of the reference method's expected task performance on full-signal scans, with confidence $\geq 1-\alpha$. The framework is modality-general by construction --- a single definition covers CT tube-current reduction, MRI $k$-space undersampling, and PET activity reduction --- and is grounded in the classical test-of-equivalence statistics that the clinical-trial community has used for decades but that medical imaging has not adopted as a reporting standard. We provide a paired-bootstrap estimator with finite-sample coverage guarantees, a closed-form sample-size formula, an open-source Python library (\texttt{pwm\_dose\_equivalence}) that produces credentials from any reconstruction method's image outputs, and three worked examples spanning CT, MRI, and PET. We further show that registering credential schemas as immutable cryptographic anchors on a public blockchain (PWM Registry) eliminates a class of benchmark-drift attacks that undermine longitudinal comparison. Adopted as a reporting standard, signal-equivalence converts marketing claims into reviewable scientific propositions and enables AI agents to verify those propositions automatically against published evidence.
 \end{abstract}
 
 %% =====================================================================
@@ -88,6 +90,8 @@ This reporting practice has three interconnected failures.
 \paragraph{Failure 3: undefined statistics.} ``Equivalent'' as a binary verdict, without a margin $\varepsilon$ and a confidence level $\alpha$, is not testable. Test-of-equivalence statistics --- two one-sided tests (TOST), non-inferiority trial design --- have been the standard in pharmacokinetics and clinical-trial design for forty years~\citep{schuirmann1987tost,piaggio2012ni}, but have not been adopted as a methodological standard in medical-imaging methods papers.
 
 We argue these three failures share a single solution: every equivalence claim should be a structured, probabilistic, task-conditional, subpopulation-conditional $5$-tuple credential. We call this the \emph{signal-equivalence framework}. The framework is intentionally modality-general: rather than producing one definition for CT (with parameter ``mA ratio''), a second for MRI (``acceleration factor''), and a third for PET (``activity ratio''), we adopt a single signal-reduction parameter $r \in (0,1]$ and a modality-specific signal-reduction operator $T_r$. The framework is then identical across modalities, while each modality's instantiation of $T_r$ encodes its physics.
+
+\paragraph{Relation to existing equivalence statistics.} The statistical machinery is not new: test-of-equivalence procedures such as Schuirmann's two one-sided tests (TOST)~\citep{schuirmann1987tost} and non-inferiority trial design~\citep{piaggio2012ni} have served bioequivalence and clinical-trial endpoint reporting for nearly forty years, and CONSORT~\citep{schulz2010consort} requires that every randomized-trial publication report a margin and a confidence level. Medical-imaging \textit{methods} papers have not adopted this discipline. The signal-equivalence framework can be read as TOST applied to a paired-on-patient performance-difference estimator, with the four extra components --- explicit task $T$, explicit subpopulation $\Pi$, explicit signal-reduction operator $T_r$, and a content-addressed credential schema --- that are needed for the medical-imaging-methods setting but absent from the pharmacokinetic source material.
 
 The contributions of this paper are:
 
@@ -146,7 +150,7 @@ Three implications follow.
 
 \paragraph{Reviewer practice.} A methods paper that does not report a $5$-tuple credential, or that reports one with $\varepsilon$ or $\alpha$ left unspecified, is not making a comparable claim. Journals adopting the framework as a reporting standard --- analogous to CONSORT for randomized controlled trials~\citep{schulz2010consort} --- would force authors to make claims that subsequent researchers can verify.
 
-\paragraph{Regulatory practice.} The FDA's draft guidance on AI/ML-based software as a medical device~\citep{fda_aiml_2024} requires subgroup-stratified performance reporting; a $5$-tuple credential per subgroup operationalizes that requirement. A method certified at $(r, T, \varepsilon, \alpha, \Pi_{\textrm{adult}})$ but not at $\Pi_{\textrm{pediatric}}$ has explicit evidence of its subpopulation boundary, which is what regulatory reviewers ask for and rarely receive in current submissions.
+\paragraph{Regulatory practice.} The FDA's draft guidance on AI/ML-based software as a medical device~\citep{fda_aiml_2024} requires subgroup-stratified performance reporting; a $5$-tuple credential per subgroup operationalizes that requirement. A method certified at $(r, T, \varepsilon, \alpha, \Pi_{\textrm{adult}})$ but not at $\Pi_{\textrm{pediatric}}$ has explicit evidence of its subpopulation boundary, which is what regulatory reviewers ask for and rarely receive in current submissions. Because the credential is paired with a content-addressed framework hash, it also satisfies the FDA's emerging predetermined-change-control-plan (PCCP) expectations~\citep{fda_aiml_2024} for clear delineation of which performance claims are tied to which model version: a credential at \texttt{pwm\_l2\_spec:dose\_equivalence\_v1:1.0.0} cannot be silently re-evaluated against a later framework version without producing a new credential under the new hash.
 
 \paragraph{Agent practice.} As AI agents increasingly query published evidence~\citep{anthropic_mcp_2024}, they require evidence that is structured, machine-readable, and verifiable. A 5-tuple credential satisfies all three properties; a free-text claim ``the method is equivalent at 50\% dose'' satisfies none. Anchoring credential schemas to a public registry (Section~\ref{sec:anchoring}) makes the verification step cryptographic rather than reputational.
 
@@ -234,13 +238,25 @@ A naive informal version of Equation~\eqref{eq:signal_equiv_main} conflates six 
 \subsection{Estimator}
 \label{sec:methods-estimator}
 
-Given a test set $\{x_1, \ldots, x_n\}$ drawn i.i.d.\ from $\Pi$ with ground truth $\{g(x_k)\}$, and methods $M, \Mref$, we estimate Equation~\eqref{eq:signal_equiv_main} via a paired bootstrap on patients:
+Given a test set $\{x_1, \ldots, x_n\}$ drawn i.i.d.\ from $\Pi$ with ground truth $\{g(x_k)\}$, and methods $M, \Mref$, we estimate Equation~\eqref{eq:signal_equiv_main} via a paired bootstrap on patients (Algorithm~\ref{alg:paired_bootstrap}).
 
-\begin{enumerate}
-    \item For $k = 1, \ldots, n$: sample $s_{\textrm{red}} \sim T_r(\Sref(x_k))$, compute $a_k := P(T(M(s_{\textrm{red}})), g(x_k))$; sample $s_{\textrm{ref}} \sim \Sref(x_k)$, compute $b_k := P(T(\Mref(s_{\textrm{ref}})), g(x_k))$.
-    \item For $b = 1, \ldots, B$ bootstrap replicates: resample $(a_k, b_k)$ pairs with replacement; compute mean difference $\Delta_b := \overline{a} - \overline{b}$.
-    \item Compute the $(1-\alpha)$ percentile CI of $\{\Delta_b\}$. Verdict $\texttt{PASS}$ iff $\textrm{CI} \subset (-\varepsilon, \varepsilon)$; $\texttt{FAIL}$ iff $\textrm{CI} \cap (-\varepsilon, \varepsilon) = \emptyset$; otherwise $\texttt{INDETERMINATE}$.
-\end{enumerate}
+\begin{algorithm}[ht]
+    \caption{Paired-bootstrap signal-equivalence credential}
+    \label{alg:paired_bootstrap}
+    \begin{algorithmic}[1]
+        \Require Test set $\{x_k\}_{k=1}^n$ from $\Pi$; ground truth $\{g(x_k)\}$; methods $M, \Mref$; reduction operator $T_r$; task $T$; metric $P$; margin $\varepsilon$; significance $\alpha$; replicates $B$; seed.
+        \For{$k = 1, \ldots, n$}
+            \State $s_{\textrm{red}} \sim T_r(\Sref(x_k))$;\quad $a_k \gets P(T(M(s_{\textrm{red}})),\, g(x_k))$
+            \State $s_{\textrm{ref}} \sim \Sref(x_k)$;\quad $b_k \gets P(T(\Mref(s_{\textrm{ref}})),\, g(x_k))$
+        \EndFor
+        \For{$b = 1, \ldots, B$}
+            \State Sample $n$ indices $\{i_1, \ldots, i_n\}$ with replacement from $\{1, \ldots, n\}$
+            \State $\Delta_b \gets \frac{1}{n}\sum_{j=1}^n (a_{i_j} - b_{i_j})$
+        \EndFor
+        \State $[\ell, u] \gets$ central $(1-\alpha)$ percentile interval of $\{\Delta_b\}$
+        \State \Return verdict $\gets$ \textbf{if}~$[\ell, u] \subset (-\varepsilon, \varepsilon)$~\textbf{then}~\texttt{PASS}; \textbf{else if}~$[\ell, u] \cap (-\varepsilon, \varepsilon) = \emptyset$~\textbf{then}~\texttt{FAIL}; \textbf{else}~\texttt{INDETERMINATE}
+    \end{algorithmic}
+\end{algorithm}
 
 We use $B = 10{,}000$ as the default. Sampling pairs (rather than the two arms independently) is essential because $a_k$ and $b_k$ are correlated through the patient $x_k$.
 

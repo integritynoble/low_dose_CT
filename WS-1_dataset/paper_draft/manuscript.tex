@@ -68,7 +68,7 @@
 
 %% =====================================================================
 \begin{abstract}
-\noindent We present \textbf{PWM-LDCT}, a multi-vendor, multi-site, paired-dose chest- and abdominal-CT dataset designed as a permanent, reproducibility-first benchmark for low-dose CT reconstruction research. The dataset comprises \Nscans{} paired scans (full-dose and matched low-dose, with low-dose obtained both from real reduced-tube-current acquisitions on \NvendorA{} patients and from physically calibrated Poisson-noise simulation on the full-dose data of \NvendorB{} patients), covering at least two manufacturer platforms (\todo{vendor list}) across \todo{N$_{\textrm{sites}}$} clinical sites. Every scan ships with raw projections (sinograms), reconstructed images at four dose levels (10\%, 25\%, 50\%, 100\%), majority-vote radiologist annotations for lesion detection and segmentation tasks, and full provenance metadata. The release is distributed under PhysioNet credentialed access, with a content-addressed hash registered as an immutable L3 specification on the PWM blockchain registry so that any future submission to the PWM Low-Dose CT Challenge leaderboard can be cryptographically tied to a specific frozen benchmark version. We further publish a pip-installable Python loader (\texttt{pwm\_ldct\_loader}) and three reproducible Docker pipelines so that loading, preprocessing, and evaluation are reproducible bit-for-bit across machines. By foregrounding multi-vendor diversity, paired real low-dose acquisitions (rather than simulation alone), task-level annotations, and on-chain immutability, PWM-LDCT addresses three long-standing gaps in the low-dose CT literature: vendor specificity of published methods, evaluation through PSNR alone rather than clinical task performance, and benchmark drift over time. We anticipate the dataset will serve as the substrate for the recurring PWM Low-Dose CT Challenge at RSNA / ISBI and as the empirical anchor for the signal-equivalence framework~\citep{ws2framework}.
+\noindent We present \textbf{PWM-LDCT}, a multi-vendor, multi-site, paired-dose chest- and abdominal-CT dataset designed as a permanent, reproducibility-first benchmark for low-dose CT reconstruction research. The dataset comprises \Nscans{} paired full-dose / low-dose scans across at least two manufacturer platforms (\todo{vendor list}) and \todo{N$_{\textrm{sites}}$} clinical sites; \NvendorA{} patients contribute real reduced-tube-current paired acquisitions and \NvendorB{} contribute physically calibrated Poisson-thinned low-dose simulations alongside their full-dose scans. Each release record ships with raw sinograms, reconstructed images at four dose levels (10\%, 25\%, 50\%, 100\%), majority-vote radiologist annotations for lesion detection and segmentation tasks, and full provenance metadata under PhysioNet credentialed access. A pip-installable Python loader (\texttt{pwm\_ldct\_loader}) and three reproducible Docker pipelines deliver bit-identical preprocessing across machines, and a content-addressed dataset hash is registered as an immutable L3 specification on the PWM blockchain registry so leaderboard submissions can be tied to a specific frozen benchmark version. By foregrounding multi-vendor diversity, real paired low-dose acquisitions, task-level annotations, and on-chain immutability, PWM-LDCT addresses three long-standing gaps in the field: vendor-specificity of published methods, evaluation through PSNR alone rather than clinical task performance, and benchmark drift across publication cycles. The dataset is the empirical substrate for the recurring PWM Low-Dose CT Challenge at RSNA / ISBI and the validation cohort for the signal-equivalence framework~\citep{ws2framework}.
 \end{abstract}
 
 %% =====================================================================
@@ -83,6 +83,26 @@ Low-dose computed tomography (CT) reconstruction has been transformed by deep le
 \end{enumerate}
 
 PWM-LDCT is designed to close all three gaps simultaneously. Multi-vendor coverage is enforced by inclusion criteria. Per-patient majority-vote radiologist annotations support a curated set of clinical tasks (lung nodule detection, liver lesion segmentation, abdominal organ quantification). The dataset version is content-addressed and registered on the PWM blockchain registry as an immutable L3 specification, so any future paper that cites \texttt{pwm\_l3\_spec:pwm\_low\_dose\_ct\_benchmark:1.0.0} is guaranteed to reference bit-identical data.
+
+Table~\ref{tab:dataset_comparison} situates PWM-LDCT against existing public datasets. LIDC-IDRI~\citep{lidc_idri} is the field's largest annotated chest cohort but is single-dose and single-vendor in practice. The AAPM 2016 Low-Dose CT Grand Challenge release~\citep{aapm2016challenge} is the only public source of real paired-dose acquisitions but is limited to 10 patients on a single Siemens platform. The Mayo Clinic LDCT-and-Projection-Data collection~\citep{mccollough2020mayo} extends AAPM 2016 with raw projections but inherits its single-vendor scope. PWM-LDCT is the first multi-vendor paired-dose release at the $\geq$ 500-patient scale and the first with a content-addressed benchmark hash anchored to a public registry.
+
+\begin{table}[ht]
+    \centering
+    \small
+    \setlength{\tabcolsep}{4pt}
+    \begin{tabular}{lccccc}
+        \toprule
+        \textbf{Dataset} & \textbf{Patients} & \textbf{Vendors} & \textbf{Real paired LD} & \textbf{Projections} & \textbf{On-chain anchor} \\
+        \midrule
+        LIDC-IDRI~\citep{lidc_idri}       & 1{,}018 & 1 (mostly)    & No  & No   & No \\
+        AAPM 2016~\citep{aapm2016challenge} & 10      & 1 (Siemens)   & Yes & Yes  & No \\
+        Mayo LDCT-PD~\citep{mccollough2020mayo} & 299  & 1 (Siemens)   & Yes & Yes  & No \\
+        \textbf{PWM-LDCT (ours)}              & \Npatients & $\geq$ 2 & Yes & Yes  & \textbf{Yes (L3)} \\
+        \bottomrule
+    \end{tabular}
+    \caption{Comparison of PWM-LDCT against existing public low-dose CT datasets. ``Real paired LD'' indicates whether the dataset contains real (not simulated) paired full-dose / low-dose acquisitions for the same patient. ``On-chain anchor'' indicates whether the dataset version is content-addressed on a public blockchain registry.}
+    \label{tab:dataset_comparison}
+\end{table}
 
 The dataset is open to academic and industrial researchers under PhysioNet credentialed access (HIPAA Safe Harbor compliant for de-identified scans). A reference reconstruction method~\citep{ws3reference}, a probabilistic signal-equivalence framework~\citep{ws2framework}, and a permanent leaderboard~\citep{ws4leaderboard} are released concurrently, completing the citable substrate for the PWM Low-Dose CT Challenge.
 
@@ -143,7 +163,7 @@ Inter-rater agreement was monitored monthly throughout the annotation campaign; 
 
 \subsection*{De-identification and HIPAA compliance}
 
-All scans were de-identified per HIPAA Safe Harbor (45~CFR~164.514(b)(2)). The DICOM tag whitelist and the burned-in-text scrubbing recipe are published as \texttt{schema/dicom\_cleaning\_spec.md} in the project repository. We verified de-identification on every scan via a two-stage pipeline: (i) automated PyDICOM tag stripping against the whitelist; (ii) optical character recognition (OCR) sweep of every reconstructed slice with manual review of any positive hits. No PHI leakage was identified in the released set.
+All scans were de-identified per HIPAA Safe Harbor (45~CFR~164.514(b)(2)). The DICOM tag whitelist and the burned-in-text scrubbing recipe are published as \texttt{schema/dicom\_cleaning\_spec.md} in the project repository. De-identification was verified by a two-stage pipeline: (i) automated PyDICOM tag stripping against the whitelist; (ii) OCR over every reconstructed slice using Tesseract~\citep{tesseract2007}, with any positive hit (e.g., date, name, MRN) flagged for manual review and reprocessing. Every scan in the released set passed both stages with no PHI detected.
 
 \subsection*{Patient-level data splits}
 
@@ -272,6 +292,17 @@ Submissions to the PWM Low-Dose CT Challenge leaderboard~\citep{ws4leaderboard} 
 \subsection*{Cross-vendor evaluation}
 
 A method developer can request a held-out-vendor split via the loader's \texttt{leave\_vendor\_out=}\textit{vendor} argument; this filters the training split to exclude the named vendor and reassigns its patients to a separate evaluation slice. This is how we measure cross-vendor generalization in the reference method paper~\citep{ws3reference}.
+
+\subsection*{Reuse cases}
+
+We anticipate four primary reuse modes:
+
+\begin{enumerate}
+    \item \textbf{Reconstruction-method benchmarking.} Train on the released training split, evaluate on the released test split, submit a 5-tuple credential under the signal-equivalence framework~\citep{ws2framework}, and optionally post the verified score to the public leaderboard~\citep{ws4leaderboard}.
+    \item \textbf{Cross-vendor robustness studies.} Use the leave-one-vendor-out evaluation API to characterize how a method generalizes from a training-vendor distribution to a held-out-vendor distribution.
+    \item \textbf{Simulation-vs-real noise modeling.} Use the paired real-low-dose and simulated-low-dose images on the \NvendorA{} patients with real paired acquisitions to characterize the discrepancy between common Poisson-thinning simulators and physical low-dose acquisition --- a long-standing gap in the field that this dataset's pairing structure now lets researchers quantify.
+    \item \textbf{Downstream-task analysis.} The per-scan diagnostic-quality Likert labels and per-lesion annotations support studies that correlate computational reconstruction quality with radiologist-perceived diagnostic utility, beyond pixel-wise PSNR / SSIM.
+\end{enumerate}
 
 %% =====================================================================
 \section*{Code Availability}

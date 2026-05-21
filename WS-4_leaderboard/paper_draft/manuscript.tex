@@ -57,7 +57,13 @@
 
 %% =====================================================================
 \begin{abstract}
-We review the first year of the PWM Low-Dose CT Challenge, a permanent, content-addressed, citation-standard competition for low-dose CT reconstruction methods, hosted on the PWM blockchain registry and evaluated against the multi-vendor PWM-LDCT benchmark~\citep{ws1dataset} using the signal-equivalence framework~\citep{ws2framework}. Between the public launch at \todo{RSNA/ISBI 2028} and the close of submissions on \todo{Year-1 deadline}, the challenge received $N_{\textrm{sub}} = $ \todo{N submissions} community submissions from \todo{N institutions} institutions across \todo{N countries} countries, including \todo{N vendors} industrial vendor entries. We characterize the year-1 submission set across five axes: reconstruction quality (PSNR / SSIM / LPIPS), downstream task performance (lung-nodule detection AUC), cross-vendor generalization, signal-equivalence credential coverage (the fraction of submissions reporting passing $(r, T, \varepsilon, \alpha, \Pi)$ credentials), and open-source license posture. We identify three trends: (i) the field has converged on \todo{trend 1}; (ii) credential coverage at $r = 0.25$ has reached \todo{X\%} but $r = 0.10$ remains uncertain; (iii) cross-vendor generalization remains the single largest unsolved problem, with a median PSNR drop of \todo{X dB} on the held-out vendor. We also identify three structural gaps in the field that the dataset, framework, or benchmark do not yet close, and we name the open problems we believe will define Year 2. This paper inaugurates an annual review series; future editions (\citealt{ws4yearN_template}) will follow the same template, cite every entry from the year covered, and provide a longitudinal snapshot of low-dose CT reconstruction as the field evolves.
+\textbf{Background.} Low-dose CT reconstruction has accumulated years of method papers without producing a citation standard against which longitudinal progress can be measured. A practitioner deciding which method to deploy on a new vendor's data, or a radiologist asking which dose reduction is now diagnostically safe for a specific clinical task, has no shared reference.
+
+\textbf{Methods.} The PWM Low-Dose CT Challenge is a permanent, content-addressed, citation-standard competition hosted on the PWM blockchain registry, scored against the multi-vendor PWM-LDCT benchmark~\citep{ws1dataset} using the signal-equivalence framework of~\citep{ws2framework}. Submissions take the form of sandboxed Docker RunBundles whose published results are re-executed and bit-identically verified by the scoring service. We review the first year of the challenge: \todo{N submissions} community entries from \todo{N institutions} institutions in \todo{N countries} countries, including \todo{N} industrial vendor entries.
+
+\textbf{Findings.} We characterize Year-1 submissions across five axes: reconstruction quality (PSNR / SSIM / LPIPS), downstream task performance (lung-nodule detection AUC), cross-vendor generalization, signal-equivalence credential coverage at multiple dose ratios, and open-source license posture. Three findings: (i) the field has converged on \todo{trend}; (ii) credential coverage at $r = 0.25$ reached \todo{X\%} but $r = 0.10$ remains an open problem; (iii) cross-vendor generalization remains the largest unsolved gap, median PSNR drop \todo{X dB}.
+
+\textbf{Significance for clinical practice.} For the first time, a radiologist or physicist can consult Table~\ref{tab:clinical_impact_summary} to look up the most aggressive open-source-credentialed dose reduction for a specific task and subpopulation. This paper inaugurates an annual review series~\citep{ws4yearN_template} that will recur each year, citing every submission from that year and providing a longitudinal snapshot of low-dose CT reconstruction as the field evolves.
 \end{abstract}
 
 %% =====================================================================
@@ -68,6 +74,14 @@ The deep-learning era of low-dose CT reconstruction has produced a steady stream
 The PWM Low-Dose CT Challenge addresses these structural gaps by combining three artifacts that are individually well-established but rarely co-located: a \textbf{multi-vendor, paired-dose, on-chain-anchored benchmark dataset}~\citep{ws1dataset}; a \textbf{probabilistic, task-conditional, modality-general signal-equivalence framework}~\citep{ws2framework}; and a \textbf{permanent competition} whose submissions, evaluation, and scoring are reproducible end-to-end via PWM RunBundles~\citep{pwmregistry}. Submissions take the form of a sandboxed Docker container with a pinned eval entry point and a published \texttt{results.json}; the challenge's scoring service re-executes the container, verifies the published results against the live execution, and posts the verified score to a public leaderboard. The L3 dataset spec and the L2 framework spec are content-addressed on the PWM blockchain, so a result tied to \texttt{pwm\_l3\_spec:pwm\_low\_dose\_ct\_benchmark:1.0.0} and \texttt{pwm\_l2\_spec:dose\_equivalence\_v1:0.1.0} is bit-identically reproducible across years even as the dataset is later extended.
 
 This paper is the inaugural annual review of the challenge. It is the first of an intended sequence: each year, an analogous paper will summarize the cohort of new submissions, characterize cross-method trends, perform clinical-impact analysis (which dose levels are now diagnostically equivalent for which subpopulations), and identify the open problems that should define the next year's work. The recurring annual structure --- with consistent benchmark, framework, and reporting standards across years --- is the mechanism by which the field can finally measure longitudinal progress.
+
+\paragraph{What makes this review series distinctive.} Reviews of low-dose CT reconstruction have appeared periodically~\citep{wang2020deeplearningreview}, but they share three limitations that the present series is structurally designed to avoid:
+
+\begin{enumerate}
+    \item \textbf{Static snapshots.} Prior reviews are written once. A method published two years later is not visible until the next ad-hoc review. The PWM annual cadence guarantees a yearly cohort summary.
+    \item \textbf{Anchorless evaluation.} Prior reviews compare numbers reported on differently-cleaned versions of the same dataset, with no mechanism to verify that those numbers were produced under comparable evaluation protocols. The PWM challenge ties every cited number to a content-addressed benchmark hash and a content-addressed framework hash, so cross-year comparisons are bit-identically reproducible.
+    \item \textbf{Pixel-wise metrics only.} Prior reviews emphasize PSNR / SSIM. The PWM challenge requires every submission to report a 5-tuple credential under the signal-equivalence framework~\citep{ws2framework}, which ties the comparison to a specified clinical task, subpopulation, margin, and confidence level.
+\end{enumerate}
 
 \paragraph{Contributions of this Year-1 review.}
 \begin{enumerate}
@@ -196,9 +210,20 @@ We summarize, for each canonical clinical task in the challenge, the most aggres
         \bottomrule
     \end{tabular}
     \caption{Most aggressive signal-equivalence-certified dose-reduction ratio by clinical task and subpopulation. ``Best passing $r$'' is the smallest $r$ at which at least one Year-1 submission reported a passing $(r, T, \varepsilon=0.02, \alpha=0.05, \Pi)$ credential.}
+    \label{tab:clinical_impact_summary}
 \end{table}
 
 The clinical translation: a radiologist or physicist reading this table can map to the smallest dose at which their specific task (and their specific subpopulation) is currently supported by an open-source, cross-validated, signal-equivalence-credentialed reconstruction. Year-1 limitations are documented in Section~\ref{sec:open_problems}.
+
+\subsection{Implications for clinical practice}
+
+\paragraph{For radiologists.} The verdicts in Table~\ref{tab:clinical_impact_summary} are not regulatory clearance. They are evidence, in the same sense that a published reader study is evidence, that a specific open-source method, applied to the specified subpopulation and task, has been shown under bootstrap inference to be within $\varepsilon = 0.02$ AUC (or analogous metric) of the named full-dose reference, with 95\% confidence. Radiologists considering whether to lobby for protocol changes at their institution can cite specific 5-tuples rather than vendor marketing percentages.
+
+\paragraph{For medical physicists.} The cross-vendor results in Section~\ref{sec:trends} provide a starting point for institution-specific QA. A method that achieves a passing credential when trained on the vendor a hospital uses, but a failing or indeterminate credential when trained on a different vendor and tested on this one, is a concrete starting point for the institution's commissioning plan.
+
+\paragraph{For institutional review boards.} A protocol that proposes to reduce CT dose for a specified screening cohort can cite a passing 5-tuple credential as preliminary safety evidence for the diagnostic equivalence claim, replacing the present practice of citing vendor white papers with unspecified margins.
+
+\paragraph{For regulators.} The challenge produces externally-verifiable, content-addressed evidence in a format aligned with the FDA's emerging guidance on AI/ML-based SaMD subgroup reporting~\citep{fda_aiml_2024}. A reviewer evaluating a submission can request the L4 cert hash and independently re-execute the published evaluation pipeline.
 
 %% =====================================================================
 \section{Open problems for Year 2}
