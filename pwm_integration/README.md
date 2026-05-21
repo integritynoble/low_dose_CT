@@ -21,7 +21,8 @@ The three on-chain artifacts that make the low-dose CT work **PWM-flagship** rat
 |---|---|---|---|
 | **L2** | Signal-equivalence framework formal definition | WS-2 (`framework/`) | D9 + 365 |
 | **L3** | Benchmark dataset specification (schema + access + scoring rules) | WS-1 (`dataset/`) | D9 + 365 |
-| **L4** | Reference method cert (RunBundle hash + 5-tuple results + verification) | WS-3 (`reference_method/`) | D9 + 540 |
+| **L4 v1** | Reference method cert (unrolled iterative, RunBundle hash + 5-tuple results) | WS-3 (`reference_method/`) | D9 + 540 |
+| **L4 v2** | Foundation-model reference method cert | WS-6 (`foundation_model/`) | D9 + 1095 (Year 3, contingent on R21 funding) |
 
 The L2 spec is intentionally modality-general (covers CT dose reduction, MRI accelerated reconstruction, PET low-activity) so a single framework anchor serves all future signal-reduction grand challenges.
 

@@ -147,4 +147,5 @@ Reproducibility checklist for every baseline:
 - [`../WS-1_dataset/`](../WS-1_dataset/) — training and evaluation data
 - [`../WS-2_framework/`](../WS-2_framework/) — credentials computed against the framework
 - [`../WS-4_leaderboard/`](../WS-4_leaderboard/) — this method is the reference seed entry
-- [`../pwm_integration/l4_cert.md`](../pwm_integration/l4_cert.md) — on-chain L4 cert
+- [`../WS-6_foundation_model/`](../WS-6_foundation_model/) — Year-2+ follow-up that drops a CT foundation model into the unrolled-iterative loop's denoiser slot; the explicit reason this method targets *decomposable improvability* rather than SOTA
+- [`../pwm_integration/l4_cert.md`](../pwm_integration/l4_cert.md) — on-chain L4 cert (v1; WS-6 will register a v2 variant)

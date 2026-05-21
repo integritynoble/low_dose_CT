@@ -10,7 +10,7 @@
 
 ## How this repo is organized
 
-Six self-contained folders. Each folder owns one workstream and reads as a single document: **Goal → Tasks → Timeline → Done when**.
+Seven self-contained folders. Each folder owns one workstream and reads as a single document: **Goal → Tasks → Timeline → Done when**.
 
 | Folder | Workstream | One-line goal |
 |---|---|---|
@@ -19,9 +19,12 @@ Six self-contained folders. Each folder owns one workstream and reads as a singl
 | [`WS-3_reference_method/`](WS-3_reference_method/) | Reference reconstruction (9c) | Publish an open-source, improvable reference method at MICCAI or *IEEE TMI*; register L4 cert |
 | [`WS-4_leaderboard/`](WS-4_leaderboard/) | Permanent competition (9d) | Launch a recurring competition at RSNA/ISBI; publish an *annual* review paper at *npj Digital Medicine* |
 | [`WS-5_grants/`](WS-5_grants/) | NIH funding (9e) | Secure NIH R21 funding (then R01) to backfill the work |
+| [`WS-6_foundation_model/`](WS-6_foundation_model/) | CT foundation model (9f, Year-2+) | Fine-tune (or train) a CT foundation model as a drop-in WS-3 denoiser; publish at MICCAI / CVPR; register L4 v2 cert |
 | [`pwm_integration/`](pwm_integration/) | On-chain protocol | Register L2/L3/L4 on PWMRegistry; prove the Track 7 agent-query loop returns non-empty |
 
 Each WS folder's README is the source of truth for that workstream. There is no separate `plan.md` in this repo — the WS folder READMEs *are* the plan.
+
+**Note on WS-6**: WS-6 is a Year-2+ stretch workstream that builds on WS-3 rather than replacing it. It exists because WS-3's "decomposable improvability" architecture is designed exactly so the denoiser can be swapped for a foundation-model variant in a follow-up; WS-6 is that follow-up. WS-6 does not start until WS-3 v1 ships at D9 + 540.
 
 ---
 
@@ -36,9 +39,10 @@ D9 = 2026-05-20 (PWM mainnet deploy day). All dates below are **relative**.
 | D9 + 180 | Reference method v0.1 done; framework theory in flight | WS-2, WS-3 |
 | D9 + 270 | Framework draft posted; reference method v1 training; R21 LOI prep | WS-2, WS-3, WS-5 |
 | **D9 + 365** | **Dataset paper submitted + framework paper submitted + L2/L3 on chain + R21 submitted** | WS-1, WS-2, WS-5 |
-| **D9 + 540** | **Reference-method paper submitted + L4 cert on chain + first Track 7 agent query returns non-empty** | WS-3, pwm_integration |
-| **D9 + 730** | **Competition launched at RSNA/ISBI; ≥ 20 submissions; first annual review paper drafted** | WS-4 |
-| D9 + 900 | Annual review #1 submitted; R01 LOI prep | WS-4, WS-5 |
+| **D9 + 540** | **Reference-method paper submitted + L4 cert on chain + first Track 7 agent query returns non-empty + WS-6 design phase opens** | WS-3, pwm_integration, WS-6 |
+| **D9 + 730** | **Competition launched at RSNA/ISBI; ≥ 20 submissions; first annual review paper drafted; R21 funding decision (gates WS-6 Phase 3)** | WS-4, WS-5, WS-6 |
+| D9 + 900 | Annual review #1 submitted; R01 LOI prep; WS-6 fine-tuning v0.1 complete | WS-4, WS-5, WS-6 |
+| D9 + 1095 (2029) | WS-6 foundation-model paper submitted to MICCAI / CVPR; L4 v2 cert on chain | WS-6, pwm_integration |
 
 ---
 
