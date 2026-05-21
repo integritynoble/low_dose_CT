@@ -6,10 +6,24 @@
 %% Format:       LNCS, 8 pages main + up to 4 pages supplementary
 %% Template:     Springer LNCS. Class file llncs.cls available from
 %%               https://www.springer.com/gp/computer-science/lncs
-%%               (we use a vanilla \documentclass[runningheads]{llncs};
-%%               replace with the real cls at submission).
+%%               (we use a vanilla \documentclass{article} in development;
+%%               replace with \documentclass[runningheads]{llncs} at submission).
 %%
-%% Status: v0.1 working draft. RESULTS tables / figures are \todo{}
+%% ANONYMIZATION FOR DOUBLE-BLIND SUBMISSION:
+%% MICCAI is double-blind. Before submitting, replace:
+%%   - \author{} block contents      -> "Anonymous Author(s)"
+%%   - \affil{} block contents       -> "Anonymous Affiliation"
+%%   - "PWM Protocol Foundation"     -> "Foundation X"
+%%   - "PWM Low-Dose CT Challenge"   -> "the public benchmark"
+%%   - "pwm_dose_equivalence", "ct_radon", any "pwm_" identifiers
+%%     -> use neutral aliases like "dose_equivalence_lib", "ct_radon_lib"
+%%   - URLs containing "integritynoble" -> https://anonymized
+%%   - Acknowledgments section       -> empty or "Anonymized"
+%%   - Citations to ws1dataset, ws2framework, ws4leaderboard
+%%     (companion papers) -> [N] Anonymous, "Title", in submission
+%% After camera-ready acceptance, restore the original identifying text.
+%%
+%% Status: v0.2 working draft. RESULTS tables / figures are \todo{}
 %%         placeholders until WS-3 Phase 3 (v1 with ensembles + cross-vendor)
 %%         lands at D9+270.
 %%
@@ -94,8 +108,27 @@ We present an open-source reference method explicitly designed for these four pr
 \end{enumerate}
 
 %% =====================================================================
+\section{Related work}
+\label{sec:related_work}
+
+\paragraph{Deep learning for low-dose CT.} The 2017 introduction of RED-CNN~\citep{chen2017redcnn} established encoder-decoder CNNs as a competitive low-dose denoising baseline. WGAN-VGG~\citep{yang2018ctgan} and subsequent perceptual-loss methods improved visual quality at similar PSNR. CTformer~\citep{wang2023ctformer} brought transformer self-attention to the task and reported $\sim 0.5$~dB PSNR gains. Diffusion- and score-based methods~\citep{liu2024diffusion} achieve state-of-the-art PSNR on AAPM-2016 at the cost of substantial inference latency. \citet{wang2020deeplearningreview} survey the field. Common to all is single-vendor evaluation on AAPM-2016 or LIDC-IDRI; cross-vendor generalization is not reported.
+
+\paragraph{Unrolled iterative reconstruction.} Learned primal-dual schemes~\citep{adler2018learned} and learned proximal gradient methods~\citep{mardani2018neural} embed a learned denoiser inside a classical iterative loop. Weight sharing across iterations reduces parameter count and is a known implicit regularizer~\citep{adler2018learned}. The architectural choice is interpretable, decomposable, and architecturally analogous to FDA-cleared vendor iterative reconstruction --- properties we explicitly exploit (Section~\ref{sec:method_overview}).
+
+\paragraph{Uncertainty and cross-domain generalization.} Monte-Carlo dropout~\citep{gal2016dropout} is cheap but poorly calibrated under distribution shift~\citep{ovadia2019uncertainty}; deep ensembles~\citep{lakshminarayanan2017deep} consistently outperform dropout on calibration and have been extended to medical segmentation~\citep{mehrtash2020confidence} and CT reconstruction~\citep{barbano2022uncertainty}. For distribution shift, domain-adversarial training~\citep{ganin2016domain}, BN adaptation~\citep{li2017revisiting}, and test-time training~\citep{sun2020ttt} target the general problem; cross-scanner medical-image segmentation has been studied~\citep{karani2018lifelong}, but cross-vendor evaluation for CT reconstruction is largely absent from the literature --- the gap this paper fills.
+
+\paragraph{Benchmarks and reproducibility.} AAPM-2016~\citep{aapm2016challenge} and Mayo LDCT-PD~\citep{mccollough2020mayo} are the field's two real-paired-low-dose CT datasets; both are Siemens-only. The PWM-LDCT benchmark~\citep{ws1dataset} extends to multiple vendors. The signal-equivalence framework~\citep{ws2framework} provides the credential format we report against.
+
+%% =====================================================================
 \section{Method}
 \label{sec:method}
+
+\subsection{Architecture overview}
+\label{sec:method_overview}
+
+The pipeline is summarized in Figure~\ref{fig:architecture}.
+
+\todoFigure{fig:architecture}{Architecture diagram. The rendered figure should show: (left) input low-dose sinogram $y$; (center) the unrolled iteration loop with $K = 10$ blocks, each block alternating a data-consistency step ($x^{(k+1/2)} = x^{(k)} - \tau\, \mathcal{R}^\dagger(\mathcal{R} x^{(k)} - y)$) and a learned weight-shared U-Net denoiser $f_\theta$; (right) the deep-ensemble head producing per-pixel mean $\hat{x}(y)$ and per-pixel standard deviation $\sigma(y)$ from $M = 5$ independently-trained instances. A side annotation should highlight that the forward operator $\mathcal{R}$ is the upstream PWM \texttt{ct\_radon} module, that $\tau$ is a learned scalar shared across iterations, and that the denoiser weights $\theta$ are shared across all $K$ iterations within one ensemble member.}
 
 \subsection{Forward model}
 
@@ -131,6 +164,7 @@ The step size $\tau$ is a learned scalar, initialized at $0.5 / \|\mathcal{R}\|^
 where $x_i^{\textrm{ref}}$ is the patient's full-dose reconstruction (the reference image).
 
 \subsection{Uncertainty quantification}
+\label{sec:uq}
 
 We use a five-model deep ensemble~\citep{lakshminarayanan2017deep}: five independently-initialized and independently-trained instances of the same architecture, differing only in random seed for weight initialization and data ordering. At inference time, given a low-dose sinogram $y$, each ensemble member produces a reconstruction $\hat{x}_m(y)$ for $m = 1, \ldots, 5$. The point estimate is the mean and the per-pixel uncertainty is the standard deviation:
 
@@ -148,6 +182,13 @@ Training data: full PWM-LDCT~\citep{ws1dataset} training split with paired (full
 
 Augmentation: random flip ($p=0.5$), random rotation in $[-5^\circ, 5^\circ]$, random window-level shift in $[-50, 50]$~HU. No augmentation that violates physical consistency (no random noise injection on top of the already-noisy low-dose, no patch shuffling).
 
+\subsection{Implementation details}
+\label{sec:implementation}
+
+The U-Net denoiser has four encoder / four decoder stages with $(32, 64, 128, 256)$ channels (GELU, GroupNorm, bilinear upsampling), $\approx 4$~M parameters per ensemble member. The data-consistency step uses a single learned scalar $\tau$ initialized at $0.5 / \|\mathcal{R}\|_2^2$. Optimizer is AdamW~\citep{loshchilov2018adamw}, cosine LR schedule with $5\%$ warmup; training uses batch size $4$ ($512 \times 512$ full slices) on a single A100. Ensemble seeds $\{42,43,44,45,46\}$; CuDNN deterministic; all RNGs seed-propagated. Full hyperparameter table, training compute disclosure, and ablation hypothesis statements are in Supplementary Tables~S1--S2.
+
+% Full hyperparameter table moved to Supplementary Material (Table S1) to stay within MICCAI 8-page limit.
+
 %% =====================================================================
 \section{Experiments}
 \label{sec:experiments}
@@ -164,6 +205,10 @@ Augmentation: random flip ($p=0.5$), random rotation in $[-5^\circ, 5^\circ]$, r
 \paragraph{Cross-vendor splits.} We construct three leave-one-vendor-out splits: train-on-\{GE, Canon\}/test-on-Siemens; train-on-\{Siemens, Canon\}/test-on-GE; train-on-\{Siemens, GE\}/test-on-Canon. Each cross-vendor experiment uses the full training set with the held-out vendor's patients removed (patient-level, not slice-level).
 
 \paragraph{Metrics.} (i) PSNR, SSIM, LPIPS~\citep{zhang2018lpips} on the test reconstructions; (ii) lung-nodule detection AUC at fixed FPR = 0.1, using a pre-trained nodule detector frozen across reconstruction methods; (iii) per-pixel uncertainty calibration --- Spearman correlation of $\sigma(y)_{ij}$ against $|\hat{x}(y)_{ij} - x_i^{\textrm{ref}}|_{ij}$ on held-out test; (iv) inference latency (seconds per slice on a single NVIDIA A100), peak GPU memory; (v) 5-tuple signal-equivalence credentials per the framework of \citet{ws2framework} at $r \in \{0.10, 0.25\}$ for lung-nodule detection, $\varepsilon = 0.02$, $\alpha = 0.05$, subpopulation $\Pi = $ adult-chest test split.
+
+\paragraph{Ablations.} Five ablations isolate each design choice: iteration count $K \in \{5, 10, 15, 20\}$; ensemble size $M \in \{1, 3, 5, 10\}$; weight-shared vs per-iteration denoiser; TV-FBP vs FBP vs learned warm-start; mixed-dose training vs $r = 0.25$-only training. Hypotheses and detailed results in Supplementary Table~S2.
+
+\paragraph{Statistical reporting.} All metrics reported with 95\% bootstrap CIs ($B = 1000$) over test-set patients; cross-vendor PSNR drops compared with paired bootstrap tests at $\alpha = 0.05$; Holm-Bonferroni correction for multi-split tests.
 
 %% =====================================================================
 \section{Results}
@@ -227,9 +272,21 @@ Per the framework of \citet{ws2framework}, we report 5-tuple credentials for the
 These credentials are the canonical artifact that future methods will report against. Reporting only PSNR/SSIM/LPIPS is insufficient; reporting only verdicts loses the CI; reporting both is the standard we propose.
 
 %% =====================================================================
-\section{Conclusion}
+\section{Discussion}
+\label{sec:discussion}
 
-We have presented an open-source reference reconstruction method for low-dose CT, designed not to maximize PSNR but to be \emph{credible, improvable, and permissively licensed}: cross-vendor evaluated, deep-ensemble UQ-calibrated, signal-equivalence-credentialed per \citep{ws2framework}, and Apache-2.0 licensed. The method is the seed entry of the permanent PWM Low-Dose CT Challenge leaderboard~\citep{ws4leaderboard}; an L4 cert anchoring the RunBundle CID is registered on the PWM blockchain mainnet. We invite the community to compete by improving any of the four independent axes (denoiser, forward model, iteration schedule, UQ method) without re-deriving the full stack. Code, weights, and RunBundle are released under Apache 2.0 at \url{https://github.com/integritynoble/low_dose_CT/tree/main/WS-3_reference_method}.
+\paragraph{What this method is and is not.} The PWM reference reconstruction is not state-of-the-art on the single-vendor AAPM-2016 benchmark, and we do not claim it is. It is the first open-source reconstruction method that ships with calibrated per-pixel UQ, validated cross-vendor generalization, and an Apache-2.0-licensed RunBundle anchored to a content-addressed benchmark hash. Each of these four properties has been studied in isolation~\citep{lakshminarayanan2017deep,karani2018lifelong,chen2017redcnn}; their combination in a single deployable artifact has not.
+
+\paragraph{When to use it and how.} The method is appropriate when the deployment target is a different vendor or scanner than the training data, when per-case diagnostic confidence is required for triage, when regulatory review requires open-source weights, or when subsequent improvements should be evaluated against a stable reference. It is \emph{not} appropriate when single-vendor single-task PSNR is the only success criterion. The per-pixel UQ is intended for case-level triage (high $\bar{\sigma}$ over the diagnostic region $\Rightarrow$ flag for retake or second-reader review), not for pixel-level CIs on individual structures; we recommend pairing it with the signal-equivalence credential~\citep{ws2framework} so the variance flags individual cases while the credential certifies the cohort.
+
+\paragraph{Limitations.} (1) Vendor coverage in the released training set is \todo{N} of the four major CT manufacturers; cross-vendor results to vendors not in training are extrapolation, not measurement. (2) Training-dose mix $r \in \{0.10, 0.25, 0.50\}$ does not include $r < 0.10$; performance at very-low-dose ($r \lesssim 0.05$) is not characterized. (3) The UQ ensemble disagreement can be non-informative when all members fail in correlated ways (e.g., on out-of-distribution anatomical regions); the reliability diagram should be inspected before using the variance for case triage. (4) The method is single-slice 2D; 3D-aware reconstruction may achieve better axial consistency but at substantially higher compute cost. (5) The TV warm start is non-learned; replacing it with a learned warm-start network is a candidate future improvement we deliberately defer to follow-on work.
+
+%% =====================================================================
+\section{Conclusion and reproducibility}
+
+We have presented an open-source reference reconstruction method for low-dose CT, designed not to maximize PSNR but to be \emph{credible, improvable, and permissively licensed}: cross-vendor evaluated, deep-ensemble UQ-calibrated, signal-equivalence-credentialed per~\citep{ws2framework}, and Apache-2.0 licensed. The method is the seed entry of the permanent PWM Low-Dose CT Challenge leaderboard~\citep{ws4leaderboard}; an L4 cert anchoring the RunBundle CID is registered on the PWM blockchain mainnet. We invite the community to compete by improving any of the four independent axes (denoiser, forward model, iteration schedule, UQ method) without re-deriving the full stack.
+
+\paragraph{Reproducibility commitment.} All code (Apache 2.0), pre-trained ensemble weights, pinned Dockerfile, evaluation scripts, and a content-addressed PWM RunBundle are released at \url{https://github.com/integritynoble/low_dose_CT/tree/main/WS-3_reference_method}. The exact library versions, random seeds (Supplementary Table~S1), and training-compute disclosure permit bit-identical reproduction within IEEE 754 FP tolerance on equivalent hardware. The RunBundle is independently verified by the PWM Low-Dose CT Challenge scoring service before being posted to the leaderboard, providing third-party reproducibility evidence beyond our own claim.
 
 %% =====================================================================
 \section*{Acknowledgments}
