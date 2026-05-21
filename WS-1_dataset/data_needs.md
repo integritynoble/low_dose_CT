@@ -6,7 +6,24 @@ Last revised: 2026-05-21.
 
 ---
 
-## 1. Public data — start today
+## Release strategy: v0.5 first, then v1.0
+
+**Director decision (2026-05-21):** ship a v0.5 dataset paper using public data only as soon as feasible, then follow up with the full multi-vendor clinical v1.0 once Track K + IRB land. This is the primary plan, not a fallback.
+
+| Release | Data scope | Target submission | Distinguishing claim |
+|---|---|---|---|
+| **v0.5 (priority)** | Public data only: LIDC-IDRI + AAPM 2016 + Mayo LDCT-PD, harmonized under a single content-addressed schema and the PWM L3 spec | D9 + 180 (within 6 months of mainnet) | First content-addressed, on-chain-anchored, multi-task-annotated harmonization of existing public CT data; substrate the PWM Low-Dose CT Challenge launches against |
+| **v1.0** | v0.5 contents + ≥ 500 prospectively-acquired paired-dose multi-vendor multi-site UTSW + partner clinical scans | D9 + 365–540 (gated on Track K + IRB) | Adds real paired-dose acquisitions at multi-vendor scale; closes the cross-vendor evaluation gap that no existing public dataset addresses |
+
+**Why a v0.5 release is publishable on its own.** Even using only public data, v0.5 is the first release to (a) anchor the dataset version to a public-registry content hash so leaderboard submissions are cryptographically tied to a specific frozen benchmark, (b) provide a single unified Python loader / preprocessing pipeline across the three public sources (each currently requires its own re-implementation), (c) provide majority-vote multi-task annotations across all three sources rather than each having its own per-task annotation convention, and (d) ship paired baseline reproductions + 5-tuple credentials per the signal-equivalence framework~\citep{ws2framework}. The v0.5 paper's value is the harmonization layer + the on-chain anchoring + the credential format, not the underlying scans.
+
+**What v0.5 explicitly cannot claim.** No real multi-vendor paired-dose acquisitions; cross-vendor generalization analyses in v0.5 are restricted to comparing methods trained on LIDC-derived simulated low-dose against the AAPM 2016 real paired-dose subset, which is single-vendor Siemens. The multi-vendor real-paired claim is v1.0 territory; the v0.5 paper must be honest about this and explicitly position the prospective extension as a follow-up.
+
+**Manuscript implication.** The current [`paper_draft/manuscript.tex`](paper_draft/manuscript.tex) is written for v1.0. Before submitting v0.5, the abstract, Background & Summary, Methods (Cohort recruitment), Data Records (cohort tables), and Limitations sections need a focused rewrite to scope claims to public-data-only. The framework holds; the numbers shift.
+
+---
+
+## 1. Public data — REQUIRED FOR v0.5; start today
 
 These are downloadable now (with free academic registration) and unblock Phase 1 of the dataset pipeline.
 
@@ -19,9 +36,9 @@ These are downloadable now (with free academic registration) and unblock Phase 1
 
 ---
 
-## 2. Prospective clinical acquisition — needs IRB + Track K
+## 2. Prospective clinical acquisition — REQUIRED FOR v1.0; needs IRB + Track K
 
-These do not exist yet and **cannot be substituted with public data** — they are what makes PWM-LDCT a new dataset rather than a re-packaging of existing ones.
+These are deferred to v1.0. They cannot be substituted with public data — they are what makes PWM-LDCT v1.0 a new dataset rather than a re-packaging of existing ones. v0.5 ships without them.
 
 | What | Target | Lead time | Blocked by |
 |---|---|---|---|
@@ -35,26 +52,28 @@ These do not exist yet and **cannot be substituted with public data** — they a
 
 ---
 
-## 3. Annotation data — needs radiologist panel
+## 3. Annotation data — scaled differently for v0.5 vs v1.0
 
-| What | Per-patient cost | Per-paper need | Status |
-|---|---|---|---|
-| **Lung-nodule bounding boxes (chest scans)** | ≥ 2 board-certified radiologists × per-scan time | All chest patients | Panel + protocol not yet set up |
-| **Liver-lesion segmentation masks (abdominal scans)** | Same, more time-intensive | All abdomen patients | Same |
-| **Diagnostic-quality Likert scores** | Per-reconstruction (4 dose levels × 3 recons = 12 scores per patient) | All patients | Same |
-| **Inter-rater audit / calibration subset** | 20-patient training set drawn from outside the release | Once, at panel onboarding | Same |
+| What | Per-patient cost | v0.5 need | v1.0 need | Status |
+|---|---|---|---|---|
+| **Lung-nodule bounding boxes (chest scans)** | ≥ 2 board-certified radiologists × per-scan time | Re-use LIDC-IDRI's existing 4-radiologist annotations where present; new annotations only for AAPM 2016 + Mayo LDCT-PD chest cases that lack them | All chest patients (including prospective UTSW cohort) | Panel + protocol not yet set up |
+| **Liver-lesion segmentation masks (abdominal scans)** | Same, more time-intensive | Defer or out-of-scope for v0.5 (LIDC is chest-only; AAPM 2016 has limited abdominal) | All abdomen patients | Same |
+| **Diagnostic-quality Likert scores** | Per-reconstruction (4 dose levels × 3 recons = 12 scores per patient) | Subset only — score the AAPM 2016 paired-dose cohort across reconstructions | All patients | Same |
+| **Inter-rater audit / calibration subset** | 20-patient training set drawn from outside the release | Required once at panel onboarding | Same | Same |
 
-Annotation honoraria are a real budget item — typically $50–$200 per scan for radiologist time. Estimated total: **~$25K–$100K** depending on cohort size and panel rate.
+**v0.5 annotation budget**: estimated **~$5K–$15K** because most LIDC-IDRI annotations already exist and the AAPM 2016 + Mayo top-up is small. **v1.0 annotation budget**: estimated **~$25K–$100K** depending on prospective cohort size.
+
+The v0.5 strategy of reusing LIDC's existing 4-radiologist nodule annotations is a substantive cost-saver and a natural-fit for the harmonization story: the v0.5 paper's contribution is a unified loader + schema across heterogeneous existing annotations, not generating new ones.
 
 ---
 
-## 4. Phantom + technical-validation data
+## 4. Phantom + technical-validation data — mostly v1.0
 
-| What | Purpose | Status |
-|---|---|---|
-| **AAPM CT performance phantom scans per vendor** | HU-calibration offset measurement (Methods §Cross-vendor harmonization) | Scan once per participating scanner; ~1 day per site |
-| **MTF measurements per reconstruction kernel** | Recorded in `metadata.json` for the kernel-matching analysis | ~1–2 hours per kernel |
-| **Real-vs-simulated low-dose comparison subset** | Figure 1 (sim_vs_real); requires the AAPM 2016 paired data above | Blocked on AAPM access |
+| What | Purpose | v0.5 need | v1.0 need |
+|---|---|---|---|
+| **AAPM CT performance phantom scans per vendor** | HU-calibration offset measurement (Methods §Cross-vendor harmonization) | Not applicable (no UTSW vendor data in v0.5) | Scan once per participating scanner; ~1 day per site |
+| **MTF measurements per reconstruction kernel** | Recorded in `metadata.json` for the kernel-matching analysis | Not applicable | ~1–2 hours per kernel |
+| **Real-vs-simulated low-dose comparison subset** | Figure showing sim-vs-real distributional agreement; requires the AAPM 2016 paired data | Required for v0.5 — uses AAPM 2016 paired-dose patients on Siemens hardware | Extended to multi-vendor in v1.0 |
 
 ---
 
@@ -74,17 +93,43 @@ Scope creep into any of these would push v1 submission well past D9 + 365 and is
 
 ## Critical-path summary
 
-The single longest item is **AAPM 2016 access**: 1–2 weeks for the Mayo response, then 1–2 weeks for DUA + UTSW pre-award sign-off. **Send the access-request email today** from a UTSW-affiliated address; everything else can proceed in parallel.
+### For v0.5 (priority)
 
-After AAPM access is in hand, the next critical path is **Track K (new UTSW PI) → IRB submission → IRB approval → prospective clinical acquisition**, which is the multi-month exogenous lag the WS-1 plan budgets for in its 24-month timeline.
+| Step | Lead time | Status |
+|---|---|---|
+| Send AAPM 2016 access-request email to Mayo | Today (1 hour) | Pending |
+| LIDC-IDRI 50-patient subset download (NBIA) | 3–6 hours background download | Can start today |
+| AAPM 2016 DUA + access link from Mayo | 2–4 weeks after email sent | Blocked on email |
+| Mayo LDCT-PD download (TCIA) | 3–6 hours background download | Can start today |
+| Build unified loader + harmonized schema across all three sources | 4–6 weeks | Phase 1 |
+| Annotation top-up on AAPM + Mayo cases (~$5K–$15K) | 4–8 weeks parallel | Phase 1–2 |
+| Baseline reproductions + 5-tuple credentials (WS-2 framework + WS-3 reference method) | 8–10 weeks parallel | Phase 1–2 |
+| v0.5 manuscript revision (scope to public-data-only) | 2–3 weeks at end | Phase 2 |
+| **v0.5 submitted to *Nature Scientific Data*** | **D9 + 180 (~6 months)** | Target |
+
+The single critical-path item is **AAPM 2016 access**. Send the [`../data_acquisition/aapm_2016_request.md`](../data_acquisition/aapm_2016_request.md) email today.
+
+### For v1.0 (follow-up)
+
+After v0.5 ships, v1.0's critical path is the previously-documented one: **Track K (new UTSW PI) → IRB submission → IRB approval → prospective clinical acquisition → annotation campaign → v1.0 submission**, the multi-month exogenous lag the WS-1 plan budgets for. v1.0 submits at D9 + 365–540 depending on when Track K lands. The v0.5 publication does not consume v1.0's IRB or recruitment budget; it ships in parallel.
 
 ---
 
-## Fallback: a v0.5 "public-data only" preview
+## Honest comparison: v0.5 vs v1.0 claims
 
-If the prospective clinical acquisition slips, we can ship a v0.5 dataset paper using **only public data** (LIDC + AAPM 2016 + Mayo LDCT-PD), framed as the substrate the leaderboard launches against, with the multi-vendor clinical extension positioned as a v1.0 follow-up. This fallback is documented in the WS-1 [`README.md`](README.md) Dependencies section and preserves the Year-1 publication target if Track K slips past D9 + 270.
+| Claim | v0.5 | v1.0 |
+|---|---|---|
+| Content-addressed dataset hash on PWM registry | ✅ | ✅ |
+| Unified Python loader across multiple CT sources | ✅ | ✅ |
+| Majority-vote multi-task annotations | ✅ (reusing LIDC + topping up AAPM/Mayo) | ✅ (full panel campaign) |
+| Reproducibility contract (Docker, SHA-256 manifest) | ✅ | ✅ |
+| 5-tuple credential framework integration | ✅ | ✅ |
+| Multi-vendor coverage | ❌ (Siemens only via AAPM 2016) | ✅ (≥ 2 vendors prospectively) |
+| Real paired-dose acquisitions at ≥ 500-patient scale | ❌ (limited to AAPM 2016's 10 patients) | ✅ |
+| Cross-vendor evaluation API | ❌ (single vendor in public data) | ✅ |
+| Pediatric subset | ❌ (deferred to companion dataset) | ❌ (also deferred) |
 
-Trade-off: v0.5 cannot make the multi-vendor or real-paired-acquisition claims that distinguish PWM-LDCT from existing public datasets. *Nature Scientific Data* may push back on novelty; the fallback positioning has to be honest about the v0.5 → v1.0 progression.
+**The honest v0.5 → v1.0 positioning for *Nature Scientific Data***: v0.5 is the harmonization-layer + on-chain-anchoring contribution; v1.0 is the multi-vendor real-paired-acquisition contribution. Reviewers should see them as two complementary papers, not as competing claims.
 
 ---
 
