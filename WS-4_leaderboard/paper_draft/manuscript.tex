@@ -73,7 +73,9 @@ The deep-learning era of low-dose CT reconstruction has produced a steady stream
 
 The PWM Low-Dose CT Challenge addresses these structural gaps by combining three artifacts that are individually well-established but rarely co-located: a \textbf{multi-vendor, paired-dose, on-chain-anchored benchmark dataset}~\citep{ws1dataset}; a \textbf{probabilistic, task-conditional, modality-general signal-equivalence framework}~\citep{ws2framework}; and a \textbf{permanent competition} whose submissions, evaluation, and scoring are reproducible end-to-end via PWM RunBundles~\citep{pwmregistry}. Submissions take the form of a sandboxed Docker container with a pinned eval entry point and a published \texttt{results.json}; the challenge's scoring service re-executes the container, verifies the published results against the live execution, and posts the verified score to a public leaderboard. The L3 dataset spec and the L2 framework spec are content-addressed on the PWM blockchain, so a result tied to \texttt{pwm\_l3\_spec:pwm\_low\_dose\_ct\_benchmark:1.0.0} and \texttt{pwm\_l2\_spec:dose\_equivalence\_v1:0.1.0} is bit-identically reproducible across years even as the dataset is later extended.
 
-This paper is the inaugural annual review of the challenge. It is the first of an intended sequence: each year, an analogous paper will summarize the cohort of new submissions, characterize cross-method trends, perform clinical-impact analysis (which dose levels are now diagnostically equivalent for which subpopulations), and identify the open problems that should define the next year's work. The recurring annual structure --- with consistent benchmark, framework, and reporting standards across years --- is the mechanism by which the field can finally measure longitudinal progress.
+\paragraph{Why now.} Three concurrent developments make a content-addressed annual review newly possible. First, multi-vendor paired-dose CT data is now publicly available at scale through the PWM-LDCT benchmark~\citep{ws1dataset}, ending the decade-long monopoly of single-vendor (Siemens) benchmarks. Second, regulatory bodies including the FDA~\citep{fda_aiml_2024} are explicitly asking for subgroup-stratified, version-pinned performance evidence for AI/ML-based medical software; the signal-equivalence framework~\citep{ws2framework} provides the credential format that operationalizes this requirement. Third, public blockchain registries with sub-second verification of cryptographic hashes are now stable infrastructure, making content-addressed benchmark anchoring practical for the first time. The PWM challenge combines all three.
+
+This paper is the inaugural annual review of the challenge. It is the first of an intended sequence: each year, an analogous paper will summarize the cohort of new submissions, characterize cross-method trends, perform clinical-impact analysis (which dose levels are now diagnostically equivalent for which subpopulations), and identify the open problems that should define the next year's work. The recurring annual structure --- with consistent benchmark, framework, and reporting standards across years --- is the mechanism by which the field can finally measure longitudinal progress: by Year 5 of the series (2032), the cumulative leaderboard will contain $\sim$\todo{N$_{\textrm{5-yr}}$} cited methods, each evaluable against bit-identical benchmark and framework versions, producing a longitudinal performance trace no single static review can construct.
 
 \paragraph{What makes this review series distinctive.} Reviews of low-dose CT reconstruction have appeared periodically~\citep{wang2020deeplearningreview}, but they share three limitations that the present series is structurally designed to avoid:
 
@@ -93,8 +95,72 @@ This paper is the inaugural annual review of the challenge. It is the first of a
 \end{enumerate}
 
 %% =====================================================================
+\section{Review methods}
+\label{sec:review_methods}
+
+\subsection{Scope of this review}
+
+This review covers all submissions to the PWM Low-Dose CT Challenge between the public launch on \todo{launch date} and the Year-1 close on \todo{close date}. ``Submission'' means a PWM RunBundle that (a) was submitted to the leaderboard scoring service, (b) declared at least one 5-tuple signal-equivalence credential per~\citep{ws2framework}, and (c) was accompanied by a permissively-licensed or research-licensed code release. Submissions retracted by their authors before the Year-1 close were excluded; the retraction itself is recorded in the leaderboard's public history but is not analyzed in this review.
+
+\subsection{Inclusion and exclusion criteria}
+
+Submissions \emph{included} in the cross-method analysis:
+\begin{itemize}
+    \item Reported at least the canonical 5-tuple credential at $r = 0.25$ for chest lung-nodule detection.
+    \item Passed bit-identical re-execution verification by the scoring service within at most three resubmission cycles.
+    \item Released code and weights at a stable URL (Apache 2.0, MIT, BSD, or equivalent permissive license; or a documented research-only license with reproducibility commitment).
+\end{itemize}
+
+Submissions \emph{excluded} from cross-method analysis but recorded in the leaderboard public log:
+\begin{itemize}
+    \item Failed verification after three resubmission cycles (\todo{N} submissions).
+    \item Reported credentials only at non-canonical $(r, T)$ combinations not analyzed here (\todo{N} submissions; their published credentials remain valid).
+    \item Submitted after the Year-1 cutoff (\todo{N} submissions; these will be analyzed in the Year-2 review).
+\end{itemize}
+
+The full submission-flow figure (Figure~\ref{fig:review_flow}) summarizes inclusion and exclusion at each step.
+
+\todoFigure{fig:review_flow}{PRISMA-style submission-flow diagram. The rendered figure shows: (top) all RunBundles submitted to the scoring service during the Year-1 window with count; (middle) verification pass / resubmission / unrecoverable-failure outcomes; (bottom) inclusion in cross-method analysis vs leaderboard-log-only. Numbers populated from the scoring service's audit log at Year-1 close.}
+
+\subsection{Conflict of interest in challenge organization}
+
+This review is co-authored by members of the team that organizes the PWM Low-Dose CT Challenge. We disclose the following structural conflicts and the safeguards adopted:
+
+\begin{itemize}
+    \item \textbf{Organizer submissions.} The PWM reference reconstruction method~\citep{ws3reference} is the seed entry in the leaderboard. To avoid self-citation bias, the analyses in this review present the reference method's credentials transparently alongside community submissions but the leaderboard headline ranking is based on the canonical task metric (lung-nodule AUC at $r = 0.25$), which the reference method does \emph{not} top.
+    \item \textbf{Authorship of submitted methods.} Co-authors of this review who are also authors of a submitted method are explicitly listed in the Acknowledgments section by initials, and their submissions are flagged in the leaderboard public log with \texttt{author\_of\_challenge\_review: true}.
+    \item \textbf{Reviewer assignment for cited submissions.} This review summarizes but does not peer-review individual submissions; submission-level peer review is the responsibility of the submission's own publication venue.
+\end{itemize}
+
+\subsection{Reproducibility of this review}
+
+The numerical content of this review (counts in Tables and Figures) is generated by a single script (\texttt{review/year1\_analysis.py}) that ingests the scoring service's audit log and produces every cited number deterministically. The script's exact version is pinned in the Code Availability section; readers can re-execute it against the public audit log and reproduce every number in this paper.
+
+%% =====================================================================
 \section{The Challenge}
 \label{sec:challenge}
+
+\begin{table}[ht]
+    \centering
+    \small
+    \setlength{\tabcolsep}{6pt}
+    \begin{tabular}{lp{10cm}}
+        \toprule
+        \textbf{Term} & \textbf{Definition} \\
+        \midrule
+        \textbf{5-tuple credential}     & Structured equivalence claim $(r, T, \varepsilon, \alpha, \Pi)$: signal ratio, task, equivalence margin, significance level, patient subpopulation~\citep{ws2framework}. \\
+        \textbf{Signal-equivalence}     & A reconstruction method is signal-equivalent to a named reference if its expected task performance on reduced-signal scans is within $\varepsilon$ of the reference's performance on full-signal scans, with confidence $\geq 1-\alpha$~\citep{ws2framework}. \\
+        \textbf{Content-addressed hash} & A cryptographic fingerprint (e.g., SHA-256) of a dataset, framework, or method. Two artifacts with the same hash are guaranteed bit-identical. \\
+        \textbf{RunBundle}              & PWM-format submission: pinned Docker image + eval entry point + published \texttt{results.json} + 5-tuple credentials. The scoring service re-executes the RunBundle and verifies the published results match the live execution. \\
+        \textbf{Leave-one-vendor-out (LOVO)} & Cross-vendor evaluation protocol: train on data from $V - 1$ vendors, evaluate on the held-out vendor. \\
+        \textbf{L2 / L3 / L4 spec}      & PWM registry layers: L2 = framework spec, L3 = dataset spec, L4 = method cert. Each layer is content-addressed and registered on the PWM blockchain. \\
+        \textbf{Signal ratio} $r$       & Acquisition signal as fraction of reference: $r = $ mA-ratio (CT), $r = 1/$acceleration (MRI), $r = $ activity-ratio (PET). \\
+        \textbf{Verdict}                & \texttt{PASS} / \texttt{FAIL} / \texttt{INDETERMINATE} on a 5-tuple credential, based on whether the bootstrap CI is contained in / disjoint from / straddles the equivalence band $(-\varepsilon, +\varepsilon)$. \\
+        \bottomrule
+    \end{tabular}
+    \caption{Glossary of terms used throughout this review. Each is referenced multiple times; this table is provided as a single look-up for readers without a CS / informatics background.}
+    \label{tab:glossary}
+\end{table}
 
 \subsection{Benchmark dataset (L3 spec)}
 
@@ -225,6 +291,26 @@ The clinical translation: a radiologist or physicist reading this table can map 
 
 \paragraph{For regulators.} The challenge produces externally-verifiable, content-addressed evidence in a format aligned with the FDA's emerging guidance on AI/ML-based SaMD subgroup reporting~\citep{fda_aiml_2024}. A reviewer evaluating a submission can request the L4 cert hash and independently re-execute the published evaluation pipeline.
 
+\subsection{Health equity and global health implications}
+
+The PWM Low-Dose CT Challenge is structurally equity-positive along four axes that we believe are relevant to npj Digital Medicine's mandate around digital-health access.
+
+\paragraph{Low-resource-institution access to validated methods.} Open-source weights, Apache 2.0 license, and a pip-installable evaluation library mean a hospital without an institutional license for vendor IR or a research-software budget can adopt a community-validated reconstruction method at zero marginal cost. Cross-vendor evaluation specifically addresses the scenario in which a low-resource institution operates a different scanner generation than the high-resource institutions where most methods are developed.
+
+\paragraph{Reduced vendor lock-in.} A method that depends on vendor-proprietary IR pre-processing (closed-source kernels, vendor-specific noise modeling, vendor data formats) effectively forces an institution to keep buying from one manufacturer. The reference method and all qualifying leaderboard entries operate on raw sinograms and vendor-agnostic DICOM inputs, removing this structural lock-in.
+
+\paragraph{Subgroup performance transparency.} Subgroup-stratified credentials make it harder to deploy a method that works well on a method-developer's training population but fails on under-represented subpopulations. A method missing a passing credential for $\Pi = \text{pediatric}$ or $\Pi = \text{specific-vendor-platform}$ cannot silently be marketed as "works for low-dose CT." This transparency is structurally pro-equity even before equity-specific subpopulations are added.
+
+\paragraph{Global health perspective.} The Year-1 cohort includes \todo{N} clinical sites in \todo{N} countries; the Year-2 expansion roadmap (Section~\ref{sec:year2}) prioritizes international site recruitment. CT-based screening protocols (lung-cancer screening, tuberculosis screening) are increasingly deployed in middle-income countries; a credential framework that does not require vendor-specific or country-specific re-certification of every protocol lowers the per-site deployment cost.
+
+We acknowledge that equity-positive structure is not the same as measured equity outcomes: whether the challenge actually narrows performance disparities depends on community participation, on which subpopulations are included in future dataset extensions, and on whether deployers act on the transparency the framework provides. We commit to reporting an explicit equity analysis in Year 2 once enough subpopulation-stratified data has accumulated to support it.
+
+\subsection{Patient perspective}
+
+From a patient's vantage point, the framework promises three concrete things, none of which depended on this challenge being framed as a digital-health intervention. (i) The same diagnostic confidence at lower radiation exposure for tasks where the credential PASSes at smaller $r$. (ii) Transparency about which method is recommended for the specific clinical context that applies to them: which vendor's scanner, which task, which subpopulation they belong to. A patient or patient-advocacy group can query the public registry by the parameters that match their own situation. (iii) An honest verdict of INDETERMINATE when the evidence does not support a definite answer, rather than a vendor's confident percentage backed by undisclosed evaluation conditions.
+
+The current challenge does not yet include patient-reported outcomes (e.g., perceived anxiety from longer scan or repeat-scan protocols, willingness to consent to dose reduction); we list patient-reported outcomes as a Year-3 stretch addition once the Year-1 and Year-2 cohorts have established the technical baseline.
+
 %% =====================================================================
 \section{Open problems for Year 2}
 \label{sec:open_problems}
@@ -263,17 +349,56 @@ We emphasize three structural properties of the challenge that we believe other 
 
 \paragraph{Re-executable submissions.} Bit-identical re-execution of every submission, verified by an automated scoring service, eliminates a separate class of reproducibility failures (cherry-picked random seeds, version-skew between training and reported eval, etc.). Adoption of this standard across medical-imaging benchmarks would substantially raise the field's reproducibility floor.
 
+\paragraph{Comparison with benchmark-driven reviews in other medical fields.} Annual challenge reviews are not new to medical imaging --- the Brain Tumor Segmentation (BraTS) challenge has produced multi-year summaries~\citep{bakas2019brats}, the ISIC dermatology challenge tracks year-over-year skin-lesion methods~\citep{codella2019isic}, and the Kaggle RSNA pneumonia-detection challenge produced a sizable cited corpus. The PWM Low-Dose CT Challenge differs from these in three ways: (a) it uses a content-addressed benchmark hash anchored on a public registry rather than a centrally-administered dataset version, which closes a class of dataset-drift attacks that has affected prior challenge data~\citep{wang2020deeplearningreview}; (b) it requires a formal task-conditional credential per~\citep{ws2framework} rather than a single leaderboard scalar; (c) it commits in advance to a recurring annual review series rather than producing post-hoc summaries when an organizer has bandwidth. We expect each of these structural choices is independently transferable to non-CT challenges; we encourage benchmark organizers in other modalities and other clinical fields to consider adopting them.
+
+\subsection*{Limitations of this review}
+
+A review process is itself a form of evidence with its own biases. We acknowledge the following limitations of the present Year-1 synthesis.
+
+\paragraph{Single-year cohort.} A Year-1 review cannot establish trends; longitudinal claims emerge only in Year-2 and later editions. We have framed the present review as a cohort summary plus open-problem identification rather than as a trend analysis precisely because we have no prior year against which to measure.
+
+\paragraph{Organizer authorship.} This review is co-authored by the challenge organizers (see Conflict of interest in challenge organization, Section~\ref{sec:review_methods}). The safeguards adopted --- transparent ranking that does not put the reference method at the top, explicit author flagging in the leaderboard log, and a script-generated numeric content layer --- mitigate but do not eliminate the inherent risk that the organizers' perspective shapes the synthesis.
+
+\paragraph{Clinical-task subset.} The two canonical tasks evaluated in Year 1 (lung-nodule detection, liver-lesion segmentation) cover an important but narrow slice of clinical CT use. Conclusions about ``low-dose CT'' as a whole drawn from this review should be qualified as ``conclusions about Year-1 challenge tasks''; thoracic-trauma, pulmonary-embolism, oncology-staging, cardiac-CT, and pediatric-CT readings are out of Year-1 scope.
+
+\paragraph{Industrial-vendor participation.} Industrial-vendor submissions in Year 1 were lower than the academic-submitter rate (Table~\ref{tab:method_classes}). Conclusions about which method works best at the clinical-deployment frontier are partial until vendor participation increases; we explicitly invited the four major manufacturers and report participation outcomes.
+
+\paragraph{Geographic representation.} The Year-1 dataset~\citep{ws1dataset} is collected at sites in \todo{N} countries, all high-income. International expansion is on the Year-2 roadmap; until then, performance claims should be qualified by population scope.
+
+%% =====================================================================
+\section*{Code and data availability}
+
+The analysis script used to generate every numerical claim in this review is at \url{https://github.com/integritynoble/low_dose_CT/tree/main/WS-4_leaderboard/review/} (Apache 2.0). The script ingests the PWM Low-Dose CT Challenge audit log (publicly accessible at the leaderboard portal) and produces every table and figure deterministically. The exact pinned version used for this review is \todo{tagged-version-at-submission}. The underlying benchmark dataset is at~\citep{ws1dataset}, the signal-equivalence library at~\citep{ws2framework}, and the public leaderboard at the URL listed in Section~\ref{sec:challenge}.
+
 %% =====================================================================
 \section*{Acknowledgments}
 
-We thank every Year-1 submitter and the radiologists who contributed annotations to the PWM-LDCT dataset. We thank the PWM Protocol Foundation for blockchain infrastructure and the open-source maintainers of \texttt{pwm\_core}, \texttt{pwm\_ldct\_loader}, and \texttt{pwm\_dose\_equivalence}.
+We thank every Year-1 submitter for participating in the challenge and for their willingness to release their methods under permissive licenses. We thank the radiologists who contributed annotations to the PWM-LDCT dataset~\citep{ws1dataset}, the engineering team at the PWM Protocol Foundation for the scoring-service infrastructure, and the open-source maintainers of \texttt{pwm\_core}, \texttt{pwm\_ldct\_loader}, and \texttt{pwm\_dose\_equivalence}. Co-authors who are also authors of a submitted reconstruction method (initials: \todo{XX, YY}) recused themselves from the leaderboard-ranking computation per the COI protocol in Section~\ref{sec:review_methods}.
 
 %% =====================================================================
-\section*{Author contributions}
-\todo{Fill at submission per CRediT taxonomy.}
+\section*{Funding}
 
+\todo{Declare at submission.} The PWM Low-Dose CT Challenge prize pool is funded by the PWM Protocol Foundation Reserve. Per-author funding sources (institutional research support, federal grants, etc.) are disclosed individually at submission per the \emph{npj Digital Medicine} funding-disclosure policy. The challenge does not accept industry sponsorship that is conditional on featuring or excluding any submission.
+
+%% =====================================================================
 \section*{Competing interests}
-\todo{Declare at submission.}
+
+\todo{Refine at submission.} The authors declare the following structural conflicts:
+
+\begin{itemize}
+    \item Several authors are members of the team that organizes the PWM Low-Dose CT Challenge. The COI safeguards adopted by this review --- transparent ranking, recusal of author-of-submitted-method authors from leaderboard computation, organizer disclosure in the leaderboard log --- are documented in Section~\ref{sec:review_methods}.
+    \item The PWM Protocol Foundation does not receive direct revenue from challenge participation or from any leaderboard entry. Foundation-affiliated authors hold no equity or royalty interest in any specific reconstruction method evaluated under the challenge.
+    \item Individual authors hold the following per-person disclosures: \todo{list at submission}.
+\end{itemize}
+
+\section*{Author contributions}
+
+\todo{Fill at submission per CRediT taxonomy: Conceptualization, Methodology, Software, Validation, Formal analysis, Investigation, Resources, Data curation, Writing-Original Draft, Writing-Review \& Editing, Visualization, Supervision, Project administration, Funding acquisition.}
+
+%% =====================================================================
+\section*{Reporting summary}
+
+A \emph{Nature Portfolio} Reporting Summary in the format current at submission, covering subgroup-stratified performance reporting per~\citep{fda_aiml_2024}, code/data availability transparency, ethical-conduct of the challenge, and reproducibility of the review's analysis script, accompanies this manuscript as Supplementary Information.
 
 %% =====================================================================
 \bibliographystyle{plainnat}
