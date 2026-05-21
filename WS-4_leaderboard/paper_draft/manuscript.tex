@@ -28,10 +28,21 @@
 \usepackage{amsmath,amssymb}
 \usepackage{xcolor}
 \usepackage[colorlinks=true,linkcolor=blue,citecolor=blue,urlcolor=blue]{hyperref}
+\usepackage{xurl}
 \usepackage[round]{natbib}
 \usepackage{authblk}
 
 \newcommand{\todo}[1]{\textcolor{red}{\textbf{[TODO: #1]}}}
+\newcommand{\todoTable}[2]{%
+  \begin{table}[ht]\centering%
+    \fbox{\parbox{0.85\linewidth}{\centering\todo{TABLE: #2}}}%
+    \caption{#2 (placeholder; populate when data lands).}\label{#1}%
+  \end{table}}
+\newcommand{\todoFigure}[2]{%
+  \begin{figure}[ht]\centering%
+    \fbox{\parbox{0.85\linewidth}{\centering\todo{FIGURE: #2}}}%
+    \caption{#2 (placeholder; populate when data lands).}\label{#1}%
+  \end{figure}}
 
 \title{\textbf{State of the Field: Year 1 of the PWM Low-Dose CT Challenge}}
 
@@ -140,11 +151,15 @@ We chose top-10 distribution over winner-take-all to encourage broad participati
 
 \subsection{Reconstruction quality}
 
-PSNR / SSIM / LPIPS distributions are shown in Figure~\ref{fig:psnr_distribution} \todo{generate}. Median PSNR at $r = 0.25$ across the cohort is \todo{X dB}; the top-3 submissions achieve \todo{Y dB}. The leaderboard top entry was \todo{submitter / method name} at \todo{Z dB}.
+PSNR / SSIM / LPIPS distributions are shown in Figure~\ref{fig:psnr_distribution}. Median PSNR at $r = 0.25$ across the cohort is \todo{X dB}; the top-3 submissions achieve \todo{Y dB}. The leaderboard top entry was \todo{submitter / method name} at \todo{Z dB}.
+
+\todoFigure{fig:psnr_distribution}{Year-1 cohort PSNR / SSIM / LPIPS distributions on PWM-LDCT test split, per dose level}
 
 \subsection{Downstream task performance}
 
-Lung-nodule detection AUC at fixed FPR = 0.1 is summarized in Figure~\ref{fig:task_auc} \todo{generate}. We observe that PSNR and task-AUC are \todo{strongly / weakly} correlated, with a Spearman $\rho = $ \todo{X} across the submission cohort. Notably, the top-PSNR submission is \todo{not / also} the top-task-AUC submission, illustrating that pixel-wise metrics are not interchangeable with clinical-task metrics.
+Lung-nodule detection AUC at fixed FPR = 0.1 is summarized in Figure~\ref{fig:task_auc}. We observe that PSNR and task-AUC are \todo{strongly / weakly} correlated, with a Spearman $\rho = $ \todo{X} across the submission cohort. Notably, the top-PSNR submission is \todo{not / also} the top-task-AUC submission, illustrating that pixel-wise metrics are not interchangeable with clinical-task metrics.
+
+\todoFigure{fig:task_auc}{Year-1 cohort lung-nodule detection AUC; scatter vs PSNR illustrating the pixel-wise vs task-metric gap}
 
 \subsection{Cross-vendor generalization}
 
@@ -156,7 +171,9 @@ A subset of \todo{N} submissions reported cross-vendor results on the PWM-LDCT l
 
 \subsection{Signal-equivalence credential coverage}
 
-Per the framework of~\citep{ws2framework}, every submission was required to report at least one 5-tuple credential at $r = 0.25$. The distribution of credential verdicts is in Table~\ref{tab:credential_distribution} \todo{populate}. The $r = 0.10$ regime --- a more aggressive dose reduction --- is currently unsolved by most submissions, with only \todo{N\%} of credentials passing at that level.
+Per the framework of~\citep{ws2framework}, every submission was required to report at least one 5-tuple credential at $r = 0.25$. The distribution of credential verdicts is in Table~\ref{tab:credential_distribution}. The $r = 0.10$ regime --- a more aggressive dose reduction --- is currently unsolved by most submissions, with only \todo{N\%} of credentials passing at that level.
+
+\todoTable{tab:credential_distribution}{Year-1 5-tuple credential verdict distribution (PASS / FAIL / INDETERMINATE) per dose ratio and per canonical task}
 
 %% =====================================================================
 \section{Clinical-impact analysis}

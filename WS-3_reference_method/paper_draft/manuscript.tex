@@ -16,7 +16,7 @@
 %% Build:  pdflatex manuscript && bibtex manuscript && pdflatex manuscript
 %% =====================================================================
 
-\documentclass[runningheads]{article}  % swap for llncs at submission
+\documentclass{article}  % swap for `\documentclass[runningheads]{llncs}` at submission
 
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
@@ -26,15 +26,31 @@
 \usepackage{graphicx}
 \usepackage{booktabs}
 \usepackage{amsmath,amssymb}
+\usepackage{xfrac}
 \usepackage{algorithm}
 \usepackage{algpseudocode}
 \usepackage{xcolor}
 \usepackage[colorlinks=true,linkcolor=blue,citecolor=blue,urlcolor=blue]{hyperref}
+\usepackage{xurl}
 \usepackage[round]{natbib}
 \usepackage{authblk}
 
 \newcommand{\todo}[1]{\textcolor{red}{\textbf{[TODO: #1]}}}
 \newcommand{\R}{\mathbb{R}}
+\newcommand{\todoTable}[2]{%
+  \begin{table}[ht]\centering%
+    \fbox{\parbox{0.85\linewidth}{\centering\todo{TABLE: #2}}}%
+    \caption{#2 (placeholder; populate when data lands).}\label{#1}%
+  \end{table}}
+\newcommand{\todoFigure}[2]{%
+  \begin{figure}[ht]\centering%
+    \fbox{\parbox{0.85\linewidth}{\centering\todo{FIGURE: #2}}}%
+    \caption{#2 (placeholder; populate when data lands).}\label{#1}%
+  \end{figure}}
+
+% Stub the LNCS-only \keywords macro so the draft compiles under `article`.
+% The real llncs.cls supplies this; remove the next line at submission.
+\providecommand{\keywords}[1]{\par\noindent\textbf{Keywords:} #1\par}
 
 \title{\textbf{Unrolled Iterative Reconstruction with Calibrated Uncertainty for Low-Dose CT: \\ A Reference Method for the PWM Benchmark}}
 
@@ -106,7 +122,9 @@ Given a low-dose sinogram $y \in \R^{n_{\textrm{views}} \times n_{\textrm{dets}}
     \end{algorithmic}
 \end{algorithm}
 
-We use $K = 10$ iterations; ablation results for $K \in \{5, 10, 15, 20\}$ are in Section~\ref{sec:results}~Table~\ref{tab:K_ablation} \todo{populate}. The denoiser $f_\theta$ is a U-Net with $\approx 4$~M parameters whose weights are shared across iterations; this both reduces memory and acts as an implicit regularizer (the same $f_\theta$ must denoise at all iteration depths, preventing iteration-specific overfitting).
+We use $K = 10$ iterations; ablation results for $K \in \{5, 10, 15, 20\}$ are in Section~\ref{sec:results}~Table~\ref{tab:K_ablation}. The denoiser $f_\theta$ is a U-Net with $\approx 4$~M parameters whose weights are shared across iterations; this both reduces memory and acts as an implicit regularizer (the same $f_\theta$ must denoise at all iteration depths, preventing iteration-specific overfitting).
+
+\todoTable{tab:K_ablation}{Iteration-count ablation: PSNR / SSIM on PWM-LDCT test split for $K \in \{5, 10, 15, 20\}$}
 
 The step size $\tau$ is a learned scalar, initialized at $0.5 / \|\mathcal{R}\|^2$ (the conventional Landweber-stable value). End-to-end optimization with mean absolute error loss on Hounsfield-unit values:
 
@@ -157,27 +175,35 @@ Augmentation: random flip ($p=0.5$), random rotation in $[-5^\circ, 5^\circ]$, r
 
 \begin{table}[h]
     \centering
+    \small
+    \setlength{\tabcolsep}{4pt}
     \begin{tabular}{lcccccc}
         \toprule
         \textbf{Method} & \multicolumn{2}{c}{$r = 0.10$} & \multicolumn{2}{c}{$r = 0.25$} & \multicolumn{2}{c}{$r = 0.50$} \\
         & PSNR & SSIM & PSNR & SSIM & PSNR & SSIM \\
         \midrule
-        FBP (no learning) & \todo{} & \todo{} & \todo{} & \todo{} & \todo{} & \todo{} \\
-        RED-CNN & \todo{} & \todo{} & \todo{} & \todo{} & \todo{} & \todo{} \\
-        Transformer baseline & \todo{} & \todo{} & \todo{} & \todo{} & \todo{} & \todo{} \\
-        Diffusion baseline & \todo{} & \todo{} & \todo{} & \todo{} & \todo{} & \todo{} \\
-        \textbf{PWM reference (ours)} & \todo{} & \todo{} & \todo{} & \todo{} & \todo{} & \todo{} \\
+        FBP                & \todo{} & \todo{} & \todo{} & \todo{} & \todo{} & \todo{} \\
+        RED-CNN            & \todo{} & \todo{} & \todo{} & \todo{} & \todo{} & \todo{} \\
+        Transformer        & \todo{} & \todo{} & \todo{} & \todo{} & \todo{} & \todo{} \\
+        Diffusion          & \todo{} & \todo{} & \todo{} & \todo{} & \todo{} & \todo{} \\
+        \textbf{PWM ref}   & \todo{} & \todo{} & \todo{} & \todo{} & \todo{} & \todo{} \\
         \bottomrule
     \end{tabular}
     \caption{Reconstruction quality on the PWM-LDCT test split. Values to fill at D9+270 after WS-3 Phase 3 (v1 deep ensemble) lands.}
     \label{tab:reconstruction_quality}
 \end{table}
 
-\paragraph{Cross-vendor generalization.} Table~\ref{tab:cross_vendor} \todo{populate} reports the PSNR drop $\Delta$ when each method is trained without one vendor and evaluated on that held-out vendor's test scans. The reference method's $\Delta$ should be $\leq 2$~dB; baselines are not designed for cross-vendor generalization and we expect $\Delta \approx 3$--$5$~dB.
+\paragraph{Cross-vendor generalization.} Table~\ref{tab:cross_vendor} reports the PSNR drop $\Delta$ when each method is trained without one vendor and evaluated on that held-out vendor's test scans. The reference method's $\Delta$ should be $\leq 2$~dB; baselines are not designed for cross-vendor generalization and we expect $\Delta \approx 3$--$5$~dB.
 
-\paragraph{Uncertainty calibration.} The deep ensemble's per-pixel standard deviation correlates with per-pixel error at Spearman $\rho = $ \todo{populate}. A reliability diagram is provided as Figure~\ref{fig:reliability} \todo{generate}.
+\todoTable{tab:cross_vendor}{Cross-vendor PSNR drop ($\Delta$, dB) under leave-one-vendor-out training; lower is better}
 
-\paragraph{Downstream task performance.} Lung-nodule detection AUC against a frozen detector is reported in Table~\ref{tab:task_auc} \todo{populate}. The downstream-task results may diverge from pixel-wise results: a method with higher PSNR may produce lower task AUC if it over-smooths small lesions~\citep{kim2019smoothing}. Showing both is the point.
+\paragraph{Uncertainty calibration.} The deep ensemble's per-pixel standard deviation correlates with per-pixel error at Spearman $\rho = $ \todo{populate}. A reliability diagram is provided as Figure~\ref{fig:reliability}.
+
+\todoFigure{fig:reliability}{Reliability diagram: predicted per-pixel standard deviation (ensemble) vs observed per-pixel reconstruction error on held-out test}
+
+\paragraph{Downstream task performance.} Lung-nodule detection AUC against a frozen detector is reported in Table~\ref{tab:task_auc}. The downstream-task results may diverge from pixel-wise results: a method with higher PSNR may produce lower task AUC if it over-smooths small lesions~\citep{kim2019smoothing}. Showing both is the point.
+
+\todoTable{tab:task_auc}{Lung-nodule detection AUC at fixed FPR = 0.1, per method, per dose level, using a frozen pre-trained detector}
 
 \subsection{Signal-equivalence credentials}
 \label{sec:credentials}

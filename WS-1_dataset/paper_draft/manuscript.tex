@@ -29,13 +29,26 @@
 \usepackage{siunitx}
 \usepackage{xcolor}
 \usepackage[colorlinks=true,linkcolor=blue,citecolor=blue,urlcolor=blue]{hyperref}
+\usepackage{xurl}            % better URL line-breaking inside \url{}
 \usepackage[round]{natbib}
 \usepackage{authblk}
 \usepackage{lineno}
 \linenumbers
 
-%% --- TODO macro for placeholders to fill in with real data ---
+%% --- TODO macros ------------------------------------------------------
 \newcommand{\todo}[1]{\textcolor{red}{\textbf{[TODO: #1]}}}
+% Compile-clean placeholder floats. Replace each with the real table /
+% figure as data lands; the \label{} keeps cross-references working.
+\newcommand{\todoTable}[2]{%
+  \begin{table}[ht]\centering%
+    \fbox{\parbox{0.85\linewidth}{\centering\todo{TABLE: #2}}}%
+    \caption{#2 (placeholder; populate when data lands).}\label{#1}%
+  \end{table}}
+\newcommand{\todoFigure}[2]{%
+  \begin{figure}[ht]\centering%
+    \fbox{\parbox{0.85\linewidth}{\centering\todo{FIGURE: #2}}}%
+    \caption{#2 (placeholder; populate when data lands).}\label{#1}%
+  \end{figure}}
 \newcommand{\Nscans}{\todo{N\textsubscript{paired scans}}}
 \newcommand{\Npatients}{\todo{N\textsubscript{patients}}}
 \newcommand{\NvendorA}{\todo{N\textsubscript{vendor A}}}
@@ -193,16 +206,24 @@ We performed four classes of technical validation:
 For every full-dose scan we recomputed FBP from the released sinogram and verified that the recomputed image matches the released reconstruction within $\leq$~\todo{FP tolerance}~HU at every voxel. This protects against an off-by-one indexing error between sinogram release and image release, which is a common silent failure mode of CT-dataset releases.
 
 \subsection*{Real- vs simulated-low-dose comparison}
-On the \NvendorA{} patients with paired real-low-dose acquisitions, we measured the per-patient \textit{distributional} agreement between the simulated 25\%-dose image (generated from the patient's own full-dose sinogram) and the real 25\%-dose acquisition. The agreement metrics are reported in Figure~\ref{fig:sim_vs_real} \todo{generate}. The purpose is not to assert simulation equivalence (it is well known that simulated low-dose noise underestimates real low-dose noise in some regimes~\citep{wang2020deeplearningreview}) but to make the discrepancy visible so users can decide which split is appropriate for their evaluation.
+On the \NvendorA{} patients with paired real-low-dose acquisitions, we measured the per-patient \textit{distributional} agreement between the simulated 25\%-dose image (generated from the patient's own full-dose sinogram) and the real 25\%-dose acquisition. The agreement metrics are reported in Figure~\ref{fig:sim_vs_real}. The purpose is not to assert simulation equivalence (it is well known that simulated low-dose noise underestimates real low-dose noise in some regimes~\citep{wang2020deeplearningreview}) but to make the discrepancy visible so users can decide which split is appropriate for their evaluation.
+
+\todoFigure{fig:sim_vs_real}{Per-patient distributional agreement between simulated 25\%-dose and real 25\%-dose acquisitions on paired-acquisition patients}
 
 \subsection*{Inter-rater annotation reliability}
-Cohen's $\kappa$ for lung nodule detection (per-radiologist, per-scan) and Dice for liver lesion segmentation are summarized in Table~\ref{tab:irr} \todo{populate}. We report agreement broken down by dose level so that any tendency of low-dose images to depress annotator agreement is visible.
+Cohen's $\kappa$ for lung nodule detection (per-radiologist, per-scan) and Dice for liver lesion segmentation are summarized in Table~\ref{tab:irr}. We report agreement broken down by dose level so that any tendency of low-dose images to depress annotator agreement is visible.
+
+\todoTable{tab:irr}{Inter-rater annotation reliability ($\kappa$ for nodule detection; Dice for liver lesion segmentation), broken down by dose level}
 
 \subsection*{Baseline reproductions}
-We trained four community-standard baselines on the PWM-LDCT training split and report their test-split performance in Table~\ref{tab:baselines} \todo{populate after training}. The baselines are RED-CNN~\citep{chen2017redcnn}, a transformer-based method (\todo{select}), a diffusion-based method (\todo{select}), and the PWM reference unrolled iterative reconstruction~\citep{ws3reference}. The objective of this section is not to declare a winner but to (i) confirm that all baselines successfully train and evaluate on the released dataset using the provided loader, and (ii) provide initial seed entries for the permanent leaderboard.
+We trained four community-standard baselines on the PWM-LDCT training split and report their test-split performance in Table~\ref{tab:baselines}. The baselines are RED-CNN~\citep{chen2017redcnn}, a transformer-based method (\todo{select}), a diffusion-based method (\todo{select}), and the PWM reference unrolled iterative reconstruction~\citep{ws3reference}. The objective of this section is not to declare a winner but to (i) confirm that all baselines successfully train and evaluate on the released dataset using the provided loader, and (ii) provide initial seed entries for the permanent leaderboard.
+
+\todoTable{tab:baselines}{Test-split PSNR / SSIM / LPIPS / task-AUC for four reproduced baselines on PWM-LDCT}
 
 \subsection*{5-tuple credentials per signal-equivalence framework}
-For each baseline we report the corresponding 5-tuple signal-equivalence credential~\citep{ws2framework} for the canonical lung nodule detection task at 25\% dose. The credentials are summarized in Table~\ref{tab:credentials} \todo{populate}; the per-method credential JSON is provided in the release as \texttt{baselines/<method>/credentials.json}.
+For each baseline we report the corresponding 5-tuple signal-equivalence credential~\citep{ws2framework} for the canonical lung nodule detection task at 25\% dose. The credentials are summarized in Table~\ref{tab:credentials}; the per-method credential JSON is provided alongside each baseline in the release.
+
+\todoTable{tab:credentials}{5-tuple signal-equivalence credentials per baseline at the canonical lung-nodule detection task, 25\% dose}
 
 %% =====================================================================
 \section*{Usage Notes}
@@ -220,12 +241,11 @@ Load a split:
 \begin{verbatim}
     from pwm_ldct_loader import LowDoseCTDataset
     train = LowDoseCTDataset(root="/path/to/pwm_ldct",
-                              split="train",
-                              seed=42)
+                              split="train", seed=42)
     sample = train[0]
-    # sample["full_dose"]   -> torch.Tensor [H, W]
-    # sample["low_dose"]    -> torch.Tensor [H, W] (real if available, else simulated)
-    # sample["sinogram"]    -> torch.Tensor [n_views, n_dets]
+    # sample["full_dose"]   -> Tensor [H, W]
+    # sample["low_dose"]    -> Tensor [H, W]  (real or sim)
+    # sample["sinogram"]    -> Tensor [views, dets]
     # sample["annotations"] -> dict
     # sample["metadata"]    -> dict
 \end{verbatim}

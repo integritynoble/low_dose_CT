@@ -29,6 +29,7 @@
 \usepackage{siunitx}
 \usepackage{xcolor}
 \usepackage[colorlinks=true,linkcolor=blue,citecolor=blue,urlcolor=blue]{hyperref}
+\usepackage{xurl}
 \usepackage[round]{natbib}
 \usepackage{authblk}
 \usepackage{lineno}
@@ -39,12 +40,22 @@
 \newtheorem{theorem}{Theorem}
 
 \newcommand{\todo}[1]{\textcolor{red}{\textbf{[TODO: #1]}}}
+\newcommand{\todoTable}[2]{%
+  \begin{table}[ht]\centering%
+    \fbox{\parbox{0.85\linewidth}{\centering\todo{TABLE: #2}}}%
+    \caption{#2 (placeholder; populate when data lands).}\label{#1}%
+  \end{table}}
+\newcommand{\todoFigure}[2]{%
+  \begin{figure}[ht]\centering%
+    \fbox{\parbox{0.85\linewidth}{\centering\todo{FIGURE: #2}}}%
+    \caption{#2 (placeholder; populate when data lands).}\label{#1}%
+  \end{figure}}
 \newcommand{\Mref}{\mathcal{M}_{\textrm{ref}}}
 \newcommand{\Mred}{\mathcal{M}_{\textrm{red}}}
 \newcommand{\Sref}{S_{\textrm{ref}}}
 \newcommand{\Sred}{S_{\textrm{red}}}
 \newcommand{\R}{\mathbb{R}}
-\newcommand{\Pr}{\mathbb{P}}
+\newcommand{\Prob}{\mathbb{P}}
 \newcommand{\E}{\mathbb{E}}
 
 \title{\textbf{Signal-Equivalence: A Probabilistic Framework for Comparing Reconstruction Methods Across Reduced-Signal Imaging Modalities}}
@@ -96,11 +107,17 @@ The contributions of this paper are:
 
 The signal-equivalence credential for a reconstruction method $M$ against a reference method $\Mref$ at the level $(r, T, \varepsilon, \alpha, \Pi)$ asserts that $M$'s expected task performance on reduced-signal scans is within $\varepsilon$ of $\Mref$'s expected task performance on full-signal scans, with confidence $\geq 1-\alpha$. The credential is computed via a paired bootstrap over patient draws from $\Pi$ (Section~\ref{sec:methods-estimator}); the verdict is one of \texttt{PASS}, \texttt{FAIL}, or \texttt{INDETERMINATE} (CI straddles the equivalence band).
 
-\paragraph{Worked example 1: CT lung-nodule detection at 25\% dose.} On the public LIDC-IDRI~\citep{lidc_idri} and AAPM-2016~\citep{aapm2016challenge} cohorts and the multi-vendor PWM-LDCT dataset~\citep{ws1dataset}, we computed signal-equivalence credentials for three baseline reconstruction methods (RED-CNN~\citep{chen2017redcnn}, a transformer-based reconstruction, a diffusion-based reconstruction) and the open-source PWM reference method~\citep{ws3reference} at $r = 0.25$. Performance metric: lung-nodule detection AUC at fixed FPR = 0.1, with ground truth from majority-vote radiologist annotation. Results are summarized in Table~\ref{tab:ct_results} \todo{populate after WS-2 Phase 1 pilot, D9+90}.
+\paragraph{Worked example 1: CT lung-nodule detection at 25\% dose.} On the public LIDC-IDRI~\citep{lidc_idri} and AAPM-2016~\citep{aapm2016challenge} cohorts and the multi-vendor PWM-LDCT dataset~\citep{ws1dataset}, we computed signal-equivalence credentials for three baseline reconstruction methods (RED-CNN~\citep{chen2017redcnn}, a transformer-based reconstruction, a diffusion-based reconstruction) and the open-source PWM reference method~\citep{ws3reference} at $r = 0.25$. Performance metric: lung-nodule detection AUC at fixed FPR = 0.1, with ground truth from majority-vote radiologist annotation. Results are summarized in Table~\ref{tab:ct_results}.
 
-\paragraph{Worked example 2: accelerated MRI knee-meniscus segmentation at $4\times$.} On the fastMRI knee dataset~\citep{fastmri}, we applied the framework with variable-density Cartesian undersampling at $R = 4$ (equivalently $r = 0.25$). Performance metric: meniscus segmentation Dice. Results in Table~\ref{tab:mri_results} \todo{populate after WS-2 Phase 3 MRI validator, D9+270}.
+\todoTable{tab:ct_results}{Signal-equivalence credentials for four CT reconstruction methods at $r = 0.25$, task = lung-nodule detection AUC}
 
-\paragraph{Worked example 3: PET phantom quantification at 25\% activity.} On the NEMA NU-2 IQ phantom~\citep{nema_nu2} at full and reduced-activity acquisitions, we measured contrast-recovery coefficients for the six standard sphere sizes. Results in Table~\ref{tab:pet_results} \todo{populate after WS-2 Phase 3 PET validator}.
+\paragraph{Worked example 2: accelerated MRI knee-meniscus segmentation at $4\times$.} On the fastMRI knee dataset~\citep{fastmri}, we applied the framework with variable-density Cartesian undersampling at $R = 4$ (equivalently $r = 0.25$). Performance metric: meniscus segmentation Dice. Results in Table~\ref{tab:mri_results}.
+
+\todoTable{tab:mri_results}{Signal-equivalence credentials for MRI reconstruction methods at $r = 0.25$ (4$\times$ acceleration), task = knee-meniscus segmentation Dice}
+
+\paragraph{Worked example 3: PET phantom quantification at 25\% activity.} On the NEMA NU-2 IQ phantom~\citep{nema_nu2} at full and reduced-activity acquisitions, we measured contrast-recovery coefficients for the six standard sphere sizes. Results in Table~\ref{tab:pet_results}.
+
+\todoTable{tab:pet_results}{Signal-equivalence credentials for PET reconstruction methods at $r = 0.25$ (25\% injected activity), task = contrast recovery per sphere size}
 
 \paragraph{Cross-modality consistency.} The same Python API call signature (Section~\ref{sec:methods-library}) produces a credential for each modality:
 
@@ -191,7 +208,7 @@ We also define a strictly-stronger \emph{per-patient} formulation:
 \label{def:signal_equiv_per_patient}
 A method $M$ is \emph{per-patient signal-equivalent} to $\Mref$ at level $(r, T, \varepsilon, \alpha)$ over $\Pi$ iff
 \begin{equation}
-    \Pr_{x \sim \Pi}\!\left[ \left| \E_{y \sim \Mred(x)} P(T(y), g(x)) - \E_{y' \sim \Mref(x)} P(T(y'), g(x)) \right| < \varepsilon \right] \geq 1 - \alpha.
+    \Prob_{x \sim \Pi}\!\left[ \left| \E_{y \sim \Mred(x)} P(T(y), g(x)) - \E_{y' \sim \Mref(x)} P(T(y'), g(x)) \right| < \varepsilon \right] \geq 1 - \alpha.
 \end{equation}
 \end{definition}
 
