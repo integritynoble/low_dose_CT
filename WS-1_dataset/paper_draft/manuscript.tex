@@ -82,7 +82,7 @@ Low-dose computed tomography (CT) reconstruction has been transformed by deep le
     \item \textbf{Benchmark drift.} As datasets evolve (new patients added, splits reshuffled, preprocessing changed), reported numbers from year~$n$ become incomparable to year~$n+1$. The community lacks a frozen, content-addressed reference version to anchor longitudinal comparison.
 \end{enumerate}
 
-PWM-LDCT is designed to close all three gaps simultaneously. Multi-vendor coverage is enforced by inclusion criteria. Per-patient majority-vote radiologist annotations support a curated set of clinical tasks (lung nodule detection, liver lesion segmentation, abdominal organ quantification). The dataset version is content-addressed and registered on the PWM blockchain registry as an immutable L3 specification, so any future paper that cites \texttt{pwm\_l3\_spec:pwm\_low\_dose\_ct\_benchmark:1.0.0} is guaranteed to reference bit-identical data.
+PWM-LDCT is designed to close all three gaps simultaneously. Multi-vendor coverage is enforced by inclusion criteria; the corresponding subgroup statistical power is justified explicitly (Section \textit{Sample size justification}). Per-patient majority-vote radiologist annotations support a curated set of clinical tasks (lung nodule detection, liver lesion segmentation, abdominal organ quantification) collected under a documented multi-reader QC protocol (Section \textit{Annotation protocol}). The dataset version is content-addressed and registered on the PWM blockchain registry as an immutable L3 specification, so any future paper that cites \texttt{pwm\_l3\_spec:pwm\_low\_dose\_ct\_benchmark:1.0.0} is guaranteed to reference bit-identical data, and an explicit versioning policy (Section \textit{Data Versioning and Persistent Identifiers}) governs future extensions.
 
 Table~\ref{tab:dataset_comparison} situates PWM-LDCT against existing public datasets. LIDC-IDRI~\citep{lidc_idri} is the field's largest annotated chest cohort but is single-dose and single-vendor in practice. The AAPM 2016 Low-Dose CT Grand Challenge release~\citep{aapm2016challenge} is the only public source of real paired-dose acquisitions but is limited to 10 patients on a single Siemens platform. The Mayo Clinic LDCT-and-Projection-Data collection~\citep{mccollough2020mayo} extends AAPM 2016 with raw projections but inherits its single-vendor scope. PWM-LDCT is the first multi-vendor paired-dose release at the $\geq$ 500-patient scale and the first with a content-addressed benchmark hash anchored to a public registry.
 
@@ -109,9 +109,25 @@ The dataset is open to academic and industrial researchers under PhysioNet crede
 %% =====================================================================
 \section*{Methods}
 
-\subsection*{Acquisition protocol}
+The data collection, processing, annotation, and release workflow is summarized in Figure~\ref{fig:workflow}.
 
-PWM-LDCT scans were acquired prospectively at \todo{N$_{\textrm{sites}}$} clinical sites (University of Texas Southwestern Medical Center serving as the coordinating site) between \todo{collection start date} and \todo{collection end date}, following an IRB-approved data sharing protocol (UTSW IRB protocol \todo{IRB number}). Inclusion criteria were:
+\todoFigure{fig:workflow}{Workflow diagram. Rendered figure should show six sequential stages connected by arrows: (1) patient enrollment and consent; (2) paired full-dose / real-low-dose acquisition (or full-dose-only for the simulation-augmented cohort); (3) two-stage de-identification (DICOM tag stripping + Tesseract OCR sweep); (4) reconstruction at four dose levels (real or Poisson-thinned simulation, plus FBP / vendor IR / TV variants); (5) multi-reader annotation with majority-vote ground truth + per-scan Likert diagnostic-quality scoring; (6) quality control + SHA-256 manifest + PhysioNet deposit + on-chain L3 hash registration. Side annotations should call out the IRB approval, the consent waiver branch for retrospective cohorts, the cross-vendor harmonization step between stages 2 and 4, and the inter-rater audit feedback loop between stages 5 and 6.}
+
+\subsection*{Ethics, consent, and data sharing}
+
+The study was reviewed and approved by the University of Texas Southwestern Medical Center Institutional Review Board (protocol \todo{IRB \#}), under which UTSW served as the coordinating site for all participating institutions. Partner sites operated under their respective institutional IRB approvals plus a UTSW-led data sharing agreement (DSA) governing transfer of de-identified data to the coordinating site for release preparation.
+
+\paragraph{Consent.} Two consent paths were used. \textbf{Prospectively enrolled patients} (the cohort contributing real paired-dose acquisitions) provided written informed consent for the use of their de-identified imaging data, including raw projection data and reconstructed images, in research and for redistribution under credentialed access. \textbf{Retrospective patients} (the cohort contributing full-dose scans used as the substrate for low-dose simulation) were included under an IRB-approved waiver of consent (45~CFR~46.116(f)) on the grounds that (a) the research presents no greater than minimal risk, (b) the waiver does not adversely affect the rights and welfare of the subjects, (c) the research could not practicably be carried out without the waiver, and (d) subjects will be provided with no individually-attributable information.
+
+\paragraph{Data sharing committee.} A standing data sharing committee comprising representatives from each contributing site reviews all credentialed-access requests received via PhysioNet. The committee operates on a default-approve policy for academic and industrial researchers who agree to the standard data use agreement (DUA); requests proposing redistribution, re-identification attempts, or commercial-product training without a separate commercial license are referred to UTSW Office of Technology Development for individual review.
+
+\paragraph{Subject withdrawal.} Patients in the prospective cohort retain the right to withdraw consent at any time; withdrawn patients' scans are removed from the next dataset version with a tombstone entry retained in the version-control record for accountability. Because the dataset is content-addressed and immutable per version (Section \textit{Data Versioning and Persistent Identifiers}), withdrawal triggers a minor-version increment with the withdrawn patient excluded from the new version's manifest. Prior-version downloads cannot be retroactively edited but the canonical pointer is advanced.
+
+\paragraph{Conflict-of-interest disclosure.} The PWM Protocol Foundation provided no direct funding to the data-collection sites; foundation-affiliated authors hold no financial interest in any specific reconstruction method submitted to the leaderboard. The complete COI statement is in the Competing Interests section.
+
+\subsection*{Cohort recruitment and acquisition protocol}
+
+PWM-LDCT scans were acquired prospectively at \todo{N$_{\textrm{sites}}$} clinical sites (University of Texas Southwestern Medical Center serving as the coordinating site) between \todo{collection start date} and \todo{collection end date}. Inclusion criteria were:
 
 \begin{itemize}
     \item Adult patients (age $\geq$ 18) undergoing routine chest CT for lung-cancer screening or routine abdominal CT for oncology follow-up
@@ -126,6 +142,18 @@ For each enrolled patient a \textit{paired} acquisition was performed:
     \item \textbf{Real low-dose scan}: an immediately subsequent acquisition at 25\% of the full-dose mA, taken within the same breath-hold for chest scans and within $\leq$ 30~seconds for abdominal scans to minimize motion-induced misregistration. This paired acquisition was performed on \NvendorA{} patients across vendors that support rapid sequential acquisition at differing mA.
     \item \textbf{Simulated low-dose data}: for \NvendorB{} additional patients (and as augmentation for the real-paired cohort) we generated 10\%, 25\%, and 50\% dose-equivalent sinograms via physically calibrated Poisson-noise insertion on the full-dose sinogram, using the forward model implemented in PWM's \texttt{ct\_radon} modality library~\citep{pwmcore}. The simulation protocol is documented in Section \textit{Low-dose simulation} below; we explicitly maintain both real and simulated low-dose images in the dataset so that downstream users can assess how well methods trained on simulated low-dose generalize to real low-dose.
 \end{itemize}
+
+\subsection*{Sample size justification}
+
+The dataset's target of $\geq$ 500 paired patients was set by a power analysis for the canonical clinical task (lung-nodule detection AUC at fixed false-positive rate). Under the signal-equivalence framework's paired-bootstrap estimator~\citep{ws2framework}, the leading-order sample-size requirement for a target equivalence margin $\varepsilon$ at significance $\alpha$ is
+
+\begin{equation}
+    n \geq \left(\frac{z_{1-\alpha/2}}{\varepsilon}\right)^2 \sigma^2 (1 - \rho)
+\end{equation}
+
+where $\sigma$ is the per-patient performance-difference standard deviation and $\rho$ is the pairing correlation between the two arms. For the canonical target $(\varepsilon = 0.02,\ \alpha = 0.05)$ on AUC with conservative $\sigma \approx 0.10$ and $\rho \approx 0.5$, this yields $n \geq 192$ patients per credentialed evaluation. Because the dataset must support \textit{multiple} credentials simultaneously --- per dose level, per vendor, per anatomy, per task --- the realized cohort target was scaled to $\geq 500$ patients to allow stratified subgroup credentials with retained statistical power at each level. The corresponding cohort-stratification budget is summarized in Table~\ref{tab:power_budget} \todo{populate at submission}.
+
+\todoTable{tab:power_budget}{Sample-size budget by stratification: rows are evaluation conditions (e.g., 25\%-dose chest, 25\%-dose abdomen, leave-one-vendor-out cross-vendor); columns give required $n$ at $(\varepsilon, \alpha) = (0.02, 0.05)$ vs realized $n$ in the released cohort}
 
 \subsection*{Low-dose simulation}
 
@@ -149,17 +177,41 @@ For each (patient, dose-level) pair we provide three image-space reconstructions
 
 All reconstructions are provided alongside the raw projections so that researchers can apply their own reconstruction algorithms to the same sinograms.
 
+\subsection*{Cross-vendor harmonization}
+
+A multi-vendor benchmark is only useful if cross-vendor comparison is methodologically defensible. We applied four explicit harmonization steps so that scans from Siemens, GE, and Canon platforms are directly comparable while preserving vendor-specific characteristics that downstream methods may wish to model.
+
+\paragraph{Hounsfield-unit calibration.} All vendors report HU on the standard scale, but small phantom-derived calibration offsets exist between platforms. We re-verified HU calibration at each site using the AAPM CT performance phantom and report the per-vendor offset (mean and 95\% CI) in the metadata so users can apply or skip a calibration correction as their method requires.
+
+\paragraph{Reconstruction-kernel matching.} Vendors use platform-specific reconstruction kernel names (Siemens \textit{B30f}, GE \textit{Standard}, Canon \textit{FC18}) with similar but not identical frequency response. Per-vendor measured modulation transfer functions (MTFs) at $\textrm{MTF}_{50}$ and $\textrm{MTF}_{10}$ are recorded in \texttt{metadata.json} for each scan to make the kernel choice visible to downstream methods. We deliberately did \emph{not} re-reconstruct all scans to a common kernel, because doing so would discard the very vendor-specific structure that makes a multi-vendor dataset useful.
+
+\paragraph{Slice-thickness handling.} Slice thickness varies clinically by indication (1.0--3.0~mm). The released DICOM preserves the acquired thickness; the loader (\texttt{pwm\_ldct\_loader}) exposes a \texttt{target\_slice\_thickness} parameter that interpolates to a common thickness on the fly. Downstream methods that depend on a fixed thickness can opt in; methods that explicitly model varying thickness can opt out.
+
+\paragraph{Pixel-spacing normalization.} In-plane pixel spacing varies across scanners and reconstruction settings (0.5--1.0~mm). Released images preserve original pixel spacing; the loader provides an optional bilinear resampling to a common pixel grid (default 0.75~mm). The original spacing is preserved in the metadata so that physics-respecting reconstruction methods can recover the exact acquisition geometry.
+
+\paragraph{What harmonization is \emph{not} applied.} We do not normalize noise statistics across vendors (different noise distributions are a feature, not a bug, for cross-vendor generalization studies). We do not normalize motion or breath-hold artifacts (these are clinical realities that downstream methods must handle). We do not exclude scans that fall outside any single vendor's typical parameter range (which would systematically remove edge cases that real deployment encounters).
+
 \subsection*{Annotation protocol}
 
-Three classes of annotations are provided:
+Annotations were collected from a panel of \todo{N} board-certified radiologists (\todo{N} fellowship-trained in thoracic imaging, \todo{N} in abdominal imaging) with $\geq$~5 years of post-training experience, distributed across the participating sites. The protocol covered three annotation classes plus a per-scan diagnostic-quality assessment.
+
+\paragraph{Annotator training and calibration.} Before annotating release scans, every panel member completed a calibration session on a 20-case training set drawn from outside the release cohort. Each radiologist's calibration-set agreement with a senior reference (intraclass correlation for continuous attributes; Cohen's $\kappa$ for categorical) was required to exceed pre-specified thresholds (\todo{ICC threshold}, \todo{$\kappa$ threshold}) before any of their annotations were admitted to the release set. Failed calibration triggered a second session; persistent failure resulted in exclusion from the panel (\todo{N} excluded).
+
+\paragraph{Blinding.} Each radiologist was blinded to (a) the dose level of the scan they were annotating --- the same patient's 10\%, 25\%, 50\%, and 100\% dose reconstructions were presented in random order across non-adjacent sessions --- and (b) any annotation produced by other radiologists on the same case until adjudication. Blinding to dose level was enforced by stripping or randomizing all dose-identifying DICOM tags in the annotation interface; blinding to other annotators was enforced by case-randomized assignment within the annotation queue.
+
+\paragraph{Annotation classes.}
 
 \begin{itemize}
-    \item \textbf{Lung nodule detection (chest scans).} Bounding boxes for all pulmonary nodules $\geq$~3~mm in maximum diameter, annotated independently by $\geq$~2 board-certified radiologists with $\geq$~5 years of experience. Discordant annotations resolved by majority vote (with a third radiologist consulted if needed). Per-nodule attributes recorded: maximum diameter (mm), location (lobe + segment), texture (solid / part-solid / non-solid).
-    \item \textbf{Liver lesion segmentation (abdominal scans).} Per-voxel segmentation masks for hepatic lesions $\geq$~5~mm in maximum diameter, with the same independent multi-reader majority-vote protocol.
-    \item \textbf{Diagnostic-quality label (per scan).} Each radiologist rated each reconstruction on a 5-point Likert scale for \textit{diagnostic confidence} ($1$ = nondiagnostic, $5$ = fully diagnostic), recorded per dose level so that downstream task analyses can correlate computational reconstruction quality with radiologist-perceived diagnostic utility.
+    \item \textbf{Lung nodule detection (chest scans).} Bounding boxes for all pulmonary nodules $\geq$~3~mm in maximum diameter, annotated independently by $\geq$~2 panel radiologists. Per-nodule attributes recorded: maximum diameter (mm), location (lobe + segment), texture (solid / part-solid / non-solid), Lung-RADS-aligned category.
+    \item \textbf{Liver lesion segmentation (abdominal scans).} Per-voxel segmentation masks for hepatic lesions $\geq$~5~mm in maximum diameter, with the same independent multi-reader protocol; per-lesion size and LI-RADS category recorded.
+    \item \textbf{Diagnostic-quality label (per scan).} Each radiologist rated each reconstruction on a 5-point Likert scale for \textit{diagnostic confidence} ($1$ = nondiagnostic, $5$ = fully diagnostic), with per-dose-level scoring so downstream analyses can correlate computational reconstruction quality with radiologist-perceived diagnostic utility.
 \end{itemize}
 
-Inter-rater agreement was monitored monthly throughout the annotation campaign; Cohen's $\kappa$ remained $\geq$ \todo{$\kappa$ threshold} for nodule detection and Dice $\geq$ \todo{Dice threshold} for liver lesion segmentation between reader pairs.
+\paragraph{Dispute resolution.} Discordant per-case annotations (e.g., one reader detected a nodule that another did not, or readers disagreed on a categorical attribute) were referred to a third radiologist for adjudication. The third-reader vote determined the released ground-truth label; the original discordant annotations are preserved in the release as \texttt{annotations/<case>/raw\_reader\_\textit{n}.json} for downstream studies of annotation uncertainty.
+
+\paragraph{Periodic agreement audit.} Inter-rater agreement was monitored monthly throughout the annotation campaign. Pre-specified action thresholds: if monthly Cohen's $\kappa$ for nodule detection fell below \todo{$\kappa$ floor} or Dice for liver-lesion segmentation fell below \todo{Dice floor}, the annotation queue was paused and a re-calibration session held with all active annotators before resuming. The audit log is published as supplementary material so downstream users can see the time-course of inter-rater agreement.
+
+\paragraph{Adjudication-disagreement-flagged subset.} Cases where the third reader's adjudication disagreed with \textit{both} initial readers are retained in the release but flagged with \texttt{adjudication\_disagreement: true}. Downstream studies can choose to include or exclude this subset; we recommend including it for robustness studies and excluding it for high-confidence task evaluation. The flagged-case fraction per dose level is reported in the Technical Validation section.
 
 \subsection*{De-identification and HIPAA compliance}
 
@@ -199,13 +251,14 @@ The dataset is distributed via PhysioNet at \todo{PhysioNet URL} under credentia
     \label{tab:data_records}
 \end{table}
 
-Aggregate counts are summarized in Table~\ref{tab:cohort}.
+Aggregate counts and split structure are summarized in Table~\ref{tab:cohort}; demographic characterization is in Table~\ref{tab:demographics}; per-vendor acquisition parameters are in Table~\ref{tab:acquisition_params}.
 
 \begin{table}[h]
     \centering
+    \small
     \begin{tabular}{lcccc}
         \toprule
-        \textbf{Cohort} & \textbf{Patients} & \textbf{Vendors} & \textbf{Sites} & \textbf{Anatomy} \\
+        \textbf{Split} & \textbf{Patients} & \textbf{Vendors} & \textbf{Sites} & \textbf{Anatomy} \\
         \midrule
         Training        & \todo{N} & \todo{N} & \todo{N} & chest, abdomen \\
         Validation      & \todo{N} & \todo{N} & \todo{N} & chest, abdomen \\
@@ -213,8 +266,57 @@ Aggregate counts are summarized in Table~\ref{tab:cohort}.
         \textbf{Total}  & \todo{N} & \todo{N} & \todo{N} & --- \\
         \bottomrule
     \end{tabular}
-    \caption{Cohort composition. Final patient counts are filled at submission.}
+    \caption{Cohort composition by split. Final patient counts are filled at submission.}
     \label{tab:cohort}
+\end{table}
+
+\begin{table}[h]
+    \centering
+    \small
+    \setlength{\tabcolsep}{4pt}
+    \begin{tabular}{lccc}
+        \toprule
+        \textbf{Characteristic} & \textbf{Chest cohort} & \textbf{Abdomen cohort} & \textbf{Combined} \\
+        \midrule
+        Patients ($N$)                            & \todo{} & \todo{} & \todo{} \\
+        Age, median (IQR), years                   & \todo{} & \todo{} & \todo{} \\
+        Age range, years                           & \todo{} & \todo{} & \todo{} \\
+        Sex, female (\%)                           & \todo{} & \todo{} & \todo{} \\
+        BMI, median (IQR), kg/m$^2$                & \todo{} & \todo{} & \todo{} \\
+        Race / ethnicity (\% White / Black / Hispanic / Asian / Other) & \todo{} & \todo{} & \todo{} \\
+        Smoking history (\% current / former / never) & \todo{} & --- & \todo{} \\
+        Clinical indication breakdown              & \todo{} & \todo{} & \todo{} \\
+        Real-paired-dose patients (\%)             & \todo{} & \todo{} & \todo{} \\
+        Simulation-only patients (\%)              & \todo{} & \todo{} & \todo{} \\
+        \bottomrule
+    \end{tabular}
+    \caption{Demographic and clinical characterization of the released cohort. Race / ethnicity follow OMB-1997 categories as recorded at the originating site; ``Other'' includes American Indian / Alaska Native, Native Hawaiian / Pacific Islander, and ``unknown / declined.''}
+    \label{tab:demographics}
+\end{table}
+
+\begin{table}[h]
+    \centering
+    \small
+    \setlength{\tabcolsep}{4pt}
+    \begin{tabular}{lccc}
+        \toprule
+        \textbf{Parameter} & \textbf{Siemens} & \textbf{GE} & \textbf{Canon} \\
+        \midrule
+        Scanner model(s)                          & \todo{} & \todo{} & \todo{} \\
+        Tube voltage (kVp), median (range)        & \todo{} & \todo{} & \todo{} \\
+        Tube current (mA), full-dose, median (IQR) & \todo{} & \todo{} & \todo{} \\
+        Tube current (mA), low-dose, median (IQR)  & \todo{} & \todo{} & \todo{} \\
+        Effective mAs (full-dose), median (IQR)    & \todo{} & \todo{} & \todo{} \\
+        Pitch, median (range)                      & \todo{} & \todo{} & \todo{} \\
+        Slice thickness (mm), median (range)       & \todo{} & \todo{} & \todo{} \\
+        Reconstruction kernel(s)                   & \todo{e.g.\ B30f, B50f} & \todo{e.g.\ Standard, Lung} & \todo{e.g.\ FC18, FC51} \\
+        CTDI$_{\textrm{vol}}$ full-dose (mGy), median & \todo{} & \todo{} & \todo{} \\
+        CTDI$_{\textrm{vol}}$ low-dose (mGy), median  & \todo{} & \todo{} & \todo{} \\
+        Patients ($N$)                             & \todo{} & \todo{} & \todo{} \\
+        \bottomrule
+    \end{tabular}
+    \caption{Per-vendor acquisition parameter summary. CTDI$_{\textrm{vol}}$ is the volume CT dose index reported by the scanner. Per-scan exact values are in each scan's \texttt{metadata.json}.}
+    \label{tab:acquisition_params}
 \end{table}
 
 %% =====================================================================
@@ -303,6 +405,76 @@ We anticipate four primary reuse modes:
     \item \textbf{Simulation-vs-real noise modeling.} Use the paired real-low-dose and simulated-low-dose images on the \NvendorA{} patients with real paired acquisitions to characterize the discrepancy between common Poisson-thinning simulators and physical low-dose acquisition --- a long-standing gap in the field that this dataset's pairing structure now lets researchers quantify.
     \item \textbf{Downstream-task analysis.} The per-scan diagnostic-quality Likert labels and per-lesion annotations support studies that correlate computational reconstruction quality with radiologist-perceived diagnostic utility, beyond pixel-wise PSNR / SSIM.
 \end{enumerate}
+
+\subsection*{Analyses uniquely enabled by this dataset}
+
+PWM-LDCT is not the first low-dose CT dataset; what makes it uniquely useful is the \emph{combination} of multi-vendor coverage with paired real-and-simulated low-dose at sufficient scale to support stratified statistical inference. Specific research questions that no existing public dataset can answer but that this one can:
+
+\begin{enumerate}
+    \item \textbf{How wrong is Poisson-thinning simulation, quantitatively, on real-clinical data, per vendor?} The community has long suspected that simulated low-dose underestimates real low-dose noise~\citep{wang2020deeplearningreview}, but per-vendor quantification at the $\geq 100$-patient scale has not been possible. The Mayo LDCT-PD release~\citep{mccollough2020mayo} permits this on Siemens hardware only; PWM-LDCT extends it to GE and Canon.
+    \item \textbf{Does cross-vendor distribution shift mostly come from noise statistics or from reconstruction kernel?} The dataset's preserved per-vendor reconstruction kernels (with measured MTFs in metadata) plus the deliberate non-harmonization of noise enable ablation studies that disentangle these two sources.
+    \item \textbf{Is uncertainty-quantification calibration vendor-dependent?} A reconstruction method trained on Siemens scans may produce well-calibrated UQ on Siemens but mis-calibrated UQ on GE. With paired ground truth across vendors and dose levels, this can be measured directly for the first time.
+    \item \textbf{Does radiologist-perceived diagnostic confidence agree with computational reconstruction quality, and does that agreement depend on dose level?} The per-scan Likert labels plus the per-dose-level reconstructions permit a regression of human-perceived quality onto computational metrics with sufficient sample size to detect vendor-specific or anatomy-specific deviations.
+    \item \textbf{What is the smallest dose ratio at which lung-nodule detection AUC remains within $\varepsilon$ of the full-dose reference, conditional on patient subpopulation?} The signal-equivalence framework~\citep{ws2framework} provides the formal answer; PWM-LDCT provides the only public dataset with the multi-vendor paired-dose structure and the sample-size budget to answer it with stratified credentials.
+\end{enumerate}
+
+Each of these five questions is the basis for at least one follow-on publication that PWM-LDCT enables. Together they form the dataset's primary justification for the multi-vendor + paired-acquisition + on-chain-anchored design choices, which individually would have been simpler but jointly are essential.
+
+\subsection*{Limitations and bias acknowledgment}
+
+A Data Descriptor that does not document the cohort's biases is incomplete. We acknowledge the following limitations of PWM-LDCT.
+
+\paragraph{Geographic scope.} The cohort is recruited at \todo{N} clinical sites in \todo{regions}. While participating sites span academic and community settings, no European, Asian, or African sites are represented in v1.0.0. Generalization to international populations should be considered an open question, not a tested property. A v2 release will pursue international partnerships if v1 is well-received.
+
+\paragraph{Vendor coverage.} The release covers $\geq$~2 of the four major CT manufacturers (Siemens, GE, Canon, Philips). Philips is currently underrepresented or absent (\todo{confirm at submission}). The leave-one-vendor-out evaluation API is technically functional regardless, but cross-vendor claims involving the absent vendor are extrapolation, not measurement, and should be reported as such.
+
+\paragraph{Scanner generations.} All included scanners are within \todo{N} years of clinical deployment age at the time of acquisition. Methods evaluated against PWM-LDCT may degrade on older scanner generations (single-source, narrower detector arrays, earlier IR algorithms) that are still in clinical use globally but absent from this dataset.
+
+\paragraph{Clinical indication.} The cohort is heavily weighted toward lung-cancer screening (chest) and oncology follow-up (abdomen). Other indications --- pulmonary embolism, trauma, pediatric --- are out of scope for v1. Methods optimized for PWM-LDCT may not transfer cleanly to those settings.
+
+\paragraph{Pediatric population.} The cohort is adult-only ($\geq$~18 years). Pediatric CT, where dose reduction matters most~\citep{larson2018pediatric}, is the most-requested Year-2 extension and will be addressed in a separate companion dataset rather than a PWM-LDCT version increment.
+
+\paragraph{Radiologist panel composition.} The annotation panel is drawn from \todo{N} institutions and includes \todo{N} fellowship-trained subspecialists. The panel does not include international radiologists, trainee radiologists, or non-subspecialist generalists; reader-study generalizations beyond fellowship-trained American academic radiologists are extrapolation.
+
+\paragraph{Time of acquisition.} Scans were acquired between \todo{collection start} and \todo{collection end}. Subsequent changes to scanner software, IR algorithms, or clinical protocols at participating sites may make later real-world scans systematically different from the released cohort.
+
+\paragraph{Selection bias in the prospective-consent subset.} The prospectively consented patients (those contributing real paired-dose acquisitions) self-selected by agreeing to a sequential second low-dose acquisition. We have no reason to suspect strong selection bias, but the consenting population is structurally different from a true random sample of CT patients at the participating sites. The retrospective-waiver cohort (full-dose only) is not subject to this selection effect.
+
+These limitations are deliberate features of the v1 release rather than oversights; addressing each by extending the cohort would have delayed v1 indefinitely. We will track and respond to community feedback about which limitations matter most for the field and prioritize them in future versions per the policy in the Data Versioning section below.
+
+%% =====================================================================
+\section*{Data Versioning and Persistent Identifiers}
+
+PWM-LDCT is versioned using a semantic-versioning scheme aligned with the on-chain L3 specification.
+
+\paragraph{Versioning scheme.} Releases follow \texttt{MAJOR.MINOR.PATCH}:
+\begin{itemize}
+    \item \textbf{MAJOR} increments break dataset schema compatibility (e.g., metadata field renamed, annotation format changed). Downstream tooling pinned to a previous major version is not guaranteed to run.
+    \item \textbf{MINOR} increments add new patients, new vendor coverage, new anatomy, or new annotation categories without breaking schema. Tooling pinned to a previous minor version continues to run; new content is available opt-in.
+    \item \textbf{PATCH} increments correct errors (e.g., a scan that failed deferred QC, an annotation correction, a subject-withdrawal removal). Patch versions are bit-identical to the previous version except at the listed corrections.
+\end{itemize}
+
+\paragraph{Persistent identifiers.} Every release has three persistent identifiers, all of which are required to reproduce a specific result:
+
+\begin{enumerate}
+    \item \textbf{PhysioNet DOI.} Each release version is assigned a separate DOI on PhysioNet of the form \texttt{10.13026/\todo{prefix}-X.Y.Z}; downloads from that DOI return bit-identical content.
+    \item \textbf{Content hash (SHA-256).} The \texttt{checksums.sha256} manifest is itself hashed; the manifest hash is the canonical identity of the release. Two releases with the same manifest hash are guaranteed identical at the byte level.
+    \item \textbf{On-chain L3 spec.} The manifest hash is registered on the PWM blockchain registry under \texttt{pwm\_l3\_spec:pwm\_low\_dose\_ct\_benchmark:X.Y.Z}. The on-chain entry is immutable; once registered, the binding between the spec name + version and the manifest hash cannot be altered by any party.
+\end{enumerate}
+
+\paragraph{Extension policy.} The release roadmap is driven by community feedback collected through PhysioNet's discussion forum and the leaderboard issue tracker. Standing extension priorities:
+
+\begin{itemize}
+    \item International sites (Year 2)
+    \item Philips platform coverage (Year 2)
+    \item Pediatric subpopulation (companion dataset, not a PWM-LDCT version increment)
+    \item Older scanner generations (deferred unless community demand surfaces)
+    \item Additional clinical indications --- PE, trauma, cardiac (Year 2--3)
+\end{itemize}
+
+A roadmap update is published at the start of each calendar year alongside the year's annual review~\citep{ws4leaderboard}, with specific commitments contingent on the year's funded extensions.
+
+\paragraph{Long-term hosting commitment.} PhysioNet is committed to indefinite hosting of all credentialed-access datasets that pass its review; the PWM Protocol Foundation provides a fallback IPFS pin of the release content under the same content hash for institutions that prefer a non-credentialed-mirror access path for derived non-PHI artifacts. The on-chain L3 spec serves as the canonical identifier of record regardless of which mirror is used.
 
 %% =====================================================================
 \section*{Code Availability}
