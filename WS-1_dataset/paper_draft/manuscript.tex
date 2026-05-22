@@ -67,7 +67,7 @@
 
 %% =====================================================================
 \begin{abstract}
-\noindent Three public low-dose CT (LDCT) datasets --- LIDC-IDRI~\citep{lidc_idri}, the 2016 AAPM-Mayo Low-Dose CT Grand Challenge~\citep{aapm2016challenge}, and the Mayo LDCT-and-Projection-Data collection~\citep{mccollough2020mayo} --- collectively contain over 1{,}300 patient scans relevant to low-dose CT reconstruction research, yet they are distributed in incompatible formats, with heterogeneous annotation conventions, no shared content-addressed versioning, and no formal credential framework against which methods can be compared. The result is per-project re-implementation of preprocessing, unreliable cross-paper performance comparisons, and an inability to anchor benchmark numbers to a frozen reference. We present \textbf{PWM-LDCT v0.5}, a unified content-addressed harmonization of these three public datasets. The release provides a single pip-installable Python loader (\texttt{pwm\_ldct\_loader}) that surfaces all three sources under one schema; three Docker preprocessing pipelines that produce bit-identical HDF5 shards from each source's raw distribution; majority-vote multi-task annotations harmonized from the existing LIDC nodule annotations, with targeted top-up annotation on the AAPM and Mayo cases that lack equivalent labels; baseline reproductions of four community-standard reconstruction methods with bit-identical re-execution; optional 5-tuple credential artifacts for each baseline under a companion signal-equivalence framework (manuscript in preparation,~\citealt{ws2framework}); and a SHA-256 content hash of the unified manifest registered as an immutable L3 specification on the PWM blockchain registry under \texttt{pwm\_l3\_spec:pwm\_low\_dose\_ct\_v0\_5:0.5.0}. PWM-LDCT v0.5 is designed as the substrate for the forthcoming PWM Low-Dose CT Challenge and as a validation cohort for the companion signal-equivalence framework (both in preparation,~\citealt{ws4leaderboard,ws2framework}); the descriptor's claims (harmonization, content-addressing, annotation reuse and top-up, multi-source loader, baseline reproducibility) stand independently of those companion artifacts. v0.5 makes no claims of multi-vendor real-paired-dose coverage --- all real paired-dose acquisitions in v0.5 are from Siemens hardware via the AAPM and Mayo sources. A planned v1.0 release with prospectively-acquired multi-vendor multi-site clinical data addresses that gap as a separate follow-up.
+\noindent Three public low-dose CT (LDCT) datasets --- LIDC-IDRI~\citep{lidc_idri}, the 2016 AAPM-Mayo Low-Dose CT Grand Challenge~\citep{aapm2016challenge}, and the Mayo LDCT-and-Projection-Data collection~\citep{mccollough2020mayo} --- collectively contain over 1{,}300 patient scans relevant to low-dose CT reconstruction research, yet they are distributed in incompatible formats, with heterogeneous annotation conventions, no shared content-addressed versioning, and no formal credential framework against which methods can be compared. The result is per-project re-implementation of preprocessing, unreliable cross-paper performance comparisons, and an inability to anchor benchmark numbers to a frozen reference. We present \textbf{PWM-LDCT v0.5}, a unified content-addressed harmonization of these three public datasets. The release provides a single pip-installable Python loader (\texttt{pwm\_ldct\_loader}) that surfaces all three sources under one schema; three Docker preprocessing pipelines that produce bit-identical HDF5 shards from each source's raw distribution; majority-vote multi-task annotations harmonized from the existing LIDC nodule annotations, with targeted top-up annotation on the AAPM and Mayo cases that lack equivalent labels; baseline reproductions of four community-standard reconstruction methods with bit-identical re-execution; optional 5-tuple credential artifacts for each baseline under a companion signal-equivalence framework (manuscript in preparation,~\citealt{ws2framework}); and a SHA-256 content hash of the unified manifest, mirrored to multiple immutability anchors --- the assigned PhysioNet DOI, an IPFS replica, and a PWM L3 specification entry (\texttt{pwm\_l3\_spec:pwm\_low\_dose\_ct\_v0\_5:0.5.0}) --- so any subsequent paper citing the hash refers to bit-identical content regardless of which anchor is consulted. PWM-LDCT v0.5 is designed as the substrate for the forthcoming PWM Low-Dose CT Challenge and as a validation cohort for the companion signal-equivalence framework (both in preparation,~\citealt{ws4leaderboard,ws2framework}); the descriptor's claims (harmonization, content-addressing, annotation reuse and top-up, multi-source loader, baseline reproducibility) stand independently of those companion artifacts. v0.5 makes no claims of multi-vendor real-paired-dose coverage --- all real paired-dose acquisitions in v0.5 are from Siemens hardware via the AAPM and Mayo sources. A planned v1.0 release with prospectively-acquired multi-vendor multi-site clinical data addresses that gap as a separate follow-up.
 \end{abstract}
 
 %% =====================================================================
@@ -83,7 +83,7 @@ Yet the three sources are not designed to be used together. Three structural gap
     \item \textbf{Benchmark drift.} None of the three sources has a content-addressed version identifier. As papers are written, datasets are silently re-cleaned, re-split, or sub-sampled; a result tied to ``LIDC-IDRI'' in one paper is not guaranteed to be evaluated against the same scans as a result tied to ``LIDC-IDRI'' in another paper a year later.
 \end{enumerate}
 
-\textbf{PWM-LDCT v0.5} closes these three gaps by adding an infrastructure layer over the existing three sources rather than collecting new data. The release provides (a) a unified Python loader that surfaces all three sources under a single schema; (b) Docker preprocessing pipelines that produce bit-identical HDF5 shards from each source's raw distribution; (c) a single content-addressed manifest hashed and registered on the PWM blockchain registry as an immutable L3 specification, so any future paper citing the manifest hash is guaranteed bit-identical content; (d) majority-vote multi-task annotations harmonized from the existing LIDC nodule annotations, with targeted top-up on the AAPM and Mayo cases; and (e) baseline reproductions of four community-standard methods with bit-identical re-execution, with optional 5-tuple credential artifacts under a companion signal-equivalence framework (in preparation,~\citealt{ws2framework}). Table~\ref{tab:source_comparison} summarizes what each source contributes to v0.5.
+\textbf{PWM-LDCT v0.5} closes these three gaps by adding an infrastructure layer over the existing three sources rather than collecting new data. The release provides (a) a unified Python loader that surfaces all three sources under a single schema; (b) Docker preprocessing pipelines that produce bit-identical HDF5 shards from each source's raw distribution; (c) a single content-addressed manifest, identified by a SHA-256 hash that downstream users can verify offline against any locally-built copy, and mirrored to multiple permanent anchors (PhysioNet DOI, IPFS replica, and the PWM L3 specification registry) so that papers citing the manifest hash refer to bit-identical content years from now; (d) majority-vote multi-task annotations harmonized from the existing LIDC nodule annotations, with targeted top-up on the AAPM and Mayo cases; and (e) baseline reproductions of four community-standard methods with bit-identical re-execution, with optional 5-tuple credential artifacts under a companion signal-equivalence framework (in preparation,~\citealt{ws2framework}). Table~\ref{tab:source_comparison} summarizes what each source contributes to v0.5.
 
 \begin{table}[ht]
     \centering
@@ -104,7 +104,7 @@ Yet the three sources are not designed to be used together. Three structural gap
     \label{tab:source_comparison}
 \end{table}
 
-The v0.5 paper's contribution is the harmonization layer + the on-chain anchoring + the credential format, not the underlying scans. The scans themselves already exist in the cited sources, and v0.5 does not redistribute them under different licenses; downstream users still obtain access to each source through that source's own gatekeeper (NBIA for LIDC, Mayo for AAPM 2016 and Mayo LDCT-PD).
+The v0.5 paper's contribution is the harmonization layer, the content-addressed manifest with multi-anchor mirroring (PhysioNet DOI / IPFS / L3 registry), and the credential format --- not the underlying scans. The scans themselves already exist in the cited sources, and v0.5 does not redistribute them under different licenses; downstream users still obtain access to each source through that source's own gatekeeper (NBIA for LIDC, Mayo for AAPM 2016 and Mayo LDCT-PD).
 
 Companion methodological work --- a signal-equivalence evaluation framework~\citep{ws2framework}, an open-source unrolled-iterative reference reconstruction method~\citep{ws3reference}, and the PWM Low-Dose CT Challenge leaderboard~\citep{ws4leaderboard} --- is in preparation and signposted from Usage Notes. PWM-LDCT v0.5's descriptor claims (the harmonization layer, content-addressing, annotation reuse and top-up, multi-source loader, and baseline reproducibility) are self-contained and do not depend on those companion artifacts.
 
@@ -148,13 +148,25 @@ The unified PWM-LDCT v0.5 schema applies the following transformations to each s
 
 \paragraph{Reconstruction-kernel preservation.} Each source uses different vendor-specific reconstruction kernels (LIDC: heterogeneous across LIDC-contributing sites; AAPM 2016 and Mayo LDCT-PD: vendor-standard Siemens kernels). We do \textbf{not} re-reconstruct to a common kernel because doing so would discard the very kernel-specific structure that downstream methods may wish to model. Per-scan kernel metadata is preserved in \texttt{metadata.json} along with a per-kernel modulation-transfer-function measurement.
 
-\paragraph{Low-dose simulation harmonization.} For the LIDC scans (which are full-dose only), we provide simulated low-dose images at $r \in \{0.10, 0.25, 0.50\}$ using the physically-calibrated Poisson-thinning forward model from \texttt{pwm\_core.contrib.modalities.ct\_radon}~\citep{pwmcore}:
+\paragraph{Low-dose simulation harmonization.} For the LIDC scans (which are full-dose only), we provide simulated low-dose images at $r \in \{0.10, 0.25, 0.50\}$ using the physically-calibrated forward model from \texttt{pwm\_core.contrib.modalities.ct\_radon}~\citep{pwmcore}. The model combines Poisson photon-counting noise with an additive electronic-noise floor and ray-dependent incident-photon-count weighting:
 
 \begin{equation}
-    \tilde{s}_{\textrm{low}}(\ell) = -\ln\!\left( \frac{\textrm{Poisson}\!\left(I_0 \cdot r \cdot e^{-s_{\textrm{ref}}(\ell)}\right)}{I_0 \cdot r} \right)
+    N_r(\ell) \sim \textrm{Poisson}\!\big(I_0(\ell) \cdot r \cdot e^{-s_{\textrm{ref}}(\ell)}\big) + \mathcal{N}\!\big(0,\sigma_e^2\big), \qquad \tilde{s}_{\textrm{low}}(\ell) = -\ln\!\left( \frac{\max\!\big(N_r(\ell),\,1\big)}{I_0(\ell) \cdot r} \right)
+    \label{eq:lowdose_sim}
 \end{equation}
 
-where $s_{\textrm{ref}}(\ell)$ is the full-dose log-attenuation projection along ray $\ell$ derived from the LIDC reconstructed image via forward Radon transform, $I_0$ is the calibrated incident photon count (per LIDC scan, derived from acquisition parameters), and $r$ is the dose-reduction ratio. The same simulation is applied to the AAPM and Mayo full-dose scans, so the simulated low-dose distribution is consistent across sources. The AAPM and Mayo \textit{real} low-dose acquisitions are preserved separately so methods can compare simulated against real.
+where $s_{\textrm{ref}}(\ell)$ is the full-dose effective-monochromatic log-attenuation projection along ray $\ell$ obtained by forward Radon transform of the reconstructed image; $I_0(\ell) = I_0^{(0)} \cdot b(\ell)$ is the ray-dependent incident-photon count combining a per-scanner monochromatic-equivalent reference $I_0^{(0)}$ (calibrated from manufacturer-published kVp / mAs / pitch tables) with the scanner's bowtie-filter profile $b(\ell)$ (calibrated from manufacturer-published or in-house phantom measurements); $\sigma_e$ is the per-scanner electronic-noise standard deviation, calibrated from low-flux phantom measurements~\citep{zeng2015nonlocal}; and $r$ is the dose-reduction ratio. The $\max(\cdot,1)$ guard prevents log-of-zero at extreme attenuations. The same forward model is applied to the AAPM and Mayo full-dose scans so the simulated low-dose distribution is consistent across sources, and the AAPM and Mayo \textit{real} low-dose acquisitions are preserved alongside their simulated counterparts so users can directly compare.
+
+\paragraph{Simulation approximations and known limitations.} Equation~\eqref{eq:lowdose_sim} is an effective-monochromatic forward model and does not capture all physical effects of polychromatic CT acquisition. We make four approximations explicit so users can judge applicability:
+
+\begin{itemize}
+    \item \textbf{Monochromatic approximation.} We use a kVp-equivalent effective mean photon energy rather than integrating over a polychromatic X-ray spectrum. This is the standard simplification in published LDCT simulators~\citep{zeng2015nonlocal,wang2020deeplearningreview}; it does not capture beam-hardening artifacts, which therefore appear with the same intensity in both simulated and full-dose images and are not differentially induced by dose reduction.
+    \item \textbf{Bowtie + spectrum from manufacturer tables.} Where the source dataset's DICOM headers do not preserve the per-scan bowtie profile, we fall back to a uniform $b(\ell) \equiv 1$ and flag the affected scans in \texttt{metadata.json}; users can opt to drop these scans from a sensitivity analysis.
+    \item \textbf{Detector quantum efficiency.} Detector QE is folded into the calibrated $I_0^{(0)}$ rather than modeled separately. This is appropriate when downstream evaluation uses an aggregate signal-to-noise metric; users who require explicit DQE modeling (e.g., for detector-comparison studies) should not use these simulated images.
+    \item \textbf{Electronic-noise floor.} The Gaussian electronic-noise term $\mathcal{N}(0,\sigma_e^2)$ is calibrated globally per scanner rather than spatially-varying across the detector array. Position-dependent electronic noise (a $\leq$~5\,\% effect on typical clinical scanners) is not modeled.
+\end{itemize}
+
+The discrepancy between simulated and real low-dose at $r = 0.25$ is quantified on the AAPM 2016 paired-acquisition cohort in the Technical Validation section (Figure~\ref{fig:sim_vs_real_v05}). Users running simulation-vs-real sensitivity studies should consult that figure before drawing conclusions that depend on the simulated images.
 
 \subsection*{Annotation harmonization}
 
@@ -178,6 +190,10 @@ All three source datasets are already de-identified by their original release te
 \end{enumerate}
 
 No PHI was detected in any scan in the v0.5 release; the audit log is published as Supplementary Material.
+
+\subsection*{DICOM conformance}
+
+The harmonized HDF5 shards produced by the preprocessing Dockerfiles are derived from each source's DICOM SOP-class \texttt{CT Image Storage} (UID \texttt{1.2.840.10008.5.1.4.1.1.2}). For AAPM 2016 and Mayo LDCT-PD, the projection-domain sinograms are preserved from each source's research-purpose \texttt{Raw Data Storage} or vendor-equivalent SOP class and are re-serialized as HDF5 with explicit per-axis interpretation in the schema (view, detector channel, row). A side-by-side mapping between source-DICOM tags retained in our metadata whitelist and the harmonized HDF5 attributes is published at \texttt{schema/dicom\_to\_hdf5\_mapping.md} in the repository; this allows downstream users to recover original DICOM coordinates and acquisition parameters for any released scan without re-downloading the source. Patient orientation (\texttt{Patient Position}, \texttt{Image Orientation Patient}) is preserved as released; we do not reorient.
 
 \subsection*{Patient-level data splits}
 
@@ -261,6 +277,30 @@ Per-source acquisition parameters (kVp, mA, pitch, slice thickness, reconstructi
     \label{tab:acquisition_v05}
 \end{table}
 
+Patient-level demographics aggregated from each source's published metadata are summarized in Table~\ref{tab:demographics_v05}. Per-patient demographic fields are surfaced in \texttt{metadata.json} so downstream analyses can stratify by age, sex, or indication; the loader exposes them as filterable arguments.
+
+\begin{table}[ht]
+    \centering
+    \small
+    \setlength{\tabcolsep}{4pt}
+    \begin{tabular}{lcccc}
+        \toprule
+        \textbf{Field} & \textbf{LIDC-IDRI} & \textbf{AAPM 2016} & \textbf{Mayo LDCT-PD} & \textbf{Aggregate} \\
+        \midrule
+        N (patients)                                  & 1{,}018          & 10               & 299              & 1{,}327 \\
+        Age, median (IQR) [yr]                        & \todo{med (IQR)} & \todo{med (IQR)} & \todo{med (IQR)} & \todo{med (IQR)} \\
+        Age, range [yr]                               & \todo{min--max}  & \todo{min--max}  & \todo{min--max}  & \todo{min--max} \\
+        Sex (M / F), n (\%)                           & \todo{m/f (\%)}  & \todo{m/f (\%)}  & \todo{m/f (\%)}  & \todo{m/f (\%)} \\
+        BMI, median (IQR) [kg/m$^2$]                  & \todo{or N/A}    & \todo{or N/A}    & \todo{or N/A}    & \todo{or N/A} \\
+        Scan-date range                               & \todo{yyyy--yyyy} & \todo{yyyy--yyyy} & \todo{yyyy--yyyy} & \todo{yyyy--yyyy} \\
+        Primary indication                            & Lung-cancer screening + nodule eval & Oncology (abdomen) & Oncology (chest + abdomen) & --- \\
+        Geographic origin (sites)                     & US multi-site (LIDC consortium) & Mayo Clinic, Rochester MN & Mayo Clinic, Rochester MN & --- \\
+        \bottomrule
+    \end{tabular}
+    \caption{Patient-level demographics per source. Age, sex, BMI, and scan-date fields are aggregated from each source's published metadata where available; \todo{} entries are populated at submission from the source DICOM headers. Fields not preserved in a source's de-identified release are recorded as N/A. Geographic origin captures the population from which each cohort is sampled and bears on generalizability claims.}
+    \label{tab:demographics_v05}
+\end{table}
+
 %% =====================================================================
 \section*{Technical Validation}
 
@@ -334,7 +374,7 @@ The output \texttt{results.json} should match the published values bit-identical
 
 \subsection*{Submitting to the permanent leaderboard}
 
-Submissions to the PWM Low-Dose CT Challenge leaderboard (forthcoming; described in a companion manuscript in preparation,~\citealt{ws4leaderboard}) will take the form of a PWM RunBundle (Docker image + eval entry point + \texttt{results.json}, with optional 5-tuple credentials under the signal-equivalence framework in preparation,~\citealt{ws2framework}). The Year-1 leaderboard will run against PWM-LDCT v0.5; the v1.0 release will be added as an extended L3 spec when it ships, and submissions can be evaluated against either version. Dataset users who do not wish to participate in the challenge can use the loader and Docker recipes directly --- the leaderboard is an ecosystem add-on, not a prerequisite for using the dataset.
+Submissions to the PWM Low-Dose CT Challenge leaderboard (forthcoming; described in a companion manuscript in preparation,~\citealt{ws4leaderboard}) will take the form of a PWM RunBundle (Docker image + eval entry point + \texttt{results.json}, with optional 5-tuple credentials under the signal-equivalence framework in preparation,~\citealt{ws2framework}). The Year-1 leaderboard will run against PWM-LDCT v0.5; the v1.0 release will be added as a separate release with its own content hash and registry entries when it ships, and submissions can be evaluated against either version. Dataset users who do not wish to participate in the challenge can use the loader and Docker recipes directly --- the leaderboard is an ecosystem add-on, not a prerequisite for using the dataset.
 
 \subsection*{Analyses uniquely enabled by v0.5}
 
@@ -365,22 +405,22 @@ v0.5 is a code-and-metadata release on top of existing public data. Its limitati
 
 \paragraph{No new clinical-quality validation.} Because v0.5 reuses existing annotations rather than collecting under a single panel, the inter-rater variability inherited from LIDC is preserved (and reported) rather than minimized. v1.0's prospective campaign will run a single calibrated panel under uniform protocol.
 
-\paragraph{Reliance on each source's continued availability.} If a source's hosting institution withdraws the dataset, v0.5's manifest still records what was included but the underlying scans become unavailable. The on-chain L3 hash provides a permanent record of what v0.5 \textit{was}; it does not guarantee the scans remain downloadable.
+\paragraph{Reliance on each source's continued availability.} If a source's hosting institution withdraws the dataset, v0.5's manifest still records what was included but the underlying scans become unavailable. The mirrored content hash (PhysioNet DOI / IPFS / L3 registry) provides a permanent record of what v0.5 \textit{was}; it does not guarantee the scans remain downloadable.
 
 %% =====================================================================
 \section*{Data versioning and persistent identifiers}
 
-v0.5 is versioned under the PWM L3 spec scheme. \texttt{MAJOR.MINOR.PATCH} releases follow:
+Each release of PWM-LDCT is uniquely identified by the SHA-256 hash of its \texttt{manifest.sha256} file, which itself hashes every released artifact (Dockerfiles, schema, annotation files, and split files). This content hash is the canonical scientific identifier of the release: any downstream user can locally re-build the artifacts from their source distributions and verify that their local hash matches, with no dependence on any single hosting institution remaining online.
 
-\begin{itemize}
-    \item \textbf{MAJOR} increments break schema compatibility (e.g., metadata field renamed, annotation format changed).
-    \item \textbf{MINOR} increments add new sources, new top-up annotations, or new annotation tasks without breaking schema.
-    \item \textbf{PATCH} increments correct errors (e.g., a scan flagged after PHI re-audit, an annotation correction).
-\end{itemize}
+The content hash is mirrored to three independent immutability anchors so that long-term citation resolves consistently:
 
-The v0.5 release is pinned at \texttt{pwm\_l3\_spec:pwm\_low\_dose\_ct\_v0\_5:0.5.0} on PWM mainnet; the manifest hash uniquely identifies the release content. When v1.0 ships with prospective multi-vendor data, it is registered as a separate L3 spec (\texttt{pwm\_low\_dose\_ct:1.0.0}) rather than as a v0.5 patch increment, because the dataset's scientific claims change qualitatively rather than incrementally.
+\begin{enumerate}
+    \item \textbf{PhysioNet DOI} (primary). The v0.5 release is assigned the DOI \texttt{10.13026/\todo{prefix}-0.5.0}, registered through PhysioNet's standard data-citation pipeline. This is the citation handle reviewers and readers are expected to use.
+    \item \textbf{IPFS replica.} The PWM Protocol Foundation maintains an IPFS replica of the release's code, manifests, and metadata, addressed by the same SHA-256 content hash. This serves as a hosting-institution-independent retrieval path for the same content.
+    \item \textbf{PWM L3 specification entry.} The release is also registered as an L3 specification (\texttt{pwm\_l3\_spec:pwm\_low\_dose\_ct\_v0\_5:0.5.0}) on the PWM Protocol mainnet, which provides a third independent timestamp of the content hash for users who wish to audit version history programmatically.
+\end{enumerate}
 
-A PhysioNet DOI is assigned per release; the v0.5 DOI is \texttt{10.13026/\todo{prefix}-0.5.0}. The PWM Protocol Foundation maintains an IPFS mirror of the release's code and metadata under the content hash; the underlying DICOM scans live with each source's gatekeeper and are not mirrored.
+The scientific contribution is the content hash itself; the three anchors are interchangeable retrieval paths for the same hash, and the descriptor's reproducibility claims do not depend on any single anchor remaining available. Releases are versioned under a \texttt{MAJOR.MINOR.PATCH} scheme: \textbf{MAJOR} increments break schema compatibility (e.g., metadata field renamed, annotation format changed); \textbf{MINOR} increments add new sources or annotation tasks without breaking schema; \textbf{PATCH} increments correct errors (e.g., a scan flagged after PHI re-audit, an annotation correction). When v1.0 ships with prospective multi-vendor data, it is registered as a separate release rather than as a v0.5 patch because the dataset's scientific claims change qualitatively rather than incrementally.
 
 %% =====================================================================
 \section*{Code Availability}
@@ -390,7 +430,7 @@ A PhysioNet DOI is assigned per release; the v0.5 DOI is \texttt{10.13026/\todo{
     \item Preprocessing Dockerfiles: \url{https://github.com/integritynoble/low_dose_CT/tree/main/WS-1_dataset/pipelines/}
     \item Annotation top-up artifacts: \url{https://github.com/integritynoble/low_dose_CT/tree/main/WS-1_dataset/annotations/}
     \item Forward model used for low-dose simulation: \url{https://github.com/integritynoble/pwm/tree/main/packages/pwm_core/contrib/modalities/ct_radon.py}
-    \item On-chain L3 spec hash: \texttt{pwm\_l3\_spec:pwm\_low\_dose\_ct\_v0\_5:0.5.0} on PWM mainnet at \todo{contract address}.
+    \item Manifest SHA-256 content hash: published in the PhysioNet release record. Mirrored anchors --- PhysioNet DOI \texttt{10.13026/\todo{prefix}-0.5.0}, IPFS CID \todo{CID}, and PWM L3 spec entry \texttt{pwm\_l3\_spec:pwm\_low\_dose\_ct\_v0\_5:0.5.0} at \todo{contract address} --- all resolve to the same content.
 \end{itemize}
 
 %% =====================================================================
@@ -421,7 +461,7 @@ v1.0 timing is gated on the new UTSW PI confirmation (Track K dependency), IRB a
 %% =====================================================================
 \section*{Acknowledgments}
 
-We thank the LIDC-IDRI, AAPM 2016, and Mayo LDCT-PD release teams for the underlying scans and the existing annotation infrastructure that v0.5 builds upon. We thank the radiologists who contributed the top-up annotations on AAPM and Mayo chest cases. We thank the PWM Protocol Foundation for the blockchain registry infrastructure and the open-source maintainers of \texttt{pwm\_core}, PyTorch, NumPy, PyDICOM, and Tesseract.
+We thank the LIDC-IDRI, AAPM 2016, and Mayo LDCT-PD release teams for the underlying scans and the existing annotation infrastructure that v0.5 builds upon. We thank the radiologists who contributed the top-up annotations on AAPM and Mayo chest cases. We thank the PWM Protocol Foundation for the content-addressed registry infrastructure and the open-source maintainers of \texttt{pwm\_core}, PyTorch, NumPy, PyDICOM, and Tesseract.
 
 %% =====================================================================
 \bibliographystyle{plainnat}
