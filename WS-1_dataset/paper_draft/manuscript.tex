@@ -178,6 +178,8 @@ We provide three classes of annotations under the v0.5 unified schema:
 
 \paragraph{Annotator training and calibration.} Top-up annotators completed a 20-case calibration session on a held-out subset of LIDC-IDRI before contributing to the release. Calibration-set agreement with the LIDC majority-vote ground truth was required to meet pre-specified thresholds (Cohen's $\kappa \geq$ \todo{$\kappa$ threshold}); annotators not meeting the threshold were excluded.
 
+\paragraph{Ongoing QA loop and adjudication.} The annotation campaign included an ongoing quality-assurance loop. (i) \textit{Drift monitoring.} Every annotator re-annotated a rotating 5-case calibration subset every $\sim$50 cases ($\sim$monthly cadence). If a reader's running $\kappa$ against the calibration majority-vote dropped below the pre-specified threshold, that reader was paused and re-calibrated; all cases annotated since the last passing calibration window were re-annotated by an alternate qualified reader. (ii) \textit{Discordance adjudication.} Cases where the two top-up readers disagreed (non-overlapping bounding boxes, or diameter disagreement $\geq$ 1.5$\times$, or texture-class disagreement) were referred to a third independent radiologist whose label became the released ground truth; the per-reader raw labels are preserved in \texttt{annotations/raw\_per\_reader/} so that downstream uncertainty-aware methods can access reader-level signal. (iii) \textit{Calibration provenance.} Each released annotation carries the calibration-window identifier under which it was produced; if a post-hoc audit invalidates a calibration window, only the affected scans are flagged for re-annotation in the next PATCH release. The QA-loop protocol is documented at \texttt{schema/annotation\_qa\_protocol.md}.
+
 \paragraph{Annotation budget.} Because the v0.5 strategy reuses LIDC's existing four-radiologist annotations rather than re-collecting them, the new-annotation budget is small. Top-up annotation on the AAPM and Mayo subsets cost approximately \todo{\$X} at standard radiologist honorarium rates --- on the order of one or two academic-research-group budgets, rather than the full new-collection budget that v1.0 will require.
 
 \subsection*{De-identification verification}
@@ -304,7 +306,15 @@ Patient-level demographics aggregated from each source's published metadata are 
 %% =====================================================================
 \section*{Technical Validation}
 
-We performed four classes of technical validation on the v0.5 release.
+We performed the following classes of technical validation on the v0.5 release.
+
+\subsection*{Cross-source harmonization validation}
+The harmonization layer's core claim is that the loader's output is consistent across the three source distributions; we validate this quantitatively. For each of the three sources, we compute (i) the post-harmonization HU histogram on a stratified random sample, (ii) the in-plane pixel-spacing distribution, and (iii) the post-thin-series-selection slice-thickness distribution. Cross-source consistency is quantified by the per-pair 1-Wasserstein distance between HU histograms (target: $\leq$ \todo{Wasserstein threshold (HU)}), and by overlap of the spacing and thickness distributions reported in Table~\ref{tab:harmonization_v05}. This is the loader-level analogue of the per-scan Reconstruction-sanity check below: it makes visible whether the harmonization layer succeeds at the population scale, not just per scan.
+
+\todoTable{tab:harmonization_v05}{Cross-source consistency under v0.5 harmonization: per-source HU-histogram 1-Wasserstein distance to the aggregate, pixel-spacing distribution overlap, slice-thickness distribution overlap. Loader cross-validation evidence.}
+
+\subsection*{Annotation-reuse fidelity}
+For the LIDC-IDRI subset we verify that our harmonized nodule majority-vote exactly recovers the published LIDC nodule counts and per-nodule attributes (diameter, location, texture) on a 100-patient random sample, with discrepancies attributable only to documented rounding choices. Mismatched cases (if any) are enumerated in Supplementary Table~\todo{ref}. This is a sanity check that our LIDC annotation harmonization does not silently drift from the published reference.
 
 \subsection*{Reconstruction sanity}
 For every released scan we recomputed the analytical FBP reconstruction from the released sinogram (where sinograms are available --- AAPM and Mayo only) and verified that the recomputed image matches the released reconstruction within $\leq$ \todo{FP tolerance}~HU at every voxel. For the LIDC scans (image-only), we verified that the harmonized HDF5 reconstruction matches the source DICOM at every voxel within an interpolation tolerance documented in the preprocessing pipeline.
@@ -421,6 +431,8 @@ The content hash is mirrored to three independent immutability anchors so that l
 \end{enumerate}
 
 The scientific contribution is the content hash itself; the three anchors are interchangeable retrieval paths for the same hash, and the descriptor's reproducibility claims do not depend on any single anchor remaining available. Releases are versioned under a \texttt{MAJOR.MINOR.PATCH} scheme: \textbf{MAJOR} increments break schema compatibility (e.g., metadata field renamed, annotation format changed); \textbf{MINOR} increments add new sources or annotation tasks without breaking schema; \textbf{PATCH} increments correct errors (e.g., a scan flagged after PHI re-audit, an annotation correction). When v1.0 ships with prospective multi-vendor data, it is registered as a separate release rather than as a v0.5 patch because the dataset's scientific claims change qualitatively rather than incrementally.
+
+\paragraph{Errata, bug-reporting, and data-correction policy.} Errors discovered in a release (e.g., a missed PHI hit, a discordant annotation surviving QA, a Dockerfile reproducibility regression) are reported via GitHub issues at \url{https://github.com/integritynoble/low_dose_CT/issues} with the label \texttt{errata-v0.5}. Each report is triaged within \todo{N} business days; verified errors are batched into a PATCH release that increments the version (e.g., \texttt{0.5.0 -> 0.5.1}), regenerates the content hash, and updates all three immutability anchors. Erratum notes (what changed, why, which scans are affected) are published as Supplementary Material alongside each PATCH release, and a cumulative errata changelog is maintained at \texttt{ERRATA.md} in the repository. Subscribers to the release mailing list (sign-up at the PhysioNet listing) are notified of every PATCH release. Prior PATCH releases remain resolvable via their content hashes so that papers citing an earlier version remain reproducible; we do not retract or rewrite historical versions.
 
 %% =====================================================================
 \section*{Code Availability}
