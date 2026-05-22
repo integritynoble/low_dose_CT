@@ -104,7 +104,7 @@ Yet the three sources are not designed to be used together. Three structural gap
     \label{tab:source_comparison}
 \end{table}
 
-The v0.5 paper's contribution is the harmonization layer, the content-addressed manifest with multi-anchor mirroring (PhysioNet DOI / IPFS / L3 registry), and the credential format --- not the underlying scans. The scans themselves already exist in the cited sources, and v0.5 does not redistribute them under different licenses; downstream users still obtain access to each source through that source's own gatekeeper (NBIA for LIDC, Mayo for AAPM 2016 and Mayo LDCT-PD).
+The v0.5 paper's contribution is the harmonization layer, the content-addressed manifest with multi-anchor mirroring (PhysioNet DOI / IPFS / L3 registry), and the credential format --- not the underlying scans. The scans themselves already exist in the cited sources, and v0.5 does not redistribute them under different licenses; downstream users still obtain access to each source through that source's own gatekeeper (NBIA for LIDC, Mayo Clinic for AAPM 2016, TCIA for Mayo LDCT-PD).
 
 Companion methodological work --- a signal-equivalence evaluation framework~\citep{ws2framework}, an open-source unrolled-iterative reference reconstruction method~\citep{ws3reference}, and the PWM Low-Dose CT Challenge leaderboard~\citep{ws4leaderboard} --- is in preparation and signposted from Usage Notes. PWM-LDCT v0.5's descriptor claims (the harmonization layer, content-addressing, annotation reuse and top-up, multi-source loader, and baseline reproducibility) are self-contained and do not depend on those companion artifacts.
 
@@ -118,7 +118,7 @@ PWM-LDCT v0.5 does not collect new data. All scans are sourced from three existi
 \begin{itemize}
     \item \textbf{LIDC-IDRI}~\citep{lidc_idri}: CC BY 3.0 with attribution requirement; no redistribution restriction. PWM-LDCT v0.5 cites LIDC-IDRI per the attribution requirement and does not redistribute the underlying DICOM files; users download from NBIA directly.
     \item \textbf{AAPM 2016 Low-Dose CT Grand Challenge}~\citep{aapm2016challenge}: research-use license via Mayo Clinic data-sharing agreement; no redistribution. PWM-LDCT v0.5 cites the source and provides our preprocessing recipe + harmonized manifest; users obtain DICOM access through the Mayo gatekeeper.
-    \item \textbf{Mayo LDCT-and-Projection-Data}~\citep{mccollough2020mayo}: TCIA credentialed access; no redistribution. Same access pattern as AAPM 2016.
+    \item \textbf{Mayo LDCT-and-Projection-Data}~\citep{mccollough2020mayo}: TCIA credentialed access; no redistribution. Users obtain DICOM access through TCIA.
 \end{itemize}
 
 No UTSW IRB is required for v0.5 because no new data are collected and the source datasets are already de-identified to HIPAA Safe Harbor standards by their original release teams. v0.5 is published under the PhysioNet model as a code-and-metadata release; users obtain the underlying scans through each source's own access channel and then run our preprocessing pipelines locally.
@@ -170,7 +170,7 @@ The discrepancy between simulated and real low-dose at $r = 0.25$ is quantified 
 
 \subsection*{Annotation harmonization}
 
-We provide three classes of annotations under the v0.5 unified schema:
+We provide two annotation classes under the v0.5 unified schema (lung-nodule detection and diagnostic-quality Likert), plus the QA protocol that produced them:
 
 \paragraph{Lung-nodule detection (chest scans).} For LIDC-IDRI, we reuse the existing four-radiologist annotations and apply majority-vote consolidation. For the AAPM 2016 and Mayo LDCT-PD chest cases that lack equivalent annotations, we performed targeted top-up annotation by $\geq$ 2 board-certified radiologists with $\geq$ 5 years of experience, following the LIDC nodule-annotation protocol (bbox + diameter + texture + location), so the harmonized annotation convention is consistent across sources.
 
@@ -225,6 +225,7 @@ The release is distributed as code + metadata + harmonized manifests via the Phy
         \texttt{annotations/topup\_aapm/}             & Top-up nodule annotations on AAPM 2016 chest cases (JSON) \\
         \texttt{annotations/topup\_mayo/}             & Top-up nodule annotations on Mayo LDCT-PD chest cases \\
         \texttt{annotations/likert/}                  & Per-scan diagnostic-quality Likert scores (AAPM + Mayo paired-dose) \\
+        \texttt{annotations/raw\_per\_reader/}         & Per-reader raw annotations (pre-majority-vote) for uncertainty studies \\
         \texttt{splits/train.txt}, \texttt{val.txt}, \texttt{test.txt} & Source-prefixed patient IDs per split \\
         \texttt{manifest.sha256}                      & SHA-256 hashes of every output file from the three pipelines \\
         \texttt{LICENSE.txt}                          & Apache 2.0 for code + manifests; underlying scans retain source license \\
@@ -401,7 +402,7 @@ A planned v1.0 release will add multi-vendor cross-vendor evaluation, real paire
 
 \subsection*{Limitations and bias acknowledgment}
 
-v0.5 is a code-and-metadata release on top of existing public data. Its limitations are largely inherited from the underlying sources plus three v0.5-specific items.
+v0.5 is a code-and-metadata release on top of existing public data. Its limitations are inherited from the underlying sources or, where noted, are v0.5-specific scope decisions.
 
 \paragraph{Single-vendor real paired-dose coverage.} All real paired-dose acquisitions in v0.5 come from AAPM 2016 and Mayo LDCT-PD, which are Siemens-only. Methods evaluated against the real-paired-dose subset of v0.5 cannot make multi-vendor claims; v1.0 (prospective multi-vendor) addresses this.
 
@@ -409,7 +410,7 @@ v0.5 is a code-and-metadata release on top of existing public data. Its limitati
 
 \paragraph{Simulated low-dose may underestimate real low-dose noise.} For LIDC scans we synthesize low-dose images via Poisson-thinning; it is well-documented that simulation underestimates real low-dose noise in some regimes~\citep{wang2020deeplearningreview}. v0.5 makes the discrepancy measurable (sim-vs-real comparison on AAPM) but does not eliminate it.
 
-\paragraph{Pediatric, abdominal, cardiac, trauma indications absent.} The three source datasets are predominantly adult chest scans for lung-cancer screening or oncology follow-up. v0.5 does not support evaluation on other indications.
+\paragraph{Annotated-task coverage is narrow.} The three source datasets are predominantly adult chest and abdominal scans for lung-cancer screening or oncology follow-up. v0.5 ships harmonized lung-nodule-detection annotations across all three sources; abdominal scans are released without v0.5-curated lesion-segmentation annotations (deferred to v1.0). Pediatric, cardiac, and trauma indications are absent from the underlying sources entirely.
 
 \paragraph{Annotation top-up is small.} The AAPM and Mayo top-up annotation is scoped to the chest lung-nodule task. Other tasks on those subsets remain unannotated in v0.5.
 
@@ -458,7 +459,7 @@ PWM-LDCT v1.0 is a separate follow-up release that addresses the v0.5 limitation
     \item Cross-vendor evaluation API with leave-one-vendor-out splits
 \end{itemize}
 
-v1.0 timing is gated on the new UTSW PI confirmation (Track K dependency), IRB approval, and partner-site MOUs; the target submission window is D9 + 365 to D9 + 540. The v0.5 release ships in parallel and is not blocked by v1.0's clinical-acquisition timeline.
+v1.0 timing is gated on PI staffing at the coordinating site, IRB approval, and partner-site agreements; the target submission window is approximately 12--18 months after v0.5. The v0.5 release ships in parallel and is not blocked by v1.0's clinical-acquisition timeline.
 
 %% =====================================================================
 \section*{Author contributions}
