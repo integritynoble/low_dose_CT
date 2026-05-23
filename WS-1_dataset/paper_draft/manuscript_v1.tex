@@ -68,7 +68,7 @@
 
 %% =====================================================================
 \begin{abstract}
-\noindent We present \textbf{PWM-LDCT}, a multi-vendor, multi-site, paired-dose chest- and abdominal-CT dataset designed as a permanent, reproducibility-first benchmark for low-dose CT reconstruction research. The dataset comprises \Nscans{} paired full-dose / low-dose scans across at least two manufacturer platforms (\todo{vendor list}) and \todo{N$_{\textrm{sites}}$} clinical sites; \NvendorA{} patients contribute real reduced-tube-current paired acquisitions and \NvendorB{} contribute physically calibrated Poisson-thinned low-dose simulations alongside their full-dose scans. Each release record ships with raw sinograms, reconstructed images at four dose levels (10\%, 25\%, 50\%, 100\%), majority-vote radiologist annotations for lesion detection and segmentation tasks, and full provenance metadata under PhysioNet credentialed access. A pip-installable Python loader (\texttt{pwm\_ldct\_loader}) and three reproducible Docker pipelines deliver bit-identical preprocessing across machines, and a content-addressed dataset hash is registered as an immutable L3 specification on the PWM blockchain registry so leaderboard submissions can be tied to a specific frozen benchmark version. By foregrounding multi-vendor diversity, real paired low-dose acquisitions, task-level annotations, and on-chain immutability, PWM-LDCT addresses three long-standing gaps in the field: vendor-specificity of published methods, evaluation through PSNR alone rather than clinical task performance, and benchmark drift across publication cycles. The dataset is the empirical substrate for the recurring PWM Low-Dose CT Challenge at RSNA / ISBI and the validation cohort for the signal-equivalence framework~\citep{ws2framework}.
+\noindent We present \textbf{PWM-LDCT}, a multi-vendor, multi-site, paired-dose chest- and abdominal-CT dataset designed as a permanent, reproducibility-first benchmark for low-dose CT reconstruction research. The dataset comprises \Nscans{} paired full-dose / low-dose scans across at least two manufacturer platforms (\todo{vendor list}) and \todo{N$_{\textrm{sites}}$} clinical sites; \NvendorA{} patients contribute real reduced-tube-current paired acquisitions and \NvendorB{} contribute physically calibrated Poisson-thinned low-dose simulations alongside their full-dose scans. Each release record ships with raw sinograms, reconstructed images at four dose levels (10\%, 25\%, 50\%, 100\%), majority-vote radiologist annotations for lesion detection and segmentation tasks, and full provenance metadata under PhysioNet credentialed access. A pip-installable Python loader (\texttt{pwm\_ldct\_loader}) and reproducible Docker preprocessing pipelines deliver bit-identical processing across machines, and the dataset's manifest is uniquely identified by a SHA-256 content hash that is mirrored to multiple immutability anchors (PhysioNet DOI, IPFS replica, and a PWM L3 specification registry entry) so that leaderboard submissions and downstream citations can be tied to a specific frozen benchmark version regardless of which anchor is consulted. By foregrounding multi-vendor diversity, real paired low-dose acquisitions, task-level annotations, and content-addressed version control, PWM-LDCT addresses three long-standing gaps in the field: vendor-specificity of published methods, evaluation through PSNR alone rather than clinical task performance, and benchmark drift across publication cycles. PWM-LDCT is designed as the empirical substrate for the recurring PWM Low-Dose CT Challenge and as a validation cohort for a companion signal-equivalence evaluation framework (both in preparation,~\citealt{ws4leaderboard,ws2framework}); the descriptor's claims (multi-vendor coverage, real paired-dose acquisitions, content-addressed manifest, annotation reliability, and reproducibility) stand independently of those companion artifacts.
 \end{abstract}
 
 %% =====================================================================
@@ -82,7 +82,7 @@ Low-dose computed tomography (CT) reconstruction has been transformed by deep le
     \item \textbf{Benchmark drift.} As datasets evolve (new patients added, splits reshuffled, preprocessing changed), reported numbers from year~$n$ become incomparable to year~$n+1$. The community lacks a frozen, content-addressed reference version to anchor longitudinal comparison.
 \end{enumerate}
 
-PWM-LDCT is designed to close all three gaps simultaneously. Multi-vendor coverage is enforced by inclusion criteria; the corresponding subgroup statistical power is justified explicitly (Section \textit{Sample size justification}). Per-patient majority-vote radiologist annotations support a curated set of clinical tasks (lung nodule detection, liver lesion segmentation, abdominal organ quantification) collected under a documented multi-reader QC protocol (Section \textit{Annotation protocol}). The dataset version is content-addressed and registered on the PWM blockchain registry as an immutable L3 specification, so any future paper that cites \texttt{pwm\_l3\_spec:pwm\_low\_dose\_ct\_benchmark:1.0.0} is guaranteed to reference bit-identical data, and an explicit versioning policy (Section \textit{Data Versioning and Persistent Identifiers}) governs future extensions.
+PWM-LDCT is designed to close all three gaps simultaneously. Multi-vendor coverage is enforced by inclusion criteria; the corresponding subgroup statistical power is justified explicitly (Section \textit{Sample size justification}). Per-patient majority-vote radiologist annotations support a curated set of clinical tasks (lung-nodule detection, liver-lesion segmentation, and per-scan diagnostic-quality scoring) collected under a documented multi-reader QC protocol (Section \textit{Annotation protocol}). The dataset's manifest is content-addressed by a SHA-256 hash that downstream users can verify offline; the hash is mirrored to PhysioNet (DOI), IPFS, and the PWM L3 specification registry (\texttt{pwm\_l3\_spec:pwm\_low\_dose\_ct\_benchmark:1.0.0}), so any future paper citing the hash refers to bit-identical content regardless of which anchor remains available. An explicit versioning policy (Section \textit{Data Versioning and Persistent Identifiers}) governs future extensions and corrections.
 
 Table~\ref{tab:dataset_comparison} situates PWM-LDCT against existing public datasets. LIDC-IDRI~\citep{lidc_idri} is the field's largest annotated chest cohort but is single-dose and single-vendor in practice. The AAPM 2016 Low-Dose CT Grand Challenge release~\citep{aapm2016challenge} is the only public source of real paired-dose acquisitions but is limited to 10 patients on a single Siemens platform. The Mayo Clinic LDCT-and-Projection-Data collection~\citep{mccollough2020mayo} extends AAPM 2016 with raw projections but inherits its single-vendor scope. PWM-LDCT is the first multi-vendor paired-dose release at the $\geq$ 500-patient scale and the first with a content-addressed benchmark hash anchored to a public registry.
 
@@ -92,26 +92,26 @@ Table~\ref{tab:dataset_comparison} situates PWM-LDCT against existing public dat
     \setlength{\tabcolsep}{4pt}
     \begin{tabular}{lccccc}
         \toprule
-        \textbf{Dataset} & \textbf{Patients} & \textbf{Vendors} & \textbf{Real paired LD} & \textbf{Projections} & \textbf{On-chain anchor} \\
+        \textbf{Dataset} & \textbf{Patients} & \textbf{Vendors} & \textbf{Real paired LD} & \textbf{Projections} & \textbf{Multi-anchor content hash} \\
         \midrule
         LIDC-IDRI~\citep{lidc_idri}       & 1{,}018 & 1 (mostly)    & No  & No   & No \\
         AAPM 2016~\citep{aapm2016challenge} & 10      & 1 (Siemens)   & Yes & Yes  & No \\
         Mayo LDCT-PD~\citep{mccollough2020mayo} & 299  & 1 (Siemens)   & Yes & Yes  & No \\
-        \textbf{PWM-LDCT (ours)}              & \Npatients & $\geq$ 2 & Yes & Yes  & \textbf{Yes (L3)} \\
+        \textbf{PWM-LDCT (ours)}              & \Npatients & $\geq$ 2 & Yes & Yes  & \textbf{Yes (DOI / IPFS / L3)} \\
         \bottomrule
     \end{tabular}
-    \caption{Comparison of PWM-LDCT against existing public low-dose CT datasets. ``Real paired LD'' indicates whether the dataset contains real (not simulated) paired full-dose / low-dose acquisitions for the same patient. ``On-chain anchor'' indicates whether the dataset version is content-addressed on a public blockchain registry.}
+    \caption{Comparison of PWM-LDCT against existing public low-dose CT datasets. ``Real paired LD'' indicates whether the dataset contains real (not simulated) paired full-dose / low-dose acquisitions for the same patient. ``Multi-anchor content hash'' indicates whether the dataset version is identified by a SHA-256 manifest hash mirrored across multiple independent persistent-identifier anchors so that long-term citation resolves consistently.}
     \label{tab:dataset_comparison}
 \end{table}
 
-The dataset is open to academic and industrial researchers under PhysioNet credentialed access (HIPAA Safe Harbor compliant for de-identified scans). A reference reconstruction method~\citep{ws3reference}, a probabilistic signal-equivalence framework~\citep{ws2framework}, and a permanent leaderboard~\citep{ws4leaderboard} are released concurrently, completing the citable substrate for the PWM Low-Dose CT Challenge.
+The dataset is open to academic and industrial researchers under PhysioNet credentialed access (HIPAA Safe Harbor compliant for de-identified scans). Companion methodological work --- a reference reconstruction method~\citep{ws3reference}, a probabilistic signal-equivalence evaluation framework~\citep{ws2framework}, and a permanent leaderboard~\citep{ws4leaderboard} --- is in preparation and signposted from Usage Notes; this descriptor's scientific claims (multi-vendor coverage, real paired-dose acquisitions, content-addressed manifest, annotation reliability, and dataset reproducibility) stand independently of those companion artifacts.
 
 %% =====================================================================
 \section*{Methods}
 
 The data collection, processing, annotation, and release workflow is summarized in Figure~\ref{fig:workflow}.
 
-\todoFigure{fig:workflow}{Workflow diagram. Rendered figure should show six sequential stages connected by arrows: (1) patient enrollment and consent; (2) paired full-dose / real-low-dose acquisition (or full-dose-only for the simulation-augmented cohort); (3) two-stage de-identification (DICOM tag stripping + Tesseract OCR sweep); (4) reconstruction at four dose levels (real or Poisson-thinned simulation, plus FBP / vendor IR / TV variants); (5) multi-reader annotation with majority-vote ground truth + per-scan Likert diagnostic-quality scoring; (6) quality control + SHA-256 manifest + PhysioNet deposit + on-chain L3 hash registration. Side annotations should call out the IRB approval, the consent waiver branch for retrospective cohorts, the cross-vendor harmonization step between stages 2 and 4, and the inter-rater audit feedback loop between stages 5 and 6.}
+\todoFigure{fig:workflow}{Workflow diagram. Rendered figure should show six sequential stages connected by arrows: (1) patient enrollment and consent; (2) paired full-dose / real-low-dose acquisition (or full-dose-only for the simulation-augmented cohort); (3) two-stage de-identification (DICOM tag stripping + Tesseract OCR sweep); (4) reconstruction at four dose levels (real or Poisson-thinned simulation, plus FBP / vendor IR / TV variants); (5) multi-reader annotation with majority-vote ground truth + per-scan Likert diagnostic-quality scoring; (6) quality control + SHA-256 manifest + PhysioNet deposit + content-hash mirroring to PWM L3 registry and IPFS. Side annotations should call out the IRB approval, the consent waiver branch for retrospective cohorts, the cross-vendor harmonization step between stages 2 and 4, and the inter-rater audit feedback loop between stages 5 and 6.}
 
 \subsection*{Ethics, consent, and data sharing}
 
@@ -143,27 +143,51 @@ For each enrolled patient a \textit{paired} acquisition was performed:
     \item \textbf{Simulated low-dose data}: for \NvendorB{} additional patients (and as augmentation for the real-paired cohort) we generated 10\%, 25\%, and 50\% dose-equivalent sinograms via physically calibrated Poisson-noise insertion on the full-dose sinogram, using the forward model implemented in PWM's \texttt{ct\_radon} modality library~\citep{pwmcore}. The simulation protocol is documented in Section \textit{Low-dose simulation} below; we explicitly maintain both real and simulated low-dose images in the dataset so that downstream users can assess how well methods trained on simulated low-dose generalize to real low-dose.
 \end{itemize}
 
+\subsection*{Radiation dose justification for the paired-acquisition cohort}
+
+The \NvendorA{} prospectively-enrolled patients in the paired-acquisition cohort received an additional research-purpose low-dose acquisition beyond the clinically-indicated full-dose scan. The IRB review, consent path, and data-sharing governance for this cohort are documented in Ethics, consent, and data sharing above; this subsection adds the radiation-dose-specific justification that reviewers and oversight bodies expect for any added-dose research protocol.
+
+\paragraph{Scientific necessity.} The principal scientific aim of the paired-acquisition cohort is to ground-truth low-dose CT simulation against physical low-dose acquisition at multi-vendor scale. Simulated low-dose imagery, generated by Poisson thinning of full-dose sinograms, is the substrate of most published low-dose CT reconstruction research, yet the systematic discrepancy between simulation and physical reduced-tube-current acquisition has not been characterized at a sample size sufficient to be statistically informative across vendors~\citep{wang2020deeplearningreview}. Without paired physical-acquisition data, simulation-trained methods cannot be validated against real low-dose noise, and the field cannot answer whether simulation-bench-leading methods transfer to clinical use. We considered but rejected a purely retrospective design because (i) clinically-indicated mA reduction is confounded with body-habitus-driven mA modulation that frustrates the simulation comparison, and (ii) no existing public release pairs full-dose and physical low-dose acquisitions on the same patient at the $\geq$ 500-patient scale across vendors. The McCollough et al.\ paired-dose acquisition protocol on Siemens scanners~\citep{mccollough2020mayo} is the closest methodological precedent and is the template against which our multi-vendor cohort is designed.
+
+\paragraph{Additional dose budget.} The additional 25\%-of-full-dose mA acquisition delivers an estimated \todo{$\Delta\textrm{CTDI}_{\textrm{vol}}$ (mGy, chest)} additional dose per patient for chest studies and \todo{$\Delta\textrm{CTDI}_{\textrm{vol}}$ (mGy, abdomen)} for abdominal studies, corresponding to an estimated effective-dose increment of \todo{$\Delta E$ (mSv, chest)} and \todo{$\Delta E$ (mSv, abdomen)} respectively. For context, this increment is approximately \todo{X}\,\% of the typical clinically-indicated full-dose study and approximately \todo{Y}\,\% of typical annual background radiation ($\sim$~3\,mSv in the US). Per-patient dose values are recorded directly from the scanner's DICOM RDSR (Radiation Dose Structured Report) and surfaced in \texttt{metadata.json}, so downstream users can verify the dose budget per patient rather than rely on protocol-level estimates.
+
+\paragraph{ALARA compliance.} The 25\%-of-full-dose mA setting was selected as the most informative paired dose for benchmark utility while remaining below the additional-dose ceiling negotiated with the coordinating IRB. No patient received more than one paired research-purpose low-dose acquisition. Patients with a cumulative recent imaging dose history above an institutional ceiling (\todo{cumulative dose ceiling}) were excluded, as were pregnant patients and patients $<$ 18 years of age. Tube-current modulation was held constant between the full-dose and paired acquisitions to keep the dose-reduction comparison clean; this is documented in the per-scan acquisition log preserved in \texttt{metadata.json}.
+
+\paragraph{Dose disclosure in the informed-consent script.} Consent for the additional research-purpose acquisition was obtained as part of the written informed-consent process described in Ethics, consent, and data sharing. The IRB-approved consent script explicitly disclosed (i) the research purpose of the second acquisition, (ii) the estimated additional radiation dose (numerical estimates above), (iii) the absence of direct diagnostic benefit from the additional acquisition, and (iv) the patient's right to refuse the additional acquisition with no effect on their clinical care. The consent template is published as \texttt{schema/research\_consent\_template.md} in the project repository.
+
 \subsection*{Sample size justification}
 
-The dataset's target of $\geq$ 500 paired patients was set by a power analysis for the canonical clinical task (lung-nodule detection AUC at fixed false-positive rate). Under the signal-equivalence framework's paired-bootstrap estimator~\citep{ws2framework}, the leading-order sample-size requirement for a target equivalence margin $\varepsilon$ at significance $\alpha$ is
+The dataset's target of $\geq$ 500 paired patients was set by a standard statistical-power analysis for the canonical clinical task (lung-nodule detection AUC at fixed false-positive rate). For a paired-bootstrap two-method comparison with target equivalence margin $\varepsilon$ at significance $\alpha$, the leading-order sample-size requirement is
 
 \begin{equation}
     n \geq \left(\frac{z_{1-\alpha/2}}{\varepsilon}\right)^2 \sigma^2 (1 - \rho)
 \end{equation}
 
-where $\sigma$ is the per-patient performance-difference standard deviation and $\rho$ is the pairing correlation between the two arms. For the canonical target $(\varepsilon = 0.02,\ \alpha = 0.05)$ on AUC with conservative $\sigma \approx 0.10$ and $\rho \approx 0.5$, this yields $n \geq 192$ patients per credentialed evaluation. Because the dataset must support \textit{multiple} credentials simultaneously --- per dose level, per vendor, per anatomy, per task --- the realized cohort target was scaled to $\geq 500$ patients to allow stratified subgroup credentials with retained statistical power at each level. The corresponding cohort-stratification budget is summarized in Table~\ref{tab:power_budget} \todo{populate at submission}.
+where $\sigma$ is the per-patient performance-difference standard deviation and $\rho$ is the pairing correlation between the two arms. For the canonical target $(\varepsilon = 0.02,\ \alpha = 0.05)$ on AUC with conservative $\sigma \approx 0.10$ and $\rho \approx 0.5$, this yields $n \geq 192$ patients per evaluation slice. Because the dataset must support \textit{multiple} stratified evaluations simultaneously --- per dose level, per vendor, per anatomy, per task --- the realized cohort target was scaled to $\geq 500$ patients to retain statistical power at each subgroup. The corresponding cohort-stratification budget is summarized in Table~\ref{tab:power_budget} \todo{populate at submission}. Methods that wish to additionally compute 5-tuple credentials under the companion signal-equivalence framework (manuscript in preparation,~\citealt{ws2framework}) will find that the cohort meets that framework's matching leading-order requirements at canonical target $(\varepsilon = 0.02,\ \alpha = 0.05)$, but the descriptor's sizing argument is framework-independent.
 
 \todoTable{tab:power_budget}{Sample-size budget by stratification: rows are evaluation conditions (e.g., 25\%-dose chest, 25\%-dose abdomen, leave-one-vendor-out cross-vendor); columns give required $n$ at $(\varepsilon, \alpha) = (0.02, 0.05)$ vs realized $n$ in the released cohort}
 
 \subsection*{Low-dose simulation}
 
-We follow standard practice in the low-dose CT literature~\citep{zeng2015nonlocal,wang2020deeplearningreview} for simulation:
+We simulate low-dose acquisitions from full-dose sinograms using the physically-calibrated forward model implemented in the open-source \texttt{pwm\_core.contrib.modalities.ct\_radon} package, following standard practice in the low-dose CT literature~\citep{zeng2015nonlocal,wang2020deeplearningreview}. The model combines Poisson photon-counting noise with an additive electronic-noise floor and ray-dependent incident-photon-count weighting:
 
 \begin{equation}
-    \tilde{s}_{\textrm{low}}(\ell) = -\ln\!\left( \frac{\textrm{Poisson}\!\left(I_0 \cdot r \cdot e^{-s_{\textrm{ref}}(\ell)}\right)}{I_0 \cdot r} \right)
+    N_r(\ell) \sim \textrm{Poisson}\!\big(I_0(\ell) \cdot r \cdot e^{-s_{\textrm{ref}}(\ell)}\big) + \mathcal{N}\!\big(0,\sigma_e^2\big), \qquad \tilde{s}_{\textrm{low}}(\ell) = -\ln\!\left( \frac{\max\!\big(N_r(\ell),\,1\big)}{I_0(\ell) \cdot r} \right)
+    \label{eq:lowdose_sim_v1}
 \end{equation}
 
-where $s_{\textrm{ref}}(\ell)$ is the full-dose log-attenuation projection along ray $\ell$, $I_0$ is the assumed monochromatic incident photon count (calibrated per scanner from the acquisition's recorded tube parameters), and $r \in \{0.10, 0.25, 0.50\}$ is the dose-reduction ratio. Both polychromatic-spectrum corrections and the standard electronic-noise floor are applied per the calibration recipe in~\citep{zeng2015nonlocal}. The forward operator and Poisson sampling are implemented as the open-source \texttt{pwm\_core.contrib.modalities.ct\_radon} package; we explicitly do \textit{not} reinvent the forward model so that any downstream user replicating our simulation pipeline obtains bit-identical sinograms.
+where $s_{\textrm{ref}}(\ell)$ is the full-dose effective-monochromatic log-attenuation projection along ray $\ell$; $I_0(\ell) = I_0^{(0)} \cdot b(\ell)$ is the ray-dependent incident-photon count combining a per-scanner monochromatic-equivalent reference $I_0^{(0)}$ (calibrated from the acquisition's recorded tube parameters and manufacturer-published kVp / mAs / pitch tables) with the scanner's bowtie-filter profile $b(\ell)$ (calibrated from manufacturer-published or in-house phantom measurements); $\sigma_e$ is the per-scanner electronic-noise standard deviation, calibrated from low-flux phantom measurements~\citep{zeng2015nonlocal}; and $r \in \{0.10, 0.25, 0.50\}$ is the dose-reduction ratio. The $\max(\cdot,1)$ guard prevents log-of-zero at extreme attenuations.
+
+\paragraph{Simulation approximations and known limitations.} Equation~\eqref{eq:lowdose_sim_v1} is an effective-monochromatic forward model and does not capture all physical effects of polychromatic CT acquisition. We make four approximations explicit so users can judge applicability:
+
+\begin{itemize}
+    \item \textbf{Monochromatic approximation.} We use a kVp-equivalent effective mean photon energy rather than integrating over a polychromatic X-ray spectrum. This is the standard simplification in published LDCT simulators~\citep{zeng2015nonlocal,wang2020deeplearningreview}; it does not capture beam-hardening artifacts, which therefore appear with the same intensity in both simulated and full-dose images and are not differentially induced by dose reduction.
+    \item \textbf{Bowtie + spectrum from manufacturer tables.} Where DICOM headers do not preserve the per-scan bowtie profile, we fall back to a uniform $b(\ell) \equiv 1$ and flag the affected scans in \texttt{metadata.json}; users can opt to drop these scans from a sensitivity analysis.
+    \item \textbf{Detector quantum efficiency.} Detector QE is folded into the calibrated $I_0^{(0)}$ rather than modeled separately. Users requiring explicit DQE modeling (e.g., for detector-comparison studies) should not use these simulated images.
+    \item \textbf{Electronic-noise floor.} The Gaussian electronic-noise term $\mathcal{N}(0,\sigma_e^2)$ is calibrated globally per scanner rather than spatially-varying across the detector array. Position-dependent electronic noise (a $\leq$~5\,\% effect on typical clinical scanners) is not modeled.
+\end{itemize}
+
+The discrepancy between simulated and real low-dose at $r = 0.25$ is quantified per-vendor on the real-paired-dose cohort in the Technical Validation section (Figure~\ref{fig:sim_vs_real}); users running simulation-vs-real sensitivity studies should consult that figure. The forward operator and Poisson sampling are implemented as the open-source \texttt{pwm\_core.contrib.modalities.ct\_radon} package; we explicitly do not reinvent the forward model so any downstream user replicating the simulation pipeline obtains bit-identical sinograms.
 
 \subsection*{Reconstruction}
 
@@ -193,7 +217,7 @@ A multi-vendor benchmark is only useful if cross-vendor comparison is methodolog
 
 \subsection*{Annotation protocol}
 
-Annotations were collected from a panel of \todo{N} board-certified radiologists (\todo{N} fellowship-trained in thoracic imaging, \todo{N} in abdominal imaging) with $\geq$~5 years of post-training experience, distributed across the participating sites. The protocol covered three annotation classes plus a per-scan diagnostic-quality assessment.
+Annotations were collected from a panel of \todo{N} board-certified radiologists (\todo{N} fellowship-trained in thoracic imaging, \todo{N} in abdominal imaging) with $\geq$~5 years of post-training experience, distributed across the participating sites. The protocol covers two lesion-annotation classes (lung-nodule detection and liver-lesion segmentation) plus a per-scan diagnostic-quality Likert assessment.
 
 \paragraph{Annotator training and calibration.} Before annotating release scans, every panel member completed a calibration session on a 20-case training set drawn from outside the release cohort. Each radiologist's calibration-set agreement with a senior reference (intraclass correlation for continuous attributes; Cohen's $\kappa$ for categorical) was required to exceed pre-specified thresholds (\todo{ICC threshold}, \todo{$\kappa$ threshold}) before any of their annotations were admitted to the release set. Failed calibration triggered a second session; persistent failure resulted in exclusion from the panel (\todo{N} excluded).
 
@@ -216,6 +240,10 @@ Annotations were collected from a panel of \todo{N} board-certified radiologists
 \subsection*{De-identification and HIPAA compliance}
 
 All scans were de-identified per HIPAA Safe Harbor (45~CFR~164.514(b)(2)). The DICOM tag whitelist and the burned-in-text scrubbing recipe are published as \texttt{schema/dicom\_cleaning\_spec.md} in the project repository. De-identification was verified by a two-stage pipeline: (i) automated PyDICOM tag stripping against the whitelist; (ii) OCR over every reconstructed slice using Tesseract~\citep{tesseract2007}, with any positive hit (e.g., date, name, MRN) flagged for manual review and reprocessing. Every scan in the released set passed both stages with no PHI detected.
+
+\subsection*{DICOM conformance}
+
+Released imaging data preserves each scan's original DICOM SOP-class identifiers as recorded by the scanner. Reconstructed image series are released under SOP class \texttt{CT Image Storage} (UID \texttt{1.2.840.10008.5.1.4.1.1.2}); projection-domain sinograms are released under each vendor's research-purpose \texttt{Raw Data Storage} SOP class (Siemens, GE, and Canon vendor-equivalent SOP classes are documented per-source in \texttt{schema/dicom\_conformance.md}). The released DICOM is fully conformant with the relevant Part-10 file format. Patient orientation (\texttt{Patient Position}, \texttt{Image Orientation Patient}) is preserved as acquired; we do not reorient. The de-identification whitelist preserves all geometry-relevant tags (pixel spacing, slice thickness and position, gantry tilt, reconstruction kernel name, table position) needed to reproduce a scan's physical geometry; the side-by-side mapping between retained DICOM tags and the loader-exposed \texttt{metadata.json} fields is published at \texttt{schema/dicom\_to\_metadata\_mapping.md} so downstream users can recover original coordinates and acquisition parameters for any released scan without re-downloading the source.
 
 \subsection*{Patient-level data splits}
 
@@ -322,7 +350,7 @@ Aggregate counts and split structure are summarized in Table~\ref{tab:cohort}; d
 %% =====================================================================
 \section*{Technical Validation}
 
-We performed four classes of technical validation:
+We performed the following classes of technical validation:
 
 \subsection*{Reconstruction sanity}
 For every full-dose scan we recomputed FBP from the released sinogram and verified that the recomputed image matches the released reconstruction within $\leq$~\todo{FP tolerance}~HU at every voxel. This protects against an off-by-one indexing error between sinogram release and image release, which is a common silent failure mode of CT-dataset releases.
@@ -338,14 +366,14 @@ Cohen's $\kappa$ for lung nodule detection (per-radiologist, per-scan) and Dice 
 \todoTable{tab:irr}{Inter-rater annotation reliability ($\kappa$ for nodule detection; Dice for liver lesion segmentation), broken down by dose level}
 
 \subsection*{Baseline reproductions}
-We trained four community-standard baselines on the PWM-LDCT training split and report their test-split performance in Table~\ref{tab:baselines}. The baselines are RED-CNN~\citep{chen2017redcnn}, a transformer-based method (\todo{select}), a diffusion-based method (\todo{select}), and the PWM reference unrolled iterative reconstruction~\citep{ws3reference}. The objective of this section is not to declare a winner but to (i) confirm that all baselines successfully train and evaluate on the released dataset using the provided loader, and (ii) provide initial seed entries for the permanent leaderboard.
+To demonstrate that the dataset supports end-to-end training and evaluation of representative deep reconstruction methods through the provided loader and Docker pipelines without code modification, we reproduce four published baselines on the PWM-LDCT training split and report their test-split performance in Table~\ref{tab:baselines}. The baselines span method classes: RED-CNN~\citep{chen2017redcnn} (encoder-decoder CNN), a published transformer-based reconstruction method (\todo{select published method, e.g., CTformer or TransCT}), a published diffusion-based reconstruction method (\todo{select published method}), and a published unrolled-iterative reconstruction method (\todo{select published method, e.g., LEARN}). This section is intentionally not a benchmark ranking: relative method comparison is out of scope for a Data Descriptor and is the subject of separate companion work. The role of these reproductions is solely to provide evidence that (i) the loader and preprocessing pipelines drive heterogeneous published methods to convergence on the released data, and (ii) the reported numbers can be reproduced bit-identically from the released Docker containers.
 
-\todoTable{tab:baselines}{Test-split PSNR / SSIM / LPIPS / task-AUC for four reproduced baselines on PWM-LDCT}
+\todoTable{tab:baselines}{Test-split PSNR / SSIM / LPIPS, and per-task AUC for lung-nodule detection and Dice for liver-lesion segmentation, for four reproduced published baselines on PWM-LDCT. Each row is reproducible via the corresponding Docker container shipped with the release.}
 
-\subsection*{5-tuple credentials per signal-equivalence framework}
-For each baseline we report the corresponding 5-tuple signal-equivalence credential~\citep{ws2framework} for the canonical lung nodule detection task at 25\% dose. The credentials are summarized in Table~\ref{tab:credentials}; the per-method credential JSON is provided alongside each baseline in the release.
+\subsection*{Optional: framework-credential artifacts}
+The release additionally ships 5-tuple credential JSON for each baseline under a companion signal-equivalence framework (manuscript in preparation,~\citealt{ws2framework}). These are optional reporting artifacts intended for credentialed leaderboard submission once the companion framework publishes; the descriptor's core validation evidence remains Table~\ref{tab:baselines}'s standard reconstruction-quality and task metrics, which do not depend on the framework. The credential set is summarized in Table~\ref{tab:credentials}; readers and reviewers who do not use the credential framework can skip this subsection.
 
-\todoTable{tab:credentials}{5-tuple signal-equivalence credentials per baseline at the canonical lung-nodule detection task, 25\% dose}
+\todoTable{tab:credentials}{Optional 5-tuple credential artifacts for four baselines at the canonical lung-nodule detection task, 25\% dose. Credential schema is defined in the companion framework manuscript (in preparation).}
 
 %% =====================================================================
 \section*{Usage Notes}
@@ -389,18 +417,18 @@ The output \texttt{results.json} should match the published values bit-identical
 
 \subsection*{Submitting to the permanent leaderboard}
 
-Submissions to the PWM Low-Dose CT Challenge leaderboard~\citep{ws4leaderboard} take the form of a PWM RunBundle (Docker image + eval entry point + \texttt{results.json} + 5-tuple credentials~\citep{ws2framework}). The submission contract is documented at the leaderboard portal.
+Submissions to the PWM Low-Dose CT Challenge leaderboard (forthcoming; described in a companion manuscript in preparation,~\citealt{ws4leaderboard}) will take the form of a PWM RunBundle (Docker image + eval entry point + \texttt{results.json}, with optional 5-tuple credentials under the signal-equivalence framework in preparation,~\citealt{ws2framework}). The submission contract is documented at the leaderboard portal. Dataset users who do not wish to participate in the challenge can use the loader and Docker recipes directly --- the leaderboard is an ecosystem add-on, not a prerequisite for using the dataset.
 
 \subsection*{Cross-vendor evaluation}
 
-A method developer can request a held-out-vendor split via the loader's \texttt{leave\_vendor\_out=}\textit{vendor} argument; this filters the training split to exclude the named vendor and reassigns its patients to a separate evaluation slice. This is how we measure cross-vendor generalization in the reference method paper~\citep{ws3reference}.
+A method developer can request a held-out-vendor split via the loader's \texttt{leave\_vendor\_out=}\textit{vendor} argument; this filters the training split to exclude the named vendor and reassigns its patients to a separate evaluation slice. We recommend this protocol as the canonical cross-vendor evaluation; a companion reference-method manuscript exercises this protocol in detail (in preparation,~\citealt{ws3reference}).
 
 \subsection*{Reuse cases}
 
 We anticipate four primary reuse modes:
 
 \begin{enumerate}
-    \item \textbf{Reconstruction-method benchmarking.} Train on the released training split, evaluate on the released test split, submit a 5-tuple credential under the signal-equivalence framework~\citep{ws2framework}, and optionally post the verified score to the public leaderboard~\citep{ws4leaderboard}.
+    \item \textbf{Reconstruction-method benchmarking.} Train on the released training split and evaluate on the released test split using the standard reconstruction-quality metrics provided by the loader (PSNR, SSIM, LPIPS, and per-task AUC / Dice). Methods that wish to participate in the companion benchmark may additionally submit credentials under the signal-equivalence framework and post to the permanent leaderboard once those ecosystem components launch (both in preparation,~\citealt{ws2framework,ws4leaderboard}).
     \item \textbf{Cross-vendor robustness studies.} Use the leave-one-vendor-out evaluation API to characterize how a method generalizes from a training-vendor distribution to a held-out-vendor distribution.
     \item \textbf{Simulation-vs-real noise modeling.} Use the paired real-low-dose and simulated-low-dose images on the \NvendorA{} patients with real paired acquisitions to characterize the discrepancy between common Poisson-thinning simulators and physical low-dose acquisition --- a long-standing gap in the field that this dataset's pairing structure now lets researchers quantify.
     \item \textbf{Downstream-task analysis.} The per-scan diagnostic-quality Likert labels and per-lesion annotations support studies that correlate computational reconstruction quality with radiologist-perceived diagnostic utility, beyond pixel-wise PSNR / SSIM.
@@ -415,10 +443,10 @@ PWM-LDCT is not the first low-dose CT dataset; what makes it uniquely useful is 
     \item \textbf{Does cross-vendor distribution shift mostly come from noise statistics or from reconstruction kernel?} The dataset's preserved per-vendor reconstruction kernels (with measured MTFs in metadata) plus the deliberate non-harmonization of noise enable ablation studies that disentangle these two sources.
     \item \textbf{Is uncertainty-quantification calibration vendor-dependent?} A reconstruction method trained on Siemens scans may produce well-calibrated UQ on Siemens but mis-calibrated UQ on GE. With paired ground truth across vendors and dose levels, this can be measured directly for the first time.
     \item \textbf{Does radiologist-perceived diagnostic confidence agree with computational reconstruction quality, and does that agreement depend on dose level?} The per-scan Likert labels plus the per-dose-level reconstructions permit a regression of human-perceived quality onto computational metrics with sufficient sample size to detect vendor-specific or anatomy-specific deviations.
-    \item \textbf{What is the smallest dose ratio at which lung-nodule detection AUC remains within $\varepsilon$ of the full-dose reference, conditional on patient subpopulation?} The signal-equivalence framework~\citep{ws2framework} provides the formal answer; PWM-LDCT provides the only public dataset with the multi-vendor paired-dose structure and the sample-size budget to answer it with stratified credentials.
+    \item \textbf{What is the smallest dose ratio at which lung-nodule detection AUC remains within $\varepsilon$ of the full-dose reference, conditional on patient subpopulation?} PWM-LDCT provides the only public dataset with the multi-vendor paired-dose structure and the sample-size budget to answer this question with adequate statistical power; the companion signal-equivalence framework (in preparation,~\citealt{ws2framework}) is one possible formalism for reporting stratified evidence, though the analysis can also be conducted with standard paired-bootstrap confidence intervals on the released metrics.
 \end{enumerate}
 
-Each of these five questions is the basis for at least one follow-on publication that PWM-LDCT enables. Together they form the dataset's primary justification for the multi-vendor + paired-acquisition + on-chain-anchored design choices, which individually would have been simpler but jointly are essential.
+Each of these five questions is the basis for at least one follow-on publication that PWM-LDCT enables. Together they form the dataset's primary justification for the multi-vendor + paired-acquisition + content-addressed design choices, which individually would have been simpler but jointly are essential.
 
 \subsection*{Limitations and bias acknowledgment}
 
@@ -445,22 +473,26 @@ These limitations are deliberate features of the v1 release rather than oversigh
 %% =====================================================================
 \section*{Data Versioning and Persistent Identifiers}
 
-PWM-LDCT is versioned using a semantic-versioning scheme aligned with the on-chain L3 specification.
+Each release of PWM-LDCT is uniquely identified by the SHA-256 hash of its \texttt{checksums.sha256} manifest, which itself hashes every released artifact. This content hash is the canonical scientific identifier of the release: any downstream user can locally verify that a downloaded copy matches the released hash, with no dependence on any single hosting institution remaining online.
 
-\paragraph{Versioning scheme.} Releases follow \texttt{MAJOR.MINOR.PATCH}:
+\paragraph{Versioning scheme.} Releases follow a semantic \texttt{MAJOR.MINOR.PATCH} scheme:
 \begin{itemize}
     \item \textbf{MAJOR} increments break dataset schema compatibility (e.g., metadata field renamed, annotation format changed). Downstream tooling pinned to a previous major version is not guaranteed to run.
     \item \textbf{MINOR} increments add new patients, new vendor coverage, new anatomy, or new annotation categories without breaking schema. Tooling pinned to a previous minor version continues to run; new content is available opt-in.
     \item \textbf{PATCH} increments correct errors (e.g., a scan that failed deferred QC, an annotation correction, a subject-withdrawal removal). Patch versions are bit-identical to the previous version except at the listed corrections.
 \end{itemize}
 
-\paragraph{Persistent identifiers.} Every release has three persistent identifiers, all of which are required to reproduce a specific result:
+\paragraph{Persistent-identifier anchors.} The release's content hash is mirrored to three independent anchors so that long-term citation resolves consistently:
 
 \begin{enumerate}
-    \item \textbf{PhysioNet DOI.} Each release version is assigned a separate DOI on PhysioNet of the form \texttt{10.13026/\todo{prefix}-X.Y.Z}; downloads from that DOI return bit-identical content.
-    \item \textbf{Content hash (SHA-256).} The \texttt{checksums.sha256} manifest is itself hashed; the manifest hash is the canonical identity of the release. Two releases with the same manifest hash are guaranteed identical at the byte level.
-    \item \textbf{On-chain L3 spec.} The manifest hash is registered on the PWM blockchain registry under \texttt{pwm\_l3\_spec:pwm\_low\_dose\_ct\_benchmark:X.Y.Z}. The on-chain entry is immutable; once registered, the binding between the spec name + version and the manifest hash cannot be altered by any party.
+    \item \textbf{PhysioNet DOI} (primary citation handle). Each release version is assigned a separate DOI on PhysioNet of the form \texttt{10.13026/\todo{prefix}-X.Y.Z}; downloads from that DOI return bit-identical content. This is the citation handle reviewers and readers are expected to use.
+    \item \textbf{IPFS replica.} The PWM Protocol Foundation maintains an IPFS replica of the release content under the same SHA-256 content hash. This serves as a hosting-institution-independent retrieval path for the same content.
+    \item \textbf{PWM L3 specification entry.} The release is also registered as an L3 specification (\texttt{pwm\_l3\_spec:pwm\_low\_dose\_ct\_benchmark:X.Y.Z}) on the PWM Protocol mainnet, which provides a third independent timestamp of the content hash for users who wish to audit version history programmatically.
 \end{enumerate}
+
+The scientific contribution is the content hash itself; the three anchors are interchangeable retrieval paths for the same hash, and the descriptor's reproducibility claims do not depend on any single anchor remaining available.
+
+\paragraph{Errata, bug-reporting, and data-correction policy.} Errors discovered in a release (e.g., a missed PHI hit, a discordant annotation surviving QA, a Dockerfile reproducibility regression) are reported via GitHub issues at \url{https://github.com/integritynoble/low_dose_CT/issues} with the label \texttt{errata-v1.0}. Each report is triaged within \todo{N} business days; verified errors are batched into a PATCH release that increments the version, regenerates the content hash, and updates all three immutability anchors. Erratum notes (what changed, why, which scans are affected) are published as Supplementary Material alongside each PATCH release, and a cumulative errata changelog is maintained at \texttt{ERRATA.md} in the repository. Subscribers to the release mailing list are notified of every PATCH release. Prior PATCH releases remain resolvable via their content hashes so that papers citing an earlier version remain reproducible; we do not retract or rewrite historical versions.
 
 \paragraph{Extension policy.} The release roadmap is driven by community feedback collected through PhysioNet's discussion forum and the leaderboard issue tracker. Standing extension priorities:
 
@@ -472,9 +504,9 @@ PWM-LDCT is versioned using a semantic-versioning scheme aligned with the on-cha
     \item Additional clinical indications --- PE, trauma, cardiac (Year 2--3)
 \end{itemize}
 
-A roadmap update is published at the start of each calendar year alongside the year's annual review~\citep{ws4leaderboard}, with specific commitments contingent on the year's funded extensions.
+A roadmap update is published at the start of each calendar year alongside the year's annual leaderboard review (in preparation,~\citealt{ws4leaderboard}), with specific commitments contingent on the year's funded extensions.
 
-\paragraph{Long-term hosting commitment.} PhysioNet is committed to indefinite hosting of all credentialed-access datasets that pass its review; the PWM Protocol Foundation provides a fallback IPFS pin of the release content under the same content hash for institutions that prefer a non-credentialed-mirror access path for derived non-PHI artifacts. The on-chain L3 spec serves as the canonical identifier of record regardless of which mirror is used.
+\paragraph{Long-term hosting commitment.} PhysioNet is committed to indefinite hosting of all credentialed-access datasets that pass its review; the IPFS pin under the same content hash provides a hosting-institution-independent retrieval path for derived non-PHI artifacts. The SHA-256 manifest hash --- resolvable through the PhysioNet DOI, the IPFS CID, or the PWM L3 registry entry --- serves as the canonical identifier of record regardless of which anchor is used.
 
 %% =====================================================================
 \section*{Code Availability}
@@ -483,7 +515,7 @@ A roadmap update is published at the start of each calendar year alongside the y
     \item Dataset loader: \url{https://pypi.org/project/pwm_ldct_loader/} (Apache 2.0)
     \item Preprocessing Dockerfiles: \url{https://github.com/integritynoble/low_dose_CT/tree/main/WS-1_dataset/pipelines/}
     \item Forward model used for low-dose simulation: \url{https://github.com/integritynoble/pwm/tree/main/packages/pwm_core/contrib/modalities/ct_radon.py}
-    \item On-chain L3 spec hash: \texttt{pwm\_l3\_spec:pwm\_low\_dose\_ct\_benchmark:1.0.0} on PWM mainnet at \todo{contract address}.
+    \item Manifest SHA-256 content hash: published in the PhysioNet release record. Mirrored anchors --- PhysioNet DOI \texttt{10.13026/\todo{prefix}-1.0.0}, IPFS CID \todo{CID}, and PWM L3 spec entry \texttt{pwm\_l3\_spec:pwm\_low\_dose\_ct\_benchmark:1.0.0} at \todo{contract address} --- all resolve to the same content.
 \end{itemize}
 
 %% =====================================================================
