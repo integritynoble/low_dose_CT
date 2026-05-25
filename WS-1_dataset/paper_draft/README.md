@@ -43,10 +43,10 @@ pdflatex manuscript
 
 **Complete (real prose, ready to submit pending edits):**
 
-- Abstract scoped to v0.5 (harmonization + multi-anchor content-addressed manifest + credentials; explicit "no multi-vendor real-paired" acknowledgment)
+- Abstract scoped to v0.5, **foregrounding the new openly-licensed data records** (harmonized annotations, LIDC-derived simulated low-dose, metadata, splits); content hash deposited under PhysioNet DOI + Zenodo (IPFS/L3 demoted to optional mirrors); explicit "no multi-vendor real-paired" acknowledgment
 - Background & Summary (three structural gaps the harmonization layer closes; comparison table to the three source datasets)
 - Methods: ethics & DUA compliance per source, source-dataset selection criteria, cross-source harmonization (HU calibration / pixel-spacing / slice-thickness / kernel preservation / sim-low-dose harmonization), annotation harmonization (reuse LIDC + top-up AAPM/Mayo), de-identification re-verification, splits, sample-size justification
-- Data Records: per-source breakdown, per-source acquisition parameters, release-content table (code-and-metadata only; no DICOM redistribution)
+- Data Records: release contents **grouped by license/availability** — new data records (deposited, openly licensed: CC BY 4.0 / CC BY 3.0 / CC0) vs access-and-reproduction code (Apache 2.0) vs not-redistributed source scans + DUA-restricted pixel derivatives (regenerated locally); per-source breakdown; per-source acquisition parameters
 - Usage Notes: loader API (with source-prefixed roots), baseline reproduction recipe, leaderboard submission, analyses-uniquely-enabled, limitations & bias acknowledgment (7 explicit limitations)
 - Roadmap-to-v1.0 section explicitly framing v0.5 as the first of two releases
 - Code Availability with stable URLs
@@ -81,6 +81,8 @@ NSD reviewer concerns specific to v0.5:
 - **Novelty pushback**: "Is harmonization-of-existing-datasets enough?" Address by emphasizing the five orthogonal contributions (unified Docker preprocessing pipelines / unified Python loader / multi-anchor content-addressed manifest / harmonized + topped-up annotations / framework-credentialed baselines) and pointing to v1.0 as the planned follow-up with new data.
 - **Vendor-coverage pushback**: "The real paired-dose data is Siemens-only." Address by being explicit in the abstract and limitations; framing v0.5 as the harmonization-layer contribution that v1.0 extends with multi-vendor data.
 - **Single-source-annotation pushback**: "Most of your annotations are inherited from LIDC, not new." Address as a feature (harmonizing existing community annotations is the contribution; we top up the gaps rather than re-collect, saving ~$80K in annotation honoraria that would otherwise be wasted).
+- **Journal-fit / "data vs. software" pushback** (addressed in the 2026-05-25 reframe): Data Records now *leads with the new deposited data records* (annotations, LIDC-derived simulated low-dose, harmonized metadata, splits, manifest), grouped by license/availability, so the descriptor is anchored on data rather than code; the loader/pipelines are positioned as the access mechanism. This is the single most important framing change for a *Scientific Data* desk-screen.
+- **Blockchain-credibility / competing-interests pushback** (addressed in the 2026-05-25 reframe): PhysioNet DOI + Zenodo + the SHA-256 content hash are now the primary, journal-recognized deposit/citation channels; the IPFS replica and the PWM L3 registry entry are demoted to a single optional "mirror" sentence throughout (abstract, Data versioning, Code Availability); and the PWM Protocol Foundation affiliation is now declared in a real Competing Interests statement.
 
 ## v1.0 — preserved for the future submission
 
