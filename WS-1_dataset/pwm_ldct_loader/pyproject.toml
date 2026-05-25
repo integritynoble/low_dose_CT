@@ -1,0 +1,38 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pwm_ldct_loader"
+version = "0.5.0"
+description = "Unified loader for the PWM-LDCT v0.5 harmonized low-dose CT dataset (LIDC-IDRI + AAPM 2016 + Mayo LDCT-PD)."
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "Apache-2.0" }
+authors = [{ name = "PWM-LDCT authors" }]
+keywords = ["low-dose CT", "medical imaging", "dataset", "reconstruction", "benchmark", "DICOM", "HDF5"]
+classifiers = [
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3",
+    "Topic :: Scientific/Engineering :: Medical Science Apps.",
+    "Intended Audience :: Science/Research",
+]
+dependencies = [
+    "numpy>=1.21",
+    "h5py>=3.6",
+]
+
+[project.optional-dependencies]
+torch = ["torch>=1.12"]
+dev = ["pytest>=7"]
+
+[project.urls]
+Homepage = "https://github.com/integritynoble/low_dose_CT"
+Specification = "https://github.com/integritynoble/low_dose_CT/tree/main/WS-1_dataset/schema"
+Issues = "https://github.com/integritynoble/low_dose_CT/issues"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
