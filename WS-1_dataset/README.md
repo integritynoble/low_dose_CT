@@ -100,7 +100,7 @@ The critical-path leg is the IRB lag (months 5-9). It is exogenous and the only 
 |---|---|---|
 | `schema/` | Metadata schema, DICOM cleaning spec, DICOM→HDF5 mapping, annotation-QA protocol | **specs drafted** (4 specs + README) |
 | `pwm_ldct_loader/` | Pip-installable loader package (`LowDoseCTDataset` + `validate`) | **scaffolded**: implements schema §4 contract + §8 validate; 24 pytest green on synthetic fixture; reads pipeline output |
-| `pipelines/` | Dockerfiles for LIDC-IDRI, AAPM 2016, UTSW clinical | pending Phase 1 |
+| `pipelines/` | Dockerfiles for LIDC-IDRI, AAPM 2016, Mayo LDCT-PD + shared `pwm_ldct_prep` package | **scaffolded**: recon-image path end-to-end (DICOM→de-id→harmonize→HDF5→validate); 4 e2e tests green; projection-domain (DICOM-CT-PD) ingestion is a marked TODO |
 | `physionet_listing/` | PhysioNet metadata + access docs | pending Phase 3 |
 | `paper_draft/` | *Nature Scientific Data* manuscript | pending Phase 3 |
 

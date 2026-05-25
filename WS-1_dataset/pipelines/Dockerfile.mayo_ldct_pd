@@ -1,0 +1,22 @@
+# Preprocessing image for Mayo LDCT-and-Projection-Data -> harmonized PWM-LDCT v0.5 HDF5.
+# Build context is WS-1_dataset/ (so the sibling pwm_ldct_loader package is in scope):
+#   docker build -t pwm-ldct-prep-mayo:v0.5 -f pipelines/Dockerfile.mayo_ldct_pd .
+FROM python:3.11-slim
+
+# Tesseract for the Stage-2 burned-in-text OCR sweep (dicom_cleaning_spec.md §5)
+RUN apt-get update && apt-get install -y --no-install-recommends tesseract-ocr \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+# Install the loader first (schema source of truth) + runtime deps
+COPY pwm_ldct_loader /app/pwm_ldct_loader
+COPY pipelines/requirements.txt /app/requirements.txt
+RUN pip install --no-cache-dir -r /app/requirements.txt \
+    && pip install --no-cache-dir /app/pwm_ldct_loader
+
+COPY pipelines/pwm_ldct_prep /app/pwm_ldct_prep
+
+ENV PWM_LDCT_SOURCE=mayo
+ENTRYPOINT ["python", "-m", "pwm_ldct_prep"]
+CMD ["--help"]
