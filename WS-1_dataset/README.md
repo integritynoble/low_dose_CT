@@ -98,7 +98,7 @@ The critical-path leg is the IRB lag (months 5-9). It is exogenous and the only 
 
 | Path | Purpose | Status |
 |---|---|---|
-| `schema/` | Metadata schema, DICOM cleaning spec, `pwm_ldct_loader` Python package | pending Phase 1 |
+| `schema/` | Metadata schema, DICOM cleaning spec, DICOM→HDF5 mapping, annotation-QA protocol; `pwm_ldct_loader` Python package | **specs drafted** (4 specs + README); loader/package pending Phase 1 |
 | `pipelines/` | Dockerfiles for LIDC-IDRI, AAPM 2016, UTSW clinical | pending Phase 1 |
 | `physionet_listing/` | PhysioNet metadata + access docs | pending Phase 3 |
 | `paper_draft/` | *Nature Scientific Data* manuscript | pending Phase 3 |
