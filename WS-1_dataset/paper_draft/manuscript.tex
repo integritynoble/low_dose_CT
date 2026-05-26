@@ -67,13 +67,13 @@
 
 %% =====================================================================
 \begin{abstract}
-\noindent Three public low-dose CT (LDCT) datasets --- LIDC-IDRI~\citep{lidc_idri}, the 2016 AAPM-Mayo Low-Dose CT Grand Challenge~\citep{aapm2016challenge}, and the Mayo LDCT-and-Projection-Data collection~\citep{mccollough2020mayo} --- collectively contain over 1{,}300 patient scans relevant to low-dose CT reconstruction research, yet they are distributed in incompatible formats, with heterogeneous annotation conventions, no shared content-addressed versioning, and no formal credential framework against which methods can be compared. The result is per-project re-implementation of preprocessing, unreliable cross-paper performance comparisons, and an inability to anchor benchmark numbers to a frozen reference. We present \textbf{PWM-LDCT v0.5}, a unified, content-addressed harmonization of these three public datasets. The release deposits, as new openly-licensed data records, harmonized multi-task annotations spanning all three sources --- majority-vote lung-nodule labels reused from the existing four-radiologist LIDC annotations and extended by targeted top-up annotation on the AAPM and Mayo cases that lack equivalent labels, per-scan diagnostic-quality Likert scores on the paired-dose subsets, the raw per-reader labels behind each majority vote, and physically-calibrated simulated low-dose images for the full-dose-only scans --- together with harmonized per-scan metadata and deterministic patient-level data splits. These records are made usable by a single pip-installable Python loader (\texttt{pwm\_ldct\_loader}) and three Docker preprocessing pipelines that regenerate bit-identical HDF5 shards from each source's raw distribution, and their fitness for purpose is demonstrated by baseline reproductions of four community-standard reconstruction methods. The release is identified by a SHA-256 content hash of its manifest and deposited under a PhysioNet DOI, so any subsequent paper citing the hash refers to bit-identical content; the hash is additionally mirrored to an IPFS replica and a PWM L3 specification-registry entry as optional, hosting-independent retrieval paths. PWM-LDCT v0.5 is designed as the substrate for a forthcoming community Low-Dose CT Challenge (in preparation,~\citealt{ws4leaderboard}); the descriptor's claims --- harmonization, the new annotation and simulated-low-dose records, content-addressing, the multi-source loader, and baseline reproducibility --- stand independently of that and any other companion work. v0.5 makes no claims of multi-vendor real-paired-dose coverage --- all real paired-dose acquisitions in v0.5 are from Siemens hardware via the AAPM and Mayo sources. A planned v1.0 release with prospectively-acquired multi-vendor multi-site clinical data addresses that gap as a separate follow-up.
+\noindent Three public low-dose CT (LDCT) datasets --- LIDC-IDRI~\citep{lidc_idri}, the 2016 AAPM-Mayo Low-Dose CT Grand Challenge~\citep{aapm2016challenge}, and the Mayo LDCT-and-Projection-Data collection~\citep{mccollough2020mayo} --- collectively contain over 1{,}300 patient scans relevant to low-dose CT reconstruction research, yet they are distributed in incompatible formats, with heterogeneous annotation conventions, no shared content-addressed versioning, and no formal credential framework against which methods can be compared. The result is per-project re-implementation of preprocessing, unreliable cross-paper performance comparisons, and an inability to anchor benchmark numbers to a frozen reference. We present \textbf{PWM-LDCT v0.5}, a unified, content-addressed harmonization of these three public datasets. The release deposits, as new openly-licensed data records, harmonized multi-task annotations spanning all three sources --- majority-vote lung-nodule labels reused from the existing four-radiologist LIDC annotations and extended by targeted top-up annotation on the AAPM and Mayo cases that lack equivalent labels, per-scan diagnostic-quality Likert scores on the paired-dose subsets, the raw per-reader labels behind each majority vote, and physically-calibrated simulated low-dose images for the full-dose-only scans --- together with harmonized per-scan metadata and deterministic patient-level data splits. These records are made usable by a single pip-installable Python loader (\texttt{pwm\_ldct\_loader}) and three Docker preprocessing pipelines that regenerate bit-identical HDF5 shards from each source's raw distribution, and their fitness for purpose is demonstrated by baseline reproductions of four community-standard reconstruction methods. The release is identified by a SHA-256 content hash of its manifest and deposited under a PhysioNet DOI, so any subsequent paper citing the hash refers to bit-identical content; the hash is additionally mirrored to an IPFS replica and a PWM L3 specification-registry entry as optional, hosting-independent retrieval paths. PWM-LDCT v0.5 is designed as the substrate for a forthcoming community Low-Dose CT Challenge (in preparation,~\citealt{ws4leaderboard}); the descriptor's claims --- harmonization, the new annotation and simulated-low-dose records, content-addressing, the multi-source loader, and baseline reproducibility --- stand independently of that and any other companion work. Notably, the Mayo LDCT-PD paired-dose cohort spans two vendors --- approximately half GE and half Siemens scanners across both anatomies --- so v0.5 provides genuine \emph{cross-vendor} paired-dose coverage (GE and Siemens), rather than the single-vendor coverage of prior public low-dose CT releases. A planned v1.0 release extends this with prospectively-acquired, multi-site clinical data and additional clinical tasks as a separate follow-up.
 \end{abstract}
 
 %% =====================================================================
 \section*{Background \& Summary}
 
-Public datasets have driven a decade of progress in deep-learning low-dose CT reconstruction~\citep{chen2017redcnn,wang2020deeplearningreview}. Three datasets in particular have anchored most of the published evaluation literature: LIDC-IDRI~\citep{lidc_idri} (1{,}018 thoracic CT scans with four-radiologist nodule annotations; full-dose only), the 2016 AAPM-Mayo Low-Dose CT Grand Challenge release~\citep{aapm2016challenge} (10 patients with real paired full-dose and 25\%-dose acquisitions), and the Mayo LDCT-and-Projection-Data collection~\citep{mccollough2020mayo} (299 patients extending AAPM 2016 with raw sinograms). Together these three sources comprise the public substrate against which the majority of deep-learning low-dose CT methods are compared.
+Public datasets have driven a decade of progress in deep-learning low-dose CT reconstruction~\citep{chen2017redcnn,wang2020deeplearningreview}. Three datasets in particular have anchored most of the published evaluation literature: LIDC-IDRI~\citep{lidc_idri} (1{,}018 thoracic CT scans with four-radiologist nodule annotations; full-dose only), the 2016 AAPM-Mayo Low-Dose CT Grand Challenge release~\citep{aapm2016challenge} (10 patients with real paired full-dose and 25\%-dose acquisitions), and the Mayo LDCT-and-Projection-Data collection~\citep{mccollough2020mayo} (299 patients extending AAPM 2016 with raw projection data; \textbf{200 are publicly accessible and span GE and Siemens scanners}, while the 99 head subjects are credentialed-access via the Genomic Data Commons and are out of v0.5 scope). Together these three sources comprise the public substrate against which the majority of deep-learning low-dose CT methods are compared.
 
 Yet the three sources are not designed to be used together. Three structural gaps prevent the field from treating their union as a coherent benchmark:
 
@@ -95,12 +95,12 @@ Yet the three sources are not designed to be used together. Three structural gap
         \midrule
         LIDC-IDRI~\citep{lidc_idri}            & 1{,}018 & No  & No  & 4-radiologist nodule bbox/seg (XML) \\
         AAPM 2016~\citep{aapm2016challenge}    & 10      & Yes & Yes & None as-distributed \\
-        Mayo LDCT-PD~\citep{mccollough2020mayo} & 299     & Yes & Yes & Lesion labels on subset \\
+        Mayo LDCT-PD~\citep{mccollough2020mayo} & 200     & Yes & Yes & Lesion labels on subset \\
         \midrule
-        \textbf{v0.5 union}                     & \textbf{$\sim$1{,}327} & \textbf{309 (Siemens-only)} & \textbf{309 (Siemens-only)} & \textbf{Harmonized + topped-up} \\
+        \textbf{v0.5 union}                     & \textbf{$\sim$1{,}228} & \textbf{210 (GE + Siemens)} & \textbf{210 (GE + Siemens)} & \textbf{Harmonized + topped-up} \\
         \bottomrule
     \end{tabular}
-    \caption{Composition of the PWM-LDCT v0.5 release as a union of three public sources. Real paired full-dose / low-dose acquisitions are restricted to the AAPM 2016 and Mayo LDCT-PD subsets and are entirely on Siemens hardware. v1.0 (a separate follow-up release with prospectively-acquired multi-vendor multi-site clinical data) addresses the single-vendor gap.}
+    \caption{Composition of the PWM-LDCT v0.5 release as a union of three public sources. The Mayo LDCT-PD count is the 200 publicly accessible patients (the 99 head subjects are Genomic Data Commons credentialed-access and are excluded from v0.5). Paired full-dose / reduced-dose data are present for the AAPM 2016 and Mayo LDCT-PD subsets; \textbf{the Mayo cohort spans two vendors (approximately half GE, half Siemens), so v0.5 provides cross-vendor (GE + Siemens) paired-dose coverage.} v1.0 (a separate follow-up release) adds prospectively-acquired, multi-site, re-acquired paired-dose data and new clinical tasks.}
     \label{tab:source_comparison}
 \end{table}
 
@@ -254,9 +254,9 @@ Per-source patient counts in the v0.5 release are summarized in Table~\ref{tab:c
         \midrule
         LIDC-IDRI                       & \todo{$\sim$610} & \todo{$\sim$204} & \todo{$\sim$204} & 1{,}018 \\
         AAPM 2016                       & 6     & 2     & 2     & 10 \\
-        Mayo LDCT-PD                    & \todo{$\sim$179} & \todo{$\sim$60}  & \todo{$\sim$60}  & 299 \\
+        Mayo LDCT-PD (public)           & \todo{$\sim$120} & \todo{$\sim$40}  & \todo{$\sim$40}  & 200 \\
         \midrule
-        \textbf{Total}                  & \textbf{\todo{$\sim$795}} & \textbf{\todo{$\sim$266}} & \textbf{\todo{$\sim$266}} & \textbf{1{,}327} \\
+        \textbf{Total}                  & \textbf{\todo{$\sim$736}} & \textbf{\todo{$\sim$246}} & \textbf{\todo{$\sim$246}} & \textbf{1{,}228} \\
         \bottomrule
     \end{tabular}
     \caption{v0.5 cohort composition by source and split. Splits are patient-level, stratified by source and anatomy. Counts in parentheses are deterministic given the random seed; small adjustments may occur at release to ensure each split has at least one patient from every source-anatomy stratum.}
@@ -273,14 +273,14 @@ Per-source acquisition parameters (kVp, mA, pitch, slice thickness, reconstructi
         \toprule
         \textbf{Parameter} & \textbf{LIDC-IDRI} & \textbf{AAPM 2016} & \textbf{Mayo LDCT-PD} \\
         \midrule
-        Manufacturer set                          & GE, Siemens, Philips (mixed)   & Siemens & Siemens \\
-        Scanner model(s)                          & \todo{varies}                  & Siemens Sensation 64        & Siemens SOMATOM Definition AS+ \\
+        Manufacturer set                          & GE, Siemens, Philips (mixed)   & Siemens & \textbf{GE \& Siemens ($\approx$50/50)} \\
+        Scanner model(s)                          & \todo{varies}                  & Siemens Sensation 64        & GE \& Siemens (per-scan in \texttt{metadata.json}) \\
         Tube voltage (kVp), typical               & 120                            & 120                         & 120 \\
         Full-dose effective mAs, typical          & \todo{varies}                  & $\sim$200--400              & $\sim$200--400 \\
         Low-dose ratio (paired)                   & N/A (full-dose only)           & 0.25 (real)                 & 0.25 (real) \\
         Pitch, typical                            & \todo{varies}                  & $\sim$1.0                   & $\sim$1.0 \\
         Slice thickness (mm), thin series         & 1.25--3.0 across patients      & 0.75--1.0                   & 1.0--1.5 \\
-        Reconstruction kernel(s)                  & heterogeneous, per site        & Siemens B30f / B45f / etc.  & Siemens B30f / B45f / etc. \\
+        Reconstruction kernel(s)                  & heterogeneous, per site        & Siemens B30f / B45f / etc.  & GE \& Siemens kernels (per-scan) \\
         \bottomrule
     \end{tabular}
     \caption{Per-source acquisition parameters. Full per-scan parameters are in each scan's \texttt{metadata.json} produced by the preprocessing pipeline. Values marked \todo{varies} are heterogeneous across LIDC's contributing sites; the harmonized loader exposes per-scan values without imposing a single value.}
@@ -297,7 +297,7 @@ Patient-level demographics aggregated from each source's published metadata are 
         \toprule
         \textbf{Field} & \textbf{LIDC-IDRI} & \textbf{AAPM 2016} & \textbf{Mayo LDCT-PD} & \textbf{Aggregate} \\
         \midrule
-        N (patients)                                  & 1{,}018          & 10               & 299              & 1{,}327 \\
+        N (patients)                                  & 1{,}018          & 10               & 200              & 1{,}228 \\
         Age, median (IQR) [yr]                        & \todo{med (IQR)} & \todo{med (IQR)} & \todo{med (IQR)} & \todo{med (IQR)} \\
         Age, range [yr]                               & \todo{min--max}  & \todo{min--max}  & \todo{min--max}  & \todo{min--max} \\
         Sex (M / F), n (\%)                           & \todo{m/f (\%)}  & \todo{m/f (\%)}  & \todo{m/f (\%)}  & \todo{m/f (\%)} \\
@@ -400,20 +400,21 @@ PWM-LDCT v0.5 is the first release to support the following analyses out of the 
 
 \begin{enumerate}
     \item \textbf{Cross-source consistency studies.} A method trained on one source's preprocessed data and evaluated on another's, under a single unified schema, with no risk of preprocessing drift. Previously this required per-paper reimplementation.
+    \item \textbf{Cross-vendor generalization on real paired-dose data.} The public Mayo LDCT-PD cohort is approximately half GE and half Siemens across both anatomies, so v0.5 supports leave-one-vendor-out (GE$\leftrightarrow$Siemens) training/evaluation on \emph{real} paired full-dose / low-dose data under one schema --- a cross-vendor analysis no prior single public low-dose CT release enabled.
     \item \textbf{Quantitative sim-vs-real comparison on Siemens hardware.} The AAPM 2016 paired-dose subset provides 10 patients with both real and simulated 25\%-dose images; v0.5 standardizes the simulation so the discrepancy is measurable rather than masked by inconsistent simulation choices.
     \item \textbf{Annotation-uncertainty studies.} The release preserves the per-reader LIDC annotations alongside the majority-vote ground truth, so methods that want to study label uncertainty have direct access to the raw annotator-level data.
     \item \textbf{Credentialed leaderboard submission (forthcoming).} Once the companion signal-equivalence framework publishes (manuscript in preparation,~\citealt{ws2framework}), methods that compute 5-tuple credentials against v0.5 will produce content-addressed, third-party-verifiable evaluation evidence rather than free-text claims; v0.5 ships the credential schema and per-baseline credential JSON in anticipation, so the leaderboard launch does not require re-running baselines.
 \end{enumerate}
 
-A planned v1.0 release will add multi-vendor cross-vendor evaluation, real paired-dose acquisitions at $\geq$ 500 patient scale, and additional clinical tasks (liver-lesion segmentation, pediatric subset as companion). Analyses that depend on those capabilities are out of v0.5 scope.
+v0.5 already supports cross-vendor (GE vs Siemens) evaluation on its real paired-dose subset; a planned v1.0 release extends coverage with prospectively-acquired, multi-site data at $\geq$ 500-patient scale, additional vendors (toward Canon and Philips), and new clinical tasks (liver-lesion segmentation, pediatric subset as companion). Analyses that depend on those extensions are out of v0.5 scope.
 
 \subsection*{Limitations and bias acknowledgment}
 
 v0.5 is a code-and-metadata release on top of existing public data. Its limitations are inherited from the underlying sources or, where noted, are v0.5-specific scope decisions.
 
-\paragraph{Single-vendor real paired-dose coverage.} All real paired-dose acquisitions in v0.5 come from AAPM 2016 and Mayo LDCT-PD, which are Siemens-only. Methods evaluated against the real-paired-dose subset of v0.5 cannot make multi-vendor claims; v1.0 (prospective multi-vendor) addresses this.
+\paragraph{Two-vendor, but not all-vendor, paired-dose coverage.} The real paired-dose subset spans two manufacturers --- the public Mayo LDCT-PD cohort is approximately half GE and half Siemens (across both anatomies) and AAPM 2016 is Siemens --- so v0.5 supports genuine cross-vendor (GE vs Siemens) evaluation. It does \emph{not} cover Canon or Philips hardware, and all paired-dose data are retrospective; prospective, multi-site acquisition spanning additional vendors is deferred to v1.0.
 
-\paragraph{Limited paired-dose patient count.} The combined AAPM + Mayo paired-dose cohort is 309 patients. While this is enough for credentialed evaluation of the aggregate chest task, fine-grained sub-population credentials (e.g., per-pathology) are underpowered.
+\paragraph{Limited paired-dose patient count.} The combined AAPM (10) + public Mayo (200) paired-dose cohort is 210 patients. While this is enough for credentialed evaluation of the aggregate chest task, fine-grained sub-population credentials (e.g., per-vendor $\times$ per-pathology) are underpowered.
 
 \paragraph{Simulated low-dose may underestimate real low-dose noise.} For LIDC scans we synthesize low-dose images via Poisson-thinning; it is well-documented that simulation underestimates real low-dose noise in some regimes~\citep{wang2020deeplearningreview}. v0.5 makes the discrepancy measurable (sim-vs-real comparison on AAPM) but does not eliminate it.
 
@@ -453,11 +454,11 @@ The scientific identifier is the content hash itself; the deposit channels above
 PWM-LDCT v1.0 is a separate follow-up release that addresses the v0.5 limitations explicitly tied to the lack of new prospective acquisition. v1.0 plans to add:
 
 \begin{itemize}
-    \item Prospectively-acquired multi-vendor real paired-dose CT at $\geq$ 500-patient scale (UTSW + partner-site clinical data, $\geq$ 2 of \{Siemens, GE, Canon, Philips\})
+    \item Prospectively-acquired, multi-site paired-dose CT at $\geq$ 500-patient scale (UTSW + partner-site clinical data), extending vendor coverage beyond the GE + Siemens already in v0.5 toward Canon and Philips
     \item Single-panel calibrated radiologist annotations under uniform protocol across all scans
     \item Liver-lesion segmentation as an additional clinical task on abdominal scans
     \item Pediatric chest scans (planned as a companion dataset rather than a v0.5 patch increment)
-    \item Cross-vendor evaluation API with leave-one-vendor-out splits
+    \item Extended leave-one-vendor-out evaluation across $\geq$ 3 vendors (v0.5 already enables GE-vs-Siemens cross-vendor splits)
 \end{itemize}
 
 v1.0 timing is gated on PI staffing at the coordinating site, IRB approval, and partner-site agreements; the target submission window is approximately 12--18 months after v0.5. The v0.5 release ships in parallel and is not blocked by v1.0's clinical-acquisition timeline.
