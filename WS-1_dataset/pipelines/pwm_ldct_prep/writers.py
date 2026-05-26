@@ -101,13 +101,19 @@ def append_audit(out_root: str, row: Dict) -> None:
 
 
 def write_splits(out_root: str) -> Dict[str, List[str]]:
-    """Derive splits/*.txt from the placement of HDF5 files in hdf5/{split}/..."""
+    """Derive splits/*.txt from metadata + the deterministic split rule (dataset_schema.md §7).
+
+    Uses each series' patient_id + recorded seed, so it works even when the (regenerable, local-only)
+    HDF5 shards have been uploaded and pruned during a chunked/streaming build.
+    """
+    from pwm_ldct_loader.splits import assign_split
     placement: Dict[str, str] = {}
-    for path in glob.glob(os.path.join(out_root, "hdf5", "*", "*", "*", "*.h5")):
-        rel = os.path.relpath(path, os.path.join(out_root, "hdf5"))
-        split = rel.split(os.sep)[0]
-        with h5py.File(path, "r") as f:
-            placement[f.attrs["patient_id"]] = split
+    for mp in glob.glob(os.path.join(out_root, "metadata", "*.json")):
+        with open(mp) as f:
+            meta = json.load(f)
+        pid = meta.get("patient_id")
+        if pid:
+            placement[pid] = assign_split(pid, int(meta.get("lowdose_sim", {}).get("seed", 42)))
     out: Dict[str, List[str]] = {"train": [], "val": [], "test": []}
     for pid, split in placement.items():
         out.setdefault(split, []).append(pid)
