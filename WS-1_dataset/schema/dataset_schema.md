@@ -107,6 +107,11 @@ the per-source HU offset correction; see §5.1). All arrays use C-order.
   as HDF5 attributes for self-description.
 - For full-dose-only sources (`lidc`), the `recon/low_dose_real` and `sinogram/*` groups are
   absent; the simulated-low-dose groups are always present.
+- **Terminology.** `recon/low_dose_real` (and `low_dose_kind="real"` in §4) denotes the
+  *source-distributed* reduced-dose. For AAPM/Mayo this is **Mayo's validated projection-domain
+  noise insertion** applied to the real full-dose projections — **not** a second physical low-dose
+  scan — as distinct from `recon/low_dose_sim/*` (this release's own forward-model simulation). The
+  `_real` suffix is shorthand for *measured-reference* (vs. *our-simulation*), not "re-acquired".
 
 ---
 
