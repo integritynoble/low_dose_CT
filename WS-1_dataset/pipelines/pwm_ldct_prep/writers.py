@@ -68,6 +68,30 @@ def write_series_hdf5(out_root: str, fd, sims: Dict[float, np.ndarray], split: s
     return path
 
 
+def write_annotations(out_root: str, patient_id: str, series_id: str, source: str,
+                      annotations: Optional[Dict]) -> None:
+    """Write majority-vote + raw-per-reader annotation files (annotation_qa_protocol.md §7)."""
+    if not annotations:
+        return
+    base = os.path.join(out_root, "annotations")
+    mv_dirname = "lidc_majority_vote" if source == "lidc" else f"topup_{source}"
+    mv_dir = os.path.join(base, mv_dirname)
+    os.makedirs(mv_dir, exist_ok=True)
+    nodules = annotations.get("majority", [])
+    for n in nodules:
+        n.setdefault("ground_truth", "majority_vote")
+    with open(os.path.join(mv_dir, f"{patient_id}.json"), "w") as f:
+        json.dump({"patient_id": patient_id, "series_id": series_id, "source": source,
+                   "nodules": nodules}, f, indent=2)
+    raw_dir = os.path.join(base, "raw_per_reader", patient_id)
+    os.makedirs(raw_dir, exist_ok=True)
+    for rid, items in annotations.get("per_reader", {}).items():
+        safe = "".join(c if c.isalnum() or c in "-_" else "_" for c in str(rid))
+        with open(os.path.join(raw_dir, f"{safe}.json"), "w") as f:
+            json.dump({"patient_id": patient_id, "series_id": series_id, "reader_id": rid,
+                       "nodules": items}, f, indent=2)
+
+
 def append_audit(out_root: str, row: Dict) -> None:
     with open(os.path.join(out_root, "deident_audit.jsonl"), "a") as f:
         f.write(json.dumps(row) + "\n")

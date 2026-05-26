@@ -21,8 +21,8 @@ from . import lowdose_sim
 from .adapters import get_adapter
 from .deident import audit_row
 from .harmonize import build_metadata
-from .writers import (append_audit, write_manifest, write_metadata, write_series_hdf5,
-                      write_splits)
+from .writers import (append_audit, write_annotations, write_manifest, write_metadata,
+                      write_series_hdf5, write_splits)
 
 
 def _now() -> str:
@@ -45,14 +45,16 @@ def cmd_prep(args) -> int:
             sims = {r: lowdose_sim.simulate(fd.volume_hu, r, args.seed, args.source) for r in DOSE_RATIOS}
         meta_sha = write_metadata(args.output, meta)
         write_series_hdf5(args.output, fd, sims, split, meta_sha, real_ld=ps.ld)
+        write_annotations(args.output, fd.patient_id, fd.series_id, args.source, ps.annotations)
         append_audit(args.output, audit_row(
             scan_uid=meta["scan_uid"], source=args.source,
             stage1={"note": "extraction is whitelist-based; see dicom_cleaning_spec.md"},
             ocr_hits=[], tool_versions={"pydicom": pydicom.__version__}, timestamp_utc=_now(),
         ))
         n_done += 1
+        n_nod = len(ps.annotations["majority"]) if ps.annotations else 0
         print(f"[{args.source}] {fd.series_id}  split={split}  slices={n_slices}"
-              f"  real_ld={ps.ld is not None}  sims={len(sims)}")
+              f"  real_ld={ps.ld is not None}  sims={len(sims)}  nodules={n_nod}")
     print(f"prep done: {n_done} patient(s) from {args.input} -> {args.output}")
     return 0
 

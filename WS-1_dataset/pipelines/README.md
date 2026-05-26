@@ -52,14 +52,22 @@ patients (pipeline-test mode); `--no-sim` skips low-dose simulation.
 - Low-dose simulation adapter (`lowdose_sim.py`): uses `pwm_core.contrib.modalities.ct_radon`
   when available, else a clearly-flagged non-production fallback.
 
-**Pending (require the projection data + iteration):**
-- **DICOM-CT-PD projection ingestion** (sinogram + geometry) for AAPM/Mayo — the
-  `_attach_projections` hook in `adapters/_siemens.py` raises `NotImplementedError`; default runs
-  are reconstructed-image-only (which `validate()` accepts). See
-  [`../schema/dicom_to_hdf5_mapping.md`](../schema/dicom_to_hdf5_mapping.md) §3–§4 for the target.
-- **LIDC nodule XML → harmonized annotations** conversion (the QA loop lives in
-  [`../schema/annotation_qa_protocol.md`](../schema/annotation_qa_protocol.md)).
+- **DICOM-CT-PD projection ingestion** (GE & Siemens): `read_projection_series` +
+  `extract_ct_pd_geometry` produce native `[V, C, R]` line integrals + decoded geometry; enable
+  with `--with-sinograms`. Validated on real GE + Siemens samples. Exact source/detector-distance
+  and channel-angle calibration is flagged in `geometry.calibration_status` pending the official
+  DICOM-CT-PD data dictionary ([`../schema/dicom_to_hdf5_mapping.md`](../schema/dicom_to_hdf5_mapping.md) §3–§4).
+- **LIDC nodule XML → harmonized annotations** (`lidc_annotations.py`): namespace-agnostic parse →
+  per-reader per-slice boxes + texture → majority-vote consolidation
+  ([`../schema/annotation_qa_protocol.md`](../schema/annotation_qa_protocol.md) §7). NOTE: the LIDC
+  XMLs are **not** part of an image-only API pull — they are sourced separately (NBIA Data
+  Retriever download / TCIA's LIDC-XML set) and the converter activates when an `*.xml` sits
+  alongside a patient's DICOMs.
+
+**Still pending:**
 - Wiring `pwm_core` as the production low-dose forward model.
+- FBP reconstruction-sanity round-trip (needs a projector) for the Technical-Validation check.
+- Real-data runs (need AAPM Mayo-access + the LIDC annotation XML set).
 
 ## Tests
 
