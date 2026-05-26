@@ -59,8 +59,13 @@ class SiemensPairedAdapter(SourceAdapter):
             ld = self._build(series_map[("ld", "image")], patient_id, "ld") if ("ld", "image") in series_map else None
             if self.with_sinograms:
                 self._attach_projections(fd, series_map.get(("fd", "projection")))
+                ld_proj = series_map.get(("ld", "projection"))
                 if ld is not None:
-                    self._attach_projections(ld, series_map.get(("ld", "projection")))
+                    self._attach_projections(ld, ld_proj)
+                elif ld_proj is not None:
+                    # GE: low-dose projections exist but no LD reconstructed image; keep the
+                    # low-dose projection on the fd record (-> sinogram/low_dose_real).
+                    fd.ld_sinogram, _ = read_projection_series(ld_proj[1]["files"])
             yield PatientScans(patient_id=patient_id, fd=fd, ld=ld)
 
     def _build(self, series_entry, patient_id: str, role: str) -> Series:

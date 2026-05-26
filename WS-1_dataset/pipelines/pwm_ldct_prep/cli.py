@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import argparse
 import datetime as _dt
+import json
 import os
 import sys
 from typing import List, Optional
@@ -33,6 +34,9 @@ def cmd_prep(args) -> int:
     adapter = get_adapter(args.source)
     if getattr(args, "with_sinograms", False):
         adapter.with_sinograms = True
+    if getattr(args, "id_map", None):
+        with open(args.id_map) as f:
+            adapter.id_map = json.load(f)
     sim_model = lowdose_sim.model_name()
     n_done = 0
     for ps in adapter.iter_patients(args.input, subset=args.subset):
@@ -124,6 +128,8 @@ def build_parser() -> argparse.ArgumentParser:
     pr.add_argument("--no-sim", action="store_true", help="skip low-dose simulation")
     pr.add_argument("--with-sinograms", action="store_true",
                     help="ingest DICOM-CT-PD projection data (AAPM/Mayo); large output")
+    pr.add_argument("--id-map", default=None,
+                    help="JSON {native_id: assigned_id} crosswalk for stable IDs across chunked runs")
     pr.set_defaults(func=cmd_prep)
 
     fi = sub.add_parser("finalize", help="write splits + manifest over the combined output tree")

@@ -95,15 +95,15 @@ def _write_projection_view(path, patient, study, series, desc, view, manufacture
     ds.save_as(path, enforce_file_format=True)
 
 
-def _build_mayo_patient(root, manufacturer="SIEMENS"):
-    pid = "L999"
+def _build_mayo_patient(root, manufacturer="SIEMENS", pid="L999", with_ld_image=True):
     study = generate_uid()
     series = {k: generate_uid() for k in ("fdi", "ldi", "fdp", "ldp")}
     d = root / pid
     d.mkdir(parents=True)
     for z in range(2):
         _write_recon_slice(str(d / f"fdi_{z}.dcm"), pid, study, series["fdi"], "Full Dose Images", z, manufacturer)
-        _write_recon_slice(str(d / f"ldi_{z}.dcm"), pid, study, series["ldi"], "Low Dose Images", z, manufacturer)
+        if with_ld_image:   # GE patients lack a reconstructed Low Dose Images series
+            _write_recon_slice(str(d / f"ldi_{z}.dcm"), pid, study, series["ldi"], "Low Dose Images", z, manufacturer)
     for v in range(NVIEWS):
         _write_projection_view(str(d / f"fdp_{v}.dcm"), pid, study, series["fdp"], "Full Dose Projections", v, manufacturer)
         _write_projection_view(str(d / f"ldp_{v}.dcm"), pid, study, series["ldp"], "Low Dose Projections", v, manufacturer)
@@ -144,3 +144,37 @@ def test_projection_pipeline(tmp_path):
     assert g["detector_shape"] == "CYLINDRICAL" and g["scan_type"] == "HELICAL"
     assert g["source_to_isocenter_mm"] == 595.0
     assert len(g["detector_channel_positions"]) == NC
+
+
+def test_ge_no_ld_image_captures_ld_projection_and_id_map(tmp_path):
+    """GE patients have no Low Dose Images recon; their LD projection must still be captured,
+    and the --id-map crosswalk must drive the patient_id (chunk-safe)."""
+    import json
+    raw = tmp_path / "ge_raw"
+    _build_mayo_patient(raw, manufacturer="GE", pid="C001", with_ld_image=False)
+    out = str(tmp_path / "pwm_ldct_v0_5")
+    id_map = tmp_path / "idmap.json"
+    id_map.write_text(json.dumps({"C001": "mayo-0042"}))
+
+    assert prep_main(["prep", "--source", "mayo", "--input", str(raw), "--output", out,
+                      "--seed", "42", "--with-sinograms", "--id-map", str(id_map)]) == 0
+    assert prep_main(["finalize", "--output", out]) == 0
+    assert validate(out).ok
+
+    found = None
+    for split in ("train", "val", "test"):
+        d = LowDoseCTDataset(root=out, split=split, backend="numpy")
+        for i in range(len(d)):
+            s = d[i]
+            assert s["patient_id"] == "mayo-0042"      # id-map honored
+            assert s["low_dose_kind"] == "sim"          # no LD recon image for GE -> simulated
+            assert s["has_projections"]
+            found = (d, s["series_id"])
+    assert found is not None
+    d, sid = found
+    proj = d.get_series_projections(sid)
+    assert proj["full_dose"].shape == (NVIEWS, NC, NR)
+    # the GE low-dose PROJECTION is captured even without an LD recon image
+    assert proj["low_dose_real"] is not None
+    assert proj["low_dose_real"].shape == (NVIEWS, NC, NR)
+    assert proj["geometry"]["vendor"] == "GE"

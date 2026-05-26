@@ -56,8 +56,11 @@ def write_series_hdf5(out_root: str, fd, sims: Dict[float, np.ndarray], split: s
             _ds(f, H5_LD_REAL, apply_hu_offset(real_ld.volume_hu, real_ld.source))
         if fd.sinogram is not None:
             _ds(f, H5_SINO_FULL, fd.sinogram)
-        if real_ld is not None and getattr(real_ld, "sinogram", None) is not None:
-            _ds(f, H5_SINO_LD_REAL, real_ld.sinogram)
+        ld_sino = getattr(real_ld, "sinogram", None) if real_ld is not None else None
+        if ld_sino is None:
+            ld_sino = getattr(fd, "ld_sinogram", None)   # GE: LD projection without an LD recon
+        if ld_sino is not None:
+            _ds(f, H5_SINO_LD_REAL, ld_sino)
         f.attrs["scan_uid"] = _scan_uid(fd.series_id)
         f.attrs["patient_id"] = fd.patient_id
         f.attrs["series_id"] = fd.series_id

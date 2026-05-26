@@ -30,8 +30,9 @@ class Series:
     acquisition: Dict
     slice_positions: List[List[float]]
     demographics: Dict = field(default_factory=dict)
-    sinogram: Optional[np.ndarray] = None      # [Z, V, D] or None
+    sinogram: Optional[np.ndarray] = None      # [V, C, R] full-dose projections, or None
     geometry: Optional[Dict] = None
+    ld_sinogram: Optional[np.ndarray] = None   # [V, C, R] low-dose projections when no LD recon (e.g. GE)
     src_uids: Dict = field(default_factory=dict)  # rehashed study/series UIDs
 
 
@@ -220,7 +221,15 @@ class SourceAdapter(ABC):
         ...
 
     def reindex(self, native_id: str, registry: Dict[str, str]) -> str:
-        """Assign a stable source-prefixed patient_id (the unpublished crosswalk, §4)."""
+        """Assign a stable source-prefixed patient_id (the unpublished crosswalk, §4).
+
+        If ``self.id_map`` is set (a precomputed native->assigned crosswalk) it takes precedence,
+        so chunked/per-patient prep runs produce consistent IDs; otherwise IDs are assigned by
+        insertion order within the run.
+        """
+        idmap = getattr(self, "id_map", None)
+        if idmap and native_id in idmap:
+            return idmap[native_id]
         if native_id not in registry:
             registry[native_id] = f"{self.source}-{len(registry) + 1:04d}"
         return registry[native_id]
