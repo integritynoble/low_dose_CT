@@ -17,7 +17,7 @@ from . import annotations as _ann
 from ._seed import seed_everything
 from .metadata import load_metadata
 from .schema import (
-    H5_FULL, H5_LD_REAL, H5_SINO_FULL, PIXEL_DTYPE, REAL_DOSE_RATIO, SOURCES,
+    H5_FULL, H5_LD_REAL, H5_SINO_FULL, H5_SINO_LD_REAL, PIXEL_DTYPE, REAL_DOSE_RATIO, SOURCES,
     THIN_SLICE_MAX_MM, h5_ld_sim,
 )
 
@@ -118,6 +118,8 @@ class LowDoseCTDataset:
         self._meta_cache: Dict = {}
         self._h5_cache: Dict[str, h5py.File] = {}
         self._index: List = []  # (series_path, root, z)
+        self._series_path: Dict[str, str] = {}   # series_id -> hdf5 path
+        self._series_root: Dict[str, str] = {}   # series_id -> root
         self._build_index()
 
     # -- index -------------------------------------------------------------------------
@@ -140,6 +142,8 @@ class LowDoseCTDataset:
                     st_mm = meta.get("acquisition", {}).get("slice_thickness_mm", 0.0)
                     if st_mm and st_mm > THIN_SLICE_MAX_MM:
                         continue
+                self._series_path[series_id] = path
+                self._series_root[series_id] = root
                 with h5py.File(path, "r") as f:
                     n_slices = f[H5_FULL].shape[0]
                 for z in range(n_slices):
@@ -179,9 +183,7 @@ class LowDoseCTDataset:
                 low = np.asarray(f[H5_LD_REAL][z], dtype=PIXEL_DTYPE)
                 low_kind, dr = "real", REAL_DOSE_RATIO
 
-        sino = None
-        if self.return_sinogram and H5_SINO_FULL in f:
-            sino = np.asarray(f[H5_SINO_FULL][z], dtype=PIXEL_DTYPE)
+        has_proj = H5_SINO_FULL in f  # projections are series-level (see get_series_projections)
 
         if self.resample_spacing is not None:
             ps = meta.get("acquisition", {}).get("pixel_spacing_mm", [1.0, 1.0])
@@ -198,7 +200,8 @@ class LowDoseCTDataset:
             "low_dose": _to_backend(low, b),
             "low_dose_kind": low_kind,
             "dose_ratio": dr,
-            "sinogram": _to_backend(sino, b),
+            "sinogram": None,            # projections are series-level; use get_series_projections()
+            "has_projections": has_proj,
             "source": source,
             "patient_id": patient_id,
             "series_id": series_id,
@@ -206,6 +209,26 @@ class LowDoseCTDataset:
             "annotations": {"nodules": nodules, "likert": likert},
             "metadata": meta,
         }
+
+    def get_series_projections(self, series_id: str):
+        """Native series-level projections + geometry for a series, or None if absent.
+
+        Returns ``{"full_dose": ndarray [V, C, R], "low_dose_real": ndarray|None,
+        "geometry": dict}`` (dataset_schema.md §4.2). Projections are not slice-aligned, so they
+        are accessed by ``series_id`` rather than via the per-slice sample.
+        """
+        path = self._series_path.get(series_id)
+        if path is None:
+            return None
+        f = self._file(path)
+        if H5_SINO_FULL not in f:
+            return None
+        out = {"full_dose": np.asarray(f[H5_SINO_FULL], dtype=PIXEL_DTYPE)}
+        out["low_dose_real"] = (np.asarray(f[H5_SINO_LD_REAL], dtype=PIXEL_DTYPE)
+                                if H5_SINO_LD_REAL in f else None)
+        root = self._series_root.get(series_id, "")
+        out["geometry"] = self._metadata_for(root, series_id).get("geometry", {})
+        return out
 
     def close(self) -> None:
         for f in self._h5_cache.values():

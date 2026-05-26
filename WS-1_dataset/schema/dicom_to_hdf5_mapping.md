@@ -18,7 +18,7 @@ re-downloading the source**.
 | Array | HDF5 path | Axes (C-order) | Definition |
 |---|---|---|---|
 | Reconstructed volume | `recon/*` | `[Z, H, W]` | `Z` slice (increasing `ImagePositionPatient[2]`), `H` rows, `W` columns |
-| Sinogram | `sinogram/*` | `[Z, V, D]` | `Z` matched recon slice, `V` projection views over rotation, `D` detector channels |
+| Projections | `sinogram/*` | `[V, C, R]` | `V` projection views (helical, ordered by `InstanceNumber`), `C` detector channels, `R` detector rows. Native, series-level (not per-slice). |
 
 - **Patient coordinate system:** LPS (DICOM standard), **preserved**. No reorientation, no flips.
 - **Slice ordering:** ascending `ImagePositionPatient[2]`; ties broken by `InstanceNumber`.
@@ -51,48 +51,60 @@ patient coordinates (§5) for any released slice.
 
 ---
 
-## 3. Projection (sinogram) tag mapping — AAPM / Mayo only
+## 3. Projection (DICOM-CT-PD) mapping — AAPM / Mayo only
 
-DICOM-CT-PD projection objects carry vendor geometry that the schema serializes as HDF5 datasets
-plus per-slice geometry in metadata. Detector/view axes are interpreted explicitly:
+The Mayo DICOM-CT-PD format stores **one projection view per DICOM object** (SOP class
+`Raw Data Storage`, UID `1.2.840.10008.5.1.4.1.1.66`), with the detector readout as the pixel
+array. GE and Siemens share the same private-tag layout (groups `7029/7031/7033/7037/...`); only
+the detector dimensions differ (GE `888 × 64`, Siemens `736 × 64` channels × rows). The reader
+sorts views by `InstanceNumber` and stacks them into the native `sinogram/full_dose` `[V, C, R]`.
 
-| DICOM tag (or DICOM-CT-PD item) | Meaning | → HDF5 / metadata |
+| Source element | Meaning | → HDF5 / metadata |
 |---|---|---|
-| projection frames | line-integral measurements | `sinogram/full_dose` `[Z,V,D]` |
-| number of views per rotation | `V` | `geometry.n_views` |
-| number of detector channels | `D` | `geometry.n_det_channels` |
-| (0018,1110) DistanceSourceToDetector | SDD (mm) | `geometry.sdd_mm` |
-| (0018,1111) DistanceSourceToPatient | SID (mm) | `geometry.sid_mm` |
-| detector element spacing | fan channel pitch | `geometry.det_pitch_mm` |
-| detector shape | flat / cylindrical | `geometry.detector_shape` |
-| start angle / angular increment | view sampling | `geometry.start_angle_deg`, `geometry.angle_increment_deg` |
-| (0018,1120) GantryDetectorTilt | tilt | `geometry.gantry_tilt_deg` |
-| (0018,9311) SpiralPitchFactor | helical pitch | `acquisition.pitch` |
+| PixelData (per view) | detector readout `[C, R]` | one slab of `sinogram/full_dose[v]` |
+| (0028,1053)/(0028,1052) RescaleSlope/Intercept | stored → line integral | applied per view |
+| (0028,0010)/(0028,0011) Rows/Columns | `C` / `R` | `geometry.n_det_channels` / `n_det_rows` |
+| (0020,0013) InstanceNumber | view index | view ordering (axis `V`) |
+| priv (7029,1011)/(7029,1010) | detector channels / rows | cross-check `C` / `R` |
+| priv (7029,100B) | detector shape | `geometry.detector_shape` (e.g. `CYLINDRICAL`) |
+| priv (7037,1009)/(7037,100A) | scan / beam type | `geometry.scan_type` / `beam_geometry` (`HELICAL`/`FANBEAM`) |
+| priv (7033,1065) | per-channel detector positions (`C` floats) | `geometry.detector_channel_positions` |
+| priv (7033,1013) | views per rotation | `geometry.views_per_rotation` |
+| priv (7031,1003) | source→isocenter distance (mm, **inferred**) | `geometry.source_to_isocenter_mm` |
+| priv (7031,1031) | source→detector distance (mm, **inferred**) | `geometry.source_to_detector_mm` |
+| (0018,9311) SpiralPitchFactor | helical pitch | `geometry.pitch`, `acquisition.pitch` |
+| (0018,0060) KVP | tube voltage | `geometry.kvp` |
+| (0018,0090) DataCollectionDiameter | FOV (mm) | `geometry.data_collection_diameter_mm` |
 
-`geometry` is a sub-object of `metadata.json` present only for sources with sinograms. It is
-sufficient to instantiate a matching forward/back projector (e.g. the manuscript's
-`pwm_core.contrib.modalities.ct_radon`) and reproduce the FBP reconstruction (manuscript
-*Technical Validation → Reconstruction sanity*).
+All decoded private numeric tags are also retained verbatim in `geometry.raw_private_geometry`
+(keyed `"gggg,eeee"`). Fields marked **inferred** are decoded by value/position; their exact
+semantics require the collection's official DICOM-CT-PD **data dictionary** — `geometry.calibration_status`
+records this. With the channel positions, detector shape, SID/SDD, pitch, and views-per-rotation a
+matching fan-beam projector (e.g. `pwm_core.contrib.modalities.ct_radon`) can be instantiated to
+reproduce the FBP reconstruction (manuscript *Technical Validation → Reconstruction sanity*).
 
 ---
 
-## 4. Sinogram geometry object (`metadata.geometry`)
+## 4. Projection geometry object (`metadata.geometry`)
 
 ```jsonc
 "geometry": {
-  "detector_shape": "cylindrical|flat",
-  "n_views": 0, "n_det_channels": 0, "n_det_rows": 1,
-  "sid_mm": 0.0, "sdd_mm": 0.0,
-  "det_pitch_mm": 0.0,
-  "start_angle_deg": 0.0, "angle_increment_deg": 0.0,
-  "gantry_tilt_deg": 0.0,
-  "fan_angle_deg": 0.0,
-  "rebinned": false           // true if the source projection was parallel-rebinned before storage
+  "vendor": "GE|SIEMENS",
+  "detector_shape": "CYLINDRICAL|FLAT",
+  "scan_type": "HELICAL", "beam_geometry": "FANBEAM",
+  "n_views": 0, "n_det_channels": 0, "n_det_rows": 0,
+  "views_per_rotation": 0,
+  "detector_channel_positions": [/* n_det_channels floats */],
+  "source_to_isocenter_mm": 0.0,    // inferred (priv 7031,1003); confirm vs data dictionary
+  "source_to_detector_mm": 0.0,     // inferred (priv 7031,1031); confirm vs data dictionary
+  "pitch": 0.0, "kvp": 0, "data_collection_diameter_mm": 0.0,
+  "raw_private_geometry": { "7031,1001": 0.0 },   // all decoded private numerics, semantics per dictionary
+  "calibration_status": "private tags decoded; exact source/detector-distance + channel-angle semantics require the DICOM-CT-PD data dictionary"
 }
 ```
 
-For helical acquisitions the per-slice sinogram is the set of views contributing to that slice's
-reconstruction; `provenance.slice_positions[z]` gives the table position so users can re-bin if
+For helical acquisitions the projection array is the full set of views; `provenance.slice_positions[z]`
+gives the per-slice table position so users can re-bin views to a slice if
 they prefer a different slice definition.
 
 ---

@@ -126,6 +126,91 @@ def _first(v):
     return v
 
 
+# --- DICOM-CT-PD projection reading (shared GE/Siemens; dicom_to_hdf5_mapping.md §3-§4) ----------
+import struct
+
+_PRIV_GROUPS = (0x7029, 0x7031, 0x7033, 0x7037, 0x7039, 0x7041)
+
+
+def _decode_priv(raw):
+    """Best-effort decode of a UN-VR private value: ascii string, u16, f32, or f32 list."""
+    b = bytes(raw)
+    stripped = b.rstrip(b"\x00 ")
+    if len(stripped) >= 3 and all(32 <= c < 127 for c in stripped):
+        try:
+            return stripped.decode("ascii")
+        except UnicodeDecodeError:
+            pass
+    if len(b) == 2:
+        return struct.unpack("<H", b)[0]
+    if len(b) == 4:
+        return round(struct.unpack("<f", b)[0], 6)
+    if len(b) % 4 == 0 and len(b) > 0:
+        return [round(x, 4) for x in struct.unpack("<%df" % (len(b) // 4), b)]
+    return b.hex()
+
+
+def extract_ct_pd_geometry(hdr, n_views: int) -> Dict:
+    """Decode DICOM-CT-PD acquisition geometry from a projection view header (GE & Siemens share tags)."""
+    priv: Dict = {}
+    for elem in hdr:
+        if elem.tag.group in _PRIV_GROUPS and elem.tag.element != 0x0010:
+            priv[f"{elem.tag.group:04x},{elem.tag.element:04x}"] = _decode_priv(elem.value)
+
+    def gp(tag):
+        return priv.get(tag)
+
+    n_chan = gp("7029,1011") or int(getattr(hdr, "Rows", 0)) or None
+    n_rows = gp("7029,1010") or int(getattr(hdr, "Columns", 0)) or None
+    chan_pos = gp("7033,1065")
+    chan_pos = chan_pos if isinstance(chan_pos, list) else None
+    mfr = str(getattr(hdr, "Manufacturer", "")).strip().upper()
+    return {
+        "vendor": mfr.split()[0] if mfr else "",
+        "detector_shape": gp("7029,100b"),
+        "scan_type": gp("7037,1009"),
+        "beam_geometry": gp("7037,100a"),
+        "n_views": int(n_views),
+        "n_det_channels": int(n_chan) if n_chan else None,
+        "n_det_rows": int(n_rows) if n_rows else None,
+        "views_per_rotation": gp("7033,1013"),
+        "detector_channel_positions": chan_pos,
+        "source_to_isocenter_mm": gp("7031,1003"),   # inferred; confirm vs data dictionary
+        "source_to_detector_mm": gp("7031,1031"),    # inferred; confirm vs data dictionary
+        "pitch": _num(getattr(hdr, "SpiralPitchFactor", None)),
+        "kvp": _num(getattr(hdr, "KVP", None)),
+        "data_collection_diameter_mm": _num(getattr(hdr, "DataCollectionDiameter", None)),
+        # keep only scalars + short arrays verbatim (drop the long per-channel array, kept above)
+        "raw_private_geometry": {k: v for k, v in priv.items()
+                                 if not (isinstance(v, list) and len(v) > 16)},
+        "calibration_status": ("private tags decoded; exact source/detector-distance and "
+                               "channel-angle semantics require the DICOM-CT-PD data dictionary"),
+    }
+
+
+def read_projection_series(files: List[str]):
+    """Read a DICOM-CT-PD projection series into native ``[V, C, R]`` line integrals + geometry.
+
+    One DICOM object per view (SOP class Raw Data Storage); views ordered by InstanceNumber.
+    """
+    hdrs = []
+    for p in files:
+        ds = pydicom.dcmread(p, force=True)
+        if not hasattr(ds, "PixelData"):
+            continue
+        hdrs.append((int(getattr(ds, "InstanceNumber", 0)), ds))
+    if not hdrs:
+        raise ValueError("no projection views with PixelData")
+    hdrs.sort(key=lambda t: t[0])
+    views = []
+    for _, ds in hdrs:
+        arr = ds.pixel_array.astype(np.float32)
+        views.append(arr * float(getattr(ds, "RescaleSlope", 1.0)) + float(getattr(ds, "RescaleIntercept", 0.0)))
+    sino = np.stack(views, axis=0).astype(np.float32)  # [V, C, R]
+    geom = extract_ct_pd_geometry(hdrs[0][1], n_views=len(views))
+    return sino, geom
+
+
 class SourceAdapter(ABC):
     source: str = ""
     default_anatomy: str = "chest"

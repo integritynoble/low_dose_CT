@@ -31,6 +31,8 @@ def _now() -> str:
 
 def cmd_prep(args) -> int:
     adapter = get_adapter(args.source)
+    if getattr(args, "with_sinograms", False):
+        adapter.with_sinograms = True
     sim_model = lowdose_sim.model_name()
     n_done = 0
     for ps in adapter.iter_patients(args.input, subset=args.subset):
@@ -87,6 +89,8 @@ def build_parser() -> argparse.ArgumentParser:
     pr.add_argument("--seed", type=int, default=42)
     pr.add_argument("--subset", type=int, default=None, help="limit to first N patients")
     pr.add_argument("--no-sim", action="store_true", help="skip low-dose simulation")
+    pr.add_argument("--with-sinograms", action="store_true",
+                    help="ingest DICOM-CT-PD projection data (AAPM/Mayo); large output")
     pr.set_defaults(func=cmd_prep)
 
     fi = sub.add_parser("finalize", help="write splits + manifest over the combined output tree")

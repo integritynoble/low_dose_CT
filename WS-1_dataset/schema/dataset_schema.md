@@ -89,13 +89,17 @@ the per-source HU offset correction; see §5.1). All arrays use C-order.
 | `recon/low_dose_sim/r010`    | `[Z, H, W]` | float32 | HU  | all (sim at r=0.10) |
 | `recon/low_dose_sim/r025`    | `[Z, H, W]` | float32 | HU  | all (sim at r=0.25) |
 | `recon/low_dose_sim/r050`    | `[Z, H, W]` | float32 | HU  | all (sim at r=0.50) |
-| `sinogram/full_dose`         | `[Z, V, D]` | float32 | line integral | `aapm`, `mayo` |
-| `sinogram/low_dose_real`     | `[Z, V, D]` | float32 | line integral | `aapm`, `mayo` |
+| `sinogram/full_dose`         | `[V, C, R]` | float32 | line integral | `aapm`, `mayo` |
+| `sinogram/low_dose_real`     | `[V, C, R]` | float32 | line integral | `aapm`, `mayo` |
 
-- **Axes.** `Z` = slice (cranio-caudal, increasing `ImagePositionPatient[2]`); `H` = rows;
-  `W` = columns; `V` = projection views; `D` = detector channels. Per-slice sinograms are stored
-  for the matching reconstructed slice index `Z`. Full fan-beam geometry per slice is in the
-  metadata (see [`dicom_to_hdf5_mapping.md`](dicom_to_hdf5_mapping.md) §4).
+- **Axes.** Reconstructed volumes use `[Z, H, W]`: `Z` = slice (cranio-caudal, increasing
+  `ImagePositionPatient[2]`), `H` = rows, `W` = columns. Projection data (DICOM-CT-PD) are stored
+  in their **native, series-level layout** `[V, C, R]`: `V` = projection views over the helical
+  acquisition (ordered by `InstanceNumber`), `C` = detector channels, `R` = detector rows. The
+  projections are **not** per-reconstructed-slice — a helical view does not map to a single recon
+  slice — so they are a series-level array, not indexed by `Z`. The fan-beam acquisition geometry
+  (detector shape, channel count/positions, SID/SDD, pitch, views-per-rotation) is recorded in
+  `metadata.geometry` (see [`dicom_to_hdf5_mapping.md`](dicom_to_hdf5_mapping.md) §3-§4).
 - **Orientation.** Patient orientation is **preserved as released** (LPS, per DICOM
   `ImageOrientationPatient`). The pipeline does **not** reorient or flip.
 - **Root attributes.** Every HDF5 file carries `scan_uid`, `patient_id`, `series_id`, `source`,
@@ -123,7 +127,8 @@ sample = ds[i]
 | `low_dose`     | `Tensor [H, W]` float32 | real where available, else simulated; see `low_dose_kind` |
 | `low_dose_kind`| `str`                   | `"real"` \| `"sim"` |
 | `dose_ratio`   | `float`                 | `0.25` for real; the requested `r` for sim |
-| `sinogram`     | `Tensor [V, D]` float32 or `None` | `None` for `lidc` |
+| `sinogram`     | `None`                  | always `None` at the slice level — projections are series-level, not per-slice; use `get_series_projections` (below) |
+| `has_projections` | `bool`               | whether series-level projection data exist for this `series_id` |
 | `source`       | `str`                   | `"lidc"` \| `"aapm"` \| `"mayo"` |
 | `patient_id`   | `str`                   | |
 | `series_id`    | `str`                   | |
@@ -142,7 +147,23 @@ sample = ds[i]
 | `resample_spacing` | `None` | if set (e.g. `0.75`), resample in-plane to that mm spacing; default preserves native |
 | `slice_thickness` | `"thin"` | `"thin"` selects ≤ 1.5 mm series; or a float mm target |
 | `sources` | all three | restrict to a subset, e.g. `["aapm","mayo"]` for real-paired-only studies |
-| `return_sinogram` | `True` | set `False` to skip sinogram I/O |
+
+### 4.2 Series-level projections
+
+Projection (DICOM-CT-PD) data are large and not slice-aligned, so they are accessed at the series
+level rather than in the per-slice `sample`:
+
+```python
+proj = ds.get_series_projections(series_id)   # -> dict, or None if no projections
+# proj["full_dose"]      -> ndarray [V, C, R] float32 line integrals
+# proj["low_dose_real"]  -> ndarray [V, C, R] or None
+# proj["geometry"]       -> dict (detector_shape, n_det_channels, n_det_rows, detector_channel_positions,
+#                           source_to_isocenter_mm, source_to_detector_mm, pitch, views_per_rotation,
+#                           vendor, calibration_status, raw_private_geometry)
+```
+
+`geometry` is also mirrored in `metadata.geometry` (§5). Fields whose exact semantics depend on the
+collection's DICOM-CT-PD data dictionary are flagged via `geometry.calibration_status`.
 
 ---
 

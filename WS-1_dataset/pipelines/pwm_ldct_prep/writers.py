@@ -10,8 +10,8 @@ from typing import Dict, List, Optional
 import h5py
 import numpy as np
 
-from pwm_ldct_loader.schema import (H5_FULL, H5_LD_REAL, H5_SINO_FULL, PIXEL_DTYPE,
-                                    SCHEMA_VERSION, h5_ld_sim)
+from pwm_ldct_loader.schema import (H5_FULL, H5_LD_REAL, H5_SINO_FULL, H5_SINO_LD_REAL,
+                                    PIXEL_DTYPE, SCHEMA_VERSION, h5_ld_sim)
 
 from .harmonize import apply_hu_offset
 
@@ -56,6 +56,8 @@ def write_series_hdf5(out_root: str, fd, sims: Dict[float, np.ndarray], split: s
             _ds(f, H5_LD_REAL, apply_hu_offset(real_ld.volume_hu, real_ld.source))
         if fd.sinogram is not None:
             _ds(f, H5_SINO_FULL, fd.sinogram)
+        if real_ld is not None and getattr(real_ld, "sinogram", None) is not None:
+            _ds(f, H5_SINO_LD_REAL, real_ld.sinogram)
         f.attrs["scan_uid"] = _scan_uid(fd.series_id)
         f.attrs["patient_id"] = fd.patient_id
         f.attrs["series_id"] = fd.series_id

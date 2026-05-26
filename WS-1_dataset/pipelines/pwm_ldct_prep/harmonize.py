@@ -29,7 +29,7 @@ def apply_hu_offset(volume: np.ndarray, source: str) -> np.ndarray:
 def build_metadata(series, sim_model: str, seed: int, n_slices: int) -> Dict:
     """Assemble a schema-§5 metadata object for a (full-dose) series."""
     acq = series.acquisition
-    return {
+    meta = {
         "scan_uid": scan_uid(series.series_id),
         "patient_id": series.patient_id,
         "series_id": series.series_id,
@@ -69,3 +69,6 @@ def build_metadata(series, sim_model: str, seed: int, n_slices: int) -> Dict:
             "deident_audit_id": scan_uid(series.series_id),
         },
     }
+    if getattr(series, "geometry", None):
+        meta["geometry"] = series.geometry
+    return meta
