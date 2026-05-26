@@ -67,6 +67,37 @@ def cmd_finalize(args) -> int:
     return 0
 
 
+def cmd_recon_sanity(args) -> int:
+    from pwm_ldct_loader import LowDoseCTDataset
+
+    from . import recon_sanity as rs
+    checked = 0
+    for split in ("train", "val", "test"):
+        ds = LowDoseCTDataset(root=args.output, split=split, backend="numpy")
+        seen = set()
+        for i in range(len(ds)):
+            sid = ds[i]["series_id"]
+            if sid in seen:
+                continue
+            seen.add(sid)
+            proj = ds.get_series_projections(sid)
+            if not proj:
+                continue
+            m = rs.check_series_projection_recon(proj["full_dose"], ds.get_series_recon(sid),
+                                                 proj.get("geometry", {}))
+            print(f"{sid}: status={m.get('status')} pearson_r={m.get('pearson_r', float('nan')):.3f} "
+                  f"rmse={m.get('rmse', float('nan')):.1f} frac_within_tol={m.get('frac_within_tol', float('nan')):.3f}")
+            checked += 1
+            if args.max_series and checked >= args.max_series:
+                print(f"recon-sanity: checked {checked} series (approximate/uncalibrated)")
+                return 0
+    if checked == 0:
+        print("recon-sanity: no series with projections (run prep --with-sinograms first)")
+    else:
+        print(f"recon-sanity: checked {checked} series (approximate/uncalibrated)")
+    return 0
+
+
 def cmd_validate(args) -> int:
     from pwm_ldct_loader import validate
     rep = validate(args.output)
@@ -102,6 +133,12 @@ def build_parser() -> argparse.ArgumentParser:
     va = sub.add_parser("validate", help="run pwm_ldct_loader.validate on the output tree")
     va.add_argument("--output", required=True)
     va.set_defaults(func=cmd_validate)
+
+    rs = sub.add_parser("recon-sanity",
+                        help="approximate projection->recon agreement check (uncalibrated; see recon_sanity.py)")
+    rs.add_argument("--output", required=True)
+    rs.add_argument("--max-series", type=int, default=None, help="limit to first N series")
+    rs.set_defaults(func=cmd_recon_sanity)
     return p
 
 

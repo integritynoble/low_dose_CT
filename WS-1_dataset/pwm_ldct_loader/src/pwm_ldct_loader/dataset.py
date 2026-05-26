@@ -230,6 +230,13 @@ class LowDoseCTDataset:
         out["geometry"] = self._metadata_for(root, series_id).get("geometry", {})
         return out
 
+    def get_series_recon(self, series_id: str):
+        """Full reconstructed volume ``[Z, H, W]`` (HU) for a series, or None if unknown."""
+        path = self._series_path.get(series_id)
+        if path is None:
+            return None
+        return np.asarray(self._file(path)[H5_FULL], dtype=PIXEL_DTYPE)
+
     def close(self) -> None:
         for f in self._h5_cache.values():
             try:

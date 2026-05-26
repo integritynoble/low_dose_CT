@@ -64,9 +64,15 @@ patients (pipeline-test mode); `--no-sim` skips low-dose simulation.
   Retriever download / TCIA's LIDC-XML set) and the converter activates when an `*.xml` sits
   alongside a patient's DICOMs.
 
+- **Reconstruction-sanity harness** (`recon_sanity.py`): numpy parallel-beam Radon + FBP +
+  agreement metric (max_abs / rmse / frac_within_tol / pearson) + a phantom self-consistency
+  round-trip (validated). CLI: `recon-sanity --output <tree>`. NOTE: the per-series check on real
+  *helical* DICOM-CT-PD data is **approximate and uncalibrated** (crude parallel rebinning) and
+  returns a status flag saying so — a faithful fan/helical round-trip needs the data-dictionary
+  geometry.
+
 **Still pending:**
-- Wiring `pwm_core` as the production low-dose forward model.
-- FBP reconstruction-sanity round-trip (needs a projector) for the Technical-Validation check.
+- Wiring `pwm_core` as the production low-dose forward model + calibrated fan/helical FBP.
 - Real-data runs (need AAPM Mayo-access + the LIDC annotation XML set).
 
 ## Tests
