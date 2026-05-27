@@ -24,6 +24,7 @@ Files in this folder:
 | [`lidc_xml_acquisition.md`](lidc_xml_acquisition.md) | LIDC radiologist-annotation XML acquisition + co-location for the converter |
 | [`ldct_projection_download.md`](ldct_projection_download.md) | LDCT-and-Projection-Data: scripted NBIA REST API recipe, public/restricted scope, GCS staging + verification |
 | [`aapm_2016_request.md`](aapm_2016_request.md) | Mayo Clinic access-request email template |
+| [`aapm_mayo_overlap_reconciliation.md`](aapm_mayo_overlap_reconciliation.md) | Reconcile AAPM 2016 ∩ Mayo LDCT-PD patient overlap (union count + de-dup) |
 | [`fastmri_request.md`](fastmri_request.md) | NYU fastMRI registration template + agreement notes |
 | [`nema_phantom_note.md`](nema_phantom_note.md) | PET phantom data sourcing note |
 

@@ -64,7 +64,8 @@ acceptance.
   sim-vs-reference validation; **first verify** the challenge cases aren't already in the public
   TCIA collection we have.
 - [ ] **Reconcile the AAPM 2016 ∩ Mayo LDCT-PD overlap** against the authoritative challenge patient
-  manifest (de-dup machinery already in place; finalizes the union count, currently an upper bound).
+  manifest — steps + decision tree in `../data_acquisition/aapm_mayo_overlap_reconciliation.md`
+  (de-dup machinery already in place; finalizes the union count, currently an upper bound).
 - [ ] **Run LIDC + AAPM harmonized builds** (`run_mayo.py` pattern / the LIDC & AAPM Dockerfiles) →
   fills their cohort + demographics + acquisition rows.
 - [ ] **Regenerate the Mayo sim in GCS with the calibrated model** — deferred to GPU/cluster
