@@ -36,6 +36,8 @@ acceptance.
 - [ ] **Funding / grant numbers** — `physionet_listing/listing.md`; add to manuscript Acknowledgements.
 
 ## 2. Repository deposit & identifiers 🔴 (data must be deposited at submission)
+> **Mechanics for all of §2** — packaging, manifest/content-hash, Zenodo+PhysioNet upload, PyPI,
+> public repo, and the DOI backfill — are in `physionet_listing/deposit_procedure.md`.
 - [ ] **Deposit the value-added records to PhysioNet** (annotations, metadata, splits, manifest,
   LIDC-derived sim, code) → obtain **PhysioNet DOI** — fills `manuscript.tex` `\todo{prefix}` (×2),
   `\todo{PhysioNet URL}`; `listing.md`; `reporting_summary.md`; `cover_letter.md`. Use `listing.md`

@@ -2,6 +2,9 @@
 
 Draft content + metadata for the **PhysioNet** project listing of PWM-LDCT v0.5.
 
+- [`deposit_procedure.md`](deposit_procedure.md) — **how to deposit**: package the records, build the
+  manifest/content-hash, upload to Zenodo + PhysioNet, publish to PyPI, make the repo public, and
+  backfill the minted DOIs across the manuscript + submission docs.
 - [`listing.md`](listing.md) — paste-ready content for every PhysioNet authoring section
   (Abstract, Background, Methods, Data Description, Usage Notes, Release Notes, Ethics,
   Acknowledgements, Conflicts of Interest, References) plus the discovery/metadata form fields
