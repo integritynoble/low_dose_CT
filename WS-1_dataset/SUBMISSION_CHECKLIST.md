@@ -50,8 +50,9 @@ acceptance.
   publication.
 
 ## 3. Annotation campaign 🔴 (produces the new data records the descriptor is built on)
-- [ ] **Source the LIDC nodule XMLs** (not in the image-only bucket pull; NBIA Data Retriever / TCIA
-  LIDC-XML set) — converter ready (`pipelines/pwm_ldct_prep/lidc_annotations.py`).
+- [ ] **Source the LIDC nodule XMLs** (not in the image-only bucket pull) — steps in
+  `../data_acquisition/lidc_xml_acquisition.md` (Method A: NBIA Data Retriever, XMLs co-located;
+  Method B: standalone TCIA XML set + remap). Converter ready (`pipelines/pwm_ldct_prep/lidc_annotations.py`).
 - [ ] **Recruit radiologist panel; run calibration → top-up → Likert → adjudication** per
   `schema/annotation_qa_protocol.md`. Produces the AAPM/Mayo top-up + Likert records and the κ values.
 - [ ] **Annotation budget figure** — `manuscript.tex` `\todo{\$X}`.

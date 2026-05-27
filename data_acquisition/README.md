@@ -21,6 +21,7 @@ Files in this folder:
 |---|---|
 | [`checklist.md`](checklist.md) | Master data-acquisition checklist with current status |
 | [`lidc_idri_download.md`](lidc_idri_download.md) | NBIA Data Retriever download recipe + 50-patient subset script |
+| [`lidc_xml_acquisition.md`](lidc_xml_acquisition.md) | LIDC radiologist-annotation XML acquisition + co-location for the converter |
 | [`ldct_projection_download.md`](ldct_projection_download.md) | LDCT-and-Projection-Data: scripted NBIA REST API recipe, public/restricted scope, GCS staging + verification |
 | [`aapm_2016_request.md`](aapm_2016_request.md) | Mayo Clinic access-request email template |
 | [`fastmri_request.md`](fastmri_request.md) | NYU fastMRI registration template + agreement notes |
