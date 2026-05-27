@@ -29,6 +29,7 @@
 \usepackage[margin=1in]{geometry}
 \usepackage{graphicx}
 \usepackage{booktabs}
+\usepackage{tabularx}
 \usepackage{multirow}
 \usepackage{amsmath,amssymb}
 \usepackage{siunitx}
@@ -89,7 +90,7 @@ Yet the three sources are not designed to be used together. Three structural gap
     \centering
     \small
     \setlength{\tabcolsep}{4pt}
-    \begin{tabular}{lcccc}
+    \begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}X c c c >{\raggedright\arraybackslash}X@{}}
         \toprule
         \textbf{Source} & \textbf{Patients} & \textbf{Paired LD ref.} & \textbf{Sinograms} & \textbf{Annotations as-distributed} \\
         \midrule
@@ -97,9 +98,9 @@ Yet the three sources are not designed to be used together. Three structural gap
         AAPM 2016~\citep{aapm2016challenge}    & 10      & Yes & Yes & None as-distributed \\
         Mayo LDCT-PD~\citep{mccollough2020mayo} & 199     & Yes & Yes & Lesion labels on subset \\
         \midrule
-        \textbf{v0.5 union}                     & \textbf{$\sim$1{,}227} & \textbf{209 (GE + Siemens)} & \textbf{209 (GE + Siemens)} & \textbf{Harmonized + topped-up} \\
+        \textbf{v0.5 union}                     & \textbf{$\sim$1{,}227} & \textbf{209} & \textbf{209} & \textbf{Harmonized + topped-up} \\
         \bottomrule
-    \end{tabular}
+    \end{tabularx}
     \caption{Composition of the PWM-LDCT v0.5 release as a union of three public sources. The Mayo LDCT-PD count is the 199 publicly accessible patients (one ACR phantom and the 99 Genomic Data Commons credentialed-access head subjects are excluded from v0.5). Paired full-dose / reduced-dose data are present for the AAPM 2016 and Mayo LDCT-PD subsets; \textbf{the Mayo cohort spans two vendors (approximately half GE, half Siemens), so v0.5 provides cross-vendor (GE + Siemens) paired-dose coverage.} v1.0 (a separate follow-up release) adds prospectively-acquired, multi-site, re-acquired paired-dose data and new clinical tasks.}
     \label{tab:source_comparison}
 \end{table}
