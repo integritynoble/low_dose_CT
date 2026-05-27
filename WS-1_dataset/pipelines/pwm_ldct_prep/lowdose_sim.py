@@ -25,10 +25,18 @@ import numpy as np
 _PWM_CORE_MODEL = "pwm_core.contrib.modalities.ct_radon"
 _INREPO_MODEL = "pwm_ldct_prep.lowdose_sim:projection_domain_v1"
 
-I0_REF = 1.0e5        # incident photon count I0^(0)
-SIGMA_E = 10.0        # electronic-noise std (photons)
+# !!! CALIBRATION REQUIRED before production use !!!
+# A spot-check on real Mayo CT showed the nominal defaults below produce NON-PHYSICAL noise
+# (~hundreds-to-thousands of HU vs the realistic ~tens of HU at quarter dose) because I0/sigma_e
+# are uncalibrated and the mu->HU factor (~1000/MU_WATER) amplifies projection-domain noise. I0_REF
+# and SIGMA_E MUST be calibrated per scanner so that simulated 25%-dose noise matches the reference
+# (AAPM/Mayo noise-inserted) low-dose noise statistics (this is the manuscript's sim-vs-reference
+# validation). Treat the current output as a structural placeholder, not calibrated low-dose.
+I0_REF = 1.0e5        # incident photon count I0^(0)        [CONFIRM: calibrate per scanner]
+SIGMA_E = 10.0        # electronic-noise std (photons)      [CONFIRM: calibrate per scanner]
 N_ANGLES = 180        # projection views
 MU_WATER = 0.019      # water linear attenuation (~/mm); HU<->mu conversion
+HU_FLOOR = -1024.0    # physical HU floor (clip FOV-padding values, e.g. GE -3024, before mu)
 
 
 def model_name() -> str:
@@ -77,7 +85,8 @@ def _projection_domain_multi(volume_hu, ratios, seed) -> Dict[float, np.ndarray]
     rngs = {r: np.random.default_rng(int(seed) + int(round(r * 1000))) for r in ratios}
     out = {r: np.empty_like(volume_hu, dtype=np.float32) for r in ratios}
     for z in range(volume_hu.shape[0]):
-        mu = np.clip((volume_hu[z].astype(np.float64) / 1000.0 + 1.0) * MU_WATER, 0.0, None)
+        hu = np.clip(volume_hu[z].astype(np.float64), HU_FLOOR, None)  # drop non-physical FOV padding
+        mu = np.clip((hu / 1000.0 + 1.0) * MU_WATER, 0.0, None)
         s_ref = _radon(mu, theta)                              # once per slice
         I = I0_REF * np.exp(-s_ref)
         for r in ratios:
