@@ -121,23 +121,45 @@ acceptance.
 
 ---
 
-## Appendix — placeholder index (for verification)
-`\todo{}` count is in `manuscript.tex`; `[CONFIRM]` counts per file:
+## Appendix — placeholder index (verified by sweep, 2026-05-27)
+Reproduce with: `grep -rn '\\todo{' WS-1_dataset/paper_draft/manuscript.tex` and
+`grep -rn '\[CONFIRM' WS-1_dataset`.
 
-| File | markers |
+**Manuscript `\todo`:** 53 `\todo{` occurrences across 29 lines; 3 are non-fillable (1 status
+comment + the `\todotable`/`\todofig` macro defs) → **50 fillable placeholders** (RESULTS
+tables/figures + the §1–§6 fields above).
+
+**`[CONFIRM]` markers — three classes** (raw `grep -o` counts; each deliverable also has ~1
+convention-header mention that is descriptive, not fillable):
+
+*(A) Submission deliverables — must clear before submit:*
+| File | decision `[CONFIRM]` |
 |---|---|
-| `paper_draft/manuscript.tex` | ~58 `\todo{}` (incl. 2 macro defs; tables/figures + fields above) |
-| `physionet_listing/listing.md` | 8 `[CONFIRM]` |
-| `paper_draft/reporting_summary.md` | 10 `[CONFIRM]` |
-| `paper_draft/cover_letter.md` | 8 `[CONFIRM]` |
-| `schema/dataset_schema.md` | 2 `[CONFIRM]` |
-| `schema/annotation_qa_protocol.md` | κ/IoU `[CONFIRM:…]` |
-| `schema/dicom_cleaning_spec.md` | OCR `[CONFIRM: 60]` |
-| `pipelines/pwm_ldct_prep/harmonize.py` | 2 `[CONFIRM]` (HU offsets) |
+| `physionet_listing/listing.md` | 8 |
+| `paper_draft/reporting_summary.md` | 7 |
+| `paper_draft/cover_letter.md` | 3 |
+| `schema/dataset_schema.md` | 2 (HU offsets) |
+| `pipelines/pwm_ldct_prep/harmonize.py` | 2 (HU offsets) |
+| `schema/annotation_qa_protocol.md` | 1 |
+
+*(B) Operational planning docs — `[CONFIRM]` = before-kickoff decisions; persist until that activity runs:*
+| File | decision `[CONFIRM]` |
+|---|---|
+| `annotation_campaign_plan.md` | 7 |
+| `baselines/RUN_PLAN.md` | 7 |
+| `physionet_listing/deposit_procedure.md` | 4 |
+
+*(C) Pre-registered schema defaults `[CONFIRM:…]` — intentionally retained (14 total):* κ ≥ 0.60,
+nodule-match IoU ≥ 0.3, OCR confidence ≥ 60 (+ the campaign honorarium estimate), mirrored across
+`annotation_qa_protocol.md` / `dicom_cleaning_spec.md` / `annotation_campaign_plan.md`. Ratify the
+values; do not blank them.
+
+Totals across the package: **58 decision `[CONFIRM]`** + **14 default `[CONFIRM:…]`** (the remainder
+of the 58 beyond A+B are meta/convention references in this checklist and the READMEs).
 
 > Low-dose-sim `I0_REF` is now calibrated (no longer a `[CONFIRM]`), but per-scanner/anatomy
 > refinement remains recommended (§5).
 
-> Sweep before submitting: `grep -rn '\\todo{' WS-1_dataset/paper_draft/manuscript.tex` and
-> `grep -rn '\[CONFIRM' WS-1_dataset` must both come back empty (except the schema `[CONFIRM:…]`
-> defaults you choose to keep).
+> **Submission gate:** all manuscript `\todo{}` and every class-(A) `[CONFIRM]` must be cleared;
+> class-(C) schema defaults may be kept (ratify the values); class-(B) markers clear as each
+> activity (campaign / GPU run / deposit) completes.
