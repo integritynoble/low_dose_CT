@@ -24,6 +24,8 @@ acceptance.
 - **Submission docs drafted:** PhysioNet listing, Nature Reporting Summary, cover letter.
 
 ## 1. People & declarations 🔴
+> **Fill-in template for all of §1** (roster, CRediT role matrix, ready-to-paste title block /
+> contributions / COI statements, IRB + funding fields) — `paper_draft/author_metadata.md`.
 - [ ] **Author list, affiliations, ORCIDs, corresponding author** — `paper_draft/manuscript.tex`
   title block ("Authors to be confirmed") + `\todo{}` Author contributions (CRediT);
   `paper_draft/cover_letter.md`; `physionet_listing/listing.md`.
