@@ -54,7 +54,9 @@ acceptance.
   `../data_acquisition/lidc_xml_acquisition.md` (Method A: NBIA Data Retriever, XMLs co-located;
   Method B: standalone TCIA XML set + remap). Converter ready (`pipelines/pwm_ldct_prep/lidc_annotations.py`).
 - [ ] **Recruit radiologist panel; run calibration → top-up → Likert → adjudication** per
-  `schema/annotation_qa_protocol.md`. Produces the AAPM/Mayo top-up + Likert records and the κ values.
+  `schema/annotation_qa_protocol.md` — operational plan (scope: 99 chest nodule top-up + ~209 Likert;
+  panel, tooling, timeline, ~$9–12K budget, deliverables) in `annotation_campaign_plan.md`.
+  Produces the top-up + Likert records and the κ values.
 - [ ] **Annotation budget figure** — `manuscript.tex` `\todo{\$X}`.
 
 ## 4. Data acquisition & remaining harmonization builds 🟠

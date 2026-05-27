@@ -119,6 +119,8 @@ Do not pre-create empty directories. Create each one when the work that fills it
 
 ## Cross-references
 
+- [`SUBMISSION_CHECKLIST.md`](SUBMISSION_CHECKLIST.md) — consolidated open-items checklist (single source of truth).
+- [`annotation_campaign_plan.md`](annotation_campaign_plan.md) — operational plan for the radiologist annotation campaign.
 - [`../WS-2_framework/`](../WS-2_framework/) — the framework's CT validation runs against this dataset.
 - [`../WS-3_reference_method/`](../WS-3_reference_method/) — trains and evaluates on this dataset.
 - [`../WS-4_leaderboard/`](../WS-4_leaderboard/) — community submissions are scored on this dataset's test split.
