@@ -107,13 +107,21 @@ def write_splits(out_root: str) -> Dict[str, List[str]]:
     HDF5 shards have been uploaded and pruned during a chunked/streaming build.
     """
     from pwm_ldct_loader.splits import assign_split
-    placement: Dict[str, str] = {}
+    # De-duplicate across sources by the canonical patient key: a physical patient appearing in
+    # more than one source (e.g. AAPM 2016 ⊂ Mayo LDCT-PD) is assigned to ONE split and listed once
+    # (deterministic representative = smallest patient_id), preventing leakage and double-counting.
+    rep: Dict[str, tuple] = {}   # canonical_key -> (split, representative_patient_id)
     for mp in glob.glob(os.path.join(out_root, "metadata", "*.json")):
         with open(mp) as f:
             meta = json.load(f)
         pid = meta.get("patient_id")
-        if pid:
-            placement[pid] = assign_split(pid, int(meta.get("lowdose_sim", {}).get("seed", 42)))
+        if not pid:
+            continue
+        ckey = meta.get("provenance", {}).get("canonical_patient_key") or pid
+        split = assign_split(ckey, int(meta.get("lowdose_sim", {}).get("seed", 42)))
+        if ckey not in rep or pid < rep[ckey][1]:
+            rep[ckey] = (split, pid)
+    placement: Dict[str, str] = {pid: split for split, pid in rep.values()}
     out: Dict[str, List[str]] = {"train": [], "val": [], "test": []}
     for pid, split in placement.items():
         out.setdefault(split, []).append(pid)

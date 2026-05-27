@@ -117,10 +117,12 @@ def test_loadable_and_contract(raw_lidc, tmp_path):
     assert total == 2 * 3  # 2 patients x 3 slices
 
 
-def test_split_placement_matches_assign(raw_lidc, tmp_path):
+def test_split_placement_one_split_per_patient(raw_lidc, tmp_path):
+    # splits are assigned on the canonical patient key; each patient must land in exactly one split
     out = str(tmp_path / "pwm_ldct_v0_5")
     prep_main(["prep", "--source", "lidc", "--input", raw_lidc, "--output", out, "--seed", "42"])
     for pnum in (1, 2):
         pid = f"lidc-{pnum:04d}"
-        split = assign_split(pid, 42)
-        assert os.path.isdir(os.path.join(out, "hdf5", split, "lidc", pid))
+        hits = [s for s in ("train", "val", "test")
+                if os.path.isdir(os.path.join(out, "hdf5", s, "lidc", pid))]
+        assert hits == [hits[0]] and len(hits) == 1, (pid, hits)

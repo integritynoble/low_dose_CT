@@ -12,8 +12,8 @@ import os
 from typing import Dict, Iterator, Optional
 
 from .. import lidc_annotations as la
-from .base import (PatientScans, Series, SourceAdapter, demographics_from, group_dicom,
-                   read_ct_volume)
+from .base import (PatientScans, Series, SourceAdapter, canonical_patient_key, demographics_from,
+                   group_dicom, read_ct_volume)
 
 
 class LidcIdriAdapter(SourceAdapter):
@@ -50,6 +50,7 @@ class LidcIdriAdapter(SourceAdapter):
                 slice_positions=positions,
                 demographics=demographics_from(ref),
                 src_uids={"series": suid, "study": str(getattr(ref, "StudyInstanceUID", ""))},
+                canonical_key=canonical_patient_key(native_pid),
             )
             annotations = self._load_annotations(g["files"], positions, acq["pixel_spacing_mm"])
             yield PatientScans(patient_id=patient_id, fd=fd, ld=None, annotations=annotations)

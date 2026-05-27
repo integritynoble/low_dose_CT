@@ -226,7 +226,8 @@ One JSON object per series. Fields (✓ = always present; ○ = present where th
     "rehashed_study_uid": "string",     // salted re-hash; see dicom_cleaning_spec §4
     "rehashed_series_uid": "string",
     "n_slices": 0,
-    "deident_audit_id": "string"        // links to the de-id audit log row
+    "deident_audit_id": "string",       // links to the de-id audit log row
+    "canonical_patient_key": "string"   // cross-source physical-patient key (split de-dup, §7)
   }
 }
 ```
@@ -286,9 +287,15 @@ keyed by `reader_id`, for uncertainty-aware downstream methods.
 - Patients (never scans) are partitioned **60 / 20 / 20** train/val/test, **stratified by
   `(source, anatomy)`**. A patient's full-dose, real-low-dose, and simulated-low-dose data all
   reside in the same split.
-- Assignment is deterministic given `seed = 42` and the `patient_id`:
-  `bucket = (sha256(f"{seed}:{patient_id}") mod 100)` → `<60` train, `<80` val, else test, with a
+- Assignment is deterministic given `seed = 42` and a **cross-source canonical patient key**
+  `ckey` (`metadata.provenance.canonical_patient_key` — a salted hash of the native patient ID):
+  `bucket = (sha256(f"{seed}:{ckey}") mod 100)` → `<60` train, `<80` val, else test, with a
   post-pass that guarantees ≥ 1 patient per `(source, anatomy)` stratum in every split.
+- **Cross-source de-duplication.** A physical patient that appears in more than one source (e.g.
+  AAPM 2016 ⊂ Mayo LDCT-PD, which share Mayo's native ID scheme) yields the same `ckey`, so it is
+  (a) assigned to a single split — preventing train/test leakage — and (b) listed once in
+  `splits/*.txt` (deterministic representative = smallest `patient_id`). `ckey` defaults to the
+  `patient_id` when no native ID is recorded.
 - `splits/split_assignment.csv` records the final assignment and is itself hashed into
   `manifest.sha256`, so the split is frozen and verifiable.
 

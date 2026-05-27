@@ -11,8 +11,8 @@ from typing import Dict, Iterator, Optional
 
 import numpy as np
 
-from .base import (PatientScans, Series, SourceAdapter, demographics_from, group_dicom,
-                   read_ct_volume, read_projection_series)
+from .base import (PatientScans, Series, SourceAdapter, canonical_patient_key, demographics_from,
+                   group_dicom, read_ct_volume, read_projection_series)
 
 
 def _classify(series_desc: str):
@@ -55,8 +55,12 @@ class SiemensPairedAdapter(SourceAdapter):
             if ("fd", "image") not in series_map:
                 continue  # need a full-dose reconstruction to anchor the record
             patient_id = self.reindex(native_pid, registry)
+            ckey = canonical_patient_key(native_pid)
             fd = self._build(series_map[("fd", "image")], patient_id, "fd")
+            fd.canonical_key = ckey
             ld = self._build(series_map[("ld", "image")], patient_id, "ld") if ("ld", "image") in series_map else None
+            if ld is not None:
+                ld.canonical_key = ckey
             if self.with_sinograms:
                 self._attach_projections(fd, series_map.get(("fd", "projection")))
                 ld_proj = series_map.get(("ld", "projection"))

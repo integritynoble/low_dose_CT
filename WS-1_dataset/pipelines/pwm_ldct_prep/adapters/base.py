@@ -8,6 +8,7 @@ that adapters with sinograms override — see SiemensPairedAdapter.
 from __future__ import annotations
 
 import glob
+import hashlib
 import os
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
@@ -33,6 +34,7 @@ class Series:
     sinogram: Optional[np.ndarray] = None      # [V, C, R] full-dose projections, or None
     geometry: Optional[Dict] = None
     ld_sinogram: Optional[np.ndarray] = None   # [V, C, R] low-dose projections when no LD recon (e.g. GE)
+    canonical_key: str = ""                    # cross-source physical-patient key (hash of native ID)
     src_uids: Dict = field(default_factory=dict)  # rehashed study/series UIDs
 
 
@@ -93,6 +95,16 @@ def read_ct_volume(files: List[str]) -> Tuple[np.ndarray, Dict, List[List[float]
     }
     positions = [[float(x) for x in s.ImagePositionPatient] for s in slices]
     return volume, acq, positions, ref
+
+
+def canonical_patient_key(native_id: str) -> str:
+    """Salted hash of the native PatientID — a cross-source physical-patient key.
+
+    Same native ID across sources (e.g. AAPM 2016 ⊂ Mayo LDCT-PD both use Mayo's L###/C### IDs)
+    yields the same key, so duplicates are assigned to one split and de-duplicated, without
+    revealing the native ID. LIDC IDs do not collide with Mayo's.
+    """
+    return hashlib.sha256(("pwm-ldct-canon:" + str(native_id)).encode()).hexdigest()[:16]
 
 
 def demographics_from(hdr) -> Dict:

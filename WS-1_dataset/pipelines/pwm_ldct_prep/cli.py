@@ -43,7 +43,9 @@ def cmd_prep(args) -> int:
         fd = ps.fd
         n_slices = int(fd.volume_hu.shape[0])
         meta = build_metadata(fd, sim_model=sim_model, seed=args.seed, n_slices=n_slices)
-        split = assign_split(fd.patient_id, args.seed)
+        # split on the cross-source canonical patient key so a patient appearing in >1 source
+        # (e.g. AAPM 2016 ⊂ Mayo LDCT-PD) lands in a single split (no train/test leakage)
+        split = assign_split(fd.canonical_key or fd.patient_id, args.seed)
         sims = {}
         if not args.no_sim:
             sims = {r: lowdose_sim.simulate(fd.volume_hu, r, args.seed, args.source) for r in DOSE_RATIOS}

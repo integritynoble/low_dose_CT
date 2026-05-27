@@ -67,6 +67,7 @@ def build_metadata(series, sim_model: str, seed: int, n_slices: int) -> Dict:
             "rehashed_series_uid": series.src_uids.get("series", ""),
             "n_slices": n_slices,
             "deident_audit_id": scan_uid(series.series_id),
+            "canonical_patient_key": getattr(series, "canonical_key", "") or series.patient_id,
         },
     }
     if getattr(series, "geometry", None):

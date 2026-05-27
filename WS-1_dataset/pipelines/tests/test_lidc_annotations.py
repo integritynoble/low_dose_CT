@@ -116,7 +116,9 @@ def test_lidc_annotation_conversion(tmp_path):
     assert sorted(os.listdir(raw_dir)) == ["R1.json", "R2.json"]
 
     # loader attaches the nodule to slice 1 and nothing to slices 0/2
-    split = assign_split("lidc-0001", 42)
+    # (splits are keyed on the canonical patient key, so locate the patient's split)
+    split = next(s for s in ("train", "val", "test")
+                 if os.path.isdir(os.path.join(out, "hdf5", s, "lidc", "lidc-0001")))
     ds = LowDoseCTDataset(root=out, split=split, backend="numpy")
     by_z = {ds[i]["slice_index"]: ds[i] for i in range(len(ds))}
     assert len(by_z[1]["annotations"]["nodules"]) == 1
