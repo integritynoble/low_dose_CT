@@ -25,15 +25,15 @@ import numpy as np
 _PWM_CORE_MODEL = "pwm_core.contrib.modalities.ct_radon"
 _INREPO_MODEL = "pwm_ldct_prep.lowdose_sim:projection_domain_v1"
 
-# !!! CALIBRATION REQUIRED before production use !!!
-# A spot-check on real Mayo CT showed the nominal defaults below produce NON-PHYSICAL noise
-# (~hundreds-to-thousands of HU vs the realistic ~tens of HU at quarter dose) because I0/sigma_e
-# are uncalibrated and the mu->HU factor (~1000/MU_WATER) amplifies projection-domain noise. I0_REF
-# and SIGMA_E MUST be calibrated per scanner so that simulated 25%-dose noise matches the reference
-# (AAPM/Mayo noise-inserted) low-dose noise statistics (this is the manuscript's sim-vs-reference
-# validation). Treat the current output as a structural placeholder, not calibrated low-dose.
-I0_REF = 1.0e5        # incident photon count I0^(0)        [CONFIRM: calibrate per scanner]
-SIGMA_E = 10.0        # electronic-noise std (photons)      [CONFIRM: calibrate per scanner]
+# Low-dose calibration. I0_REF was fit so that the simulated 25%-dose noise approximates the real
+# reference (noise-inserted) low-dose noise, against Mayo patient L004 (abdomen, Siemens, 25%
+# reference): soft-tissue flat-ROI noise std = 18.9 HU; with I0_REF = 1e8 the simulator yields
+# ~24 HU on that ROI (same order; first-order fit on one patient with the parallel-beam model).
+# This replaced the uncalibrated default (1e5 -> ~2000 HU, non-physical). RECOMMENDED: refine
+# I0_REF/SIGMA_E per scanner & anatomy and validate against the reference (manuscript sim-vs-
+# reference figure). Chest references are 10%-dose -> validate via r=0.10; abdomen are 25% -> r=0.25.
+I0_REF = 1.0e8        # incident photon count I0^(0)  [first-order calibrated; refine per scanner]
+SIGMA_E = 10.0        # electronic-noise std (photons)  [refine per scanner]
 N_ANGLES = 180        # projection views
 MU_WATER = 0.019      # water linear attenuation (~/mm); HU<->mu conversion
 HU_FLOOR = -1024.0    # physical HU floor (clip FOV-padding values, e.g. GE -3024, before mu)
