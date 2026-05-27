@@ -8,8 +8,8 @@ Dockerfile bakes one source.
 | Image | Source | Build |
 |---|---|---|
 | `pwm-ldct-prep-lidc:v0.5`  | LIDC-IDRI (image-only + simulated LD) | `docker build -f pipelines/Dockerfile.lidc_idri .` |
-| `pwm-ldct-prep-aapm:v0.5`  | AAPM 2016 (real paired + projections) | `docker build -f pipelines/Dockerfile.aapm_2016 .` |
-| `pwm-ldct-prep-mayo:v0.5`  | Mayo LDCT-PD (real paired + projections) | `docker build -f pipelines/Dockerfile.mayo_ldct_pd .` |
+| `pwm-ldct-prep-aapm:v0.5`  | AAPM 2016 (paired noise-insertion LD + projections) | `docker build -f pipelines/Dockerfile.aapm_2016 .` |
+| `pwm-ldct-prep-mayo:v0.5`  | Mayo LDCT-PD (paired noise-insertion LD + projections) | `docker build -f pipelines/Dockerfile.mayo_ldct_pd .` |
 
 > **Build context is `WS-1_dataset/`** (the parent), so the sibling `pwm_ldct_loader` package —
 > the source of truth for the schema constants `pwm_ldct_prep` imports — is in scope. The schema

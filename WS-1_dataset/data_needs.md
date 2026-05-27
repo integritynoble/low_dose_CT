@@ -31,7 +31,7 @@ These are downloadable now (with free academic registration) and unblock Phase 1
 |---|---|---|---|
 | **LIDC-IDRI 50-pt subset** (~10 GB) | Phase 1 pipeline test + lung-nodule task | Free, NBIA registration | Already documented in [`../data_acquisition/lidc_idri_download.md`](../data_acquisition/lidc_idri_download.md) — start the download |
 | **LIDC-IDRI full 1,018 patients** (~125 GB) | Larger-cohort downstream-task analysis | Free, NBIA | Phase 2 stretch |
-| **AAPM 2016 Low-Dose CT Grand Challenge** (~40 GB) | Real paired-dose comparator; the *only* prior public real-paired dataset | Mayo Clinic email request, **1–2 wk lead time** | Send the email template at [`../data_acquisition/aapm_2016_request.md`](../data_acquisition/aapm_2016_request.md) today — biggest critical-path unblock |
+| **AAPM 2016 Low-Dose CT Grand Challenge** (~40 GB) | Noise-insertion low-dose comparator (Mayo projection-domain noise insertion, not re-acquired); the *only* prior public dataset with such a paired low-dose reference | Mayo Clinic email request, **1–2 wk lead time** | Send the email template at [`../data_acquisition/aapm_2016_request.md`](../data_acquisition/aapm_2016_request.md) today — biggest critical-path unblock |
 | **Mayo LDCT-and-Projection-Data** (LIDC-scale) | Cited in manuscript Table 1 (dataset-comparison) | TCIA, free with registration | Download alongside LIDC |
 
 ---
@@ -129,7 +129,7 @@ After v0.5 ships, v1.0's critical path is the previously-documented one: **Track
 | Cross-vendor evaluation API | ◑ (GE↔Siemens leave-one-vendor-out in v0.5) | ✅ (≥ 3 vendors) |
 | Pediatric subset | ❌ (deferred to companion dataset) | ❌ (also deferred) |
 
-**The honest v0.5 → v1.0 positioning for *Nature Scientific Data***: v0.5 is the harmonization-layer + content-addressing contribution **plus genuine two-vendor (GE + Siemens) real paired-dose coverage**; v1.0 is the prospective, multi-site, additional-vendor (Canon/Philips), larger-scale, new-clinical-task contribution. Reviewers should see them as two complementary papers, not as competing claims.
+**The honest v0.5 → v1.0 positioning for *Nature Scientific Data***: v0.5 is the harmonization-layer + content-addressing contribution **plus genuine two-vendor (GE + Siemens) paired low-dose coverage** (Mayo projection-domain noise-insertion reference, not re-acquired); v1.0 is the prospective, multi-site, additional-vendor (Canon/Philips), larger-scale, new-clinical-task contribution. Reviewers should see them as two complementary papers, not as competing claims.
 
 ---
 

@@ -91,7 +91,7 @@ Yet the three sources are not designed to be used together. Three structural gap
     \setlength{\tabcolsep}{4pt}
     \begin{tabular}{lcccc}
         \toprule
-        \textbf{Source} & \textbf{Patients} & \textbf{Real paired LD} & \textbf{Sinograms} & \textbf{Annotations as-distributed} \\
+        \textbf{Source} & \textbf{Patients} & \textbf{Paired LD ref.} & \textbf{Sinograms} & \textbf{Annotations as-distributed} \\
         \midrule
         LIDC-IDRI~\citep{lidc_idri}            & 1{,}018 & No  & No  & 4-radiologist nodule bbox/seg (XML) \\
         AAPM 2016~\citep{aapm2016challenge}    & 10      & Yes & Yes & None as-distributed \\
@@ -203,7 +203,7 @@ We partition patients (not scans) into 60\% train / 20\% validation / 20\% test,
 
 \subsection*{Sample-size justification}
 
-The v0.5 test split ($\sim$250 patients aggregate; per-source breakdown in Table~\ref{tab:cohort_v05}) is sized for standard reconstruction-quality and downstream-task evaluation at conventional statistical-power assumptions. Specifically, detecting a paired AUC difference of $\Delta \geq 0.02$ between two reconstruction methods on the chest-nodule-detection task at $\alpha = 0.05$, $\beta = 0.20$, with paired-sample correlation $\rho \approx 0.5$ and standard-deviation $\sigma \approx 0.10$, requires $n \gtrsim 200$ patients per pairing --- the aggregate test split meets this threshold; per-source sub-population evaluations (real-paired-only, AAPM-only, Mayo-only) are restricted by their underlying subset size and are marked explicitly as underpowered in the released results. Methods that wish to additionally compute 5-tuple credentials under the companion signal-equivalence framework (manuscript in preparation,~\citealt{ws2framework}) will find that the aggregate test split also meets that framework's leading-order requirement at canonical target $(\varepsilon = 0.02, \alpha = 0.05)$, but the descriptor's sizing argument here is framework-independent.
+The v0.5 test split ($\sim$250 patients aggregate; per-source breakdown in Table~\ref{tab:cohort_v05}) is sized for standard reconstruction-quality and downstream-task evaluation at conventional statistical-power assumptions. Specifically, detecting a paired AUC difference of $\Delta \geq 0.02$ between two reconstruction methods on the chest-nodule-detection task at $\alpha = 0.05$, $\beta = 0.20$, with paired-sample correlation $\rho \approx 0.5$ and standard-deviation $\sigma \approx 0.10$, requires $n \gtrsim 200$ patients per pairing --- the aggregate test split meets this threshold; per-source sub-population evaluations (reference-paired-only, AAPM-only, Mayo-only) are restricted by their underlying subset size and are marked explicitly as underpowered in the released results. Methods that wish to additionally compute 5-tuple credentials under the companion signal-equivalence framework (manuscript in preparation,~\citealt{ws2framework}) will find that the aggregate test split also meets that framework's leading-order requirement at canonical target $(\varepsilon = 0.02, \alpha = 0.05)$, but the descriptor's sizing argument here is framework-independent.
 
 %% =====================================================================
 \section*{Data Records}

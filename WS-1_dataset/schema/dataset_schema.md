@@ -19,7 +19,7 @@ implement exactly this schema; the manuscript's *Methods → Cross-source harmon
 
 Three public sources are harmonized under one schema:
 
-| `source` value | Dataset | Real paired LD | Sinograms | Native annotations |
+| `source` value | Dataset | Paired LD ref. | Sinograms | Native annotations |
 |---|---|---|---|---|
 | `lidc` | LIDC-IDRI | no | no | 4-radiologist nodule XML |
 | `aapm` | AAPM 2016 Low-Dose CT Grand Challenge | yes (r=0.25) | yes | none |
