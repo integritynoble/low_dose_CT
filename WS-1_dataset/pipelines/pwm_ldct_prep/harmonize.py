@@ -13,6 +13,8 @@ import numpy as np
 
 from pwm_ldct_loader.schema import DOSE_RATIOS, SCHEMA_VERSION
 
+from . import lowdose_sim as _ls
+
 # Per-source HU offset (HU), [CONFIRM] at release; 0.0 = no correction.
 HU_OFFSET = {"lidc": 0.0, "aapm": 0.0, "mayo": 0.0}
 
@@ -52,12 +54,13 @@ def build_metadata(series, sim_model: str, seed: int, n_slices: int) -> Dict:
             "hu_offset": HU_OFFSET.get(series.source, 0.0),
             "mtf_50_lp_per_cm": None,
             "bowtie_profile": "uniform_fallback",
-            "electronic_noise_sigma": None,
+            "electronic_noise_sigma": _ls.SIGMA_E if sim_model == _ls._INREPO_MODEL else None,
         },
         "lowdose_sim": {
             "model": sim_model,
             "ratios": list(DOSE_RATIOS),
-            "I0_monochromatic_ref": None,
+            "I0_monochromatic_ref": _ls.I0_REF if sim_model == _ls._INREPO_MODEL else None,
+            "n_angles": _ls.N_ANGLES if sim_model == _ls._INREPO_MODEL else None,
             "seed": seed,
         },
         "demographics": series.demographics,

@@ -49,8 +49,11 @@ patients (pipeline-test mode); `--no-sim` skips low-dose simulation.
   are whitelist-derived, so PHI cannot propagate (asserted in tests).
 - Harmonization + `metadata.json` (`harmonize.py`); HDF5 / splits / manifest writers
   (`writers.py`); deterministic split placement.
-- Low-dose simulation adapter (`lowdose_sim.py`): uses `pwm_core.contrib.modalities.ct_radon`
-  when available, else a clearly-flagged non-production fallback.
+- Low-dose simulation (`lowdose_sim.py`): a physically-grounded **projection-domain** forward
+  model (manuscript Eq. 1 — forward Radon → Poisson photon-counting + electronic noise → log →
+  reconstruct-and-insert the noise), reusing the validated `recon_sanity` Radon/FBP. Prefers
+  `pwm_core.contrib.modalities.ct_radon` when installed. Calibration (`I0`, `σ_e`) is recorded in
+  metadata and should be tuned per scanner; the CPU reference model is slow on full volumes.
 
 - **DICOM-CT-PD projection ingestion** (GE & Siemens): `read_projection_series` +
   `extract_ct_pd_geometry` produce native `[V, C, R]` line integrals + decoded geometry; enable
@@ -72,7 +75,8 @@ patients (pipeline-test mode); `--no-sim` skips low-dose simulation.
   geometry.
 
 **Still pending:**
-- Wiring `pwm_core` as the production low-dose forward model + calibrated fan/helical FBP.
+- Per-scanner calibration of the low-dose-sim `I0`/`σ_e` (and optional swap to `pwm_core` /
+  calibrated fan-beam geometry) for production-grade noise magnitude.
 - Real-data runs (need AAPM Mayo-access + the LIDC annotation XML set).
 
 ## Tests

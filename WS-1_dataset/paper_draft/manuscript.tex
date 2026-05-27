@@ -148,7 +148,7 @@ The unified PWM-LDCT v0.5 schema applies the following transformations to each s
 
 \paragraph{Reconstruction-kernel preservation.} Each source uses different vendor-specific reconstruction kernels (LIDC: heterogeneous across LIDC-contributing sites; AAPM 2016 and Mayo LDCT-PD: vendor-standard Siemens kernels). We do \textbf{not} re-reconstruct to a common kernel because doing so would discard the very kernel-specific structure that downstream methods may wish to model. Per-scan kernel metadata is preserved in \texttt{metadata.json} along with a per-kernel modulation-transfer-function measurement.
 
-\paragraph{Low-dose simulation harmonization.} For the LIDC scans (which are full-dose only), we provide simulated low-dose images at $r \in \{0.10, 0.25, 0.50\}$ using the physically-calibrated forward model from \texttt{pwm\_core.contrib.modalities.ct\_radon}~\citep{pwmcore}. The model combines Poisson photon-counting noise with an additive electronic-noise floor and ray-dependent incident-photon-count weighting:
+\paragraph{Low-dose simulation harmonization.} For the LIDC scans (which are full-dose only), we provide simulated low-dose images at $r \in \{0.10, 0.25, 0.50\}$ using a physically-grounded projection-domain forward model. The model is implemented in the released pipeline (\texttt{pwm\_ldct\_prep.lowdose\_sim}) and, where available, defers to the equivalent reference implementation in \texttt{pwm\_core.contrib.modalities.ct\_radon}~\citep{pwmcore}. It combines Poisson photon-counting noise with an additive electronic-noise floor and ray-dependent incident-photon-count weighting:
 
 \begin{equation}
     N_r(\ell) \sim \textrm{Poisson}\!\big(I_0(\ell) \cdot r \cdot e^{-s_{\textrm{ref}}(\ell)}\big) + \mathcal{N}\!\big(0,\sigma_e^2\big), \qquad \tilde{s}_{\textrm{low}}(\ell) = -\ln\!\left( \frac{\max\!\big(N_r(\ell),\,1\big)}{I_0(\ell) \cdot r} \right)
@@ -446,7 +446,7 @@ The scientific identifier is the content hash itself; the deposit channels above
     \item Dataset loader: \url{https://pypi.org/project/pwm_ldct_loader/} (Apache 2.0)
     \item Preprocessing Dockerfiles: \url{https://github.com/integritynoble/low_dose_CT/tree/main/WS-1_dataset/pipelines/}
     \item Annotation top-up artifacts: \url{https://github.com/integritynoble/low_dose_CT/tree/main/WS-1_dataset/annotations/}
-    \item Forward model used for low-dose simulation: \url{https://github.com/integritynoble/pwm/tree/main/packages/pwm_core/contrib/modalities/ct_radon.py}
+    \item Forward model used for low-dose simulation: \url{https://github.com/integritynoble/low_dose_CT/tree/main/WS-1_dataset/pipelines/pwm_ldct_prep/lowdose_sim.py} (reference implementation; defers to \texttt{pwm\_core.contrib.modalities.ct\_radon} when installed)
     \item Deposited records + manifest: the PhysioNet release record under DOI \texttt{10.13026/\todo{prefix}-0.5.0}, archived at Zenodo (\todo{Zenodo DOI}). The manifest's SHA-256 content hash is recorded in both. It is additionally (and optionally) mirrored to IPFS CID \todo{CID} and the PWM L3 spec entry \texttt{pwm\_l3\_spec:pwm\_low\_dose\_ct\_v0\_5:0.5.0}, which resolve to the identical content.
 \end{itemize}
 
