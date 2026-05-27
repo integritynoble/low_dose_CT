@@ -79,7 +79,8 @@ acceptance.
   `\todo{select published method...}` (transformer e.g. CTformer/TransCT; diffusion; unrolled e.g.
   LEARN). Register them in `baselines/.../models/__init__.py`.
 - [ ] **Baseline results** `tab:baselines_v05` (PSNR/SSIM/LPIPS per dose) — run `pwm_ldct_baselines`
-  on a **GPU** against the dataset.
+  on a **GPU** per `baselines/RUN_PLAN.md` (method candidates, compute ~50–120 GPU-h, protocol,
+  data-quality prereq: calibrated-sim regen or real-LD-only subset).
 - [ ] **Cross-source harmonization** `tab:harmonization_v05` + **Wasserstein threshold (HU)** `\todo`.
 - [ ] **Annotation-reuse fidelity** Supplementary table — `manuscript.tex` `\todo{ref}`.
 - [ ] **Reconstruction-sanity FP tolerance** `\todo{FP tolerance}` — harness in

@@ -11,6 +11,9 @@ and emits per-dose-level **PSNR / SSIM / LPIPS**.
 > implementation + a method-selection decision (still `\todo` in the manuscript). Any
 > `nn.Module` mapping `[B,1,H,W] → [B,1,H,W]` plugs in (see `models/`).
 >
+> **To run the benchmark on a GPU** (method selection, compute estimate, protocol, data-quality
+> prerequisite) see [`RUN_PLAN.md`](RUN_PLAN.md).
+>
 > **Compute:** training to publication quality needs a **GPU**. The harness auto-selects CUDA when
 > available (CPU otherwise — fine for the tests, not for the benchmark numbers).
 
