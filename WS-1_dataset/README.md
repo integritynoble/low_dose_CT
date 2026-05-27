@@ -102,7 +102,7 @@ The critical-path leg is the IRB lag (months 5-9). It is exogenous and the only 
 | `pwm_ldct_loader/` | Pip-installable loader package (`LowDoseCTDataset` + `validate`) | **scaffolded**: implements schema §4 contract + §8 validate; 24 pytest green on synthetic fixture; reads pipeline output |
 | `pipelines/` | Dockerfiles for LIDC-IDRI, AAPM 2016, Mayo LDCT-PD + shared `pwm_ldct_prep` package | **built**: full pipeline (DICOM→de-id→harmonize→HDF5→validate) incl. DICOM-CT-PD projections + LIDC annotations + recon-sanity; ran on real Mayo data → `gs://low-dose-ct/pwm_ldct_v0_5` (199 patients) |
 | `baselines/` | `pwm_ldct_baselines` train/eval harness + RED-CNN + GPU Dockerfile | **scaffolded**: RED-CNN implemented; train/eval → per-dose PSNR/SSIM/LPIPS `results.json`; 5 tests green. 3 other methods pluggable (need published impls); benchmark numbers need a GPU |
-| `physionet_listing/` | PhysioNet metadata + access docs | pending Phase 3 |
+| `physionet_listing/` | PhysioNet metadata + access docs | **drafted**: paste-ready listing (all sections + discovery fields), Open access / CC BY 4.0; `[CONFIRM]` fields = authors/DOI/IRB/funding |
 | `paper_draft/` | *Nature Scientific Data* manuscript | pending Phase 3 |
 
 Do not pre-create empty directories. Create each one when the work that fills it begins.
