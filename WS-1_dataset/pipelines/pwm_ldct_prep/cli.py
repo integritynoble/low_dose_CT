@@ -48,7 +48,7 @@ def cmd_prep(args) -> int:
         split = assign_split(fd.canonical_key or fd.patient_id, args.seed)
         sims = {}
         if not args.no_sim:
-            sims = {r: lowdose_sim.simulate(fd.volume_hu, r, args.seed, args.source) for r in DOSE_RATIOS}
+            sims = lowdose_sim.simulate_multi(fd.volume_hu, DOSE_RATIOS, args.seed)
         meta_sha = write_metadata(args.output, meta)
         write_series_hdf5(args.output, fd, sims, split, meta_sha, real_ld=ps.ld)
         write_annotations(args.output, fd.patient_id, fd.series_id, args.source, ps.annotations)

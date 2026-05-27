@@ -1,35 +1,34 @@
 """Low-dose simulation (../schema/dataset_schema.md §5.2; manuscript Eq. 1).
 
 Production forward model. Uses ``pwm_core.contrib.modalities.ct_radon`` when importable (the
-project's canonical model); otherwise uses the faithful in-repo projection-domain implementation
-of manuscript Eq. 1 below — a physically-grounded Poisson photon-counting + electronic-noise
-insertion, not an image-domain approximation.
+project's canonical model); otherwise uses the in-repo projection-domain implementation of
+manuscript Eq. 1 — a physically-grounded Poisson photon-counting + electronic-noise insertion.
 
 Eq. 1 (per ray ℓ, effective-monochromatic):
     N_r(ℓ) ~ Poisson(I0(ℓ)·r·e^{-s_ref(ℓ)}) + N(0, σ_e²)
     s̃_low(ℓ) = -ln( max(N_r(ℓ), 1) / (I0(ℓ)·r) )
-where s_ref = forward Radon of the full-dose attenuation image, I0 = I0^(0)·b(ℓ) (bowtie b≡1
-fallback), σ_e the electronic-noise std, r the dose ratio. We insert the *reconstructed projection-
-domain noise* (s̃_low − s_ref) into the full-dose image, so the signal is preserved and only the
-dose-dependent noise is added.
+s_ref = forward Radon of the full-dose attenuation image. We reconstruct the projection-domain
+noise (s̃_low − s_ref) and insert it into the full-dose image, preserving the signal.
 
-Known approximations (consistent with the manuscript's stated limitations): parallel-beam, per-slice
-2-D, monochromatic, uniform bowtie. I0^(0)/σ_e are nominal defaults and should be calibrated per
-scanner for production fidelity (recorded in metadata). For large volumes this CPU reference model
-is slow; pwm_core (GPU) is preferred when available.
+The projector uses scikit-image's Cython ``radon``/``iradon`` when available (fast), else the numpy
+reference projector in ``recon_sanity``. The forward projection is computed once per slice and
+reused across dose ratios (``simulate_multi``). Approximations (per the manuscript's stated limits):
+parallel-beam, per-slice 2-D, monochromatic, uniform bowtie. I0^(0)/σ_e are nominal defaults to be
+calibrated per scanner (recorded in metadata).
 """
 from __future__ import annotations
+
+from typing import Dict, Sequence
 
 import numpy as np
 
 _PWM_CORE_MODEL = "pwm_core.contrib.modalities.ct_radon"
 _INREPO_MODEL = "pwm_ldct_prep.lowdose_sim:projection_domain_v1"
 
-# Nominal calibration (per-scanner [CONFIRM] for production; recorded in metadata).
 I0_REF = 1.0e5        # incident photon count I0^(0)
 SIGMA_E = 10.0        # electronic-noise std (photons)
-N_ANGLES = 180        # projection views for the parallel-beam forward/back projector
-MU_WATER = 0.019      # linear attenuation of water (~/mm at effective energy); HU<->mu conversion
+N_ANGLES = 180        # projection views
+MU_WATER = 0.019      # water linear attenuation (~/mm); HU<->mu conversion
 
 
 def model_name() -> str:
@@ -40,29 +39,51 @@ def model_name() -> str:
         return _INREPO_MODEL
 
 
-def simulate(volume_hu: np.ndarray, ratio: float, seed: int, source: str = "") -> np.ndarray:
-    """Return a simulated low-dose volume at dose ratio ``ratio`` (same shape, HU)."""
+def _radon(mu: np.ndarray, theta: np.ndarray) -> np.ndarray:
+    try:
+        from skimage.transform import radon
+        return radon(mu, theta=theta, circle=False)            # [n_det, n_angles]
+    except Exception:
+        from .recon_sanity import parallel_radon
+        return parallel_radon(mu, theta).T                     # [n_det(=W), n_angles]
+
+
+def _iradon(sino: np.ndarray, theta: np.ndarray, size: int) -> np.ndarray:
+    try:
+        from skimage.transform import iradon
+        return iradon(sino, theta=theta, filter_name="ramp", circle=False, output_size=size)
+    except Exception:
+        from .recon_sanity import fbp
+        return fbp(sino.T, theta, out_size=size)
+
+
+def simulate_multi(volume_hu: np.ndarray, ratios: Sequence[float], seed: int) -> Dict[float, np.ndarray]:
+    """Simulate low-dose at several ratios, computing the forward projection once per slice."""
     try:
         from pwm_core.contrib.modalities import ct_radon  # type: ignore
-        return ct_radon.simulate_low_dose(volume_hu, ratio=ratio, seed=seed).astype(np.float32)
+        return {r: ct_radon.simulate_low_dose(volume_hu, ratio=r, seed=seed).astype(np.float32)
+                for r in ratios}
     except Exception:
-        return _projection_domain(volume_hu, ratio, seed)
+        return _projection_domain_multi(volume_hu, ratios, seed)
 
 
-def _projection_domain(volume_hu: np.ndarray, ratio: float, seed: int) -> np.ndarray:
-    """In-repo Eq. 1 projection-domain noise insertion, per 2-D slice (parallel-beam)."""
-    from .recon_sanity import fbp, parallel_radon
+def simulate(volume_hu: np.ndarray, ratio: float, seed: int, source: str = "") -> np.ndarray:
+    """Single-ratio convenience wrapper (delegates to simulate_multi)."""
+    return simulate_multi(volume_hu, [ratio], seed)[ratio]
 
-    rng = np.random.default_rng(int(seed) + int(round(ratio * 1000)))
-    angles = np.linspace(0.0, 180.0, N_ANGLES, endpoint=False)
-    out = np.empty_like(volume_hu, dtype=np.float32)
+
+def _projection_domain_multi(volume_hu, ratios, seed) -> Dict[float, np.ndarray]:
+    theta = np.linspace(0.0, 180.0, N_ANGLES, endpoint=False)
+    rngs = {r: np.random.default_rng(int(seed) + int(round(r * 1000))) for r in ratios}
+    out = {r: np.empty_like(volume_hu, dtype=np.float32) for r in ratios}
     for z in range(volume_hu.shape[0]):
         mu = np.clip((volume_hu[z].astype(np.float64) / 1000.0 + 1.0) * MU_WATER, 0.0, None)
-        s_ref = parallel_radon(mu, angles)                      # full-dose line integrals
-        I = I0_REF * np.exp(-s_ref)                             # noiseless photon flux
-        counts = rng.poisson(np.clip(I * ratio, 0.0, None)) + rng.normal(0.0, SIGMA_E, s_ref.shape)
-        s_low = -np.log(np.maximum(counts, 1.0) / (I0_REF * ratio))
-        noise_img = fbp((s_low - s_ref), angles, out_size=mu.shape[0])  # reconstruct the noise only
-        mu_low = mu + noise_img
-        out[z] = ((mu_low / MU_WATER - 1.0) * 1000.0).astype(np.float32)  # back to HU
+        s_ref = _radon(mu, theta)                              # once per slice
+        I = I0_REF * np.exp(-s_ref)
+        for r in ratios:
+            rng = rngs[r]
+            counts = rng.poisson(np.clip(I * r, 0.0, None)) + rng.normal(0.0, SIGMA_E, s_ref.shape)
+            s_low = -np.log(np.maximum(counts, 1.0) / (I0_REF * r))
+            noise_img = _iradon((s_low - s_ref), theta, mu.shape[0])
+            out[r][z] = ((mu + noise_img) / MU_WATER - 1.0).astype(np.float32) * 1000.0
     return out

@@ -1,6 +1,7 @@
 pydicom>=2.3
 numpy>=1.21
 h5py>=3.6
+scikit-image>=0.19  # fast Cython radon/iradon for the projection-domain low-dose simulation
 pytesseract>=0.3   # Stage-2 burned-in-text OCR sweep (needs the tesseract-ocr binary)
 # pwm_ldct_loader is installed from the copied sibling package in the Dockerfiles
 # (it is the source of truth for the schema constants this package imports).
