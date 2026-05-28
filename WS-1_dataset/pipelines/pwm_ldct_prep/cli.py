@@ -76,9 +76,19 @@ def cmd_stage(args) -> int:
 
 
 def cmd_finalize(args) -> int:
+    import glob as _glob
+
+    from .writers import _sha256_file  # noqa: F401  (kept for parity)
     splits = write_splits(args.output)
     manifest = write_manifest(args.output)
+    n_series = sum(len(v) for v in splits.values())
+    # unique physical patients = distinct canonical keys across all metadata (cross-source de-dup)
+    ckeys = set()
+    for mp in _glob.glob(os.path.join(args.output, "metadata", "*.json")):
+        m = json.load(open(mp))
+        ckeys.add(m.get("provenance", {}).get("canonical_patient_key") or m.get("patient_id"))
     print(f"splits: " + ", ".join(f"{k}={len(v)}" for k, v in splits.items()))
+    print(f"records: {n_series} series across {len(ckeys)} unique patients (canonical-key de-dup)")
     print(f"manifest written: {manifest}")
     return 0
 

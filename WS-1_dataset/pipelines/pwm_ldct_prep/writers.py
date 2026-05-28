@@ -5,6 +5,7 @@ import glob
 import hashlib
 import json
 import os
+import sys
 from typing import Dict, List, Optional
 
 import h5py
@@ -100,17 +101,37 @@ def append_audit(out_root: str, row: Dict) -> None:
         f.write(json.dumps(row) + "\n")
 
 
-def write_splits(out_root: str) -> Dict[str, List[str]]:
-    """Derive splits/*.txt from metadata + the deterministic split rule (dataset_schema.md §7).
+def folder_splits(out_root: str) -> Dict[str, str]:
+    """patient_id -> split, read from the HDF5 layout ``hdf5/{split}/{source}/{patient}/*.h5``.
 
-    Uses each series' patient_id + recorded seed, so it works even when the (regenerable, local-only)
-    HDF5 shards have been uploaded and pruned during a chunked/streaming build.
+    This is what the loader actually globs, so it is authoritative. Empty when the (regenerable)
+    HDF5 shards were pruned during a streaming build — callers then fall back to ``assign_split``.
+    """
+    fs: Dict[str, str] = {}
+    for h5 in glob.glob(os.path.join(out_root, "hdf5", "*", "*", "*", "*.h5")):
+        parts = os.path.relpath(h5, os.path.join(out_root, "hdf5")).split(os.sep)
+        if len(parts) >= 4:
+            fs[parts[2]] = parts[0]   # {split}/{source}/{patient}/{series}.h5
+    return fs
+
+
+def write_splits(out_root: str) -> Dict[str, List[str]]:
+    """Derive splits/*.txt to mirror the loadable tree (dataset_schema.md §7).
+
+    Each patient's split is read from its **HDF5 folder** (``hdf5/{split}/.../{patient}/`` — exactly
+    what ``LowDoseCTDataset`` globs), so splits.txt always matches what the loader loads. When the
+    HDF5 were pruned during a streaming build, it falls back to the deterministic
+    ``assign_split(canonical_key, seed)`` (the same rule ``prep`` used to place them). Every record
+    is listed (no representative-only de-dup, which would under-list relative to the folder glob).
+
+    Cross-source duplicates (same canonical patient key, e.g. AAPM 2016 ⊂ Mayo LDCT-PD) are
+    co-located in one split at prep time (``assign_split`` keys on the canonical key); this function
+    VERIFIES that and prints a leakage warning for any canonical key whose records span >1 split.
     """
     from pwm_ldct_loader.splits import assign_split
-    # De-duplicate across sources by the canonical patient key: a physical patient appearing in
-    # more than one source (e.g. AAPM 2016 ⊂ Mayo LDCT-PD) is assigned to ONE split and listed once
-    # (deterministic representative = smallest patient_id), preventing leakage and double-counting.
-    rep: Dict[str, tuple] = {}   # canonical_key -> (split, representative_patient_id)
+    fsplit = folder_splits(out_root)
+    placement: Dict[str, str] = {}
+    ckey_splits: Dict[str, set] = {}
     for mp in glob.glob(os.path.join(out_root, "metadata", "*.json")):
         with open(mp) as f:
             meta = json.load(f)
@@ -118,10 +139,9 @@ def write_splits(out_root: str) -> Dict[str, List[str]]:
         if not pid:
             continue
         ckey = meta.get("provenance", {}).get("canonical_patient_key") or pid
-        split = assign_split(ckey, int(meta.get("lowdose_sim", {}).get("seed", 42)))
-        if ckey not in rep or pid < rep[ckey][1]:
-            rep[ckey] = (split, pid)
-    placement: Dict[str, str] = {pid: split for split, pid in rep.values()}
+        split = fsplit.get(pid) or assign_split(ckey, int(meta.get("lowdose_sim", {}).get("seed", 42)))
+        placement[pid] = split
+        ckey_splits.setdefault(ckey, set()).add(split)
     out: Dict[str, List[str]] = {"train": [], "val": [], "test": []}
     for pid, split in placement.items():
         out.setdefault(split, []).append(pid)
@@ -130,6 +150,10 @@ def write_splits(out_root: str) -> Dict[str, List[str]]:
     for name in ("train", "val", "test"):
         with open(os.path.join(sd, f"{name}.txt"), "w") as f:
             f.write("\n".join(sorted(out.get(name, []))) + ("\n" if out.get(name) else ""))
+    leaks = {k: sorted(v) for k, v in ckey_splits.items() if len(v) > 1}
+    for k, ss in leaks.items():
+        print(f"WARNING write_splits: canonical patient {k} spans splits {ss} "
+              f"(train/test leakage — fix placement at prep)", file=sys.stderr)
     return out
 
 

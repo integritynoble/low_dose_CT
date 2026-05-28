@@ -289,13 +289,18 @@ keyed by `reader_id`, for uncertainty-aware downstream methods.
   reside in the same split.
 - Assignment is deterministic given `seed = 42` and a **cross-source canonical patient key**
   `ckey` (`metadata.provenance.canonical_patient_key` — a salted hash of the native patient ID):
-  `bucket = (sha256(f"{seed}:{ckey}") mod 100)` → `<60` train, `<80` val, else test, with a
-  post-pass that guarantees ≥ 1 patient per `(source, anatomy)` stratum in every split.
+  at **prep** time each series' HDF5 is placed at `bucket = (sha256(f"{seed}:{ckey}") mod 100)` →
+  `<60` train, `<80` val, else test. `ckey` defaults to the `patient_id` when no native ID is recorded.
+- **`splits/*.txt` mirrors the HDF5 layout.** `write_splits` reads each patient's split from its
+  `hdf5/{split}/{source}/{patient}/` folder (exactly what the loader globs), so the split files
+  always match what is loaded; it falls back to the deterministic rule above only when the
+  (regenerable) HDF5 were pruned during a streaming build. Every record is listed.
 - **Cross-source de-duplication.** A physical patient that appears in more than one source (e.g.
-  AAPM 2016 ⊂ Mayo LDCT-PD, which share Mayo's native ID scheme) yields the same `ckey`, so it is
-  (a) assigned to a single split — preventing train/test leakage — and (b) listed once in
-  `splits/*.txt` (deterministic representative = smallest `patient_id`). `ckey` defaults to the
-  `patient_id` when no native ID is recorded.
+  AAPM 2016 ⊂ Mayo LDCT-PD, which share Mayo's native ID scheme) yields the same `ckey`, so its
+  records are **co-located in one split** (the `ckey`-keyed placement) — preventing train/test
+  leakage. `write_splits` verifies this and warns on any `ckey` spanning >1 split. De-duplication is
+  a *counting* notion (distinct `ckey`s = unique physical patients); both source records remain
+  listed and loadable, so e.g. the 209-record Mayo+AAPM tree is **208 unique patients** (L143 shared).
 - `splits/split_assignment.csv` records the final assignment and is itself hashed into
   `manifest.sha256`, so the split is frozen and verifiable.
 
