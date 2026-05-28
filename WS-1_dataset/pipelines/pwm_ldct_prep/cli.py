@@ -65,6 +65,16 @@ def cmd_prep(args) -> int:
     return 0
 
 
+def cmd_stage(args) -> int:
+    from .stage import stage_aapm
+    patients = [p.strip() for p in args.patients.split(",")] if args.patients else None
+    domains = [d.strip() for d in args.domains.split(",") if d.strip()]
+    stage_aapm(args.work_dir, gcs_prefix=args.gcs_prefix, patients=patients, domains=domains)
+    print(f"staged AAPM tree at {args.work_dir} — now run: "
+          f"prep --source aapm --input {args.work_dir} --output <tree> [--with-sinograms]")
+    return 0
+
+
 def cmd_finalize(args) -> int:
     splits = write_splits(args.output)
     manifest = write_manifest(args.output)
@@ -133,6 +143,14 @@ def build_parser() -> argparse.ArgumentParser:
     pr.add_argument("--id-map", default=None,
                     help="JSON {native_id: assigned_id} crosswalk for stable IDs across chunked runs")
     pr.set_defaults(func=cmd_prep)
+
+    st = sub.add_parser("stage", help="download+extract AAPM 2016 zips from GCS into a local DICOM tree (the 'unzip step')")
+    st.add_argument("--work-dir", required=True, help="local tree to extract into (feeds prep --input)")
+    st.add_argument("--gcs-prefix", default="gs://low-dose-ct/aapm_2016_grand_challenge",
+                    help="GCS prefix holding the AAPM zips")
+    st.add_argument("--patients", default=None, help="comma-separated L### subset (default: all)")
+    st.add_argument("--domains", default="image,projection", help="comma-separated: image,projection")
+    st.set_defaults(func=cmd_stage)
 
     fi = sub.add_parser("finalize", help="write splits + manifest over the combined output tree")
     fi.add_argument("--output", required=True)

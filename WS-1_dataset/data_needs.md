@@ -31,7 +31,7 @@ These are downloadable now (with free academic registration) and unblock Phase 1
 |---|---|---|---|
 | **LIDC-IDRI 50-pt subset** (~10 GB) | Phase 1 pipeline test + lung-nodule task | Free, NBIA registration | Already documented in [`../data_acquisition/lidc_idri_download.md`](../data_acquisition/lidc_idri_download.md) — start the download |
 | **LIDC-IDRI full 1,018 patients** (~125 GB) | Larger-cohort downstream-task analysis | Free, NBIA | Phase 2 stretch |
-| **AAPM 2016 Low-Dose CT Grand Challenge** (~40 GB) | Noise-insertion low-dose comparator (Mayo projection-domain noise insertion, not re-acquired); the *only* prior public dataset with such a paired low-dose reference | Mayo Clinic email request, **1–2 wk lead time** | Send the email template at [`../data_acquisition/aapm_2016_request.md`](../data_acquisition/aapm_2016_request.md) today — biggest critical-path unblock |
+| **AAPM 2016 Low-Dose CT Grand Challenge** (~175 GB: ~19 GB image + ~156 GB DICOM-CT-PD projections) | Noise-insertion low-dose comparator (Mayo projection-domain noise insertion, not re-acquired); the *only* prior public dataset with such a paired low-dose reference | Box shared link (obtained 2026-05-28); staged at `gs://low-dose-ct/aapm_2016_grand_challenge/` | **Done** — downloaded & verified (52 zips, 174.7 GB). Paired FD+QD exists only for the 10 training patients; testing is QD-only (FD withheld). |
 | **Mayo LDCT-and-Projection-Data** (LIDC-scale) | Cited in manuscript Table 1 (dataset-comparison) | TCIA, free with registration | Download alongside LIDC |
 
 ---

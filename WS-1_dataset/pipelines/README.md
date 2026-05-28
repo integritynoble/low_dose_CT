@@ -15,6 +15,27 @@ Dockerfile bakes one source.
 > the source of truth for the schema constants `pwm_ldct_prep` imports — is in scope. The schema
 > specs are in [`../schema/`](../schema/).
 
+## AAPM 2016 — stage first ("unzip step")
+
+The AAPM/Box distribution at `gs://low-dose-ct/aapm_2016_grand_challenge/` ships Siemens `.IMA`
+files in per-(recon | patient) **zips**, with `PatientID='Anonymous'` and no `SeriesDescription` —
+patient (`L###`), dose (full/quarter), domain (image/projection) and recon (thickness/kernel) live
+only in the path. Run `stage` (host-side, where `gsutil` is configured) to pull + extract the zips
+into a local tree the AAPM adapter reads by path:
+
+```bash
+cd WS-1_dataset
+# extract all (or a subset) of the AAPM zips from GCS into a local DICOM tree
+python -m pwm_ldct_prep stage --work-dir /raw/aapm \
+    [--patients L067,L096] [--domains image,projection]
+# then prep that tree like any other source
+python -m pwm_ldct_prep prep --source aapm --input /raw/aapm --output /out --seed 42 [--with-sinograms]
+```
+
+Only the 10 *training* patients have a full-dose recon to anchor a paired record (testing is
+quarter-dose only — FD was withheld), so prep yields the "AAPM 10". Staging streams one zip at a
+time and deletes it after extraction (no disk bloat); see `stage.py`.
+
 ## Workflow
 
 Run `prep` once per source into **one shared output tree**, then `finalize` once, then `validate`:
