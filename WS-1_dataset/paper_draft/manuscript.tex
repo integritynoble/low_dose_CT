@@ -98,10 +98,10 @@ Yet the three sources are not designed to be used together. Three structural gap
         AAPM 2016~\citep{aapm2016challenge}    & 10      & Yes & Yes & None as-distributed \\
         Mayo LDCT-PD~\citep{mccollough2020mayo} & 199     & Yes & Yes & Lesion labels on subset \\
         \midrule
-        \textbf{v0.5 union}                     & \textbf{$\sim$1{,}227} & \textbf{209} & \textbf{209} & \textbf{Harmonized + topped-up} \\
+        \textbf{v0.5 union}                     & \textbf{1{,}226} & \textbf{208} & \textbf{208} & \textbf{Harmonized + topped-up} \\
         \bottomrule
     \end{tabularx}
-    \caption{Composition of the PWM-LDCT v0.5 release as a union of three public sources. The Mayo LDCT-PD count is the 199 publicly accessible patients (one ACR phantom and the 99 Genomic Data Commons credentialed-access head subjects are excluded from v0.5). Paired full-dose / reduced-dose data are present for the AAPM 2016 and Mayo LDCT-PD subsets; \textbf{the Mayo cohort spans two vendors (approximately half GE, half Siemens), so v0.5 provides cross-vendor (GE + Siemens) paired-dose coverage.} v1.0 (a separate follow-up release) adds prospectively-acquired, multi-site, re-acquired paired-dose data and new clinical tasks.}
+    \caption{Composition of the PWM-LDCT v0.5 release as a union of three public sources. The Mayo LDCT-PD count is the 199 publicly accessible patients (one ACR phantom and the 99 Genomic Data Commons credentialed-access head subjects are excluded from v0.5). Paired full-dose / reduced-dose data are present for the AAPM 2016 and Mayo LDCT-PD subsets; \textbf{the Mayo cohort spans two vendors (approximately half GE, half Siemens), so v0.5 provides cross-vendor (GE + Siemens) paired-dose coverage.} Union counts are unique physical patients: exactly one patient (Mayo ID L143) appears in both AAPM 2016 and Mayo LDCT-PD and is de-duplicated via the cross-source canonical key, so the 209 paired-dose source records (10 + 199) resolve to \textbf{208 unique} patients and the 1{,}227 total source records to \textbf{1{,}226 unique}. v1.0 (a separate follow-up release) adds prospectively-acquired, multi-site, re-acquired paired-dose data and new clinical tasks.}
     \label{tab:source_comparison}
 \end{table}
 
@@ -254,13 +254,13 @@ Per-source patient counts in the v0.5 release are summarized in Table~\ref{tab:c
         \textbf{Source} & \textbf{Train} & \textbf{Val} & \textbf{Test} & \textbf{Total} \\
         \midrule
         LIDC-IDRI                       & \todo{$\sim$610} & \todo{$\sim$204} & \todo{$\sim$204} & 1{,}018 \\
-        AAPM 2016                       & 6     & 2     & 2     & 10 \\
+        AAPM 2016                       & 4     & 2     & 4     & 10 \\
         Mayo LDCT-PD (public)           & 118 & 37 & 44 & 199 \\
         \midrule
-        \textbf{Total}                  & \textbf{\todo{$\sim$735}} & \textbf{\todo{$\sim$243}} & \textbf{\todo{$\sim$250}} & \textbf{1{,}227} \\
+        \textbf{Total}                  & \textbf{\todo{$\sim$731}} & \textbf{\todo{$\sim$243}} & \textbf{\todo{$\sim$252}} & \textbf{1{,}226} \\
         \bottomrule
     \end{tabular}
-    \caption{v0.5 cohort composition by source and split. Splits are patient-level, stratified by source and anatomy. Counts in parentheses are deterministic given the random seed; small adjustments may occur at release to ensure each split has at least one patient from every source-anatomy stratum.}
+    \caption{v0.5 cohort composition by source and split. Splits are patient-level, stratified by source and anatomy. Counts in parentheses are deterministic given the random seed; small adjustments may occur at release to ensure each split has at least one patient from every source-anatomy stratum. Per-source rows are source records; the AAPM 2016 split shown is the deposited assignment (its one Mayo-shared patient, L143, is co-located in train). Totals are unique physical patients --- the 1{,}227 source records (1{,}018 + 10 + 199) de-duplicate to 1{,}226 unique via the canonical key.}
     \label{tab:cohort_v05}
 \end{table}
 
@@ -298,7 +298,7 @@ Patient-level demographics aggregated from each source's published metadata are 
         \toprule
         \textbf{Field} & \textbf{LIDC-IDRI} & \textbf{AAPM 2016} & \textbf{Mayo LDCT-PD} & \textbf{Aggregate} \\
         \midrule
-        N (patients)                                  & 1{,}018          & 10               & 199              & 1{,}227 \\
+        N (patients, unique)                          & 1{,}018          & 10               & 199              & 1{,}226 \\
         Age, median (IQR) [yr]                        & \todo{med (IQR)} & \todo{med (IQR)} & \todo{med (IQR)} & \todo{med (IQR)} \\
         Age, range [yr]                               & \todo{min--max}  & \todo{min--max}  & \todo{min--max}  & \todo{min--max} \\
         Sex (M / F), n (\%)                           & \todo{m/f (\%)}  & \todo{m/f (\%)}  & \todo{m/f (\%)}  & \todo{m/f (\%)} \\
@@ -308,7 +308,7 @@ Patient-level demographics aggregated from each source's published metadata are 
         Geographic origin (sites)                     & US multi-site (LIDC consortium) & Mayo Clinic, Rochester MN & Mayo Clinic, Rochester MN & --- \\
         \bottomrule
     \end{tabular}
-    \caption{Patient-level demographics per source. Age, sex, BMI, and scan-date fields are aggregated from each source's published metadata where available; \todo{} entries are populated at submission from the source DICOM headers. Fields not preserved in a source's de-identified release are recorded as N/A. Geographic origin captures the population from which each cohort is sampled and bears on generalizability claims.}
+    \caption{Patient-level demographics per source. The aggregate N is unique physical patients: AAPM 2016 and Mayo LDCT-PD share one patient (L143), so the per-source counts (1{,}018 + 10 + 199 = 1{,}227 records) de-duplicate to 1{,}226 unique via the canonical key. Age, sex, BMI, and scan-date fields are aggregated from each source's published metadata where available; \todo{} entries are populated at submission from the source DICOM headers. Fields not preserved in a source's de-identified release are recorded as N/A. Geographic origin captures the population from which each cohort is sampled and bears on generalizability claims.}
     \label{tab:demographics_v05}
 \end{table}
 
@@ -415,9 +415,9 @@ v0.5 is a code-and-metadata release on top of existing public data. Its limitati
 
 \paragraph{Two-vendor, but not all-vendor, paired-dose coverage.} The paired-dose subset spans two manufacturers --- the public Mayo LDCT-PD cohort is approximately half GE and half Siemens (across both anatomies) and AAPM 2016 is Siemens --- so v0.5 supports genuine cross-vendor (GE vs Siemens) evaluation. It does \emph{not} cover Canon or Philips hardware, and all paired-dose data are retrospective; prospective, multi-site acquisition spanning additional vendors is deferred to v1.0.
 
-\paragraph{Limited paired-dose patient count.} The combined AAPM (10) + public Mayo (199) paired-dose cohort is 209 patients. While this is enough for credentialed evaluation of the aggregate chest task, fine-grained sub-population credentials (e.g., per-vendor $\times$ per-pathology) are underpowered.
+\paragraph{Limited paired-dose patient count.} The combined AAPM (10) + public Mayo (199) paired-dose cohort is 209 source records, or \textbf{208 unique patients} after de-duplicating the one patient (L143) shared by both sources. While this is enough for credentialed evaluation of the aggregate chest task, fine-grained sub-population credentials (e.g., per-vendor $\times$ per-pathology) are underpowered.
 
-\paragraph{Possible source overlap (AAPM 2016 and Mayo LDCT-PD).} The 10 AAPM 2016 challenge cases are drawn from the same Mayo patient population as the Mayo LDCT-and-Projection-Data collection and may overlap with it at the patient level; the exact overlap is reconciled against the challenge's authoritative patient manifest at release. We treat the two as nominally distinct sources but de-duplicate at the patient level via the cross-source canonical key (Methods, \S Patient-level data splits), so any overlapping patient is assigned to a single split and counted once. The reported union size is therefore an upper bound that may decrease slightly after final reconciliation.
+\paragraph{Source overlap (AAPM 2016 and Mayo LDCT-PD).} The 10 AAPM 2016 challenge cases are drawn from the same Mayo patient population as the Mayo LDCT-and-Projection-Data collection. Reconciling the two by native patient identifier, \textbf{exactly one patient (Mayo ID L143) appears in both sources} (as an AAPM chest record and a Mayo abdomen record). We treat the two as nominally distinct sources but de-duplicate at the patient level via the cross-source canonical key (Methods, \S Patient-level data splits): the shared patient's records are co-located in a single split (train) --- preventing train/test leakage --- and the patient is counted once, so the 209 paired-dose source records resolve to 208 unique patients and the 1{,}227-record union to 1{,}226 unique. Both source records remain available; only the patient-level count is de-duplicated.
 
 \paragraph{No re-acquired low-dose; reduced-dose is simulated or noise-inserted.} No paired low-dose in v0.5 is a second physical acquisition. For LIDC (full-dose only) we synthesize low-dose via Poisson-thinning; for AAPM and Mayo the distributed reduced-dose is produced by Mayo's validated projection-domain noise insertion from the real full-dose projections. Both are realistic --- the latter is the field-standard low-dose reference --- but neither is a re-scanned acquisition, and simulation can underestimate true low-dose noise in some regimes~\citep{wang2020deeplearningreview}. v0.5 makes the simulation-vs-reference discrepancy measurable (Figure~\ref{fig:sim_vs_real_v05}) but does not eliminate it; truly re-acquired paired dose is v1.0 territory.
 

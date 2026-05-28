@@ -64,7 +64,8 @@ annotation-and-infrastructure layer over the existing sources rather than collec
 **Sources & cohort.** LIDC-IDRI (1,018 full-dose thoracic CT); AAPM 2016 (10 patients, paired
 full/quarter-dose); Mayo LDCT-PD public portion (199 patients — chest + abdomen, ~half GE / ~half
 Siemens; the 99 head subjects are Genomic Data Commons credentialed-access and out of scope, and one
-ACR phantom is excluded). Union ≈ 1,227 subjects.
+ACR phantom is excluded). Union = 1,226 unique subjects (1,227 source records; one patient, L143, is
+shared by AAPM 2016 and Mayo LDCT-PD and de-duplicated via the cross-source canonical key).
 
 **Cross-source harmonization.** A single schema with per-source Hounsfield-unit offset correction,
 optional pixel-spacing resampling (native preserved by default), thin-slice selection, and

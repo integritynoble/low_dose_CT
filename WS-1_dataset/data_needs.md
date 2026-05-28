@@ -125,7 +125,7 @@ After v0.5 ships, v1.0's critical path is the previously-documented one: **Track
 | Reproducibility contract (Docker, SHA-256 manifest) | ✅ | ✅ |
 | 5-tuple credential framework integration | ✅ | ✅ |
 | Multi-vendor coverage | ✅ (GE + Siemens via public Mayo LDCT-PD) | ✅ (adds Canon / Philips, prospective) |
-| Real paired-dose acquisitions at ≥ 500-patient scale | ❌ (209: AAPM 10 + public Mayo 199) | ✅ |
+| Real paired-dose acquisitions at ≥ 500-patient scale | ❌ (208 unique: AAPM 10 + Mayo 199, less 1 shared patient L143) | ✅ |
 | Cross-vendor evaluation API | ◑ (GE↔Siemens leave-one-vendor-out in v0.5) | ✅ (≥ 3 vendors) |
 | Pediatric subset | ❌ (deferred to companion dataset) | ❌ (also deferred) |
 
