@@ -12,7 +12,7 @@ The framework is **modality-general by construction**: the formal definition is 
 |---|---|---|
 | [`dose-equivalence-framework.md`](dose-equivalence-framework.md) | Canonical formal definition, glossary, properties, estimator sketch | v0.1 working draft |
 | [`open_questions.md`](open_questions.md) | Theoretical gaps that must close before *Nature Methods* submission | v0.1 seeded |
-| `related_work.md` (later) | 3-5 papers to skim as part of weeks 1-4 grounding | not started |
+| [`related_work.md`](related_work.md) | 3-5 papers to skim as part of weeks 1-4 grounding | **v0.1 seeded** (3 anchor cites + novelty-gate skeleton) |
 | `paper_outline.md` (later) | *Nature Methods* manuscript outline (sections, figure list, page budget) | not started — month 8-9 |
 | `proofs/` (later) | Concentration inequalities, sample-size derivations, multi-task extension proofs | not started — month 5-12 |
 
@@ -38,4 +38,4 @@ Files are created on demand. Do not pre-create empty directories.
 
 ---
 
-*Last revised: 2026-05-20.*
+*Last revised: 2026-06-01 (related_work.md seeded alongside the manuscript A6 intro paragraph).*
