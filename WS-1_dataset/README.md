@@ -39,34 +39,38 @@ The two releases have different scope. v0.5 ships the harmonization layer over e
 
 ### Phase 1 — Public-data substrate (D9 + 0 → D9 + 90)
 
-| # | Task | Output |
-|---|---|---|
-| 1.1 | Download and stage LIDC-IDRI 50-patient subset (NBIA Data Retriever) | Raw DICOM tree on disk |
-| 1.2 | Request AAPM 2016 access (Mayo); 1-2 wk lead time | Access granted; raw DICOM staged |
-| 1.3 | Author canonical metadata schema (`schema/dataset_schema.md`) | Schema doc + DICOM cleaning spec |
-| 1.4 | Build `Dockerfile.lidc_idri` (HU window, 512×512 resize, Poisson-noise simulated low-dose at 25% photon count) | Working Docker image; HDF5 shards |
-| 1.5 | Build `Dockerfile.aapm_2016` (uses *real* 25% mA pairs) | Working Docker image; HDF5 shards |
-| 1.6 | Build `pwm_ldct_loader` Python data loader; pytest suite verifying schema invariants | Pip-installable package; tests green |
-| 1.7 | Validate that downstream code (`baselines/`, `reference_method/v0.1/`) consumes the loader without modification | Integration smoke test |
+| # | Task | Output | Status @ v0.5 |
+|---|---|---|---|
+| 1.1 | Download and stage LIDC-IDRI 50-patient subset (NBIA Data Retriever) | Raw DICOM tree on disk | **done** — staged; pipeline runs end-to-end |
+| 1.2 | Request AAPM 2016 access (Mayo); 1-2 wk lead time | Access granted; raw DICOM staged | **done** — staged at `gs://low-dose-ct/aapm_2016_grand_challenge/` (52 zips, 174.7 GB); unzip step wired in commit `a4a14ec` |
+| 1.3 | Author canonical metadata schema (`schema/dataset_schema.md`) | Schema doc + DICOM cleaning spec | **done** — 4 specs + README in [`schema/`](schema/) |
+| 1.4 | Build `Dockerfile.lidc_idri` (HU window, 512×512 resize, Poisson-noise simulated low-dose at 25% photon count) | Working Docker image; HDF5 shards | **done** — pipeline built; HDF5 shards land under `hdf5/{train,val,test}/` |
+| 1.5 | Build `Dockerfile.aapm_2016` (uses Mayo projection-domain noise-inserted low-dose) | Working Docker image; HDF5 shards | **done** — pipeline built; AAPM unzip + DICOM-CT-PD projection ingest wired; output is ckey-bucketed |
+| 1.6 | Build `pwm_ldct_loader` Python data loader; pytest suite verifying schema invariants | Pip-installable package; tests green | **done** — 24 pytest green on synthetic fixture; reads pipeline output; folder-authoritative split discovery (commit `7b94070`) |
+| 1.7 | Validate that downstream code (`baselines/`, `reference_method/v0.1/`) consumes the loader without modification | Integration smoke test | **partial** — `baselines/` RED-CNN trains/evals via loader (5 tests green); 3 other methods pluggable; benchmark numbers gated on GPU |
 
 ### Phase 2 — Clinical acquisition (D9 + 120 → D9 + 270)
 
-| # | Task | Output |
-|---|---|---|
-| 2.1 | IRB submission to UTSW Radiology (gated by Track K — new PI) | IRB approval letter |
-| 2.2 | Partner-site MOU; second-vendor acquisition (target ≥ 200 scans) | Signed MOU; raw scans arriving |
-| 2.3 | Annotation pipeline: ≥ 2 board-certified radiologists × honoraria; majority-vote ground truth | Annotated cases |
-| 2.4 | PHI scrubbing per HIPAA Safe Harbor; verify against DICOM cleaning whitelist | Clean DICOM exports |
-| 2.5 | Build `Dockerfile.utsw_clinical` (consumes clean DICOM, produces HDF5 matching schema) | Working Docker image |
+**Deferred to v1.0 per the 2026-05-21 two-stage strategy.** Phase 2 is what makes the v1.0 paper distinct from v0.5; it is not on the v0.5 critical path. The table below is preserved for v1.0 planning.
+
+| # | Task | Output | Status @ v0.5 / v1.0 |
+|---|---|---|---|
+| 2.1 | IRB submission to UTSW Radiology (gated by Track K — new PI) | IRB approval letter | v1.0 — pending Track K |
+| 2.2 | Partner-site MOU; second-vendor acquisition (target ≥ 200 scans) | Signed MOU; raw scans arriving | v1.0 — pending Track K + partner-site recruitment |
+| 2.3 | Annotation pipeline: ≥ 2 board-certified radiologists × honoraria; majority-vote ground truth | Annotated cases | v0.5 uses [`schema/annotation_qa_protocol.md`](schema/annotation_qa_protocol.md) on existing LIDC + top-up AAPM/Mayo; v1.0 extends to prospective cohort |
+| 2.4 | PHI scrubbing per HIPAA Safe Harbor; verify against DICOM cleaning whitelist | Clean DICOM exports | v1.0 — public data is already de-identified upstream; whitelist applies to prospective acquisitions |
+| 2.5 | Build `Dockerfile.utsw_clinical` (consumes clean DICOM, produces HDF5 matching schema) | Working Docker image | v1.0 — pending UTSW data arrival |
 
 ### Phase 3 — Paper + listing + on-chain (D9 + 270 → D9 + 540)
 
-| # | Task | Output |
-|---|---|---|
-| 3.1 | Draft dataset paper (Methods, Validation, Usage, Code Availability sections) | Draft v1 |
-| 3.2 | PhysioNet metadata + access docs; submit listing | PhysioNet page live |
-| 3.3 | Submit paper to *Nature Scientific Data*; revise to acceptance (~6 mo) | Acceptance letter |
-| 3.4 | Author and register L3 spec on PWMRegistry (concurrent with paper submission) | L3 hash on chain |
+For v0.5 this phase is **brought forward** by ~D9 + 90 because the substrate (Phase 1) is already done. The v0.5 submission window is D9 + 180; the v1.0 window remains D9 + 365–540.
+
+| # | Task | Output | Status @ v0.5 |
+|---|---|---|---|
+| 3.1 | Draft dataset paper (Methods, Validation, Usage, Code Availability sections) | Draft v1 | **active** — v0.5 manuscript drafted with real prose for Abstract / Background / Methods / Data Records / Usage Notes / Roadmap; placeholders for figures + per-source counts + reproduction table tracked in [`paper_draft/README.md`](paper_draft/README.md) |
+| 3.2 | PhysioNet metadata + access docs; submit listing | PhysioNet page live | **drafted** — paste-ready listing in [`physionet_listing/`](physionet_listing/) (Open access / CC BY 4.0); `[CONFIRM]` fields = authors / DOI / IRB / funding |
+| 3.3 | Submit paper to *Nature Scientific Data*; revise to acceptance (~6 mo) | Acceptance letter | pending (D9 + 180 submission target) |
+| 3.4 | Register the v0.5 dataset manifest on PhysioNet DOI + Zenodo (primary); PWM L3 registry as optional mirror | DOI + Zenodo record + (optional) L3 hash | pending — re-scoped to PhysioNet/Zenodo-first per the 2026-05-25 reframe; L3 registry is no longer the primary anchor |
 
 ---
 
