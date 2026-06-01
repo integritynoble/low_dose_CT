@@ -1,6 +1,8 @@
 # WS-1 — Dataset (Track 9 sub-track 9a)
 
-The **PWM Low-Dose CT Benchmark Dataset**: a multi-vendor, paired-dose CT dataset distributable via PhysioNet, registered as L3 on PWM mainnet, supported by a journal paper.
+The **PWM Low-Dose CT Benchmark Dataset**: a content-addressed harmonization of multi-source CT data, distributable via PhysioNet + Zenodo, supported by a *Nature Scientific Data* paper. Released in two stages per the 2026-05-21 director decision — see [`data_needs.md`](data_needs.md) for the strategy doc.
+
+> **Status (D9 + 12, 2026-06-01):** **v0.5 (public-data harmonization) is the current ship target** — manuscript active in [`paper_draft/manuscript.tex`](paper_draft/manuscript.tex); D9 + 180 submission window. v0.5 unifies LIDC-IDRI + AAPM 2016 + Mayo LDCT-PD under one schema, one Python loader, one harmonized annotation convention, and one content-addressed manifest; cross-vendor (GE ↔ Siemens) paired-dose comes free from the Mayo cohort. **v1.0 (prospective multi-vendor + multi-site extension)** is preserved in [`paper_draft/manuscript_v1.tex`](paper_draft/manuscript_v1.tex) for the D9 + 365–540 submission window once Track K + IRB + clinical acquisition land. The two manuscripts coexist — do not conflate them.
 
 ---
 
