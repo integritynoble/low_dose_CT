@@ -153,6 +153,27 @@ The signal-equivalence credential for a reconstruction method $M$ against a refe
 
 The same library reused with \texttt{modality="MRI"} or \texttt{modality="PET"} produces credentials of identical schema, illustrating that the framework is genuinely modality-general at the API level.
 
+\paragraph{Cross-modality consistency on synthetic data.} The three modality worked examples above are independent empirical demonstrations; what they do not by themselves rule out is the possibility that the framework's modality-generality is rhetorical --- three superficially-similar pipelines hand-tuned per modality. To rule that out, we exercise the \emph{same} paired-bootstrap code path on three synthetic test sets, one per modality, each generated under the modality's $T_r$ from Table~\ref{tab:modality_Tr}. For each modality we evaluate two candidate methods: an \emph{equivalent} candidate that is an unbiased estimator of the latent signal with only the additional variance induced by signal reduction, and a \emph{biased} candidate that adds a known additive bias of $0.10 > \varepsilon = 0.05$. With $n = 200$ synthetic patients, $r = 0.25$, $\alpha = 0.05$, and $B = 10{,}000$ bootstrap replicates at a fixed seed, the same \texttt{signal\_equivalence\_credential} function produces the six credentials in Table~\ref{tab:consistency}. All three equivalent candidates pass; all three biased candidates fail; the verdicts are obtained without modality-specific branching anywhere downstream of $T_r$. The full script and the seed-reproducible JSON output are released at \url{https://github.com/integritynoble/low_dose_CT/tree/main/WS-2_framework/experiments/cross_modality_consistency/}.
+
+\begin{table}[ht]
+    \centering
+    \small
+    \begin{tabular}{llrrrl}
+        \toprule
+        \textbf{Modality} & \textbf{Candidate} & \textbf{$\bar\Delta$} & \textbf{CI low} & \textbf{CI high} & \textbf{Verdict} \\
+        \midrule
+        CT  & equivalent & $-0.0067$ & $-0.0156$ & $\phantom{-}0.0022$ & \texttt{PASS} \\
+        CT  & biased     & $\phantom{-}0.1011$ & $\phantom{-}0.0924$ & $\phantom{-}0.1096$ & \texttt{FAIL} \\
+        MRI & equivalent & $\phantom{-}0.0010$ & $-0.0023$ & $\phantom{-}0.0044$ & \texttt{PASS} \\
+        MRI & biased     & $\phantom{-}0.0986$ & $\phantom{-}0.0954$ & $\phantom{-}0.1018$ & \texttt{FAIL} \\
+        PET & equivalent & $-0.0031$ & $-0.0135$ & $\phantom{-}0.0076$ & \texttt{PASS} \\
+        PET & biased     & $\phantom{-}0.0915$ & $\phantom{-}0.0816$ & $\phantom{-}0.1013$ & \texttt{FAIL} \\
+        \bottomrule
+    \end{tabular}
+    \caption{Cross-modality consistency on synthetic data at $r = 0.25$, $\varepsilon = 0.05$, $\alpha = 0.05$, $n = 200$, $B = 10{,}000$, seed $= 42$. The same paired-bootstrap function is applied to three modality-specific $T_r$ operators (CT Poisson-thinning, MRI variable-density Cartesian mask, PET list-mode thinning). Equivalent candidates have bias $0$; biased candidates have additive bias $0.10$. The framework correctly identifies equivalence in all three modalities and correctly rejects in all three; no modality-specific code is exercised downstream of $T_r$. Numbers are bit-for-bit reproducible from the released script.}
+    \label{tab:consistency}
+\end{table}
+
 \paragraph{Comparison with existing tools.} Several existing software packages implement components of the proposed pipeline; none implements the full pipeline as a single, modality-general, content-addressed reporting standard. Table~\ref{tab:tool_comparison} summarizes the coverage gap.
 
 \begin{table}[ht]

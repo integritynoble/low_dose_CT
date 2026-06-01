@@ -112,6 +112,7 @@ Phase 2 work runs in parallel with the WS-1 IRB lag — no IRB dependency.
 | Path | Purpose | Status |
 |---|---|---|
 | [`theory/`](theory/) | Formal definition + open-questions work plan + (later) proofs | **v0.1 seeded** |
+| [`experiments/cross_modality_consistency/`](experiments/cross_modality_consistency/) | Synthetic anchor for the modality-general claim — same bootstrap code path, 3 `T_r` operators, 3 PASS + 3 FAIL credentials | **seed-reproducible** |
 | `pwm_dose_equivalence/` | Pip-installable Python library | pending Phase 3 |
 | `validation/` | Empirical 5-tuple computation on real data | pending Phase 1 pilot |
 | `paper_draft/` | *Nature Methods* manuscript | pending Phase 4 |
