@@ -18,18 +18,20 @@ A successful WS-1 means: an external researcher can `pip install pwm_ldct_loader
 
 ## Target specs
 
-| Item | Target |
-|---|---|
-| Patient scans, paired (normal + matched low-dose) | ≥ 500 (stretch 1,000) |
-| Real low-dose pairs (not just simulated) | ≥ 50 patients |
-| Vendor coverage | ≥ 2 of {Siemens, GE, Canon, Philips}; goal 3 |
-| Anatomy | Chest (lung-screening primary) + abdomen (oncology follow-up) |
-| Sites | UTSW lead + ≥ 1 partner academic medical center |
-| Annotations | Lesion bbox / segmentation by ≥ 2 board-certified radiologists; majority-vote ground truth |
-| Format | DICOM raw projections + reconstructed images + annotations + metadata |
-| Distribution | PhysioNet credentialed (HIPAA-compliant) |
-| Patient-level split | 60 / 20 / 20 train / val / test; no patient appears in two splits |
-| Citations target (24 mo post-release) | ≥ 50 |
+The two releases have different scope. v0.5 ships the harmonization layer over existing public data; v1.0 adds the prospective clinical contribution. **Where a row differs between releases, both values are shown.**
+
+| Item | v0.5 (current ship target) | v1.0 (future, gated on Track K + IRB) |
+|---|---|---|
+| Patient scans, paired full-dose / reduced-dose | **208 unique paired-dose / 1,226 unique union** (LIDC + AAPM 2016 + Mayo LDCT-PD); AAPM paired FD+QD covers the 10 training patients (testing is QD-only, FD withheld) | ≥ 500 (stretch 1,000) prospectively acquired |
+| Reduced-dose nature | **Measured-reference vs.\ our-simulation**: AAPM/Mayo "low-dose" is Mayo's validated projection-domain noise insertion from the real full-dose projections, not a second physical scan (corrected 2026-05-26); LIDC reduced-dose is our Poisson-noise simulation at 25% photon count | Re-acquired paired-dose physical scans (≥ 50 patients) |
+| Vendor coverage | **Two-vendor: ~99 GE + ~101 Siemens** in the Mayo LDCT-PD cohort (corrected 2026-05-26 from prior "Siemens-only" framing); cross-vendor (GE ↔ Siemens) paired-dose is a v0.5 strength | + Canon and/or Philips via partner-site acquisition (≥ 3 vendors total) |
+| Anatomy | Chest (lung-screening primary) + abdomen (oncology follow-up, partial coverage) | Chest + abdomen at multi-site scale |
+| Sites | Public sources only — no PHI-bearing institutional acquisition | UTSW lead + ≥ 1 partner academic medical center |
+| Annotations | Re-use LIDC-IDRI's 4-radiologist annotations; top up AAPM + Mayo chest cases that lack equivalents per [`schema/annotation_qa_protocol.md`](schema/annotation_qa_protocol.md) | Same protocol extended to the prospective cohort |
+| Format | HDF5 shards + DICOM-CT-PD projections (where source provides) + harmonized annotations + content-addressed manifest | Same + raw projections from the prospective acquisitions |
+| Distribution | PhysioNet DOI + Zenodo (primary); PWM L3 registry as an optional mirror (post-2026-05-25 reframe) | Same |
+| Patient-level split | Already deposited under [`hdf5/{train,val,test}/`](pipelines/) (pid-bucketed for Mayo, ckey-bucketed for AAPM); 60 / 20 / 20 | Same protocol over the larger cohort |
+| Citations target (24 mo post-release) | ≥ 25 (v0.5 alone) | ≥ 50 (combined v0.5 + v1.0) |
 
 ---
 
