@@ -346,6 +346,8 @@ with confidence $\geq 1 - \alpha$ under the paired-bootstrap estimator of Sectio
 
 Definition~\ref{def:signal_equiv_aggregate} reads: \textit{``the population-mean task performance of $M$ on reduced-signal scans is within $\varepsilon$ of the population-mean task performance of $\Mref$ on full-signal scans, with confidence $1-\alpha$.''}
 
+\paragraph{Population claim vs.\ sample evidence.} The two expectations in Equation~\eqref{eq:signal_equiv_main} are deterministic population objects that the credential \emph{asserts}; the role of $\alpha$ and the paired-bootstrap procedure of Section~\ref{sec:methods-estimator} is to deliver finite-sample \emph{evidence} for or against that assertion from a test set $\{x_k\}_{k=1}^n$ drawn from $\Pi$. The credential schema therefore records, alongside $(r, T, \varepsilon, \alpha, \Pi)$, the test-set size $n$ and a slug resolving to the operational sampling protocol by which draws from $\Pi$ are produced (e.g.\ the dataset's published recruitment criteria and split manifest), so that an independent verifier is guaranteed to be testing the same population claim --- not merely recomputing the same bootstrap CI on a possibly-different sample.
+
 We also define a strictly-stronger \emph{per-patient} formulation:
 
 \begin{definition}[Signal-equivalence, per-patient formulation]
