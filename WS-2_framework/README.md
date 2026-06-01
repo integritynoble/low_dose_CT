@@ -105,11 +105,24 @@ D9 anchor ≈ 2026-05-20 (theory v0.1 seed date); today (2026-06-01) is **≈ D9
 
 ## Done when
 
-- [ ] *Nature Methods* paper accepted (or fallback venue)
+### v0.2 progress at D9 + 12 (intermediate, not terminal)
+
+- [x] Manuscript v0.2 reviewer-readiness pass — 7 audit items closed (see [`paper_draft/CHANGELOG.md`](paper_draft/CHANGELOG.md))
+- [x] Cross-modality consistency synthetic anchor — same code path, 6 expected verdicts, seed-reproducible (`experiments/cross_modality_consistency/`)
+- [x] Task-based image-quality positioning + [`theory/related_work.md`](theory/related_work.md) seeded with 3 new TB-IQ anchor cites (Barrett 1990 / Barrett & Myers 2013 / AAPM TG-233)
+- [x] Ground-truth protocol borrowed verbatim from WS-1 v0.5 annotation QA into `Methods → Estimator`
+- [x] Π formalized as carrying acquisition-protocol metadata (CT vendor / MRI mask family / PET tracer); 5-tuple shape preserved across modalities
+- [ ] Literature depth-pass complete (fastMRI reader studies / one CHO-for-LDCT paper / Wunderlich–Noo observer-variance) → `theory/dose-equivalence-framework.md` bumped from v0.1 to v0.2
+- [ ] Coverage simulations (open_questions §3) + closed-form sample-size derivation (open_questions §2) landed under `theory/proofs/`
+
+### Terminal acceptance criteria
+
+- [ ] *Nature Methods* paper accepted (or fallback venue: *IEEE TMI* / *Medical Image Analysis*)
+- [ ] Per-modality Results tables filled with real-cohort numbers — Table 2 (CT, Phase 1 pilot), Table 3 (MRI, fastMRI knee), Table 4 (PET, NEMA NU-2 IQ phantom)
 - [ ] `pwm_dose_equivalence` v1.0.0 on PyPI with ≥ 2 modality validators
-- [ ] L2 spec hash on PWM mainnet
-- [ ] ≥ 3 external groups have computed a credential under the framework
-- [ ] Phase 1 pilot data published as supplementary
+- [ ] Framework SHA-256 hash registered as L2 spec on PWMRegistry mainnet
+- [ ] ≥ 3 external research groups have computed a credential under the framework
+- [ ] Phase 1 pilot data published as supplementary alongside the manuscript
 
 ---
 
