@@ -98,12 +98,34 @@ The critical-path leg for **v0.5** is now GPU access and the radiologist top-up 
 
 ## Done when
 
-- [ ] ≥ 500 paired scans across ≥ 2 vendors and ≥ 2 sites
-- [ ] *Nature Scientific Data* paper accepted
-- [ ] L3 spec hash registered on PWM mainnet
-- [ ] PhysioNet listing live; external download verified
-- [ ] `pwm_ldct_loader` published on PyPI
-- [ ] ≥ 3 external research groups have used the dataset (early adoption signal)
+The two-stage release strategy has two separate ship gates. The intermediate-progress section shows what is already in hand at D9 + 12.
+
+### v0.5 progress at D9 + 12 (intermediate, not terminal)
+
+- [x] Public-data substrate (LIDC-IDRI + AAPM 2016 + Mayo LDCT-PD) staged and reproducibly preprocessed under `pwm_ldct_prep`
+- [x] Canonical schema + DICOM cleaning + annotation-QA protocol drafted in [`schema/`](schema/) (4 specs)
+- [x] `pwm_ldct_loader` scaffolded; 24 pytest green on synthetic fixture; folder-authoritative split discovery
+- [x] Cohort count locked: 208 unique paired-dose / 1,226 unique union; deposited at `gs://low-dose-ct/pwm_ldct_v0_5`
+- [x] v0.5 manuscript drafted with real prose for Abstract / Background / Methods / Data Records / Usage Notes / Roadmap ([`paper_draft/manuscript.tex`](paper_draft/manuscript.tex))
+- [x] PhysioNet listing drafted (paste-ready; `[CONFIRM]` fields = authors / DOI / IRB / funding)
+- [ ] RED-CNN + 3 pluggable baselines benchmarked on v0.5 splits (gated on GPU)
+- [ ] Figure 1 (real-vs-simulated low-dose) generated from AAPM 2016 paired-dose training subset
+- [ ] Radiologist top-up annotation campaign on AAPM + Mayo chest cases per `schema/annotation_qa_protocol.md`
+
+### v0.5 ship gate (D9 + 180 → D9 + 365)
+
+- [ ] v0.5 paper submitted to *Nature Scientific Data*
+- [ ] v0.5 paper accepted (or fallback: *Radiology: Artificial Intelligence*)
+- [ ] PhysioNet DOI + Zenodo deposit live for the v0.5 release artifacts
+- [ ] `pwm_ldct_loader` v0.5.0 published on PyPI
+- [ ] PWM L3 registry mirror entry recorded (optional per the 2026-05-25 reframe)
+
+### v1.0 ship gate (D9 + 365 → D9 + 540, gated on Track K + IRB)
+
+- [ ] ≥ 500 prospectively-acquired paired scans across ≥ 2 vendors and ≥ 2 sites (UTSW + partner; Canon and/or Philips coverage)
+- [ ] v1.0 paper submitted and accepted at *Nature Scientific Data*
+- [ ] ≥ 3 external research groups have used the v0.5 + v1.0 dataset (early adoption signal across both releases)
+- [ ] Per-vendor cross-validation analyses included in v1.0 (extending the v0.5 GE↔Siemens cross-vendor result)
 
 ---
 
