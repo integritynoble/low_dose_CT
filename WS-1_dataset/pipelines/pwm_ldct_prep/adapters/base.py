@@ -67,7 +67,10 @@ def read_ct_volume(files: List[str]) -> Tuple[np.ndarray, Dict, List[List[float]
     """Read a CT image series into an HU volume [Z, H, W], sorted cranio-caudally."""
     slices = []
     for p in files:
-        ds = pydicom.dcmread(p, force=True)
+        try:
+            ds = pydicom.dcmread(p, force=True)
+        except Exception:
+            continue   # corrupt / truncated DICOM (e.g. CRC-bad in a zip-extracted file)
         if not hasattr(ds, "PixelData") or not hasattr(ds, "ImagePositionPatient"):
             continue
         slices.append(ds)
@@ -76,7 +79,10 @@ def read_ct_volume(files: List[str]) -> Tuple[np.ndarray, Dict, List[List[float]
     slices.sort(key=lambda s: (float(s.ImagePositionPatient[2]), int(getattr(s, "InstanceNumber", 0))))
     vol = []
     for s in slices:
-        arr = s.pixel_array.astype(np.float32)
+        try:
+            arr = s.pixel_array.astype(np.float32)
+        except Exception:
+            continue   # decode failure on a single slice — drop it, keep the rest
         vol.append(arr * float(getattr(s, "RescaleSlope", 1.0)) + float(getattr(s, "RescaleIntercept", 0.0)))
     volume = np.stack(vol, axis=0).astype(np.float32)
     ref = slices[0]
