@@ -2,6 +2,8 @@
 
 The **signal-equivalence framework**: a formal, modality-general mathematical replacement for vendor-style claims like *"50% dose reduction"*, *"4× MRI acceleration"*, or *"25% activity PET"*. Each claim is converted into a testable 5-tuple credential `(signal_ratio, task, ε, α, subpopulation)`.
 
+> **Status (D9 + 12, 2026-06-01):** manuscript at **v0.2 working draft**, 19 pp — see [`paper_draft/CHANGELOG.md`](paper_draft/CHANGELOG.md) for the v0.1 → v0.2 delta. The same code path is verified across CT / MRI / PET on synthetic data ([`experiments/cross_modality_consistency/`](experiments/cross_modality_consistency/), 6/6 verdicts as expected). Real-cohort per-modality Results tables are gated on WS-2 Phase 1 (CT) and Phase 3 (MRI / PET).
+
 ---
 
 ## Goals
