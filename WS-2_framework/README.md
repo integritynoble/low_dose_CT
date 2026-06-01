@@ -18,9 +18,9 @@ A successful WS-2 means: an external researcher can compute a 5-tuple credential
 
 ## The framework, in one line
 
-Method **M** is **signal-equivalent at level (r, T, ε, α)** over subpopulation **Π** iff the population-mean task performance on reduced-signal scans is within `ε` of the population-mean performance of a reference method on full-signal scans, with confidence `≥ 1 − α`.
+Method **M** is **signal-equivalent at level (r, T, ε, α)** over subpopulation **Π** iff the population-mean task performance on reduced-signal scans is within `ε` of the population-mean performance of a reference method on full-signal scans. The `1 − α` is the confidence level at which the paired-bootstrap estimator returns `PASS` on a test set drawn from Π — population claim and finite-sample evidence are kept distinct (manuscript v0.2 §framework). Π is formalized to carry the **acquisition-protocol metadata** that determines `T_r` for the modality (CT vendor / kVp; MRI mask family; PET tracer / scanner), so the 5-tuple shape holds verbatim across CT, MRI, and PET.
 
-The formal definition lives in [`theory/dose-equivalence-framework.md`](theory/dose-equivalence-framework.md) (v0.1 working draft). It sharpens the one-liner across six points (patient vs image, operator vs scalar, reference-acquisition vs reference-algorithm, performance functional form, subpopulation-as-measure, aggregate vs per-patient).
+The formal definition lives in [`theory/dose-equivalence-framework.md`](theory/dose-equivalence-framework.md) (v0.1; intentionally lags the manuscript v0.2 pending the literature depth-pass per [`theory/open_questions.md`](theory/open_questions.md) §1). It sharpens the one-liner across six points (patient vs image; operator vs scalar; reference-acquisition vs reference-algorithm; performance functional form; subpopulation-as-acquisition-protocol-bearing measure; aggregate vs per-patient) — the same six points appear in the manuscript as clarifications C1–C6.
 
 ---
 
