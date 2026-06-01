@@ -186,7 +186,8 @@ We built \texttt{pwm\_dose\_equivalence} rather than extending an existing tool 
                                task="lung_nodule_5mm"),
         signal_ratio=0.25, modality="CT",
         task=Task("lung_nodule_5mm", metric="auc",
-                  ground_truth_protocol="majority-vote-2-rads"),
+                  ground_truth_protocol=
+                      "pwm-ldct/annotation-qa/v0.5#sha256:..."),
         subpopulation="adult_chest_pwm_l3_test_v1",
         epsilon=0.02, alpha=0.05,
         formulation="aggregate", estimator="bca",
@@ -204,7 +205,8 @@ We built \texttt{pwm\_dose\_equivalence} rather than extending an existing tool 
         "reference_method": {"name": "FBP_full_dose"},
         "signal_ratio": 0.25, "modality": "CT",
         "task": {"name": "lung_nodule_5mm", "metric": "auc",
-                 "ground_truth": "majority-vote-2-rads"},
+                 "ground_truth_protocol":
+                     "pwm-ldct/annotation-qa/v0.5#sha256:..."},
         "subpopulation": "adult_chest_pwm_l3_test_v1",
         "epsilon": 0.02, "alpha": 0.05,
         "estimator": "bca", "bootstrap": 10000, "seed": 42,
@@ -329,7 +331,7 @@ The modality-specific instantiations are given in Table~\ref{tab:modality_Tr}.
 
 A \emph{reconstruction method} is a measurable map $M: \mathcal{S} \to \mathcal{Y}$. The composed map $M \circ T_r \circ \Sref: \mathcal{X} \to \mathcal{P}(\mathcal{Y})$ is ``reconstruct from a reduced-signal scan of patient $x$.'' We compare two such composed maps: $\Mred := M \circ T_r \circ \Sref$ (the method under evaluation, on reduced-signal data) and $\mathcal{M}_{\textrm{base}} \circ \Sref$ (a named reference method on full-signal data; we write $\Mref$ for shorthand).
 
-A \emph{task} is a measurable map $T: \mathcal{Y} \to \mathcal{D}$ from reconstructions to a clinical decision space $\mathcal{D}$ (binary detection, bounding boxes, per-voxel segmentation masks, scalar quantification, etc.). Ground truth $g(x) \in \mathcal{D}$ is established by a documented adjudication protocol (multiple board-certified radiologists, majority vote, biopsy confirmation), and the protocol is part of the credential.
+A \emph{task} is a measurable map $T: \mathcal{Y} \to \mathcal{D}$ from reconstructions to a clinical decision space $\mathcal{D}$ (binary detection, bounding boxes, per-voxel segmentation masks, scalar quantification, etc.). Ground truth $g(x) \in \mathcal{D}$ is established by a documented adjudication protocol --- a board-certified reader panel with a calibration gate and consolidation rule for image-based tasks, or a physical reference standard for phantom tasks --- and the protocol identifier is part of the credential. The operational details, including the specific reader-panel discipline used for the CT worked example, are given in Section~\ref{sec:methods-estimator}.
 
 A \emph{performance metric} is a functional $P: \mathcal{D} \times \mathcal{D} \to \R$ evaluating ``how well the task output on a reconstruction agrees with ground truth.''
 
@@ -380,7 +382,11 @@ A naive informal version of Equation~\eqref{eq:signal_equiv_main} conflates six 
 \subsection{Estimator}
 \label{sec:methods-estimator}
 
-Given a test set $\{x_1, \ldots, x_n\}$ drawn i.i.d.\ from $\Pi$ with ground truth $\{g(x_k)\}$, and methods $M, \Mref$, we estimate Equation~\eqref{eq:signal_equiv_main} via a paired bootstrap on patients (Algorithm~\ref{alg:paired_bootstrap}).
+\paragraph{Ground-truth protocol.} Ground truth $g(x_k)$ is the largest single source of credential variance the framework does not control, so the credential records the adjudication protocol by content-addressed reference rather than by free-text slug. For the CT worked example we adopt the PWM-LDCT v0.5 annotation QA protocol~\citep{ws1dataset} verbatim, summarized here for the reader's convenience: (i) every annotator is a board-certified radiologist with $\geq 5$ years of thoracic CT experience; (ii) each annotator passes a $20$-case calibration set drawn from a held-out LIDC-IDRI subset before contributing release annotations, with a pre-registered Cohen's $\kappa \geq 0.60$ pass threshold against the LIDC majority vote; (iii) candidate nodules are matched across readers by bounding-box $\mathrm{IoU} \geq 0.3$ on the same slice with $\pm 1$-slice 3D adjacency; (iv) a candidate is included in $g(x_k)$ iff more than half of the qualified readers for the case marked it, with attribute consolidation via element-wise median (\texttt{bbox}, \texttt{diameter\_mm}, ordinal \texttt{texture}) and mode (\texttt{location}); (v) two-reader cases with non-overlapping boxes, $\geq 1.5\times$ diameter disagreement, or texture-class disagreement are referred to a third independent radiologist whose label becomes the released ground truth; (vi) drift is monitored by a rotating 5-case re-calibration every $\approx 50$ cases, and any reader whose running $\kappa$ falls below the pass threshold is paused and all of their since-last-passing-window cases are re-annotated. The per-reader raw labels are preserved alongside the consolidated ground truth so users of the framework can substitute alternative consolidation rules (e.g.\ STAPLE) and re-issue the credential without re-running the reader panel. The MRI worked example reuses the published fastMRI expert meniscus segmentations as ground truth, with the segmentation protocol resolved through the same content-addressed mechanism; the PET worked example does not require a reader panel because the NEMA NU-2 IQ phantom provides physical ground truth (known sphere sizes and activity concentrations). In all three cases the credential's \texttt{ground\_truth\_protocol} field resolves to a normative protocol document by SHA-256 hash (Section~\ref{sec:anchoring}), so a downstream verifier can confirm the protocol bit-for-bit rather than from a slug whose meaning may drift.
+
+\paragraph{Label-noise refusal threshold.} The library refuses to issue a credential when the documented inter-reader disagreement rate of the cited protocol exceeds $\varepsilon / 2$; below that threshold, equivalence verdicts cannot be meaningfully separated from annotation noise. For the CT protocol above, the published pairwise $\kappa$ on the calibration set is the operational input to this check.
+
+Given a test set $\{x_1, \ldots, x_n\}$ drawn i.i.d.\ from $\Pi$ with ground truth $\{g(x_k)\}$ established by the protocol above, and methods $M, \Mref$, we estimate Equation~\eqref{eq:signal_equiv_main} via a paired bootstrap on patients (Algorithm~\ref{alg:paired_bootstrap}).
 
 \begin{algorithm}[ht]
     \caption{Paired-bootstrap signal-equivalence credential}
