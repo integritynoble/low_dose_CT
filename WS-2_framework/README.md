@@ -28,12 +28,12 @@ The formal definition lives in [`theory/dose-equivalence-framework.md`](theory/d
 
 | Modality | Signal-reduction parameter `r` | Validator status |
 |---|---|---|
-| **CT** (primary) | `r = mA_red / mA_ref` (tube-current dose ratio) | Phase 1 pilot validates on AAPM 2016 + LIDC-IDRI |
-| **MRI accelerated reconstruction** | `r = 1 / R` (acceleration factor reciprocal) | Phase 2 worked example (fastMRI knee dataset) |
-| **PET low-dose / low-activity** | `r = A_red / A_ref` (injected-activity ratio) | Phase 2 worked example (public NEMA IQ phantom) |
-| Optical / fluorescence (stretch) | `r = exposure_red / exposure_ref` | v2 extension |
+| **CT** (primary) | `r = mA_red / mA_ref` (tube-current dose ratio) | *Synthetic Poisson channel:* **done** ([`experiments/cross_modality_consistency/`](experiments/cross_modality_consistency/)). *Empirical:* Phase 1 pilot on AAPM 2016 + LIDC-IDRI (D9 + 90). |
+| **MRI accelerated reconstruction** | `r = 1 / R` (acceleration factor reciprocal); mask family rides inside Π | *Synthetic Cartesian-mask channel:* **done** ([`experiments/cross_modality_consistency/`](experiments/cross_modality_consistency/)). *Empirical:* Phase 3 worked example on fastMRI knee (D9 + 270). |
+| **PET low-dose / low-activity** | `r = A_red / A_ref` (injected-activity ratio) | *Synthetic list-mode channel:* **done** ([`experiments/cross_modality_consistency/`](experiments/cross_modality_consistency/)). *Empirical:* Phase 3 worked example on NEMA NU-2 IQ phantom (D9 + 270). |
+| Optical / fluorescence (stretch) | `r = exposure_red / exposure_ref` | v2 extension; `T_r` specified in the manuscript Methods table (Table 1) but not validated. |
 
-The L2 spec ships when **CT + at least one of {MRI, PET}** have a working validator.
+The framework's SHA-256 hash registers as an L2 specification on PWMRegistry when **CT + at least one of {MRI, PET}** have a working **empirical** validator (the synthetic-channel demonstrations are necessary but not sufficient for this ship gate).
 
 ---
 
