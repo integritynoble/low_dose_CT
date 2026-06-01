@@ -7,9 +7,12 @@
 %% Template:     Springer Nature template. In development we use article
 %%               with sn-style; switch to sn-jnl.cls at submission.
 %%
-%% Status: v0.1 working draft. RESULTS / FIGURES are \todo{} placeholders
-%%         until WS-2 Phase 1 pilot (D9+90) and Phase 3 library validators
-%%         (D9+365) land.
+%% Status: v0.2 working draft (bumped from v0.1 after the Nature Methods
+%%         reviewer-readiness pass). v0.2 ships a real cross-modality
+%%         consistency Results table (synthetic); the three per-modality
+%%         Results tables remain \todo{} until WS-2 Phase 1 pilot (D9+90)
+%%         and Phase 3 library validators (D9+365) land.
+%% Changelog: see paper_draft/CHANGELOG.md for the v0.1 → v0.2 delta.
 %%
 %% Build:  pdflatex manuscript && bibtex manuscript && pdflatex manuscript
 %% =====================================================================
@@ -66,7 +69,7 @@
 \affil[1]{University of Texas Southwestern Medical Center, Dallas, TX, USA}
 \affil[2]{PWM Protocol Foundation}
 
-\date{Working draft v0.1 --- \today}
+\date{Working draft v0.2 --- \today}
 
 \begin{document}
 \maketitle
@@ -221,7 +224,7 @@ We built \texttt{pwm\_dose\_equivalence} rather than extending an existing tool 
 \textit{Step 2 --- inspect the resulting credential JSON.}
 \begin{verbatim}
     {
-      "schema_version": "pwm-signal-equivalence/v0.1",
+      "schema_version": "pwm-signal-equivalence/v0.2",
       "framework_hash": "sha256:<computed-at-runtime>",
       "credential": {
         "method": {"name": "my_method", "code_hash": "sha256:..."},
@@ -486,7 +489,7 @@ The credential schema is content-addressed: every published credential carries t
 
 \begin{verbatim}
     {
-      "schema_version": "pwm-signal-equivalence/v0.1",
+      "schema_version": "pwm-signal-equivalence/v0.2",
       "framework_hash": "sha256:...",
       "credential": { ... }
     }
