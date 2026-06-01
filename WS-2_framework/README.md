@@ -8,11 +8,11 @@ The **signal-equivalence framework**: a formal, modality-general mathematical re
 
 ## Goals
 
-1. **Publish a peer-reviewed paper** at ***Nature Methods*** (primary) introducing the framework. Fallback: *IEEE Transactions on Medical Imaging* or *Medical Image Analysis*.
-2. **Ship `pwm_dose_equivalence` on PyPI** with ≥ 2 modality validators (CT + MRI minimum; PET stretch). `pip install pwm_dose_equivalence` works for any external user.
-3. **Register L2 spec on PWMRegistry** so every leaderboard submission must report a 5-tuple credential under a cryptographically-anchored framework version.
+1. **Publish a peer-reviewed paper** at ***Nature Methods*** (primary) introducing the framework. Fallback: *IEEE Transactions on Medical Imaging* or *Medical Image Analysis*. Working draft is at v0.2 in [`paper_draft/`](paper_draft/) — see [`paper_draft/CHANGELOG.md`](paper_draft/CHANGELOG.md) for the v0.1 → v0.2 delta.
+2. **Ship `pwm_dose_equivalence` on PyPI** with ≥ 2 modality validators (CT + MRI minimum; PET stretch). `pip install pwm_dose_equivalence` works for any external user. A prototype of the modality-agnostic API ships today in [`experiments/cross_modality_consistency/`](experiments/cross_modality_consistency/); the productionised library is Phase 3 (D9 + 365 TestPyPI → D9 + 540 v1.0.0).
+3. **Register the framework definition on PWMRegistry** as a content-addressed L2 specification, so every leaderboard submission is verified against the SHA-256 hash of the framework version the credential was issued under. The PWM registry is one of three hash-resolvers (local file / pinned PyPI release / PWMRegistry) that the manuscript enumerates; content-addressing itself is the methodological substance, the registry is the long-term decentralized resolver.
 
-A successful WS-2 means: an external researcher can compute a 5-tuple credential for their reconstruction method on the L3 dataset in under one hour on commodity hardware, and any reviewer can verify the credential by re-running the same library.
+A successful WS-2 means: an external researcher can compute a 5-tuple credential for their reconstruction method on the L3 dataset in under one hour on commodity hardware, and any reviewer can verify the credential by re-running the same library against the same framework hash.
 
 ---
 
