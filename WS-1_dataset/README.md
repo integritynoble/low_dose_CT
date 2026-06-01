@@ -9,7 +9,7 @@ The **PWM Low-Dose CT Benchmark Dataset**: a content-addressed harmonization of 
 ## Goals
 
 1. **Publish a peer-reviewed paper** at ***Nature Scientific Data*** (primary) describing the dataset, its construction protocol, and its quality controls. Fallback: *Radiology: Artificial Intelligence*.
-2. **Register L3 spec on PWMRegistry** so any submission to the leaderboard (WS-4) is evaluated against a cryptographically-anchored benchmark version.
+2. **Content-address the dataset release** by SHA-256 hash, with PhysioNet DOI + Zenodo as the primary deposit / citation channels and the PWM L3 registry as an optional mirror, so any submission to the leaderboard (WS-4) is evaluated against a cryptographically-pinned benchmark version. (Per the 2026-05-25 reframe — content-addressing is the methodological substance; the L3 registry is one of several resolvers.)
 3. **Distribute the dataset on PhysioNet** under credentialed access (HIPAA Safe Harbor compliant) so any external researcher can download and use it.
 
 A successful WS-1 means: an external researcher can `pip install pwm_ldct_loader`, request PhysioNet credentials, download the dataset, and reproduce any published baseline within a single afternoon.
@@ -61,7 +61,7 @@ The two releases have different scope. v0.5 ships the harmonization layer over e
 | 2.4 | PHI scrubbing per HIPAA Safe Harbor; verify against DICOM cleaning whitelist | Clean DICOM exports | v1.0 — public data is already de-identified upstream; whitelist applies to prospective acquisitions |
 | 2.5 | Build `Dockerfile.utsw_clinical` (consumes clean DICOM, produces HDF5 matching schema) | Working Docker image | v1.0 — pending UTSW data arrival |
 
-### Phase 3 — Paper + listing + on-chain (D9 + 270 → D9 + 540)
+### Phase 3 — Paper + listing + content-addressed deposit (D9 + 270 → D9 + 540)
 
 For v0.5 this phase is **brought forward** by ~D9 + 90 because the substrate (Phase 1) is already done. The v0.5 submission window is D9 + 180; the v1.0 window remains D9 + 365–540.
 
