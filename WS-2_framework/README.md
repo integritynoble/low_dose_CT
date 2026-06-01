@@ -143,8 +143,10 @@ D9 anchor ≈ 2026-05-20 (theory v0.1 seed date); today (2026-06-01) is **≈ D9
 | Reason | Detail |
 |---|---|
 | **Venue bar** | *Nature Methods* publishes general methodological frameworks. A CT-only framework is *IEEE TMI* material. CT + MRI + PET is the *Nature Methods* story. |
-| **Theoretical cost is low** | The formal definition in [`theory/dose-equivalence-framework.md`](theory/dose-equivalence-framework.md) is signal-reduction-agnostic by construction. Validation on MRI / PET requires one worked example each, not new theory. |
+| **Theoretical cost is low — empirically backed at v0.2** | The formal definition in [`theory/dose-equivalence-framework.md`](theory/dose-equivalence-framework.md) is signal-reduction-agnostic by construction. The synthetic [`experiments/cross_modality_consistency/`](experiments/cross_modality_consistency/) demonstration shows the *same code path* applied to three modality-specific `T_r` operators (Poisson CT, Cartesian-mask MRI, list-mode PET) produces the expected 3 PASS + 3 FAIL verdicts at seed=42 — so "modality-general" is not rhetorical. The remaining MRI / PET cost is one *empirical* worked example each on real data, not new theory. |
+| **Schema survives modality transitions** | The 5-tuple shape (`r, T, ε, α, Π`) holds across modalities because Π is formalized to carry acquisition-protocol metadata (CT vendor / kVp; MRI mask family; PET tracer / scanner). The single-API-call claim in the manuscript's Results section is therefore a real schema invariant, not a presentational convenience. |
 | **Citation surface** | A modality-general framework gets cited by MRI groups and PET groups, not just CT. Cross-modality citations compound the WS-2 paper's reach. |
+| **Lineage compatibility** | The framework composes cleanly with the existing task-based image-quality assessment lineage (Barrett 1990 / Barrett & Myers 2013 / AAPM TG-233 — see [`theory/related_work.md`](theory/related_work.md)). Any TB-IQ figure of merit (channelized Hotelling observer; ideal-observer SNR) is a valid metric `P` inside a credential. TB-IQ itself is a modality-general tradition, so multi-modal positioning is the natural fit, not a stretch. |
 
 ---
 
