@@ -41,48 +41,48 @@ The framework's SHA-256 hash registers as an L2 specification on PWMRegistry whe
 
 ### Phase 1 — Phase A pilot (D9 + 60 → D9 + 90)
 
-| # | Task | Output |
-|---|---|---|
-| 1.1 | Compute the 5-tuple credential for each of the 3 reproduced WS-3 baselines on AAPM 2016 + LIDC-IDRI | `validation/heyang_pilot_5_tuples.json` |
-| 1.2 | End-to-end implementability check — does the v0.1 definition survive contact with real data? | Decision: commit to v0.1 or revise before Phase 2 |
-| 1.3 | Methodology memo: how the pilot computes the credential | `validation/methodology.md` |
-| 1.4 | Known limitations memo | `validation/known_limitations.md` |
+| # | Task | Output | Status @ v0.2 |
+|---|---|---|---|
+| 1.1 | Compute the 5-tuple credential for each of the 3 reproduced WS-3 baselines on AAPM 2016 + LIDC-IDRI | `validation/heyang_pilot_5_tuples.json` | pending (data-blocked on Phase 1 cohort) |
+| 1.2 | End-to-end implementability check — does the v0.1 definition survive contact with real data? | Decision: commit to v0.1 or revise before Phase 2 | **partial** — definition revised to v0.2 (A3 / A5 / B1 / B3 / A4 per [`paper_draft/CHANGELOG.md`](paper_draft/CHANGELOG.md)); empirical "survive contact" test still gated on 1.1 |
+| 1.3 | Methodology memo: how the pilot computes the credential | `validation/methodology.md` | pending — manuscript Methods §Estimator now covers the protocol; pilot-specific memo gated on 1.1 |
+| 1.4 | Known limitations memo | `validation/known_limitations.md` | pending — manuscript Discussion §"Failure modes of the framework" covers the methodological limits; pilot-specific limitations gated on 1.1 |
 
 ### Phase 2 — Theoretical depth (D9 + 150 → D9 + 365)
 
 Per [`theory/open_questions.md`](theory/open_questions.md), 10 items prioritized BLOCK / SHARPEN / DEFER (~8 weeks total). Sequenced:
 
-| # | Open question | Priority | Effort (wk) |
-|---|---|---|---|
-| 2.1 | §1 Literature pass (related-work memo + positioning) | SHARPEN | 1.5 |
-| 2.2 | §3 Estimator validity / coverage simulations | BLOCK | 1.5 |
-| 2.3 | §2 Sample-size formula (closed-form + numerical table) | BLOCK | 2.0 |
-| 2.4 | §7 MRI mask distribution decision | BLOCK (MRI) | 1.0 |
-| 2.5 | §5 Conditional monotonicity-in-r | SHARPEN | 1.0 |
-| 2.6 | §8 PET model under list-mode reduction | SHARPEN | 0.5 |
-| 2.7 | §6 Per-patient vs aggregate guidance | SHARPEN | 0.5 |
-| 2.8 | §4 Composition law (likely negative result) | DEFER | 0.5 |
+| # | Open question | Priority | Effort (wk) | Status @ v0.2 |
+|---|---|---|---|---|
+| 2.1 | §1 Literature pass (related-work memo + positioning) | SHARPEN | 1.5 | **seeded** — [`theory/related_work.md`](theory/related_work.md) v0.1 (3 TB-IQ + 2 statistical anchor cites + novelty-gate skeleton); manuscript intro carries TB-IQ positioning; depth-pass reading pending |
+| 2.2 | §3 Estimator validity / coverage simulations | BLOCK | 1.5 | pending |
+| 2.3 | §2 Sample-size formula (closed-form + numerical table) | BLOCK | 2.0 | pending (gated on 2.2) |
+| 2.4 | §7 MRI mask distribution decision | BLOCK (MRI) | 1.0 | **partial** — manuscript-side closed via Π-as-acquisition-metadata (A3 / C5); theory-side `proofs/mri_mask.md` pending |
+| 2.5 | §5 Conditional monotonicity-in-r | SHARPEN | 1.0 | pending (best after Phase 1 pilot data lands for empirical check) |
+| 2.6 | §8 PET model under list-mode reduction | SHARPEN | 0.5 | **partial** — manuscript Methods Table 1 + synthetic list-mode channel commit to activity-reduction; `proofs/pet_reduction.md` not written but decision is recorded |
+| 2.7 | §6 Per-patient vs aggregate guidance | SHARPEN | 0.5 | **done at manuscript level** — Definition 2 (per-patient) opt-in; Discussion §"Aggregate-vs-per-patient" guidance present |
+| 2.8 | §4 Composition law (likely negative result) | DEFER | 0.5 | **done at manuscript level** — composition reframed as not-transitive-by-design in §"Point-evaluated by design" (B3); `proofs/composition.md` not written |
 
 Phase 2 work runs in parallel with the WS-1 IRB lag — no IRB dependency.
 
 ### Phase 3 — Library + multi-modality validation (D9 + 180 → D9 + 365)
 
-| # | Task | Output |
-|---|---|---|
-| 3.1 | Implement `pwm_dose_equivalence.signal_equivalence_credential()` (CT validator) | Core library + CT example |
-| 3.2 | Implement MRI validator (fastMRI knee dataset; variable-density Cartesian masks) | MRI example + integration test |
-| 3.3 | Implement PET validator (NEMA IQ phantom; Poisson list-mode thinning) | PET example + integration test |
-| 3.4 | Pip-package; publish v0.1 to TestPyPI; gather feedback | TestPyPI listing |
-| 3.5 | v1.0.0 release to PyPI alongside paper acceptance | PyPI listing |
-| 3.6 | Outreach to ≥ 3 external research groups to validate the library on their methods | Usage testimonials |
+| # | Task | Output | Status @ v0.2 |
+|---|---|---|---|
+| 3.1 | Implement `pwm_dose_equivalence.signal_equivalence_credential()` (CT validator) | Core library + CT example | **partial** — modality-agnostic `signal_equivalence_credential` **prototype** shipped in [`experiments/cross_modality_consistency/`](experiments/cross_modality_consistency/) with CT Poisson-thinning channel verified synthetically; productionised library + real-data CT example pending |
+| 3.2 | Implement MRI validator (fastMRI knee dataset; variable-density Cartesian masks) | MRI example + integration test | **partial** — synthetic Cartesian-mask channel verified in `experiments/`; real fastMRI integration pending |
+| 3.3 | Implement PET validator (NEMA IQ phantom; Poisson list-mode thinning) | PET example + integration test | **partial** — synthetic list-mode channel verified in `experiments/`; real NEMA phantom integration pending |
+| 3.4 | Pip-package; publish v0.1 to TestPyPI; gather feedback | TestPyPI listing | pending |
+| 3.5 | v1.0.0 release to PyPI alongside paper acceptance | PyPI listing | pending |
+| 3.6 | Outreach to ≥ 3 external research groups to validate the library on their methods | Usage testimonials | pending |
 
 ### Phase 4 — Paper + on-chain (D9 + 270 → D9 + 540)
 
-| # | Task | Output |
-|---|---|---|
-| 4.1 | Draft manuscript (intro, framework definition, theory, validators, three worked examples, discussion) | Draft v1 |
-| 4.2 | Submit to *Nature Methods*; respond to reviewer comments (~6 mo) | Acceptance letter |
-| 4.3 | Author and register L2 spec on PWMRegistry (concurrent with submission) | L2 hash on chain |
+| # | Task | Output | Status @ v0.2 |
+|---|---|---|---|
+| 4.1 | Draft manuscript (intro, framework definition, theory, validators, three worked examples, discussion) | Draft v1 | **largely done at v0.2** — 19-pp draft in [`paper_draft/`](paper_draft/); intro / framework / methods / discussion complete; per-modality Results tables remain `\todo` pending 1.1, 3.2, 3.3 |
+| 4.2 | Submit to *Nature Methods*; respond to reviewer comments (~6 mo) | Acceptance letter | pending |
+| 4.3 | Author and register L2 spec on PWMRegistry (concurrent with submission) | Framework SHA-256 hash registered as L2 spec | pending |
 
 ---
 
