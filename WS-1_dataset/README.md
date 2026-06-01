@@ -76,18 +76,23 @@ For v0.5 this phase is **brought forward** by ~D9 + 90 because the substrate (Ph
 
 ## Timeline (D9-anchored)
 
+D9 anchor ≈ 2026-05-20; today (2026-06-01) is **≈ D9 + 12**. The two-stage strategy reorders the original single-track timeline: the v0.5 Phase 1 substrate landed ahead of schedule, the v0.5 submission window is brought forward to D9 + 180, and the v1.0 critical-path items move to the D9 + 365 → D9 + 540 window.
+
 | Date | Milestone | Status |
 |---|---|---|
-| D9 + 30 | LIDC-IDRI Docker pipeline reproducible end-to-end | pending |
-| D9 + 60 | AAPM 2016 Docker pipeline reproducible end-to-end | pending |
-| D9 + 90 | Metadata schema ratified; data loader passes pytest on both datasets | pending |
-| D9 + 120 | IRB submitted to UTSW Radiology | pending |
-| D9 + 180 | Partner-site MOU signed; clinical scan acquisition underway | pending |
-| D9 + 270 | UTSW IRB approved; first clinical scans annotated | pending |
-| D9 + 365 | **Paper submitted to *Nature Scientific Data*; L3 spec on chain** | pending |
-| D9 + 540 | **Paper accepted; PhysioNet listing live; ≥ 500 paired scans archived** | pending |
+| D9 + 12 (2026-06-01) | **LIDC-IDRI Docker pipeline** reproducible end-to-end ([`pipelines/`](pipelines/)) | **done** ahead of schedule (was D9 + 30) |
+| D9 + 12 (2026-06-01) | **AAPM 2016 Docker pipeline** reproducible end-to-end (unzip + DICOM-CT-PD ingest, commit `a4a14ec`) | **done** ahead of schedule (was D9 + 60) |
+| D9 + 12 (2026-06-01) | **Metadata schema ratified** ([`schema/`](schema/), 4 specs); **`pwm_ldct_loader` passes 24 pytest** on synthetic fixture | **done** ahead of schedule (was D9 + 90) |
+| D9 + 12 (2026-06-01) | **Cohort count locked**: 208 unique paired-dose / 1,226 unique union (commit `bdd42b7`); deposited under `gs://low-dose-ct/pwm_ldct_v0_5` | **done** |
+| D9 + 12 (2026-06-01) | **v0.5 manuscript active** in [`paper_draft/manuscript.tex`](paper_draft/manuscript.tex); PhysioNet listing drafted in [`physionet_listing/`](physionet_listing/) | **active** — `[CONFIRM]` fields = authors / DOI / IRB / funding |
+| D9 + 90 | RED-CNN + 3 pluggable baselines benchmarked on v0.5 splits (needs GPU); paper Figure 1 (real-vs-simulated low-dose) generated | pending — gated on GPU access |
+| D9 + 180 | **v0.5 paper submitted to *Nature Scientific Data*; PhysioNet DOI + Zenodo deposit live** | pending (v0.5 ship target) |
+| D9 + 120 | IRB submitted to UTSW Radiology (v1.0 critical path) | pending — gated on Track K |
+| D9 + 270 | UTSW IRB approved; first clinical scans acquired (v1.0 critical path) | pending — gated on Track K + IRB |
+| D9 + 365 | v0.5 paper accepted (within ~6 mo of submission); v1.0 prospective acquisition underway | pending |
+| D9 + 540 | **v1.0 paper submitted (≥ 500 prospectively-acquired paired scans across ≥ 2 vendors + ≥ 2 sites); v0.5 widely cited** | pending (v1.0 ship target) |
 
-The critical-path leg is the IRB lag (months 5-9). It is exogenous and the only mitigation is parallel-tracking WS-2 and WS-3 during that window.
+The critical-path leg for **v0.5** is now GPU access and the radiologist top-up annotation campaign on AAPM + Mayo chest cases (months ~D9 + 30 → D9 + 90). The critical-path leg for **v1.0** remains the IRB lag (months 5–9), still exogenous; the v0.5 release plus parallel-tracked WS-2 and WS-3 work absorb that window.
 
 ---
 
