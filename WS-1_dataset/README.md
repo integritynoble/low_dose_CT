@@ -146,9 +146,10 @@ Do not pre-create empty directories. Create each one when the work that fills it
 
 ## Dependencies
 
-- **Track K** (new UTSW PI confirmed) — required for IRB submission. If Track K slips past D9 + 270, fall back to a public-data-only first dataset paper (LIDC-IDRI + AAPM 2016) submitted at D9 + 365 with a clinical-data follow-up later.
+- **Two-stage release strategy (decision taken 2026-05-21).** The public-data-only first dataset paper (v0.5) is *no longer a fallback* — it is the **primary current ship target** ([`data_needs.md`](data_needs.md)). v0.5 ships at D9 + 180 using LIDC + AAPM 2016 + Mayo LDCT-PD; v1.0 follows at D9 + 365–540 with the prospective clinical extension. The Track K + IRB lag no longer blocks the first paper; it only governs the second.
+- **Track K** (new UTSW PI confirmed) — required for **v1.0** IRB submission and prospective acquisition. v0.5 does not depend on Track K.
 - **Forward model** `packages/pwm_core/contrib/modalities/ct_radon.py` — single source of truth for simulated low-dose generation. Do not reimplement.
-- **L3 spec** ([`../pwm_integration/l3_spec.md`](../pwm_integration/l3_spec.md)) — registry payload depends on this folder's final dataset specs.
+- **PhysioNet DOI + Zenodo deposit** (primary v0.5 distribution channels per the 2026-05-25 reframe) and the optional [`../pwm_integration/l3_spec.md`](../pwm_integration/l3_spec.md) PWM L3 registry mirror — release payloads depend on this folder's final dataset specs.
 
 ---
 
