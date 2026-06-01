@@ -154,9 +154,26 @@ Do not pre-create empty directories. Create each one when the work that fills it
 
 ## Cross-references
 
-- [`SUBMISSION_CHECKLIST.md`](SUBMISSION_CHECKLIST.md) — consolidated open-items checklist (single source of truth).
-- [`annotation_campaign_plan.md`](annotation_campaign_plan.md) — operational plan for the radiologist annotation campaign.
-- [`../WS-2_framework/`](../WS-2_framework/) — the framework's CT validation runs against this dataset.
-- [`../WS-3_reference_method/`](../WS-3_reference_method/) — trains and evaluates on this dataset.
+**Inside WS-1 (strategy + status):**
+
+- [`data_needs.md`](data_needs.md) — the 2026-05-21 two-stage strategy doc; gap analysis between manuscript claims and actual data; the single canonical source for v0.5 vs v1.0 scoping. Read this first if the two-stage framing is unfamiliar.
+- [`paper_draft/README.md`](paper_draft/README.md) — paper_draft folder status; coexistence of `manuscript.tex` (v0.5 active) and `manuscript_v1.tex` (v1.0 preserved); per-section completeness for v0.5.
+- [`SUBMISSION_CHECKLIST.md`](SUBMISSION_CHECKLIST.md) — consolidated open-items checklist for the v0.5 submission.
+- [`annotation_campaign_plan.md`](annotation_campaign_plan.md) — operational plan for the radiologist top-up annotation campaign on AAPM + Mayo chest cases.
+
+**Inside WS-1 (specs + code):**
+
+- [`schema/`](schema/) — dataset schema, DICOM cleaning spec, annotation QA protocol; the normative documents the manuscript Methods section references.
+- [`pwm_ldct_loader/`](pwm_ldct_loader/) — pip-installable loader; the read-side API for the v0.5 release artifacts.
+- [`pipelines/`](pipelines/) — Dockerfiles + `pwm_ldct_prep` package; the write-side (DICOM → de-id → harmonize → HDF5 → validate) for each source.
+- [`physionet_listing/`](physionet_listing/) — paste-ready PhysioNet listing for the v0.5 submission.
+
+**Sibling workstreams:**
+
+- [`../WS-2_framework/`](../WS-2_framework/) — the signal-equivalence framework's CT validation runs against this dataset; the WS-1 v0.5 annotation QA protocol is borrowed verbatim into WS-2's Methods → Estimator section.
+- [`../WS-3_reference_method/`](../WS-3_reference_method/) — trains and evaluates on this dataset; its baselines populate v0.5 manuscript Tables.
 - [`../WS-4_leaderboard/`](../WS-4_leaderboard/) — community submissions are scored on this dataset's test split.
-- [`../pwm_integration/l3_spec.md`](../pwm_integration/l3_spec.md) — on-chain spec.
+
+**PWM integration:**
+
+- [`../pwm_integration/l3_spec.md`](../pwm_integration/l3_spec.md) — public-registry resolver for the v0.5 dataset manifest hash. Per the 2026-05-25 reframe, PhysioNet DOI + Zenodo are the primary deposit / citation channels; the PWM L3 registry is one optional mirror.
