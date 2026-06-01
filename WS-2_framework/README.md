@@ -150,8 +150,20 @@ D9 anchor ≈ 2026-05-20 (theory v0.1 seed date); today (2026-06-01) is **≈ D9
 
 ## Cross-references
 
-- [`theory/dose-equivalence-framework.md`](theory/dose-equivalence-framework.md) — formal definition v0.1
-- [`theory/open_questions.md`](theory/open_questions.md) — work plan for Phase 2 theory
-- [`../WS-1_dataset/`](../WS-1_dataset/) — provides the CT validation data
-- [`../WS-3_reference_method/`](../WS-3_reference_method/) — Phase 1 pilot consumes WS-3 baselines
-- [`../pwm_integration/l2_spec.md`](../pwm_integration/l2_spec.md) — on-chain spec (will hash a frozen `dose-equivalence-framework.md` at submission)
+**Inside WS-2:**
+
+- [`paper_draft/CHANGELOG.md`](paper_draft/CHANGELOG.md) — v0.1 → v0.2 delta with one row per closed audit item and its commit; the manifest for the reviewer-readiness pass.
+- [`theory/dose-equivalence-framework.md`](theory/dose-equivalence-framework.md) — formal definition v0.1. Intentionally lags the manuscript v0.2; its own header says it is superseded by v0.2 after the literature pass (see `open_questions.md` §1).
+- [`theory/open_questions.md`](theory/open_questions.md) — BLOCK / SHARPEN / DEFER work plan for Phase 2 theory; the §-numbering is cross-referenced from `related_work.md` and from this README's `Phase 2` task table above.
+- [`theory/related_work.md`](theory/related_work.md) — 5-paper memo (2 statistical + 3 TB-IQ anchor cites) seeded alongside the manuscript A6 positioning paragraph. Hosts the "what is genuinely new" novelty gate for the theory-doc v0.2 bump.
+- [`experiments/cross_modality_consistency/`](experiments/cross_modality_consistency/) — synthetic anchor for the modality-general claim; ships seed-reproducible `results.json` and is cited from the manuscript's Cross-modality consistency Results subsection.
+
+**Sibling workstreams:**
+
+- [`../WS-1_dataset/`](../WS-1_dataset/) — provides the CT validation data and the **annotation QA protocol** that WS-2's Methods → Estimator section borrows verbatim for ground-truth provenance.
+- [`../WS-3_reference_method/`](../WS-3_reference_method/) — Phase 1 pilot consumes WS-3 baselines as `M_ref` candidates; each WS-3 release must publish under a 5-tuple credential issued via this framework.
+- [`../WS-4_leaderboard/`](../WS-4_leaderboard/) — every leaderboard submission is verified by recomputing the credential against the content-addressed framework hash. The manuscript's end-to-end case study points at WS-4 as the acceptance-test community.
+
+**PWM integration:**
+
+- [`../pwm_integration/l2_spec.md`](../pwm_integration/l2_spec.md) — public-registry resolver for the SHA-256 hash of the framework definition. One of three resolvers (local file / PyPI release / PWM registry) the manuscript enumerates; the registry is a deployment option for long-term decentralized resolution, not the methodological substance of the credential schema.
