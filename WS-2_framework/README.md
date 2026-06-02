@@ -172,13 +172,26 @@ D9 anchor ≈ 2026-05-20 (theory v0.1 seed date); today (2026-06-02) is **≈ D9
 
 ## Cross-references
 
-**Inside WS-2:**
+**Inside WS-2 — documents:**
 
 - [`paper_draft/CHANGELOG.md`](paper_draft/CHANGELOG.md) — v0.1 → v0.2 delta with one row per closed audit item and its commit; the manifest for the reviewer-readiness pass.
 - [`theory/dose-equivalence-framework.md`](theory/dose-equivalence-framework.md) — formal definition v0.1. Intentionally lags the manuscript v0.2; its own header says it is superseded by v0.2 after the literature pass (see `open_questions.md` §1).
-- [`theory/open_questions.md`](theory/open_questions.md) — BLOCK / SHARPEN / DEFER work plan for Phase 2 theory; the §-numbering is cross-referenced from `related_work.md` and from this README's `Phase 2` task table above.
+- [`theory/open_questions.md`](theory/open_questions.md) — BLOCK / SHARPEN / DEFER work plan for Phase 2 theory; the §-numbering is cross-referenced from `related_work.md`, the `theory/proofs/*.md` writeups, and this README's `Phase 2` task table above.
 - [`theory/related_work.md`](theory/related_work.md) — 5-paper memo (2 statistical + 3 TB-IQ anchor cites) seeded alongside the manuscript A6 positioning paragraph. Hosts the "what is genuinely new" novelty gate for the theory-doc v0.2 bump.
+
+**Inside WS-2 — `theory/proofs/` (theory-side writeups paired with manuscript v0.2 commitments):**
+
+- [`theory/proofs/estimator.md`](theory/proofs/estimator.md) — open_questions §3. Coverage theorem + 27-cell empirical table; estimator-default decision (percentile / DeLong-for-AUC / BCa opt-in).
+- [`theory/proofs/sample_size.md`](theory/proofs/sample_size.md) — open_questions §2. (S1) / (S3) / (S4) formulas + numerical tables + empirical validation; surfaces a v0.3 manuscript correction on AUC-task default `ε`.
+- [`theory/proofs/mri_mask.md`](theory/proofs/mri_mask.md) — open_questions §7. `mask_family` rides inside Π as acquisition-protocol metadata.
+- [`theory/proofs/pet_reduction.md`](theory/proofs/pet_reduction.md) — open_questions §8. Activity-reduction canonicalised as v1 PET `T_r`; scan-time-reduction is v2.
+- [`theory/proofs/composition.md`](theory/proofs/composition.md) — open_questions §4. Negative-result note: no clean composition law; framework is point-evaluated by design.
+
+**Inside WS-2 — experiments and library:**
+
 - [`experiments/cross_modality_consistency/`](experiments/cross_modality_consistency/) — synthetic anchor for the modality-general claim; ships seed-reproducible `results.json` and is cited from the manuscript's Cross-modality consistency Results subsection.
+- [`experiments/estimator_coverage/`](experiments/estimator_coverage/) — 27-cell coverage simulation across (AUC × n × CI variant); backs the `theory/proofs/estimator.md` decision.
+- [`pwm_dose_equivalence/`](pwm_dose_equivalence/) — pip-installable v0.1.0 alpha library. Modality-agnostic `signal_equivalence_credential` + percentile / DeLong estimators + sample-size pre-flight + content-addressed framework hash + Tr_ct/Tr_mri/Tr_pet operators. 49/49 tests, 93 % coverage.
 
 **Sibling workstreams:**
 
