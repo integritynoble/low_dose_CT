@@ -133,10 +133,12 @@ D9 anchor ≈ 2026-05-20 (theory v0.1 seed date); today (2026-06-01) is **≈ D9
 | Path | Purpose | Status |
 |---|---|---|
 | [`paper_draft/`](paper_draft/) | *Nature Methods* manuscript | **v0.2 working draft** (19 pp; see [`paper_draft/CHANGELOG.md`](paper_draft/CHANGELOG.md)) |
-| [`theory/`](theory/) | Formal definition ([`dose-equivalence-framework.md`](theory/dose-equivalence-framework.md)), open-questions work plan ([`open_questions.md`](theory/open_questions.md)), related-work memo ([`related_work.md`](theory/related_work.md)); (later) `proofs/` for sample-size and coverage derivations | **v0.1 seeded** — 3 files in place; depth-pass pending |
+| [`theory/`](theory/) | Formal definition ([`dose-equivalence-framework.md`](theory/dose-equivalence-framework.md)), open-questions work plan ([`open_questions.md`](theory/open_questions.md)), related-work memo ([`related_work.md`](theory/related_work.md)) | **v0.1 seeded** — definition + work plan + related-work memo |
+| [`theory/proofs/`](theory/proofs/) | Theory-side decision writeups paired with the manuscript v0.2 commitments: `mri_mask.md` (§7), `pet_reduction.md` (§8), `composition.md` (§4), `estimator.md` (§3, with empirical coverage), `sample_size.md` (§2, with numerical table + manuscript-correction note) | **5 writeups landed at D9 + 13** — sections §2 / §3 / §4 / §7 / §8 closed; §1 depth-pass + §5 monotonicity still pending |
 | [`experiments/cross_modality_consistency/`](experiments/cross_modality_consistency/) | Synthetic anchor for the modality-general claim — same bootstrap code path applied to 3 `T_r` operators; 6 credentials (3 PASS + 3 FAIL) at seed=42 | **reproducible** — `results.json` committed; not data-blocked |
+| [`experiments/estimator_coverage/`](experiments/estimator_coverage/) | 27-cell empirical coverage simulation for the paired-bootstrap estimator across percentile / BCa / DeLong CI variants; backs the estimator-default decision in `theory/proofs/estimator.md` | **reproducible** — `results.json` committed; ~35 min wall time at seed = 42 |
+| [`pwm_dose_equivalence/`](pwm_dose_equivalence/) | Pip-installable Python library; the productionised counterpart to the experiments-folder prototype | **v0.1.0 alpha** — 49/49 tests pass, 93 % line coverage; TestPyPI publish pending (D9 + 365); v1.0.0 alongside paper acceptance (D9 + 540) |
 | `validation/` | Per-modality empirical 5-tuple computation on **real patient cohorts** (CT first, then MRI / PET). Distinct from `experiments/`, which is synthetic. | pending Phase 1 pilot (D9 + 90) |
-| `pwm_dose_equivalence/` | Pip-installable Python library; the productionised counterpart to the experiments-folder prototype. | pending Phase 3 (D9 + 365 TestPyPI; D9 + 540 v1.0.0) |
 
 ---
 
