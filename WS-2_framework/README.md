@@ -110,15 +110,28 @@ D9 anchor ≈ 2026-05-20 (theory v0.1 seed date); today (2026-06-02) is **≈ D9
 
 ## Done when
 
-### v0.2 progress at D9 + 12 (intermediate, not terminal)
+### Progress at D9 + 13 (intermediate, not terminal)
+
+**Landed at D9 + 12 (manuscript v0.2 pass):**
 
 - [x] Manuscript v0.2 reviewer-readiness pass — 7 audit items closed (see [`paper_draft/CHANGELOG.md`](paper_draft/CHANGELOG.md))
-- [x] Cross-modality consistency synthetic anchor — same code path, 6 expected verdicts, seed-reproducible (`experiments/cross_modality_consistency/`)
+- [x] Cross-modality consistency synthetic anchor — same code path, 6 expected verdicts, seed-reproducible ([`experiments/cross_modality_consistency/`](experiments/cross_modality_consistency/))
 - [x] Task-based image-quality positioning + [`theory/related_work.md`](theory/related_work.md) seeded with 3 new TB-IQ anchor cites (Barrett 1990 / Barrett & Myers 2013 / AAPM TG-233)
 - [x] Ground-truth protocol borrowed verbatim from WS-1 v0.5 annotation QA into `Methods → Estimator`
 - [x] Π formalized as carrying acquisition-protocol metadata (CT vendor / MRI mask family / PET tracer); 5-tuple shape preserved across modalities
+
+**Landed at D9 + 13 (theory-and-library pass):**
+
+- [x] Coverage simulations (open_questions §3) — [`theory/proofs/estimator.md`](theory/proofs/estimator.md) + 27-cell sim in [`experiments/estimator_coverage/`](experiments/estimator_coverage/); library estimator defaults recorded
+- [x] Closed-form sample-size derivation (open_questions §2) — [`theory/proofs/sample_size.md`](theory/proofs/sample_size.md) with (S1) / (S3) / (S4) formulas, numerical tables, empirical validation; **v0.3 manuscript correction surfaced** (AUC-task default `ε`)
+- [x] `theory/proofs/{mri_mask,pet_reduction,composition}.md` v0.1 — closes open_questions §4 / §7 / §8 at the theory side
+- [x] [`pwm_dose_equivalence/`](pwm_dose_equivalence/) v0.1.0 alpha scaffold — pip-installable; 49/49 tests pass at 93 % line coverage (above the manuscript's 90 % v0.2 target)
+
+**Still pending (theory-time-blocked, not data-blocked):**
+
 - [ ] Literature depth-pass complete (fastMRI reader studies / one CHO-for-LDCT paper / Wunderlich–Noo observer-variance) → `theory/dose-equivalence-framework.md` bumped from v0.1 to v0.2
-- [ ] Coverage simulations (open_questions §3) + closed-form sample-size derivation (open_questions §2) landed under `theory/proofs/`
+- [ ] Non-null power simulation for the paired-bootstrap estimator (open_questions §3 second deliverable)
+- [ ] Conditional monotonicity-in-`r` empirical check (open_questions §5; best after Phase 1 pilot data)
 
 ### Terminal acceptance criteria
 
