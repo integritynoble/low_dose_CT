@@ -2,7 +2,7 @@
 
 The **PWM Low-Dose CT Benchmark Dataset**: a content-addressed harmonization of multi-source CT data, distributable via PhysioNet + Zenodo, supported by a *Nature Scientific Data* paper. Released in two stages per the 2026-05-21 director decision — see [`data_needs.md`](data_needs.md) for the strategy doc.
 
-> **Status (D9 + 12, 2026-06-01):** **v0.5 (public-data harmonization) is the current ship target** — manuscript active in [`paper_draft/manuscript.tex`](paper_draft/manuscript.tex); D9 + 180 submission window. v0.5 unifies LIDC-IDRI + AAPM 2016 + Mayo LDCT-PD under one schema, one Python loader, one harmonized annotation convention, and one content-addressed manifest; cross-vendor (GE ↔ Siemens) paired-dose comes free from the Mayo cohort. **v1.0 (prospective multi-vendor + multi-site extension)** is preserved in [`paper_draft/manuscript_v1.tex`](paper_draft/manuscript_v1.tex) for the D9 + 365–540 submission window once Track K + IRB + clinical acquisition land. The two manuscripts coexist — do not conflate them.
+> **Status (D9 + 13, 2026-06-02):** **v0.5 (public-data harmonization) is the current ship target** — manuscript active in [`paper_draft/manuscript.tex`](paper_draft/manuscript.tex); D9 + 180 submission window. v0.5 unifies LIDC-IDRI + AAPM 2016 + Mayo LDCT-PD under one schema, one Python loader, one harmonized annotation convention, and one content-addressed manifest; cross-vendor (GE ↔ Siemens) paired-dose comes free from the Mayo cohort. **v1.0 (prospective multi-vendor + multi-site extension)** is preserved in [`paper_draft/manuscript_v1.tex`](paper_draft/manuscript_v1.tex) for the D9 + 365–540 submission window once Track K + IRB + clinical acquisition land. The two manuscripts coexist — do not conflate them.
 
 ---
 
@@ -171,7 +171,7 @@ Do not pre-create empty directories. Create each one when the work that fills it
 
 **Sibling workstreams:**
 
-- [`../WS-2_framework/`](../WS-2_framework/) — the signal-equivalence framework's CT validation runs against this dataset; the WS-1 v0.5 annotation QA protocol is borrowed verbatim into WS-2's Methods → Estimator section.
+- [`../WS-2_framework/`](../WS-2_framework/) — the signal-equivalence framework's CT validation runs against this dataset; the WS-1 v0.5 annotation QA protocol is borrowed verbatim into WS-2's Methods → Estimator section. **Downstream-user note (as of D9 + 13):** the WS-2 library [`pwm_dose_equivalence/`](../WS-2_framework/pwm_dose_equivalence/) v0.1.0 alpha is the tool external users will use to compute 5-tuple credentials on WS-1 cohorts (modality-agnostic API; percentile + DeLong estimators; sample-size pre-flight; content-addressed framework hash; 49/49 tests, 93 % coverage). Per WS-2's [`theory/proofs/sample_size.md`](../WS-2_framework/theory/proofs/sample_size.md), the v0.5 cohort of 208 unique paired patients is comfortably sized for AUC credentials at `ε = 0.05` (WS-2's v0.3 manuscript default) but undersized at `ε = 0.02`; downstream users planning tight-margin AUC claims should size accordingly. Non-AUC metrics (Dice, MAE, contrast-recovery) are well-served at typical `σ_Δ` values within the v0.5 cohort.
 - [`../WS-3_reference_method/`](../WS-3_reference_method/) — trains and evaluates on this dataset; its baselines populate v0.5 manuscript Tables.
 - [`../WS-4_leaderboard/`](../WS-4_leaderboard/) — community submissions are scored on this dataset's test split.
 
