@@ -63,9 +63,11 @@ Field selected: **Life sciences** (medical imaging). Behavioural/social and ecol
 ### Life sciences study design
 
 - **Sample size:** All publicly available scans from the three sources were harmonized (no
-  subsampling): LIDC-IDRI 1,018; AAPM 2016 10; Mayo LDCT-PD public 199 (one ACR phantom and 99
-  GDC-restricted head subjects excluded); union = 1,226 unique patients (1,227 source records; one
-  patient, L143, is shared by AAPM 2016 and Mayo LDCT-PD and de-duplicated via the canonical key).
+  subsampling): LIDC-IDRI 1,010 (of canonical 1,018); AAPM 2016 10; Mayo LDCT-PD public 199 (one ACR phantom and 99
+  GDC-restricted head subjects excluded); union = 1,218 unique patients (1,219 source records;
+  one patient, L143, is shared by AAPM 2016 and Mayo LDCT-PD and de-duplicated via the canonical
+  key; the LIDC count is the 1,010 patients in the public distribution used here, 8 short of the
+  canonical 1,018).
   The test split is powered per §Statistics.
 - **Data exclusions:** Pre-established and criterion-based: (i) Mayo head subjects (GDC
   credentialed-access — out of v0.5 scope); (ii) the ACR phantom (not a patient); (iii) any scan
