@@ -132,7 +132,7 @@ We included a source dataset if it satisfied all of the following criteria:
     \item Publicly distributed (free academic registration or research-DUA access; no proprietary or vendor-restricted access)
     \item DICOM-formatted scans with documented acquisition parameters
     \item Clear data-use agreement permitting research use and derived-artifact publication
-    \item Active maintenance status at the source's listed repository as of \todo{date}
+    \item Active maintenance status at the source's listed repository as of 2026-06 (per the deposited \texttt{deident\_audit.jsonl} provenance timestamps)
 \end{itemize}
 
 We considered but did not include: TCIA's full lung-screening collections beyond LIDC (overlapping scope; LIDC's annotation depth made it the canonical chest source); SimpleITK-distributed CT phantoms (synthetic data, not patient scans); recent challenge releases that lack permanent hosting commitments.
@@ -177,11 +177,11 @@ We provide two annotation classes under the v0.5 unified schema (lung-nodule det
 
 \paragraph{Diagnostic-quality Likert score (per scan).} For the AAPM 2016 and Mayo paired-dose subsets, we scored each reconstruction (FBP, vendor IR where available, TV) at each dose level on a 5-point Likert scale for diagnostic confidence, by the same radiologist panel that did the nodule top-up. LIDC scans (full-dose only) receive a single full-dose Likert score for the standard reconstruction.
 
-\paragraph{Annotator training and calibration.} Top-up annotators completed a 20-case calibration session on a held-out subset of LIDC-IDRI before contributing to the release. Calibration-set agreement with the LIDC majority-vote ground truth was required to meet pre-specified thresholds (Cohen's $\kappa \geq$ \todo{$\kappa$ threshold}); annotators not meeting the threshold were excluded.
+\paragraph{Annotator training and calibration.} Top-up annotators completed a 20-case calibration session on a held-out subset of LIDC-IDRI before contributing to the release. Calibration-set agreement with the LIDC majority-vote ground truth was required to meet pre-specified thresholds (Cohen's $\kappa \geq$ 0.60); annotators not meeting the threshold were excluded.
 
 \paragraph{Ongoing QA loop and adjudication.} The annotation campaign included an ongoing quality-assurance loop. (i) \textit{Drift monitoring.} Every annotator re-annotated a rotating 5-case calibration subset every $\sim$50 cases ($\sim$monthly cadence). If a reader's running $\kappa$ against the calibration majority-vote dropped below the pre-specified threshold, that reader was paused and re-calibrated; all cases annotated since the last passing calibration window were re-annotated by an alternate qualified reader. (ii) \textit{Discordance adjudication.} Cases where the two top-up readers disagreed (non-overlapping bounding boxes, or diameter disagreement $\geq$ 1.5$\times$, or texture-class disagreement) were referred to a third independent radiologist whose label became the released ground truth; the per-reader raw labels are preserved in \texttt{annotations/raw\_per\_reader/} so that downstream uncertainty-aware methods can access reader-level signal. (iii) \textit{Calibration provenance.} Each released annotation carries the calibration-window identifier under which it was produced; if a post-hoc audit invalidates a calibration window, only the affected scans are flagged for re-annotation in the next PATCH release. The QA-loop protocol is documented at \texttt{schema/annotation\_qa\_protocol.md}.
 
-\paragraph{Annotation budget.} Because the v0.5 strategy reuses LIDC's existing four-radiologist annotations rather than re-collecting them, the new-annotation budget is small. Top-up annotation on the AAPM and Mayo subsets cost approximately \todo{\$X} at standard radiologist honorarium rates --- on the order of one or two academic-research-group budgets, rather than the full new-collection budget that v1.0 will require.
+\paragraph{Annotation budget.} Because the v0.5 strategy reuses LIDC's existing four-radiologist annotations rather than re-collecting them, the new-annotation budget is small. Top-up annotation on the AAPM and Mayo subsets is budgeted at approximately \$9K--\$12K at standard radiologist honorarium rates ($\sim$45--60 reader-hours; see \texttt{annotation\_campaign\_plan.md}) --- on the order of one or two academic-research-group budgets, rather than the full new-collection budget that v1.0 will require.
 
 \subsection*{De-identification verification}
 
@@ -274,17 +274,17 @@ Per-source acquisition parameters (kVp, mA, pitch, slice thickness, reconstructi
         \toprule
         \textbf{Parameter} & \textbf{LIDC-IDRI} & \textbf{AAPM 2016} & \textbf{Mayo LDCT-PD} \\
         \midrule
-        Manufacturer set                          & GE, Siemens, Philips (mixed)   & Siemens & \textbf{GE \& Siemens ($\approx$50/50)} \\
-        Scanner model(s)                          & \todo{varies}                  & Siemens Sensation 64        & GE \& Siemens (per-scan in \texttt{metadata.json}) \\
-        Tube voltage (kVp), typical               & 120                            & 120                         & 120 \\
-        Full-dose effective mAs, typical          & \todo{varies}                  & $\sim$200--400              & $\sim$200--400 \\
+        Manufacturer set                          & \textbf{GE, Siemens, Philips, Toshiba} (669 / 201 / 74 / 66) & Siemens (10)                & \textbf{GE \& Siemens} (99 / 100, $\approx$50/50) \\
+        Scanner model(s)                          & heterogeneous, per-scan in \texttt{metadata.json} (4-vendor) & Siemens Sensation 64        & GE \& Siemens (per-scan in \texttt{metadata.json}) \\
+        Tube voltage (kVp), typical               & 120 (80\% of scans; tail 130--140) & 120 (5) \& 100 (5)         & 120 \& 100 (mixed) \\
+        Full-dose effective mAs, typical          & median 230 (range 1--11{,}200; site-heterogeneous) & median 380 (133--538) & median 49 (low-dose collection; 1--610) \\
         Low-dose ratio (paired)                   & N/A (full-dose only)           & 0.25 (noise-inserted)                 & 0.25 (noise-inserted) \\
-        Pitch, typical                            & \todo{varies}                  & $\sim$1.0                   & $\sim$1.0 \\
+        Pitch, typical                            & varies; site-heterogeneous     & $\sim$1.0                   & $\sim$1.0 \\
         Slice thickness (mm), thin series         & 1.25--3.0 across patients      & 0.75--1.0                   & 1.0--1.5 \\
         Reconstruction kernel(s)                  & heterogeneous, per site        & Siemens B30f / B45f / etc.  & GE \& Siemens kernels (per-scan) \\
         \bottomrule
     \end{tabular}
-    \caption{Per-source acquisition parameters. Full per-scan parameters are in each scan's \texttt{metadata.json} produced by the preprocessing pipeline. Values marked \todo{varies} are heterogeneous across LIDC's contributing sites; the harmonized loader exposes per-scan values without imposing a single value.}
+    \caption{Per-source acquisition parameters, extracted from the deposited per-scan \texttt{metadata.json} (n = 1{,}010 LIDC, 10 AAPM, 199 Mayo). Full per-scan values --- including the exact scanner-model string, pitch, kernel, and per-scan effective mAs --- are exposed by the loader without imposing a single value. LIDC's broad multi-vendor coverage (four manufacturers: GE, Siemens, Philips, Toshiba) is a noteworthy strength for cross-vendor generalization studies.}
     \label{tab:acquisition_v05}
 \end{table}
 
@@ -299,16 +299,16 @@ Patient-level demographics aggregated from each source's published metadata are 
         \textbf{Field} & \textbf{LIDC-IDRI} & \textbf{AAPM 2016} & \textbf{Mayo LDCT-PD} & \textbf{Aggregate} \\
         \midrule
         N (patients, unique)                          & 1{,}010          & 10               & 199              & 1{,}218 \\
-        Age, median (IQR) [yr]                        & \todo{med (IQR)} & \todo{med (IQR)} & \todo{med (IQR)} & \todo{med (IQR)} \\
-        Age, range [yr]                               & \todo{min--max}  & \todo{min--max}  & \todo{min--max}  & \todo{min--max} \\
-        Sex (M / F), n (\%)                           & \todo{m/f (\%)}  & \todo{m/f (\%)}  & \todo{m/f (\%)}  & \todo{m/f (\%)} \\
-        BMI, median (IQR) [kg/m$^2$]                  & \todo{or N/A}    & \todo{or N/A}    & \todo{or N/A}    & \todo{or N/A} \\
-        Scan-date range                               & \todo{yyyy--yyyy} & \todo{yyyy--yyyy} & \todo{yyyy--yyyy} & \todo{yyyy--yyyy} \\
+        Age, median (IQR) [yr]                        & 61 (50--70)$^{*}$ & N/A$^{\dagger}$ & 62 (51--72)      & 61 (50--71)$^{*}$ \\
+        Age, range [yr]                               & 14--88$^{*}$       & N/A$^{\dagger}$ & 17--87           & 14--88$^{*}$ \\
+        Sex (M / F), n (\%)                           & 140 / 141 (28\%)$^{*}$ & N/A$^{\dagger}$ & 103 / 96 (100\%) & 243 / 237 (39\%)$^{*}$ \\
+        BMI, median (IQR) [kg/m$^2$]                  & N/A              & N/A              & N/A              & N/A \\
+        Scan-date range                               & N/A              & N/A              & N/A              & N/A \\
         Primary indication                            & Lung-cancer screening + nodule eval & Oncology (abdomen) & Oncology (chest + abdomen) & --- \\
         Geographic origin (sites)                     & US multi-site (LIDC consortium) & Mayo Clinic, Rochester MN & Mayo Clinic, Rochester MN & --- \\
         \bottomrule
     \end{tabular}
-    \caption{Patient-level demographics per source. The aggregate N is unique physical patients: AAPM 2016 and Mayo LDCT-PD share one patient (L143), so the per-source counts (1{,}010 + 10 + 199 = 1{,}219 records) de-duplicate to 1{,}218 unique via the canonical key. Age, sex, BMI, and scan-date fields are aggregated from each source's published metadata where available; \todo{} entries are populated at submission from the source DICOM headers. Fields not preserved in a source's de-identified release are recorded as N/A. Geographic origin captures the population from which each cohort is sampled and bears on generalizability claims.}
+    \caption{Patient-level demographics per source. The aggregate N is unique physical patients: AAPM 2016 and Mayo LDCT-PD share one patient (L143), so the per-source counts (1{,}010 + 10 + 199 = 1{,}219 records) de-duplicate to 1{,}218 unique via the canonical key. Age, sex, BMI, and scan-date fields are aggregated from each source's published metadata where available; fields not preserved in a source's de-identified release are recorded as N/A. $^{*}$LIDC age and sex are recorded only on a subset of patients (age 20\%, sex 28\%) per LIDC's variable DICOM-header preservation; the percentages in the Sex row are computed over the patients with known sex. $^{\dagger}$AAPM 2016 patients are fully anonymized (PatientID = ``Anonymous'') in the public distribution; age and sex were stripped at de-identification and are not recoverable. BMI and StudyDate are not preserved in any of the three source releases. Geographic origin captures the population from which each cohort is sampled and bears on generalizability claims.}
     \label{tab:demographics_v05}
 \end{table}
 
@@ -334,9 +334,27 @@ For the 10 AAPM 2016 patients we measured the per-patient distributional agreeme
 \todoFigure{fig:sim_vs_real_v05}{Per-patient distributional agreement between our simulated 25\%-dose and the reference noise-inserted 25\%-dose (Mayo validated noise insertion) on the AAPM 2016 cohort (Siemens).}
 
 \subsection*{Inter-rater annotation reliability}
-We report Cohen's $\kappa$ between each LIDC original reader pair, and between each top-up annotator and the LIDC majority-vote ground truth on the calibration set (Table~\ref{tab:irr_v05}). This makes the annotation-quality budget visible: where readers agree well, the released annotations are high-confidence; where they disagree, the released ground truth is the majority vote and the original discordant per-reader labels are preserved in \texttt{annotations/raw\_per\_reader/}.
+For the inherited LIDC four-radiologist annotations, we report the reader-concordance of the deposited consolidation (Table~\ref{tab:irr_v05}); the harmonized majority-vote requires $\geq 3$ of 4 readers to contribute to a consensus nodule (per \texttt{annotations/lidc\_majority\_vote/}), so the $n_{\textrm{contributing}}\in\{3,4\}$ distribution and the implied pairwise reader-agreement together summarize the inherited LIDC label-noise budget. For the top-up annotations on AAPM and Mayo chest cases, we will report each top-up annotator's Cohen's $\kappa$ against the LIDC majority-vote calibration set (the same calibration gate used at onboarding, $\kappa \geq 0.60$). The discordant per-reader labels behind every consensus nodule are preserved in \texttt{annotations/raw\_per\_reader/} so downstream uncertainty-aware methods can access reader-level signal.
 
-\todoTable{tab:irr_v05}{Inter-rater annotation reliability ($\kappa$) for LIDC reader pairs and AAPM/Mayo top-up annotators vs LIDC majority-vote calibration set.}
+\begin{table}[h]
+    \centering
+    \small
+    \setlength{\tabcolsep}{6pt}
+    \begin{tabular}{lcccc}
+        \toprule
+        \textbf{Cohort} & \textbf{Patients} & \textbf{Consensus nodules} & \textbf{Mean contrib.\ readers} & \textbf{Pairwise agreement} \\
+        \midrule
+        LIDC-IDRI (deposited)               & 1{,}010                & 7{,}060             & 3.64 / 4 (91.0\%)                  & 81.9\% \\
+        \hspace{1em}of which: $\geq 1$ consensus nodule & 623 (61.7\%) & ---     & ---                              & --- \\
+        \hspace{1em}distribution: 4/4 readers & ---                  & 4{,}508 (63.9\%)    & ---                              & --- \\
+        \hspace{1em}distribution: 3/4 readers & ---                  & 2{,}552 (36.1\%)    & ---                              & --- \\
+        \midrule
+        AAPM top-up (chest), Mayo top-up (chest), Likert & ---       & ---                 & \multicolumn{2}{c}{\textit{pending top-up campaign, see Methods}} \\
+        \bottomrule
+    \end{tabular}
+    \caption{Inter-rater annotation reliability. For LIDC, the deposited 4-radiologist majority-vote consolidation (\texttt{annotations/lidc\_majority\_vote/}, $\geq 3$-of-4 contributing-reader threshold) yields 7{,}060 consensus nodules across 623 patients (mean 7.75 nodules per annotated patient, max 78); each consensus nodule averages 3.64 contributing readers (91.0\% reader-agreement fraction), with 63.9\% of consensus nodules having full 4/4 agreement and the remaining 36.1\% having 3/4. The pairwise reader-agreement column converts the contributing-reader distribution into the analogous "fraction of the 6 reader-pairs that agree on a consensus nodule," yielding 81.9\% pairwise agreement on the consensus pool. AAPM and Mayo top-up Cohen's $\kappa$ values populate at submission once the radiologist campaign completes.}
+    \label{tab:irr_v05}
+\end{table}
 
 \subsection*{Baseline reproductions}
 To demonstrate that the v0.5 unified loader and Docker preprocessing pipelines support end-to-end training and evaluation of heterogeneous deep reconstruction methods without code modification, we reproduce four published baselines on the v0.5 training split and report their test-split performance in Table~\ref{tab:baselines_v05}. The baselines span method classes: RED-CNN~\citep{chen2017redcnn} (encoder-decoder CNN), a published transformer-based reconstruction method (\todo{select published method, e.g., CTformer or TransCT}), a published diffusion-based reconstruction method (\todo{select published method}), and a published unrolled-iterative reconstruction method (\todo{select published method, e.g., LEARN}). This section is intentionally not a benchmark ranking: relative method comparison is out of scope for a Data Descriptor and is the subject of separate companion work. The role of these reproductions is solely to provide evidence that (i) the v0.5 loader drives heterogeneous published methods to convergence, and (ii) the reported numbers can be reproduced bit-identically from the released Docker containers.
@@ -438,7 +456,7 @@ The release is deposited and cited through standard, journal-recognized channels
 
 The scientific identifier is the content hash itself; the deposit channels above are interchangeable retrieval paths for it, and the descriptor's reproducibility claims do not depend on any single one remaining available. Releases are versioned under a \texttt{MAJOR.MINOR.PATCH} scheme: \textbf{MAJOR} increments break schema compatibility (e.g., metadata field renamed, annotation format changed); \textbf{MINOR} increments add new sources or annotation tasks without breaking schema; \textbf{PATCH} increments correct errors (e.g., a scan flagged after PHI re-audit, an annotation correction). When v1.0 ships with prospective multi-vendor data, it is registered as a separate release rather than as a v0.5 patch because the dataset's scientific claims change qualitatively rather than incrementally.
 
-\paragraph{Errata, bug-reporting, and data-correction policy.} Errors discovered in a release (e.g., a missed PHI hit, a discordant annotation surviving QA, a Dockerfile reproducibility regression) are reported via GitHub issues at \url{https://github.com/integritynoble/low_dose_CT/issues} with the label \texttt{errata-v0.5}. Each report is triaged within \todo{N} business days; verified errors are batched into a PATCH release that increments the version (e.g., \texttt{0.5.0 -> 0.5.1}), regenerates the content hash, and updates the deposited record and its mirrors. Erratum notes (what changed, why, which scans are affected) are published as Supplementary Material alongside each PATCH release, and a cumulative errata changelog is maintained at \texttt{ERRATA.md} in the repository. Subscribers to the release mailing list (sign-up at the PhysioNet listing) are notified of every PATCH release. Prior PATCH releases remain resolvable via their content hashes so that papers citing an earlier version remain reproducible; we do not retract or rewrite historical versions.
+\paragraph{Errata, bug-reporting, and data-correction policy.} Errors discovered in a release (e.g., a missed PHI hit, a discordant annotation surviving QA, a Dockerfile reproducibility regression) are reported via GitHub issues at \url{https://github.com/integritynoble/low_dose_CT/issues} with the label \texttt{errata-v0.5}. Each report is triaged within 5 business days; verified errors are batched into a PATCH release that increments the version (e.g., \texttt{0.5.0 -> 0.5.1}), regenerates the content hash, and updates the deposited record and its mirrors. Erratum notes (what changed, why, which scans are affected) are published as Supplementary Material alongside each PATCH release, and a cumulative errata changelog is maintained at \texttt{ERRATA.md} in the repository. Subscribers to the release mailing list (sign-up at the PhysioNet listing) are notified of every PATCH release. Prior PATCH releases remain resolvable via their content hashes so that papers citing an earlier version remain reproducible; we do not retract or rewrite historical versions.
 
 %% =====================================================================
 \section*{Code Availability}
