@@ -88,19 +88,22 @@ Phase 2 work runs in parallel with the WS-1 IRB lag — no IRB dependency.
 
 ## Timeline (D9-anchored)
 
-D9 anchor ≈ 2026-05-20 (theory v0.1 seed date); today (2026-06-01) is **≈ D9 + 12**. Several pre-empirical milestones originally scheduled for D9 + 150 and D9 + 270 landed ahead of schedule via the v0.2 reviewer-readiness pass.
+D9 anchor ≈ 2026-05-20 (theory v0.1 seed date); today (2026-06-02) is **≈ D9 + 13**. Several pre-empirical milestones originally scheduled for D9 + 150, D9 + 240, and D9 + 270 landed ahead of schedule via the v0.2 reviewer-readiness pass and the D9 + 13 theory-and-library pass.
 
 | Date | Milestone | Status |
 |---|---|---|
 | **D9 + 12 (2026-06-01)** | **Manuscript v0.2 reviewer-readiness pass landed** — 7 pure-text edits closing 6 audit items + 1 synthetic experiment; 19 pp; credential JSON `schema_version` bumped to v0.2. See [`paper_draft/CHANGELOG.md`](paper_draft/CHANGELOG.md). | **done** |
 | D9 + 12 (2026-06-01) | [`experiments/cross_modality_consistency/`](experiments/cross_modality_consistency/) — seed-reproducible 6-credential demonstration (3 modalities × 2 candidates) that the same code path produces 3 expected PASS + 3 expected FAIL verdicts. | **done** |
 | D9 + 12 (2026-06-01) | [`theory/related_work.md`](theory/related_work.md) seeded — 3 new TB-IQ anchor cites (Barrett 1990; Barrett & Myers 2013; AAPM TG-233) on top of the 2 pre-existing statistical cites (Schuirmann; Piaggio), plus a "what is genuinely new" novelty-gate skeleton. Manuscript intro carries the TB-IQ positioning paragraph. | **seeded** (depth-pass pending) |
+| **D9 + 13 (2026-06-02)** | **`theory/proofs/{mri_mask,pet_reduction,composition}.md` v0.1 writeups** paired with manuscript v0.2 commitments — closes open_questions §4, §7, §8 at the theory-side. | **done** |
+| D9 + 13 (2026-06-02) | **`theory/proofs/estimator.md`** v0.1 + 27-cell coverage simulation in [`experiments/estimator_coverage/`](experiments/estimator_coverage/) — closes open_questions §3 BLOCK; library estimator defaults recorded (percentile / DeLong-for-AUC / BCa opt-in). Original D9 + 240 target. | **done ahead of schedule** |
+| D9 + 13 (2026-06-02) | **`theory/proofs/sample_size.md`** v0.1 — closes open_questions §2 BLOCK with (S1) / (S3) / (S4) formulas, numerical tables, and empirical validation. **Surfaces a v0.3 manuscript correction** (AUC-task default `ε`). Original D9 + 240 target. | **done ahead of schedule** |
+| D9 + 13 (2026-06-02) | **[`pwm_dose_equivalence/`](pwm_dose_equivalence/) v0.1.0 alpha** — pip-installable scaffold with modality-agnostic API + percentile / DeLong + sample-size pre-flight + content-addressed framework hash + Tr_ct/Tr_mri/Tr_pet operators. 49/49 tests, 93 % line coverage. Original D9 + 365 TestPyPI target's *codebase* ships today; the publish step is gated on PyPI auth. | **done ahead of schedule** |
 | D9 + 90 | Phase 1 pilot 5-tuples computed on real cohorts (CT) — fills `Results` Table 2 (`\todo` placeholder until then). | pending |
 | D9 + 150 | Literature pass **depth-read** complete (fastMRI reader studies; one CHO-for-low-dose-CT paper; Wunderlich/Noo observer-variance) → `theory/dose-equivalence-framework.md` bumped from v0.1 to v0.2 with the [SHARPEN-N] points reconciled against the manuscript v0.2. | pending |
-| D9 + 240 | Estimator validity coverage simulations (open_questions §3) + closed-form sample-size formula (open_questions §2) landed under `theory/proofs/`. | pending |
-| D9 + 270 | MRI worked-example data wrangling for the Results Table 3 fill; theory-side [`proofs/mri_mask.md`](theory/) decision recorded (manuscript-side already closed at D9 + 12 via the Π-as-acquisition-metadata convention). | partial |
-| D9 + 270 | PET worked-example data wrangling for Results Table 4 fill (NEMA NU-2 IQ phantom at multiple activity levels). | pending |
-| D9 + 365 | **Paper submitted to *Nature Methods*; L2 spec on PWMRegistry; `pwm_dose_equivalence` v0.1 on TestPyPI**. | pending |
+| D9 + 270 | MRI worked-example data wrangling for the Results Table 3 fill; theory-side decision already recorded at D9 + 13 via [`proofs/mri_mask.md`](theory/proofs/mri_mask.md). | pending — data side only |
+| D9 + 270 | PET worked-example data wrangling for Results Table 4 fill (NEMA NU-2 IQ phantom at multiple activity levels); theory-side decision already recorded at D9 + 13 via [`proofs/pet_reduction.md`](theory/proofs/pet_reduction.md). | pending — data side only |
+| D9 + 365 | **Paper submitted to *Nature Methods*; framework SHA-256 hash registered as L2 spec on PWMRegistry; `pwm_dose_equivalence` v0.1 on TestPyPI**. | pending — package ready; submission + registration are real-world actions |
 | D9 + 540 | **Paper accepted; library v1.0.0 on PyPI; ≥ 3 external groups using it.** | pending |
 
 ---
