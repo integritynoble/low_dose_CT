@@ -55,13 +55,13 @@ Per [`theory/open_questions.md`](theory/open_questions.md), 10 items prioritized
 | # | Open question | Priority | Effort (wk) | Status @ v0.2 |
 |---|---|---|---|---|
 | 2.1 | §1 Literature pass (related-work memo + positioning) | SHARPEN | 1.5 | **seeded** — [`theory/related_work.md`](theory/related_work.md) v0.1 (3 TB-IQ + 2 statistical anchor cites + novelty-gate skeleton); manuscript intro carries TB-IQ positioning; depth-pass reading pending |
-| 2.2 | §3 Estimator validity / coverage simulations | BLOCK | 1.5 | pending |
-| 2.3 | §2 Sample-size formula (closed-form + numerical table) | BLOCK | 2.0 | pending (gated on 2.2) |
-| 2.4 | §7 MRI mask distribution decision | BLOCK (MRI) | 1.0 | **partial** — manuscript-side closed via Π-as-acquisition-metadata (A3 / C5); theory-side `proofs/mri_mask.md` pending |
+| 2.2 | §3 Estimator validity / coverage simulations | BLOCK | 1.5 | **done @ D9 + 13** — [`theory/proofs/estimator.md`](theory/proofs/estimator.md) v0.1 backed by 27-cell sim in [`experiments/estimator_coverage/`](experiments/estimator_coverage/); estimator defaults recorded (percentile / DeLong-for-AUC / BCa opt-in); non-null power sim is the follow-up |
+| 2.3 | §2 Sample-size formula (closed-form + numerical table) | BLOCK | 2.0 | **done @ D9 + 13** — [`theory/proofs/sample_size.md`](theory/proofs/sample_size.md) v0.1 with (S1) / (S3) / (S4) derivations + numerical tables + empirical validation vs §3 simulation. **Surfaces a v0.3 manuscript correction**: bump AUC-task default `ε` from 0.02 to 0.05 |
+| 2.4 | §7 MRI mask distribution decision | BLOCK (MRI) | 1.0 | **done @ D9 + 13** — [`theory/proofs/mri_mask.md`](theory/proofs/mri_mask.md) v0.1 records option (c): `mask_family` rides inside Π as acquisition-protocol metadata, preserving 5-tuple shape across modalities |
 | 2.5 | §5 Conditional monotonicity-in-r | SHARPEN | 1.0 | pending (best after Phase 1 pilot data lands for empirical check) |
-| 2.6 | §8 PET model under list-mode reduction | SHARPEN | 0.5 | **partial** — manuscript Methods Table 1 + synthetic list-mode channel commit to activity-reduction; `proofs/pet_reduction.md` not written but decision is recorded |
+| 2.6 | §8 PET model under list-mode reduction | SHARPEN | 0.5 | **done @ D9 + 13** — [`theory/proofs/pet_reduction.md`](theory/proofs/pet_reduction.md) v0.1 canonicalises activity-reduction as the v1 PET `T_r`; scan-time-reduction documented as v2 distinction |
 | 2.7 | §6 Per-patient vs aggregate guidance | SHARPEN | 0.5 | **done at manuscript level** — Definition 2 (per-patient) opt-in; Discussion §"Aggregate-vs-per-patient" guidance present |
-| 2.8 | §4 Composition law (likely negative result) | DEFER | 0.5 | **done at manuscript level** — composition reframed as not-transitive-by-design in §"Point-evaluated by design" (B3); `proofs/composition.md` not written |
+| 2.8 | §4 Composition law (likely negative result) | DEFER | 0.5 | **done @ D9 + 13** — [`theory/proofs/composition.md`](theory/proofs/composition.md) v0.1 records the negative-result position: no clean composition law exists; framework is point-evaluated by design |
 
 Phase 2 work runs in parallel with the WS-1 IRB lag — no IRB dependency.
 
@@ -69,10 +69,10 @@ Phase 2 work runs in parallel with the WS-1 IRB lag — no IRB dependency.
 
 | # | Task | Output | Status @ v0.2 |
 |---|---|---|---|
-| 3.1 | Implement `pwm_dose_equivalence.signal_equivalence_credential()` (CT validator) | Core library + CT example | **partial** — modality-agnostic `signal_equivalence_credential` **prototype** shipped in [`experiments/cross_modality_consistency/`](experiments/cross_modality_consistency/) with CT Poisson-thinning channel verified synthetically; productionised library + real-data CT example pending |
-| 3.2 | Implement MRI validator (fastMRI knee dataset; variable-density Cartesian masks) | MRI example + integration test | **partial** — synthetic Cartesian-mask channel verified in `experiments/`; real fastMRI integration pending |
-| 3.3 | Implement PET validator (NEMA IQ phantom; Poisson list-mode thinning) | PET example + integration test | **partial** — synthetic list-mode channel verified in `experiments/`; real NEMA phantom integration pending |
-| 3.4 | Pip-package; publish v0.1 to TestPyPI; gather feedback | TestPyPI listing | pending |
+| 3.1 | Implement `pwm_dose_equivalence.signal_equivalence_credential()` (CT validator) | Core library + CT example | **partial** — productionised package [`pwm_dose_equivalence/`](pwm_dose_equivalence/) at v0.1.0 alpha (modality-agnostic API + percentile / DeLong estimators + sample-size pre-flight + content-addressed framework hash + Tr_ct/Tr_mri/Tr_pet operators); 49/49 tests pass at 93 % coverage; real-data CT example gated on Phase 1 pilot |
+| 3.2 | Implement MRI validator (fastMRI knee dataset; variable-density Cartesian masks) | MRI example + integration test | **partial** — synthetic Cartesian-mask channel verified in [`experiments/cross_modality_consistency/`](experiments/cross_modality_consistency/) and via library `Tr_mri`; real fastMRI integration pending (D9 + 270) |
+| 3.3 | Implement PET validator (NEMA IQ phantom; Poisson list-mode thinning) | PET example + integration test | **partial** — synthetic list-mode channel verified in `experiments/` and via library `Tr_pet`; real NEMA phantom integration pending (D9 + 270) |
+| 3.4 | Pip-package; publish v0.1 to TestPyPI; gather feedback | TestPyPI listing | pending — `pyproject.toml` ready, package installs cleanly via `pip install -e ".[test]"`; TestPyPI upload is a single-command step gated on PyPI account auth (D9 + 365) |
 | 3.5 | v1.0.0 release to PyPI alongside paper acceptance | PyPI listing | pending |
 | 3.6 | Outreach to ≥ 3 external research groups to validate the library on their methods | Usage testimonials | pending |
 
