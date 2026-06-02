@@ -1,0 +1,178 @@
+Metadata-Version: 2.4
+Name: pwm_dose_equivalence
+Version: 0.1.0
+Summary: Reference implementation of the signal-equivalence framework for medical-imaging dose-reduction claims (CT / MRI / PET).
+Author: PWM Protocol Foundation
+License: Apache-2.0
+Project-URL: Homepage, https://github.com/integritynoble/low_dose_CT/tree/main/WS-2_framework
+Project-URL: Repository, https://github.com/integritynoble/low_dose_CT
+Project-URL: Issues, https://github.com/integritynoble/low_dose_CT/issues
+Keywords: medical imaging,low-dose CT,MRI,PET,equivalence testing,TOST,bootstrap
+Classifier: Development Status :: 3 - Alpha
+Classifier: Intended Audience :: Science/Research
+Classifier: License :: OSI Approved :: Apache Software License
+Classifier: Programming Language :: Python :: 3.10
+Classifier: Programming Language :: Python :: 3.11
+Classifier: Programming Language :: Python :: 3.12
+Classifier: Topic :: Scientific/Engineering :: Medical Science Apps.
+Requires-Python: >=3.10
+Description-Content-Type: text/markdown
+License-File: LICENSE
+Requires-Dist: numpy>=1.24
+Requires-Dist: scipy>=1.10
+Provides-Extra: test
+Requires-Dist: pytest>=7; extra == "test"
+Requires-Dist: pytest-cov>=4; extra == "test"
+Dynamic: license-file
+
+# pwm_dose_equivalence
+
+Reference implementation of the **signal-equivalence framework** for medical-imaging dose-reduction claims (CT / MRI / PET). A reconstruction method `M` is *signal-equivalent* to a reference method `M_ref` at level `(r, T, ε, α)` over subpopulation `Π` iff its expected task performance on reduced-signal scans is within `ε` of the reference's performance on full-signal scans, with confidence `≥ 1 − α`.
+
+This package implements that test through a single modality-agnostic API call and packages the verdict with a content-addressed framework hash so a third party can verify the credential by recomputing the bootstrap.
+
+---
+
+## Install (development)
+
+```bash
+cd WS-2_framework/pwm_dose_equivalence
+pip install -e ".[test]"
+```
+
+Requires Python ≥ 3.10, `numpy`, `scipy`.
+
+Status: **v0.1.0 — alpha**, scaffolded 2026-06-02. TestPyPI ship at D9 + 365; v1.0.0 alongside paper acceptance.
+
+---
+
+## Use
+
+### Non-AUC metric (Dice, MAE, contrast-recovery)
+
+```python
+from pwm_dose_equivalence import signal_equivalence_credential, Task
+
+cred = signal_equivalence_credential(
+    paired_a=candidate_scores,        # ndarray, per-patient
+    paired_b=reference_scores,        # ndarray, per-patient
+    signal_ratio=0.25,
+    modality="CT",
+    task=Task("liver_dice", metric="dice"),
+    subpopulation="adult_abdomen_pwm_l3_test_v1",
+    epsilon=0.05, alpha=0.05,
+    n_bootstrap=10_000, seed=42,
+    sigma_delta_hint=0.07,           # optional: pre-flight sample-size check
+)
+print(cred.credential.verdict)        # PASS / FAIL / INDETERMINATE
+print(cred.to_json())                 # serialise for publication
+```
+
+The estimator defaults to **percentile bootstrap** (Efron 1979) and emits a warning if `n_test` is below the formula prescription at the requested `(ε, α, σ_Δ_hint)`.
+
+### Paired AUC (lung-nodule detection, lesion classification)
+
+```python
+cred = signal_equivalence_credential(
+    a_pos=candidate_pos_scores,       # candidate scores on positive cases
+    a_neg=candidate_neg_scores,       # candidate scores on negative cases
+    b_pos=reference_pos_scores,       # reference scores on the same positive cases
+    b_neg=reference_neg_scores,
+    signal_ratio=0.25,
+    modality="CT",
+    task=Task("lung_nodule_5mm", metric="auc",
+              ground_truth_protocol="pwm-ldct/annotation-qa/v0.5#sha256:..."),
+    subpopulation="adult_chest_pwm_l3_test_v1",
+    epsilon=0.05, alpha=0.05, seed=42,
+    placement_sd_hint=0.15,
+)
+```
+
+The estimator auto-selects **closed-form DeLong** (DeLong, DeLong & Clarke-Pearson 1988) when `task.metric == "auc"` and the AUC-style arguments are supplied — ~300× faster than the bootstrap with mild conservativeness (per [`../theory/proofs/estimator.md`](../theory/proofs/estimator.md)).
+
+### Signal-reduction operators
+
+For users who want to construct paired scores by *running* the candidate method on a synthetic reduced-signal acquisition:
+
+```python
+from pwm_dose_equivalence import Tr_ct, Tr_mri, Tr_pet
+import numpy as np
+
+rng = np.random.default_rng(42)
+s_red_ct  = Tr_ct(s_ref_counts, r=0.25, rng=rng)
+s_red_mri = Tr_mri(k_space, r=0.25, rng=rng, central_fraction=0.25)
+s_red_pet = Tr_pet(s_listmode, r=0.25, rng=rng)
+```
+
+CT and PET use Poisson-thinning (lambda-scaling). MRI uses a variable-density Cartesian mask; per [`../theory/proofs/mri_mask.md`](../theory/proofs/mri_mask.md), the mask family rides inside `Π` so the 5-tuple shape is preserved across modalities.
+
+---
+
+## Estimator defaults (per the 2026-06-02 coverage simulation)
+
+| Metric | Default estimator | Justification |
+|---|---|---|
+| `auc` | `delong` | ~300× faster than bootstrap with mild conservativeness |
+| `dice`, `mae`, `contrast_recovery` | `percentile` | Close-to-nominal coverage across all tested cells |
+| any | `bca` | Opt-in only (deferred to v0.2.0 — does not robustly outperform percentile under the null) |
+
+Override with `estimator="percentile"` or `estimator="delong"` to force a specific variant.
+
+Full justification: [`../theory/proofs/estimator.md`](../theory/proofs/estimator.md). Coverage simulation: [`../experiments/estimator_coverage/`](../experiments/estimator_coverage/).
+
+---
+
+## Sample-size pre-flight
+
+The library refuses to issue a `PASS` quietly when `n_test` is below the closed-form requirement (Formulas (S1), (S3) from [`../theory/proofs/sample_size.md`](../theory/proofs/sample_size.md)). Pass `sigma_delta_hint` (general) or `placement_sd_hint` (AUC) and the library will emit a `UserWarning` if `n_test` is short. The warning text points the user at the sample-size proofs document.
+
+---
+
+## Tests
+
+```bash
+pip install -e ".[test]"
+pytest
+```
+
+The v0.1.0 test suite covers:
+
+* **Estimator** (`test_estimator.py`) — coverage under the null for both percentile and DeLong; verdict logic; edge cases (empty data, perfect classifier).
+* **Sample size** (`test_sample_size.py`) — formula (S1) / (S3) / (S4) values against the numerical table in `theory/proofs/sample_size.md`; scaling laws.
+* **Operators** (`test_operators.py`) — expected-count ratios for Poisson-thinning; central-region invariant for the MRI mask; NaN sentinel.
+* **Credential** (`test_credential.py`) — JSON round-trip including all v0.2 fields; enum serialisation.
+* **Framework hash** (`test_framework_hash.py`) — SHA-256 prefix; hash-mutates-on-spec-mutate.
+* **API end-to-end** (`test_api.py`) — equivalent and biased candidates produce expected verdicts; auto-estimator-selection; sample-size warning.
+
+CI target at v0.2.0: `pytest-cov ≥ 90 %`. Current v0.1.0 coverage is unmeasured; ship gate.
+
+---
+
+## Versioning policy
+
+Semantic versioning:
+
+* `MAJOR` — break the credential JSON schema (bumps `FRAMEWORK_SPEC`)
+* `MINOR` — add a modality, estimator, or task type; non-breaking
+* `PATCH` — bug fix; preserves credential reproducibility
+
+The current version is `0.1.0` (alpha). `0.2.0` will add BCa + a power-analysis (non-null) pre-flight; `1.0.0` ships alongside the *Nature Methods* paper acceptance with five-year support commitment.
+
+---
+
+## Cross-references
+
+* [`../paper_draft/manuscript.tex`](../paper_draft/manuscript.tex) — the methodological framework this library implements.
+* [`../theory/proofs/estimator.md`](../theory/proofs/estimator.md) — estimator-default decision.
+* [`../theory/proofs/sample_size.md`](../theory/proofs/sample_size.md) — sample-size formulas.
+* [`../theory/proofs/mri_mask.md`](../theory/proofs/mri_mask.md) — MRI mask family handling.
+* [`../theory/proofs/pet_reduction.md`](../theory/proofs/pet_reduction.md) — PET activity vs scan-time decision.
+* [`../theory/proofs/composition.md`](../theory/proofs/composition.md) — why composition is not derivable.
+* [`../experiments/cross_modality_consistency/`](../experiments/cross_modality_consistency/) — synthetic proof of modality-general API.
+* [`../experiments/estimator_coverage/`](../experiments/estimator_coverage/) — coverage simulation.
+
+---
+
+## License
+
+Apache 2.0.

@@ -67,16 +67,18 @@ $z_{0.975} = 1.959963984540054$, so $z_{0.975}^2 \approx 3.842$.
 
 | $\varepsilon$ | $\alpha$ | $\sigma_\Delta$ | $n$ (minimum) |
 |---:|---:|---:|---:|
-| 0.02 | 0.05 | 0.05 | $\geq 24$ |
-| 0.02 | 0.05 | 0.10 | $\geq 96$ |
-| 0.02 | 0.05 | 0.15 | $\geq 216$ |
+| 0.02 | 0.05 | 0.05 | $\geq 25$ |
+| 0.02 | 0.05 | 0.10 | $\geq 97$ |
+| 0.02 | 0.05 | 0.15 | $\geq 217$ |
 | 0.02 | 0.05 | 0.20 | $\geq 385$ |
 | 0.03 | 0.05 | 0.05 | $\geq 11$ |
 | 0.03 | 0.05 | 0.10 | $\geq 43$ |
-| 0.03 | 0.05 | 0.15 | $\geq 96$ |
+| 0.03 | 0.05 | 0.15 | $\geq 97$ |
 | 0.05 | 0.05 | 0.05 | $\geq 4$ |
 | 0.05 | 0.05 | 0.10 | $\geq 16$ |
 | 0.05 | 0.05 | 0.15 | $\geq 35$ |
+
+(Values are ceil-of-the-exact-bound. The exact bound at $(\varepsilon=0.02, \sigma_\Delta=0.10)$ is $z_{0.975}^2 \cdot 0.01 / 0.0004 \approx 96.04$ which rounds up to $97$.)
 
 These numbers are appropriate for Dice (segmentation), MAE / RMSE (regression), and per-patient contrast-recovery (PET phantom).
 
@@ -115,9 +117,14 @@ $$
 \tag{S4}
 $$
 
-For $\alpha = 0.05$, $\log(2/\alpha) \approx 3.69$ — comparable to $z_{0.975}^2 \approx 3.84$. The substantive difference from (S1) is the $\tfrac{2 M \varepsilon}{3}$ term, which dominates when $\sigma_\Delta$ is small ("variance is not the binding constraint"). Bernstein is therefore *competitive with the CLT bound when $\sigma_\Delta^2 \gtrsim M \varepsilon$* and *strictly conservative* in the small-variance regime; it can be smaller than the CLT bound at high $\sigma_\Delta$.
+For $\alpha = 0.05$, $\log(2/\alpha) \approx 3.69$ — comparable to $z_{0.975}^2 \approx 3.84$. There are however two substantive differences from (S1):
 
-The CLT-based formula (S1) is the right operational default; Bernstein (S4) is a worst-case sanity check that should be reported alongside (S1) for credentials issued at small $n$ (say $n < 100$) where the asymptotic-normal approximation is shakiest. The library will emit a Bernstein warning when (S1) gives $n < 100$.
+* **The variance term has coefficient $2\sigma_\Delta^2$**, not $\sigma_\Delta^2$. Bernstein is therefore *strictly more conservative* than the CLT bound in the pure-variance limit ($M \varepsilon \to 0$), by a factor of about $2 \log(2/\alpha) / z_{1-\alpha/2}^2 \approx 1.92$ at $\alpha = 0.05$. The CLT bound is asymptotically tight under regularity; Bernstein's factor-of-two is the price of *finite-sample* validity without an asymptotic-normal approximation.
+* **The bound term $\tfrac{2 M \varepsilon}{3}$** adds an additional contribution that dominates when $\sigma_\Delta^2$ is small relative to $M \varepsilon$. At $\varepsilon = 0.02$ and $M = 1$, the bound term is $0.0133$ — comparable to the variance term $2\sigma_\Delta^2 = 0.02$ at $\sigma_\Delta = 0.10$.
+
+Concretely, at $(\varepsilon=0.02, \alpha=0.05, \sigma_\Delta=0.10, M=1)$: (S1) gives $n \geq 97$ and (S4) gives $n \geq 308$ — a factor of $\sim 3.2$. Bernstein is strictly more conservative across all typical operating regimes the framework uses.
+
+The CLT-based formula (S1) is the right operational default; Bernstein (S4) is a *worst-case* sanity check reported alongside (S1) for credentials at small $n$ (say $n < 100$) where the asymptotic-normal approximation is shakiest. A practitioner can read the gap between $n_{\text{S1}}$ and $n_{\text{S4}}$ as "the price the CLT pays for being asymptotic" — a credential issued near the (S1) threshold and far from the (S4) threshold is asymptotically valid but does not have a finite-sample guarantee; one issued above both is valid both ways. The library reports both numbers in the credential's `sample_size_check` field and emits an explicit Bernstein note when $n < n_{\text{S4}}$.
 
 ---
 

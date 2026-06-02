@@ -1,0 +1,43 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pwm_dose_equivalence"
+version = "0.1.0"
+description = "Reference implementation of the signal-equivalence framework for medical-imaging dose-reduction claims (CT / MRI / PET)."
+readme = "README.md"
+license = { text = "Apache-2.0" }
+requires-python = ">=3.10"
+authors = [
+    { name = "PWM Protocol Foundation" }
+]
+keywords = ["medical imaging", "low-dose CT", "MRI", "PET", "equivalence testing", "TOST", "bootstrap"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Medical Science Apps.",
+]
+dependencies = [
+    "numpy>=1.24",
+    "scipy>=1.10",
+]
+
+[project.optional-dependencies]
+test = ["pytest>=7", "pytest-cov>=4"]
+
+[project.urls]
+Homepage = "https://github.com/integritynoble/low_dose_CT/tree/main/WS-2_framework"
+Repository = "https://github.com/integritynoble/low_dose_CT"
+Issues = "https://github.com/integritynoble/low_dose_CT/issues"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q --strict-markers"
