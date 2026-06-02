@@ -67,6 +67,18 @@ def _auc_components(
     return V10, V01
 
 
+def _nonnegative_variance(v: float) -> float:
+    """Clip a variance estimate to 0 if floating-point pathology makes it negative.
+
+    DeLong's variance is the sum of two non-negative sample-variance terms divided
+    by positive sample sizes, so in exact arithmetic it is always non-negative.
+    Floating-point pathology (e.g.\\ catastrophic cancellation on very small
+    differences) could in principle yield a tiny negative value; we clip it to 0
+    so the downstream ``sqrt`` does not raise.
+    """
+    return v if v >= 0.0 else 0.0
+
+
 def delong_ci(
     *,
     a_pos: np.ndarray,
@@ -90,9 +102,7 @@ def delong_ci(
     n_neg = len(a_neg)
     s10 = float(np.var(V10_A - V10_B, ddof=1)) if n_pos > 1 else 0.0
     s01 = float(np.var(V01_A - V01_B, ddof=1)) if n_neg > 1 else 0.0
-    var = s10 / n_pos + s01 / n_neg
-    if var < 0:
-        var = 0.0
+    var = _nonnegative_variance(s10 / n_pos + s01 / n_neg)
     half = float(stats.norm.isf(alpha / 2)) * np.sqrt(var)
     return delta, delta - half, delta + half
 

@@ -7,6 +7,7 @@ import pytest
 from scipy import stats
 
 from pwm_dose_equivalence.estimator import (
+    _nonnegative_variance,
     delong_ci,
     percentile_ci,
     verdict_from_ci,
@@ -121,3 +122,20 @@ def test_verdict_indeterminate_straddles_upper():
 
 def test_verdict_indeterminate_straddles_lower():
     assert verdict_from_ci(-0.05, 0.01, epsilon=0.02) == "INDETERMINATE"
+
+
+# --------------------------------------------------------------------------
+# _nonnegative_variance helper (defensive numerical guard for DeLong)
+# --------------------------------------------------------------------------
+
+def test_nonnegative_variance_passthrough():
+    """Non-negative inputs pass through unchanged."""
+    assert _nonnegative_variance(0.0) == 0.0
+    assert _nonnegative_variance(0.5) == 0.5
+    assert _nonnegative_variance(1e6) == 1e6
+
+
+def test_nonnegative_variance_clips_negative():
+    """Negative inputs (floating-point pathology) are clipped to 0."""
+    assert _nonnegative_variance(-1e-15) == 0.0
+    assert _nonnegative_variance(-1.0) == 0.0

@@ -49,6 +49,15 @@ def test_Tr_pet_matches_Tr_ct_at_same_seed():
     assert (Tr_ct(s, r=0.5, rng=rng1) == Tr_pet(s, r=0.5, rng=rng2)).all()
 
 
+def test_Tr_pet_rejects_invalid_r():
+    rng = np.random.default_rng(0)
+    s = np.full(10, 10, dtype=np.int64)
+    with pytest.raises(ValueError):
+        Tr_pet(s, r=0.0, rng=rng)
+    with pytest.raises(ValueError):
+        Tr_pet(s, r=1.5, rng=rng)
+
+
 # --------------------------------------------------------------------------
 # MRI — Cartesian mask
 # --------------------------------------------------------------------------

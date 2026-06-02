@@ -87,6 +87,15 @@ def test_S3_is_4x_S1_at_same_sigma():
     assert 3.9 <= (n_s3 / n_s1) <= 4.1
 
 
+def test_S3_rejects_invalid_args():
+    with pytest.raises(ValueError):
+        required_n_auc(epsilon=0.02, alpha=0.05, placement_sd=-0.1)
+    with pytest.raises(ValueError):
+        required_n_auc(epsilon=0.02, alpha=1.5, placement_sd=0.10)
+    with pytest.raises(ValueError):
+        required_n_auc(epsilon=-0.01, alpha=0.05, placement_sd=0.10)
+
+
 # --------------------------------------------------------------------------
 # (S4) Bernstein bound
 # --------------------------------------------------------------------------
@@ -116,3 +125,22 @@ def test_S4_strictly_more_conservative_than_S1():
     ratio = n_s4 / n_s1
     assert ratio >= 1.0
     assert 2.5 <= ratio <= 4.0
+
+
+def test_S4_rejects_invalid_args():
+    with pytest.raises(ValueError):
+        required_n_bernstein(
+            epsilon=0.02, alpha=0.05, sigma_delta=-0.1, bound_M=1.0,
+        )
+    with pytest.raises(ValueError):
+        required_n_bernstein(
+            epsilon=0.02, alpha=0.05, sigma_delta=0.1, bound_M=-1.0,
+        )
+    with pytest.raises(ValueError):
+        required_n_bernstein(
+            epsilon=0.02, alpha=1.5, sigma_delta=0.1, bound_M=1.0,
+        )
+    with pytest.raises(ValueError):
+        required_n_bernstein(
+            epsilon=-0.01, alpha=0.05, sigma_delta=0.1, bound_M=1.0,
+        )

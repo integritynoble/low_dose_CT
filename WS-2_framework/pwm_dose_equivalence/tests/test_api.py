@@ -147,3 +147,116 @@ def test_credential_contains_framework_hash_and_schema():
     assert d["schema_version"] == "pwm-signal-equivalence/v0.2"
     assert d["framework_hash"].startswith("sha256:")
     assert "credential" in d
+
+
+# --------------------------------------------------------------------------
+# Validation branches
+# --------------------------------------------------------------------------
+
+def test_forced_delong_with_general_inputs_raises():
+    """estimator='delong' without AUC-style inputs is a user error."""
+    rng = np.random.default_rng(0)
+    a = rng.normal(0.0, 1.0, size=50)
+    b = rng.normal(0.0, 1.0, size=50)
+    with pytest.raises(ValueError, match="delong"):
+        signal_equivalence_credential(
+            paired_a=a, paired_b=b,
+            signal_ratio=0.25, modality="CT",
+            task=Task("dice", metric="dice"),
+            subpopulation="test_v1",
+            epsilon=0.05,
+            estimator="delong",
+        )
+
+
+def test_forced_percentile_with_auc_inputs_raises():
+    """estimator='percentile' with AUC-style inputs is a user error."""
+    rng = np.random.default_rng(0)
+    a_pos = rng.normal(1.0, 1.0, size=50)
+    a_neg = rng.normal(0.0, 1.0, size=50)
+    b_pos = rng.normal(1.0, 1.0, size=50)
+    b_neg = rng.normal(0.0, 1.0, size=50)
+    with pytest.raises(ValueError, match="percentile"):
+        signal_equivalence_credential(
+            a_pos=a_pos, a_neg=a_neg, b_pos=b_pos, b_neg=b_neg,
+            signal_ratio=0.25, modality="CT",
+            task=Task("auc", metric="auc"),
+            subpopulation="test_v1",
+            epsilon=0.05,
+            estimator="percentile",
+        )
+
+
+def test_unknown_estimator_raises():
+    """An invalid estimator string should fail fast."""
+    rng = np.random.default_rng(0)
+    a = rng.normal(0.0, 1.0, size=50)
+    b = rng.normal(0.0, 1.0, size=50)
+    with pytest.raises(ValueError, match="Unknown estimator"):
+        signal_equivalence_credential(
+            paired_a=a, paired_b=b,
+            signal_ratio=0.25, modality="CT",
+            task=Task("dice", metric="dice"),
+            subpopulation="test_v1",
+            epsilon=0.05,
+            estimator="bca",  # not yet exposed in v0.1.0
+        )
+
+
+def test_shape_mismatch_raises():
+    """paired_a and paired_b must have the same shape."""
+    rng = np.random.default_rng(0)
+    a = rng.normal(0.0, 1.0, size=50)
+    b = rng.normal(0.0, 1.0, size=40)  # different length
+    with pytest.raises(ValueError, match="shape"):
+        signal_equivalence_credential(
+            paired_a=a, paired_b=b,
+            signal_ratio=0.25, modality="CT",
+            task=Task("dice", metric="dice"),
+            subpopulation="test_v1",
+            epsilon=0.05,
+        )
+
+
+def test_delong_mode_emits_sample_size_warning_when_n_small(recwarn):
+    """At n_test below the (S3) prescription, DeLong-mode also warns."""
+    rng = np.random.default_rng(0)
+    # 30 + 30 = 60 cases; placement_sd_hint=0.20 → (S3) requires
+    # n ≥ (1.96/0.05)² × 4 × 0.04 = ~246 — far above 60.
+    a_pos = rng.normal(1.0, 1.0, size=30)
+    a_neg = rng.normal(0.0, 1.0, size=30)
+    b_pos = rng.normal(1.0, 1.0, size=30)
+    b_neg = rng.normal(0.0, 1.0, size=30)
+    cred = signal_equivalence_credential(
+        a_pos=a_pos, a_neg=a_neg, b_pos=b_pos, b_neg=b_neg,
+        signal_ratio=0.25, modality="CT",
+        task=Task("auc", metric="auc"),
+        subpopulation="test_v1",
+        epsilon=0.05, alpha=0.05, seed=7,
+        placement_sd_hint=0.20,
+    )
+    assert any("S3 prescription" in str(w.message) for w in recwarn.list)
+    assert cred.credential.sample_size_check["rule"] == "S3-auc-clt"
+    assert cred.credential.sample_size_check["ok"] is False
+
+
+def test_delong_mode_records_sample_check_when_n_sufficient():
+    """When n is sufficient, the sample_size_check field still gets populated
+    but ``ok`` is True and no warning fires."""
+    rng = np.random.default_rng(0)
+    # 200 + 200 = 400 cases at placement_sd_hint=0.05 → S3 needs
+    # (1.96/0.05)² × 4 × 0.0025 = ~16 ≪ 400.
+    a_pos = rng.normal(1.5, 1.0, size=200)
+    a_neg = rng.normal(0.0, 1.0, size=200)
+    b_pos = rng.normal(1.5, 1.0, size=200)
+    b_neg = rng.normal(0.0, 1.0, size=200)
+    cred = signal_equivalence_credential(
+        a_pos=a_pos, a_neg=a_neg, b_pos=b_pos, b_neg=b_neg,
+        signal_ratio=0.25, modality="CT",
+        task=Task("auc", metric="auc"),
+        subpopulation="test_v1",
+        epsilon=0.05, alpha=0.05, seed=8,
+        placement_sd_hint=0.05,
+    )
+    assert cred.credential.sample_size_check["rule"] == "S3-auc-clt"
+    assert cred.credential.sample_size_check["ok"] is True
