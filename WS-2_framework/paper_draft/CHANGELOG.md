@@ -48,6 +48,8 @@ The (S3) sample-size formula and the V3-9 power simulation are consistent — th
 
 The WS-2 README was correspondingly refreshed at D9 + 14 across the status pin, Phase 2.2 status, Timeline, Subfolders proofs/ + experiments/ rows, Cross-references, and the "Done when" intermediate D9 + 14 sub-block (commits `b301b04`, `964e8c0`), plus a residual 19 pp → 22 pp page-count cleanup (commit `d253e4e`).
 
+**Bidirectional-flow framing across both READMEs.** With V3-9 making the cross-workstream flow explicitly bidirectional (WS-1 → WS-2 contributed the annotation QA protocol; WS-2 → WS-1 now contributes the cohort-sizing implication), the sibling-workstream cross-references on both sides were updated to name the relationship symmetrically: WS-2 README's WS-1 entry (commit `88c963a`) and WS-1 README's WS-2 entry (commit `5c4d028`). Both now lead with "The cross-workstream flow is bidirectional (as of D9 + 14)" and enumerate the same two propagation commits (`d0569f3`, `7817fad`).
+
 The V3-9 finding now appears in 7 places with consistent numbers: manuscript `proofs/estimator.md` §4a (canonical); `experiments/estimator_coverage/` (the simulation); WS-2 README; WS-2 CHANGELOG (this file); WS-1 README Cross-references; WS-1 README Target specs; the WS-2 §methods-estimator "Estimator defaults" paragraph (via the V3-2 / V3-5 inline cross-link to `proofs/estimator.md`).
 
 ---
