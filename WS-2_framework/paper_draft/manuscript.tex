@@ -322,13 +322,14 @@ The modality-specific instantiations are given in Table~\ref{tab:modality_Tr}.
         \midrule
         CT  & Poisson-thinning: if $s_{\textrm{ref}} \sim \textrm{Poisson}(\lambda(x))$, then $s_{\textrm{red}} \sim \textrm{Poisson}(r \cdot \lambda(x))$ \\
         MRI & $k$-space subsampling: $s_{\textrm{red}} = \Omega_r \cdot s_{\textrm{ref}}$ with $|\Omega_r|/|\Omega_{\textrm{full}}| = r$ \\
-        PET & Poisson-thinning of list-mode counts at rate $r$\footnote{The canonical PET $T_r$ for v1 of the framework is \emph{activity reduction} (fewer injected counts at the same scan duration). \emph{Scan-time reduction} at full activity is statistically equivalent at the level of total counts (Poisson-thinning gives the same marginal) but is not physically equivalent --- motion blur and kinetic modelling differ --- and is documented as a v2 distinction. The synthetic PET channel in [\texttt{experiments/cross\_modality\_consistency/}] and the worked-example NEMA NU-2 IQ phantom acquisitions both follow the activity-reduction model. See [\texttt{theory/proofs/pet\_reduction.md}] for the decision rationale.} \\
+        PET & Poisson-thinning of list-mode counts at rate $r$\footnotemark[1] \\
         Optical & Reduced exposure time: $s_{\textrm{red}} \sim \textrm{Poisson}(\phi(x) \cdot r \cdot t_{\textrm{ref}})$ \\
         \bottomrule
     \end{tabular}
     \caption{Modality-specific signal-reduction operators. CT and PET share the Poisson-thinning model; MRI's $T_r$ is itself stochastic via the mask distribution.}
     \label{tab:modality_Tr}
 \end{table}
+\footnotetext[1]{The canonical PET $T_r$ for v1 of the framework is \emph{activity reduction} (fewer injected counts at the same scan duration). \emph{Scan-time reduction} at full activity is statistically equivalent at the level of total counts (Poisson-thinning gives the same marginal) but is not physically equivalent --- motion blur and kinetic modelling differ --- and is documented as a v2 distinction. The synthetic PET channel in [\texttt{experiments/cross\_modality\_consistency/}] and the worked-example NEMA NU-2 IQ phantom acquisitions both follow the activity-reduction model. See [\texttt{theory/proofs/pet\_reduction.md}] for the decision rationale.}
 
 \paragraph{What ``modality-general'' means, precisely.} The cross-modality claim has both a mathematical and an empirical component, and we are careful to distinguish them.
 
