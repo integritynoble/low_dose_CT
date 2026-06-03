@@ -39,7 +39,16 @@ V3-9 closes the second deliverable of §3 (non-null power), leaving §1 (literat
 
 ### Downstream-doc propagation
 
-The V3-9 cohort-sizing finding was propagated into the WS-1 README's WS-2 cross-reference entry (commit `d0569f3`): the prior "(S3) formula is met → cohort is comfortably sized" framing was sharpened with the empirical verdict-distribution evidence. The new note tells downstream WS-1 users to **expect `INDETERMINATE` verdicts on the v0.5 cohort even for genuinely equivalent methods** at AUC ≈ 0.92 / n ≈ 200, and that **absence of `PASS` is not evidence of non-equivalence** — only of insufficient n (P(`PASS`) under the null is ≈ 0.40 at n = 200, lifting to ≈ 0.94 at n = 500). The (S3) formula and the V3-9 power simulation are consistent — they just answer different questions, and the WS-1 cross-reference now surfaces both. The WS-2 README was correspondingly refreshed at D9 + 14 across the status pin, Phase 2.2 status, Timeline, Subfolders proofs/ + experiments/ rows, Cross-references, and the "Done when" intermediate D9 + 14 sub-block (commits `b301b04`, `964e8c0`).
+The V3-9 cohort-sizing finding was propagated downstream across the WS-1 dataset README in two passes:
+
+* **Pass 1 — WS-1 Cross-references → WS-2 entry sharpening** (commit `d0569f3`). The prior "(S3) formula is met → cohort is comfortably sized" framing was sharpened with the empirical verdict-distribution evidence. The new note tells downstream WS-1 users to **expect `INDETERMINATE` verdicts on the v0.5 cohort even for genuinely equivalent methods** at AUC ≈ 0.92 / n ≈ 200, and that **absence of `PASS` is not evidence of non-equivalence** — only of insufficient n (P(`PASS`) under the null is ≈ 0.40 at n = 200, lifting to ≈ 0.94 at n = 500).
+* **Pass 2 — WS-1 Target specs new row** (commit `7817fad`). A "Credential-issuance regime (per V3-9 power sim, D9 + 14)" row was added to the v0.5 / v1.0 Target specs table, immediately after the patient-counts row. This puts the formula-side fact + empirical-side fact + operational message in the table a downstream researcher *actually consults when sizing an experiment*. v0.5 column carries the INDETERMINATE-dominated message above; v1.0 column carries the complementary "n ≥ 500 lifts into the P(`PASS`) ≈ 0.94 regime; supports tighter ε = 0.02 at the upper cohort range" message.
+
+The (S3) sample-size formula and the V3-9 power simulation are consistent — they just answer different questions (formula: minimum n for the CI half-width to be ≤ ε in expectation; power sim: empirical verdict-distribution behaviour at the threshold n). Both passes now surface in the WS-1 README — Pass 1 in the Cross-references prose; Pass 2 in the Target specs table.
+
+The WS-2 README was correspondingly refreshed at D9 + 14 across the status pin, Phase 2.2 status, Timeline, Subfolders proofs/ + experiments/ rows, Cross-references, and the "Done when" intermediate D9 + 14 sub-block (commits `b301b04`, `964e8c0`), plus a residual 19 pp → 22 pp page-count cleanup (commit `d253e4e`).
+
+The V3-9 finding now appears in 7 places with consistent numbers: manuscript `proofs/estimator.md` §4a (canonical); `experiments/estimator_coverage/` (the simulation); WS-2 README; WS-2 CHANGELOG (this file); WS-1 README Cross-references; WS-1 README Target specs; the WS-2 §methods-estimator "Estimator defaults" paragraph (via the V3-2 / V3-5 inline cross-link to `proofs/estimator.md`).
 
 ---
 
