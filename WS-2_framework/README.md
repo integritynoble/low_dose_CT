@@ -8,7 +8,7 @@ The **signal-equivalence framework**: a formal, modality-general mathematical re
 
 ## Goals
 
-1. **Publish a peer-reviewed paper** at ***Nature Methods*** (primary) introducing the framework. Fallback: *IEEE Transactions on Medical Imaging* or *Medical Image Analysis*. Working draft is at v0.2 in [`paper_draft/`](paper_draft/) — see [`paper_draft/CHANGELOG.md`](paper_draft/CHANGELOG.md) for the v0.1 → v0.2 delta.
+1. **Publish a peer-reviewed paper** at ***Nature Methods*** (primary) introducing the framework. Fallback: *IEEE Transactions on Medical Imaging* or *Medical Image Analysis*. Working draft is at v0.3 in [`paper_draft/`](paper_draft/) — see [`paper_draft/CHANGELOG.md`](paper_draft/CHANGELOG.md) for the v0.1 → v0.2 → v0.3 deltas.
 2. **Ship `pwm_dose_equivalence` on PyPI** with ≥ 2 modality validators (CT + MRI minimum; PET stretch). `pip install pwm_dose_equivalence` works for any external user. The pip-installable scaffold lives at [`pwm_dose_equivalence/`](pwm_dose_equivalence/) at **v0.1.0 alpha** (60/60 tests, 100 % line coverage); the synthetic-only [`experiments/cross_modality_consistency/`](experiments/cross_modality_consistency/) prototype is preserved as the modality-general consistency anchor. Phase 3 remaining: TestPyPI publish (D9 + 365), real-data CT / MRI / PET integrations, v1.0.0 release (D9 + 540).
 3. **Register the framework definition on PWMRegistry** as a content-addressed L2 specification, so every leaderboard submission is verified against the SHA-256 hash of the framework version the credential was issued under. The PWM registry is one of three hash-resolvers (local file / pinned PyPI release / PWMRegistry) that the manuscript enumerates; content-addressing itself is the methodological substance, the registry is the long-term decentralized resolver.
 
@@ -18,9 +18,9 @@ A successful WS-2 means: an external researcher can compute a 5-tuple credential
 
 ## The framework, in one line
 
-Method **M** is **signal-equivalent at level (r, T, ε, α)** over subpopulation **Π** iff the population-mean task performance on reduced-signal scans is within `ε` of the population-mean performance of a reference method on full-signal scans. The `1 − α` is the confidence level at which the paired-bootstrap estimator returns `PASS` on a test set drawn from Π — population claim and finite-sample evidence are kept distinct (manuscript v0.2 §framework). Π is formalized to carry the **acquisition-protocol metadata** that determines `T_r` for the modality (CT vendor / kVp; MRI mask family; PET tracer / scanner), so the 5-tuple shape holds verbatim across CT, MRI, and PET.
+Method **M** is **signal-equivalent at level (r, T, ε, α)** over subpopulation **Π** iff the population-mean task performance on reduced-signal scans is within `ε` of the population-mean performance of a reference method on full-signal scans. The `1 − α` is the confidence level at which the paired-bootstrap estimator returns `PASS` on a test set drawn from Π — population claim and finite-sample evidence are kept distinct (manuscript v0.3 §framework). Π is formalized to carry the **acquisition-protocol metadata** that determines `T_r` for the modality (CT vendor / kVp; MRI mask family; PET tracer / scanner), so the 5-tuple shape holds verbatim across CT, MRI, and PET.
 
-The formal definition lives in [`theory/dose-equivalence-framework.md`](theory/dose-equivalence-framework.md) (v0.1; intentionally lags the manuscript v0.2 pending the literature depth-pass per [`theory/open_questions.md`](theory/open_questions.md) §1). It sharpens the one-liner across six points (patient vs image; operator vs scalar; reference-acquisition vs reference-algorithm; performance functional form; subpopulation-as-acquisition-protocol-bearing measure; aggregate vs per-patient) — the same six points appear in the manuscript as clarifications C1–C6.
+The formal definition lives in [`theory/dose-equivalence-framework.md`](theory/dose-equivalence-framework.md) (v0.1; intentionally lags the manuscript v0.3 pending the literature depth-pass per [`theory/open_questions.md`](theory/open_questions.md) §1). It sharpens the one-liner across six points (patient vs image; operator vs scalar; reference-acquisition vs reference-algorithm; performance functional form; subpopulation-as-acquisition-protocol-bearing measure; aggregate vs per-patient) — the same six points appear in the manuscript as clarifications C1–C6.
 
 ---
 
@@ -174,12 +174,12 @@ D9 anchor ≈ 2026-05-20 (theory v0.1 seed date); today (2026-06-02) is **≈ D9
 
 **Inside WS-2 — documents:**
 
-- [`paper_draft/CHANGELOG.md`](paper_draft/CHANGELOG.md) — v0.1 → v0.2 delta with one row per closed audit item and its commit; the manifest for the reviewer-readiness pass.
+- [`paper_draft/CHANGELOG.md`](paper_draft/CHANGELOG.md) — v0.1 → v0.2 → v0.3 deltas with one row per closed audit item / triggered edit and its commit; the manifest for the reviewer-readiness pass + the D9 + 13 / D9 + 14 propagation passes.
 - [`theory/dose-equivalence-framework.md`](theory/dose-equivalence-framework.md) — formal definition v0.1. Intentionally lags the manuscript v0.2; its own header says it is superseded by v0.2 after the literature pass (see `open_questions.md` §1).
 - [`theory/open_questions.md`](theory/open_questions.md) — BLOCK / SHARPEN / DEFER work plan for Phase 2 theory; the §-numbering is cross-referenced from `related_work.md`, the `theory/proofs/*.md` writeups, and this README's `Phase 2` task table above.
 - [`theory/related_work.md`](theory/related_work.md) — 5-paper memo (2 statistical + 3 TB-IQ anchor cites) seeded alongside the manuscript A6 positioning paragraph. Hosts the "what is genuinely new" novelty gate for the theory-doc v0.2 bump.
 
-**Inside WS-2 — `theory/proofs/` (theory-side writeups paired with manuscript v0.2 commitments):**
+**Inside WS-2 — `theory/proofs/` (theory-side writeups paired with manuscript v0.2 / v0.3 commitments):**
 
 - [`theory/proofs/estimator.md`](theory/proofs/estimator.md) — open_questions §3. Coverage theorem + 27-cell empirical table; estimator-default decision (percentile / DeLong-for-AUC / BCa opt-in).
 - [`theory/proofs/sample_size.md`](theory/proofs/sample_size.md) — open_questions §2. (S1) / (S3) / (S4) formulas + numerical tables + empirical validation; surfaces a v0.3 manuscript correction on AUC-task default `ε`.
