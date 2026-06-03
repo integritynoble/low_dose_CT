@@ -449,7 +449,7 @@ With per-arm SD $\sigma$ and cross-arm correlation $\rho$, $\sigma_\Delta^2 = 2 
     n_{\text{AUC}} \;\geq\; \left(\frac{z_{1-\alpha/2}}{\varepsilon}\right)^{\!2} \cdot 4 s^2.
     \label{eq:sample_size_auc}
 \end{equation}
-At $\rho = 0.5$ on a binormal model, empirical $s$ values are approximately $s \approx 0.20, 0.15, 0.08$ at AUC $\approx 0.85, 0.92, 0.97$ respectively (full table and derivation in [\texttt{theory/proofs/sample\_size.md}]). Substituting in~\eqref{eq:sample_size_auc} gives the **AUC-task default $(\varepsilon = 0.05, \alpha = 0.05)$**, which yields $n \approx 130$--$250$ across the typical operating range --- comfortably within the WS-1 PWM-LDCT cohort. For Dice, MAE, and per-patient contrast-recovery (where $\hat\Delta$ is a sample-mean estimator and~\eqref{eq:sample_size_general} applies directly), the canonical default is $\varepsilon = 0.02$; users with a clinical argument for a tighter or looser margin can specify it, and the library will require the corresponding $n$. A finite-sample Bernstein correction (strictly more conservative than~\eqref{eq:sample_size_general}) is documented in Supplementary Section~\todo{supp section} and in [\texttt{theory/proofs/sample\_size.md}] §4.
+At $\rho = 0.5$ on a binormal model, empirical $s$ values are approximately $s \approx 0.20, 0.15, 0.08$ at AUC $\approx 0.85, 0.92, 0.97$ respectively (full table and derivation in [\texttt{theory/proofs/sample\_size.md}]). Substituting in~\eqref{eq:sample_size_auc} gives the **AUC-task default $(\varepsilon = 0.05, \alpha = 0.05)$**, which yields $n \approx 130$--$250$ across the typical operating range --- comfortably within the WS-1 PWM-LDCT cohort. For Dice, MAE, and per-patient contrast-recovery (where $\hat\Delta$ is a sample-mean estimator and~\eqref{eq:sample_size_general} applies directly), the canonical default is $\varepsilon = 0.02$; users with a clinical argument for a tighter or looser margin can specify it, and the library will require the corresponding $n$. A finite-sample Bernstein correction (strictly more conservative than~\eqref{eq:sample_size_general}) is documented in Supplementary Section~\ref{supp:bernstein} and in [\texttt{theory/proofs/sample\_size.md}] §4.
 
 \paragraph{Estimator defaults.} The percentile bootstrap is the library's default for general metrics. For paired AUC, the closed-form DeLong test (DeLong, DeLong \& Clarke-Pearson 1988) is auto-selected: in 27-cell coverage simulations under the truly-equivalent null ($\Delta = 0$) at AUC $\in \{0.85, 0.92, 0.97\}$ and $n \in \{100, 200, 500\}$, DeLong is mildly conservative (median coverage $\approx 0.96$) and approximately $300\times$ faster than the bootstrap variants --- a strict improvement over percentile in the AUC case. The bias-corrected accelerated (BCa) variant remains available as an opt-in; under the null it does not robustly outperform percentile (in the same 27-cell sweep BCa coverage falls below the nominal $0.95$ at AUC $\geq 0.92$, $n = 100$), so we do not default to it. Full coverage table and the estimator-default justification are in [\texttt{theory/proofs/estimator.md}], backed by the seed-reproducible simulation in [\texttt{experiments/estimator\_coverage/}].
 
@@ -525,7 +525,7 @@ The exact test-split manifest hashes used for every credential in this paper are
 
 \section{Code availability}
 
-The signal-equivalence library, \texttt{pwm\_dose\_equivalence}, is released under Apache 2.0 at \url{https://pypi.org/project/pwm_dose_equivalence/} (pip-installable); source repository at \url{https://github.com/integritynoble/low_dose_CT/tree/main/WS-2_framework/pwm_dose_equivalence/}; documentation at \url{https://pwm-dose-equivalence.readthedocs.io/}. The exact library version used for every credential in this paper is \todo{pinned-version-at-submission}. All scripts, configuration files, tutorial notebooks, and Docker images required to reproduce each table and figure are at \url{https://github.com/integritynoble/low_dose_CT/tree/main/WS-2_framework}. The CI pipeline that runs every reproducibility test on every commit is at \url{https://github.com/integritynoble/low_dose_CT/actions}.
+The signal-equivalence library, \texttt{pwm\_dose\_equivalence}, is released under Apache 2.0 at \url{https://pypi.org/project/pwm_dose_equivalence/} (pip-installable); source repository at \url{https://github.com/integritynoble/low_dose_CT/tree/main/WS-2_framework/pwm_dose_equivalence/}; documentation at \url{https://pwm-dose-equivalence.readthedocs.io/}. The exact library version used for every credential in this paper is \texttt{pwm\_dose\_equivalence==0.1.0} (released against credential schema \texttt{pwm-signal-equivalence/v0.2}; will be pinned to the journal-acceptance release at submission). All scripts, configuration files, tutorial notebooks, and Docker images required to reproduce each table and figure are at \url{https://github.com/integritynoble/low_dose_CT/tree/main/WS-2_framework}. The CI pipeline that runs every reproducibility test on every commit is at \url{https://github.com/integritynoble/low_dose_CT/actions}.
 
 %% =====================================================================
 \section*{Reporting Summary}
@@ -545,5 +545,77 @@ A Nature Methods Reporting Summary --- using the format current at submission, c
 %% =====================================================================
 \bibliographystyle{plainnat}
 \bibliography{refs}
+
+%% =====================================================================
+%% Supplementary Information
+%% =====================================================================
+\clearpage
+\appendix
+\renewcommand{\thesection}{S\arabic{section}}
+\setcounter{section}{0}
+
+\section{Bernstein finite-sample correction to the sample-size formula}
+\label{supp:bernstein}
+
+The leading-order sample-size bound (Equation~\eqref{eq:sample_size_general} in the main text) is an asymptotic-normal approximation. For credentials issued at small $n$ (say $n < 100$) the asymptotic regime is shaky and a finite-sample bound is appropriate. This section derives the Bernstein-type bound the library reports alongside (S1).
+
+\subsection{Setup}
+
+Let $\Delta_1, \ldots, \Delta_n$ be i.i.d.\ random variables with $\mathbb{E}[\Delta_k] = \mu_\Delta$, $\operatorname{Var}(\Delta_k) = \sigma_\Delta^2$, and $|\Delta_k - \mu_\Delta| \leq M$ almost surely. For task metrics bounded in $[0, 1]$ (AUC, Dice, normalised contrast-recovery), the per-patient difference $\Delta_k = a_k - b_k$ satisfies $|\Delta_k| \leq 1$, so $M = 1$ is a defensible default; for unbounded metrics (e.g.\ MAE on Hounsfield-unit images) $M$ must be specified by the user.
+
+\subsection{Bernstein's inequality}
+
+Bernstein's inequality (see, e.g., Boucheron, Lugosi \& Massart 2013, Theorem 2.10) states that for $t > 0$,
+\begin{equation}
+    \Pr\!\left[\,\left|\bar\Delta_n - \mu_\Delta\right| > t\,\right]
+    \;\leq\; 2 \exp\!\left(\,-\frac{n t^2}{2 \sigma_\Delta^2 + \tfrac{2 M t}{3}}\,\right).
+    \label{eq:bernstein}
+\end{equation}
+
+\subsection{Substitution at $t = \varepsilon$}
+
+We require the right-hand side of~\eqref{eq:bernstein} to be at most $\alpha$. Setting $t = \varepsilon$ and rearranging,
+\begin{equation}
+    \boxed{\;n_{\text{Bernstein}} \;\geq\; \log\!\left(\tfrac{2}{\alpha}\right) \cdot \frac{2\sigma_\Delta^2 + \tfrac{2 M \varepsilon}{3}}{\varepsilon^2}.\;}
+    \label{eq:S4}
+\end{equation}
+
+This is~(S4) from the proofs document. The structure has two interpretable terms:
+
+\begin{itemize}
+    \item \textit{Variance term} $2 \sigma_\Delta^2$: dominates when the per-patient differences are noisy relative to the margin. At the canonical $\alpha = 0.05$, $\log(2/\alpha) \approx 3.689$, so the variance-only Bernstein requirement is $\sim 3.689 \cdot 2 \sigma_\Delta^2 / \varepsilon^2 = 7.378 \sigma_\Delta^2 / \varepsilon^2$, which exceeds the CLT bound $z_{0.975}^2 \sigma_\Delta^2 / \varepsilon^2 \approx 3.842 \sigma_\Delta^2 / \varepsilon^2$ by a factor of $\approx 1.92$. This factor-of-two is the price Bernstein pays for being a finite-sample guarantee, not an asymptotic one.
+    \item \textit{Bound term} $\tfrac{2 M \varepsilon}{3}$: dominates when the per-patient differences are nearly deterministic relative to the margin. At $\varepsilon = 0.05$ and $M = 1$, the term equals $0.0333$, which is comparable to $2\sigma_\Delta^2$ at $\sigma_\Delta \approx 0.13$.
+\end{itemize}
+
+\subsection{Numerical comparison to (S1)}
+
+At the canonical AUC operating point $(\varepsilon = 0.05, \alpha = 0.05, M = 1, \sigma_\Delta = 0.10)$:
+
+\begin{table}[h]
+    \centering
+    \begin{tabular}{lr}
+        \toprule
+        \textbf{Formula} & \textbf{$n_{\min}$} \\
+        \midrule
+        (S1) Asymptotic CLT (Eq.~\ref{eq:sample_size_general})         & $\geq 16$ \\
+        (S4) Bernstein finite-sample (Eq.~\ref{eq:S4})                 & $\geq 50$ \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+At $(\varepsilon = 0.02, \sigma_\Delta = 0.10)$ the ratio widens further: (S1) gives $n \geq 97$ vs (S4) $n \geq 308$. The widening is consistent: as $\varepsilon$ shrinks, Bernstein's bound term contribution shrinks linearly while the variance term contribution remains fixed, and the leading prefactor of $\log(2/\alpha) / z_{1-\alpha/2}^2 \approx 0.96$ on the variance term combined with the factor of $2$ on $\sigma_\Delta^2$ gives the asymptotic ratio of $\approx 1.92$.
+
+\subsection{Library behaviour and practical guidance}
+
+The \texttt{pwm\_dose\_equivalence} library computes both~(S1) and~(S4) when a $\sigma_\Delta$ hint is supplied and reports both in the credential's \texttt{sample\_size\_check} field. The library emits a Bernstein-explicit note when the observed $n$ falls below~(S4) but above~(S1) --- this is the regime where the credential is asymptotically valid but does not have a finite-sample guarantee, and a reviewer may want to know which discipline the credential was issued under.
+
+We recommend reporting the (S1) bound as the operational $n$-target for credentials at $n \geq 100$, and (S4) as the operational target for credentials at $n < 100$. The framework remains parametric in the user's choice: the canonical defaults are suggestions, not constraints.
+
+\subsection{Caveats}
+
+\begin{itemize}
+    \item Bernstein's inequality requires $|\Delta_k - \mu_\Delta| \leq M$ almost surely. For unbounded metrics this is not satisfied; in that case Hoeffding's inequality with sub-Gaussian or sub-exponential moment conditions applies, with the same general structure but a different bound term. Users specifying unbounded metrics should pass $M = \infty$ to the library, which then reports only the (S1) CLT bound.
+    \item For paired AUC, $\bar\Delta_n$ is a U-statistic rather than a sample mean. Bernstein's inequality for U-statistics (see Hoeffding 1948; Arcones \& Giné 1993) gives a structurally similar bound with $M$ replaced by the maximum placement-difference; the factor of $4$ in (S3) carries through. The (S4) bound as stated is therefore loose for AUC; users with $n < 100$ and AUC tasks should use the DeLong closed-form CI (which has a finite-sample variance estimator) rather than rely on (S4).
+\end{itemize}
 
 \end{document}
