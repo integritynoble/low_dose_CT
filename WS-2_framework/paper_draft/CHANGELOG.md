@@ -37,6 +37,10 @@ The remaining placeholders are all submission-time fields; no further v0.3-level
 
 V3-9 closes the second deliverable of §3 (non-null power), leaving §1 (literature depth-pass — external) and §5 (monotonicity *empirical* check — gated on Phase 1 pilot) as the only open theory items. All BLOCK items are now fully done. The recommendation in `proofs/estimator.md` §6 ("estimator-default decision survives under both null coverage and non-null power") is the new theory-side anchor for the v0.3 manuscript's §methods-estimator "Estimator defaults" paragraph; the cohort-sizing implication is the new theory-side anchor for the §sample-size paragraph.
 
+### Downstream-doc propagation
+
+The V3-9 cohort-sizing finding was propagated into the WS-1 README's WS-2 cross-reference entry (commit `d0569f3`): the prior "(S3) formula is met → cohort is comfortably sized" framing was sharpened with the empirical verdict-distribution evidence. The new note tells downstream WS-1 users to **expect `INDETERMINATE` verdicts on the v0.5 cohort even for genuinely equivalent methods** at AUC ≈ 0.92 / n ≈ 200, and that **absence of `PASS` is not evidence of non-equivalence** — only of insufficient n (P(`PASS`) under the null is ≈ 0.40 at n = 200, lifting to ≈ 0.94 at n = 500). The (S3) formula and the V3-9 power simulation are consistent — they just answer different questions, and the WS-1 cross-reference now surfaces both. The WS-2 README was correspondingly refreshed at D9 + 14 across the status pin, Phase 2.2 status, Timeline, Subfolders proofs/ + experiments/ rows, Cross-references, and the "Done when" intermediate D9 + 14 sub-block (commits `b301b04`, `964e8c0`).
+
 ---
 
 ## v0.3 — 2026-06-03 (D9 + 14)
