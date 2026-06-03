@@ -10,6 +10,65 @@ reviewer-readiness audit posted in the 2026-06-01 working session.
 
 ---
 
+## v0.3 — in flight (D9 + 13 → D9 + 14, 2026-06-02 → 2026-06-03)
+
+**The manuscript text itself is unchanged since v0.2.** This section records the supporting artifacts that landed at D9 + 13 / D9 + 14 and the v0.3 manuscript edits those artifacts now make actionable. v0.3 will be cut when the listed edits are applied to `manuscript.tex` and the credential `schema_version` bumps (if any schema-breaking edits land).
+
+### Theory landings
+
+| Artifact | `open_questions.md` ref | Commit | What landed |
+|---|---|---|---|
+| [`theory/proofs/mri_mask.md`](../theory/proofs/mri_mask.md) | §7 (BLOCK MRI) | `526baaa` | Records option (c): `mask_family` rides inside Π as acquisition-protocol metadata, preserving the 5-tuple shape. Manuscript-side already adopted via A3 / clarification C5; this is the theory-side anchor. |
+| [`theory/proofs/pet_reduction.md`](../theory/proofs/pet_reduction.md) | §8 (SHARPEN) | `526baaa` | Canonicalises activity-reduction as the v1 PET `T_r`; scan-time reduction is documented as v2. Surfaces a footnote item for Table 1 row 3. |
+| [`theory/proofs/composition.md`](../theory/proofs/composition.md) | §4 (DEFER) | `526baaa` | Negative-result note: no clean composition law; framework is point-evaluated by design. Theory-side mirror of manuscript Discussion §"Point-evaluated by design". |
+| [`theory/proofs/estimator.md`](../theory/proofs/estimator.md) | §3 (BLOCK) | `44a58f0` | Theorem statement (cites Efron 1979, Bickel–Freedman 1981); 27-cell empirical coverage table; estimator-default decision: **percentile** for general use, **DeLong** auto-selected for AUC tasks (~300× faster with mild conservativeness), **BCa opt-in only** (does not robustly beat percentile under the null). The v0.1 manuscript hedge "library defaults to BCa for AUC > 0.95" is **withdrawn**. |
+| [`theory/proofs/sample_size.md`](../theory/proofs/sample_size.md) | §2 (BLOCK) | `e3c1ee2` | (S1) general CLT formula + (S3) paired-AUC DeLong specialisation + (S4) Bernstein finite-sample correction; numerical tables at canonical operating points; empirical validation against the §3 simulation. **Surfaces a v0.3 manuscript correction** — see *Triggered manuscript edits* below. |
+| [`experiments/estimator_coverage/`](../experiments/estimator_coverage/) | §3 backing | `44a58f0` | 27-cell coverage simulation (AUC × n × CI variant), seed = 42; ~35 min wall time; `results.json` committed. |
+
+### Library landings
+
+| Artifact | Commit | What landed |
+|---|---|---|
+| [`pwm_dose_equivalence/`](../pwm_dose_equivalence/) v0.1.0 alpha | `0836162` (scaffold) + `e18121f` (gitignore) | Pip-installable package: modality-agnostic `signal_equivalence_credential` API; percentile + DeLong estimators with the v0.3 defaults baked in; (S1) / (S3) / (S4) sample-size pre-flight; content-addressed framework hash; `Tr_ct` / `Tr_mri` / `Tr_pet` operators consistent with the proofs writeups. |
+| Same, test suite | `3a4b0f1` (coverage) + `909d505` (README number bumps) | **60/60 tests pass; 100 % line coverage** (230/230 statements). Well above the manuscript §software_rigor's 90 % v0.2 floor. Includes regression tests for the (S1)/(S3) numerical-table values, the estimator coverage-under-null, the verdict logic, and every documented `ValueError` branch in the public API. |
+
+### Triggered manuscript edits (v0.2 → v0.3, pending)
+
+These are the manuscript-text changes the landings above *make actionable*. Each is a small targeted edit; together they constitute v0.3.
+
+1. **AUC-task default `ε` correction.** `proofs/sample_size.md` §5 shows that the v0.1 hedge "n ≥ 192 for ε = 0.02, α = 0.05" was wrong — the implicit parameterisation took σ as a per-arm AUC SD, not the DeLong placement-difference SD. At realistic placement variances, ε = 0.02 needs n ≈ 1500 at AUC = 0.85. **Action:** in §methods-estimator the canonical AUC default should become ε = 0.05 (n ≈ 130–250 across the AUC range — comfortably within the WS-1 v0.5 cohort of 208 unique paired patients); non-AUC metrics (Dice, MAE, contrast-recovery) keep ε = 0.02 as the recommended default. The framework remains parametric in ε.
+2. **Estimator-default text rewrite.** The v0.2 §methods-estimator paragraph "library defaults to BCa in this regime with an explicit warning" should be replaced with: "library defaults to DeLong for AUC tasks (300× faster than the bootstrap variants in our coverage simulations) and to percentile bootstrap otherwise; BCa is opt-in." Cite [`theory/proofs/estimator.md`](../theory/proofs/estimator.md) for the empirical justification.
+3. **Software-rigor numbers.** §software_rigor currently carries `\todo{$N_{\textrm{tests}}$}`, `\todo{$N_{\textrm{integ}}$}`, `\todo{≥ 90 %}`, and `\todo{0.1.0}` placeholders. Action: fill with 60 unit tests, 0 integration tests (the suite is unit-only at v0.1.0 alpha; integration tests land at v0.2.0 alongside BCa), 100 % line coverage on 230 statements, and `v0.1.0`. This closes audit item B5.
+4. **PET Table 1 footnote.** `proofs/pet_reduction.md` §3 recommends a one-line footnote on Methods Table 1 row 3 ("Poisson-thinning of list-mode counts at rate `r`") clarifying that the canonical operator is *activity-reduction*; scan-time reduction is out-of-scope for v1.
+5. **Cross-link the proofs.** Methods §estimator, §framework, and Discussion §"Point-evaluated by design" should pick up explicit `\citep{}`/footnote references to `theory/proofs/{estimator,sample_size,mri_mask,pet_reduction,composition}.md` so the manuscript signposts the theory-side anchors. (Optional; sharpens but not strictly required.)
+
+### Schema (unchanged at v0.3-in-flight)
+
+Credential JSON `schema_version` remains `pwm-signal-equivalence/v0.2`. None of the triggered edits above change the credential schema; they change defaults and prose. A schema bump would only happen if a v0.3 edit adds a new field or renames an existing one (none are currently planned).
+
+### `open_questions.md` table — re-priority after D9 + 14
+
+| § | Was | Now |
+|---|---|---|
+| §1 Literature depth-pass | SHARPEN, 1.5 wk | **still pending** — genuinely external work (reading specific papers) |
+| §2 Sample-size formula | BLOCK, 2.0 wk | **done** — `proofs/sample_size.md` |
+| §3 Estimator validity | BLOCK, 1.5 wk | **done (null only)** — `proofs/estimator.md`; non-null power sim is the follow-up |
+| §4 Composition law | DEFER, 0.5 wk | **done** — `proofs/composition.md` |
+| §5 Conditional monotonicity | SHARPEN, 1.0 wk | **still pending** — best after Phase 1 pilot data lands |
+| §6 Per-patient guidance | SHARPEN, 0.5 wk | **done at manuscript level** (Definition 2 opt-in; Discussion paragraph) |
+| §7 MRI mask decision | BLOCK MRI, 1.0 wk | **done** — `proofs/mri_mask.md` |
+| §8 PET model | SHARPEN, 0.5 wk | **done** — `proofs/pet_reduction.md` |
+| §9 Multi-task aggregation | DEFER (v2 acknowledgment) | unchanged |
+| §10 Cross-subpopulation | DEFER (v2 acknowledgment) | unchanged |
+
+Effort accounting: of the ~8 weeks of theory work originally scheduled, ~5.5 weeks closed across D9 + 13 / D9 + 14. The remaining items (§1 depth-pass; §5 monotonicity) are genuinely externally gated, not theory-time-blocked.
+
+### Theory-doc lag (narrowed but not closed)
+
+`theory/dose-equivalence-framework.md` still at **v0.1**. The gap to v0.2 is now narrowed to the literature depth-pass: the manuscript-side commitments that the proofs writeups anchored (Π-as-metadata; population-vs-sample evidence; estimator defaults; composition as non-derivable; activity-reduction-as-canonical-PET-`T_r`) are all consistent across (manuscript v0.2 + proofs/*.md v0.1), and a future theory-doc v0.2 will incorporate them with the depth-pass reading in the same pass.
+
+---
+
 ## v0.2 — 2026-06-01
 
 Seven pure-text edits + one synthetic experiment, all done before any Phase 1
