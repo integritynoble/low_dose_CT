@@ -10,9 +10,9 @@ reviewer-readiness audit posted in the 2026-06-01 working session.
 
 ---
 
-## v0.3 — in flight (D9 + 13 → D9 + 14, 2026-06-02 → 2026-06-03)
+## v0.3 — 2026-06-03 (D9 + 14)
 
-**The manuscript text itself is unchanged since v0.2.** This section records the supporting artifacts that landed at D9 + 13 / D9 + 14 and the v0.3 manuscript edits those artifacts now make actionable. v0.3 will be cut when the listed edits are applied to `manuscript.tex` and the credential `schema_version` bumps (if any schema-breaking edits land).
+v0.3 applies the five manuscript edits triggered by the D9 + 13 / D9 + 14 theory-and-library pass. The supporting artifacts (proofs writeups + library) had already landed; v0.3 is the manuscript-side propagation of their consequences. PDF rebuilds at 19 pages (same length as v0.2 — the new prose displaces the corrected hedges rather than adding to them).
 
 ### Theory landings
 
@@ -32,19 +32,21 @@ reviewer-readiness audit posted in the 2026-06-01 working session.
 | [`pwm_dose_equivalence/`](../pwm_dose_equivalence/) v0.1.0 alpha | `0836162` (scaffold) + `e18121f` (gitignore) | Pip-installable package: modality-agnostic `signal_equivalence_credential` API; percentile + DeLong estimators with the v0.3 defaults baked in; (S1) / (S3) / (S4) sample-size pre-flight; content-addressed framework hash; `Tr_ct` / `Tr_mri` / `Tr_pet` operators consistent with the proofs writeups. |
 | Same, test suite | `3a4b0f1` (coverage) + `909d505` (README number bumps) | **60/60 tests pass; 100 % line coverage** (230/230 statements). Well above the manuscript §software_rigor's 90 % v0.2 floor. Includes regression tests for the (S1)/(S3) numerical-table values, the estimator coverage-under-null, the verdict logic, and every documented `ValueError` branch in the public API. |
 
-### Triggered manuscript edits (v0.2 → v0.3, pending)
+### Landed (manuscript-side propagation of the D9 + 13 / D9 + 14 landings)
 
-These are the manuscript-text changes the landings above *make actionable*. Each is a small targeted edit; together they constitute v0.3.
+| ID | What changed | Why |
+|---|---|---|
+| **V3-1** | **AUC-task default `ε` correction.** §methods-estimator rewritten with the corrected (S1) general CLT formula and the (S3) paired-AUC specialisation in terms of the DeLong placement-difference SD. The four end-to-end AUC code-block instances of `epsilon=0.02` (lung-nodule-AUC case study + Discussion sentence + §methods-library API showcase) bumped to `epsilon=0.05`; the API showcase comment now says "AUC default; 0.02 for non-AUC metrics". Reproducible n ≈ 130–250 across the typical AUC operating range — comfortably within the WS-1 v0.5 cohort. Non-AUC metrics keep ε = 0.02. | `proofs/sample_size.md` §5: the v0.1 hedge "n ≥ 192 for ε = 0.02" was wrong (took σ as per-arm AUC SD instead of DeLong placement-difference SD); at realistic placement variances, ε = 0.02 needs n ≈ 1500 at AUC = 0.85. |
+| **V3-2** | **Estimator-default text rewrite.** Replaced the §methods-estimator "Coverage of percentile CIs near boundary" paragraph (which recommended BCa for AUC > 0.95 with `n < 200`) with a new "Estimator defaults" paragraph: percentile is the default; DeLong is auto-selected when `task.metric == "auc"` (mildly conservative; $\sim 300\times$ faster than the bootstrap variants); BCa remains opt-in. Discussion §"Estimator failure modes" softened the v0.2 "the library defaults to BCa in this regime with an explicit warning" to the new DeLong-and-MC-SE language. | `proofs/estimator.md` §3.2: BCa coverage at AUC = 0.97 / $n = 100$ is $0.900$ vs percentile $0.935$. BCa does not robustly outperform percentile under the null. |
+| **V3-3** | **B5 software-rigor numbers.** Filled four `\todo` placeholders in §software_rigor: 60 unit tests (integration tests land at v0.2.0 alongside BCa); 100 % line coverage on 230 statements; current version `0.1.0` (alpha). Test inventory rewritten to match the actual v0.1.0 test suite (percentile + DeLong coverage; sample-size formulas vs numerical-table values; `T_r` operator invariants including NaN sentinel; JSON round-trip + framework-hash stability; verdict logic at boundaries; mode-misuse / sample-size-warning / ValueError branches). | Library at v0.1.0 alpha now exists with 60/60 tests passing at 100 % coverage; the placeholders had no reason to remain. Closes audit item B5. |
+| **V3-4** | **PET Table 1 footnote.** Added a footnote on Methods Table 1 row 3 clarifying that the canonical PET `$T_r$` for v1 is *activity reduction*; *scan-time reduction* at full activity is statistically equivalent at the level of total counts but not physically equivalent (motion blur, kinetic modelling differ) and is documented as a v2 distinction. Footnote cites `experiments/cross_modality_consistency/` and `theory/proofs/pet_reduction.md`. | `proofs/pet_reduction.md` §3 explicitly recommended this footnote. |
+| **V3-5** | **Cross-link the proofs.** Added inline pointers in §framework (to `proofs/mri_mask.md`, on the subpopulation-as-acquisition-protocol-bearing-measure paragraph) and Discussion §"Point-evaluated by design" (to `proofs/composition.md`, on the algebraic-combination-not-derivable paragraph). The §methods-estimator "Sample-size formula" and "Estimator defaults" paragraphs (V3-1 / V3-2) already cite `proofs/sample_size.md` and `proofs/estimator.md` inline. The PET Table 1 footnote (V3-4) cites `proofs/pet_reduction.md`. | Signposting the theory-side anchors so a reader/reviewer can pull the supporting derivations without leaving the manuscript text-flow. |
 
-1. **AUC-task default `ε` correction.** `proofs/sample_size.md` §5 shows that the v0.1 hedge "n ≥ 192 for ε = 0.02, α = 0.05" was wrong — the implicit parameterisation took σ as a per-arm AUC SD, not the DeLong placement-difference SD. At realistic placement variances, ε = 0.02 needs n ≈ 1500 at AUC = 0.85. **Action:** in §methods-estimator the canonical AUC default should become ε = 0.05 (n ≈ 130–250 across the AUC range — comfortably within the WS-1 v0.5 cohort of 208 unique paired patients); non-AUC metrics (Dice, MAE, contrast-recovery) keep ε = 0.02 as the recommended default. The framework remains parametric in ε.
-2. **Estimator-default text rewrite.** The v0.2 §methods-estimator paragraph "library defaults to BCa in this regime with an explicit warning" should be replaced with: "library defaults to DeLong for AUC tasks (300× faster than the bootstrap variants in our coverage simulations) and to percentile bootstrap otherwise; BCa is opt-in." Cite [`theory/proofs/estimator.md`](../theory/proofs/estimator.md) for the empirical justification.
-3. **Software-rigor numbers.** §software_rigor currently carries `\todo{$N_{\textrm{tests}}$}`, `\todo{$N_{\textrm{integ}}$}`, `\todo{≥ 90 %}`, and `\todo{0.1.0}` placeholders. Action: fill with 60 unit tests, 0 integration tests (the suite is unit-only at v0.1.0 alpha; integration tests land at v0.2.0 alongside BCa), 100 % line coverage on 230 statements, and `v0.1.0`. This closes audit item B5.
-4. **PET Table 1 footnote.** `proofs/pet_reduction.md` §3 recommends a one-line footnote on Methods Table 1 row 3 ("Poisson-thinning of list-mode counts at rate `r`") clarifying that the canonical operator is *activity-reduction*; scan-time reduction is out-of-scope for v1.
-5. **Cross-link the proofs.** Methods §estimator, §framework, and Discussion §"Point-evaluated by design" should pick up explicit `\citep{}`/footnote references to `theory/proofs/{estimator,sample_size,mri_mask,pet_reduction,composition}.md` so the manuscript signposts the theory-side anchors. (Optional; sharpens but not strictly required.)
+### Status changes
 
-### Schema (unchanged at v0.3-in-flight)
-
-Credential JSON `schema_version` remains `pwm-signal-equivalence/v0.2`. None of the triggered edits above change the credential schema; they change defaults and prose. A schema bump would only happen if a v0.3 edit adds a new field or renames an existing one (none are currently planned).
+- Manuscript header status comment + `\date{}` bumped from v0.2 to v0.3.
+- Credential JSON `schema_version` unchanged at `pwm-signal-equivalence/v0.2` (none of V3-1 .. V3-5 change the JSON schema).
+- PDF rebuilds at 19 pages (same length as v0.2).
 
 ### `open_questions.md` table — re-priority after D9 + 14
 

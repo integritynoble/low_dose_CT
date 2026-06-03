@@ -2,7 +2,7 @@
 
 **Target venue:** *Nature Methods* — primary.
 **Fallback:** *IEEE Transactions on Medical Imaging* / *Medical Image Analysis*.
-**Status:** v0.2 working draft. See [`CHANGELOG.md`](CHANGELOG.md) for the v0.1 → v0.2 delta.
+**Status:** v0.3 working draft. See [`CHANGELOG.md`](CHANGELOG.md) for the v0.1 → v0.2 → v0.3 deltas.
 
 ## Files
 
