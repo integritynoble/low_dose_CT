@@ -82,24 +82,73 @@ Simulation setup ([`experiments/estimator_coverage/coverage_sim.py`](../../exper
 
 ---
 
+## 4a. Non-null verdict distribution (power simulation)
+
+The coverage table in §2 establishes that under the truly-equivalent null ($\Delta_{\text{true}} = 0$) the CI's coverage of $0$ is close to the nominal $1 - \alpha$. But coverage is about the CI's containment of the true value, *not* about the framework's verdict (`PASS` / `FAIL` / `INDETERMINATE`). A CI that correctly covers $0$ but is wider than $(-\varepsilon, \varepsilon)$ produces an `INDETERMINATE` verdict, not `PASS`. Conversely, the framework's *power* — the probability of correctly rejecting equivalence when $|\Delta_{\text{true}}| > \varepsilon$ — is a separate property worth measuring.
+
+The companion simulation in [`experiments/estimator_coverage/power_sim.py`](../../experiments/estimator_coverage/power_sim.py) does this. Setup: paired binormal classification with method A's positive-class mean shifted to give a target AUC offset $\Delta_{\text{AUC,true}} \in \{0.00, 0.05, 0.10\}$ relative to method B; $\rho = 0.5$; AUC$_b \in \{0.85, 0.92\}$; $n \in \{200, 500\}$; $\varepsilon = 0.05$, $\alpha = 0.05$; $T = 200$ trials per cell. Verdict-distribution table at seed = 42:
+
+| AUC$_b$ | $\Delta_{\text{true}}$ | $n$ | Estimator | P(`PASS`) | P(`FAIL`) | P(`INDET`) |
+|---:|---:|---:|---|---:|---:|---:|
+| 0.85 | 0.00 | 200 | percentile | 0.010 | 0.000 | 0.990 |
+| 0.85 | 0.00 | 200 | delong     | 0.005 | 0.000 | 0.995 |
+| 0.85 | 0.00 | 500 | percentile | 0.615 | 0.000 | 0.385 |
+| 0.85 | 0.00 | 500 | delong     | 0.605 | 0.000 | 0.395 |
+| 0.85 | 0.05 | 200 | percentile | 0.005 | 0.025 | 0.970 |
+| 0.85 | 0.05 | 200 | delong     | 0.015 | 0.005 | 0.980 |
+| 0.85 | 0.05 | 500 | percentile | 0.025 | 0.030 | 0.945 |
+| 0.85 | 0.05 | 500 | delong     | 0.030 | 0.020 | 0.950 |
+| 0.85 | 0.10 | 200 | percentile | 0.000 | 0.580 | 0.420 |
+| 0.85 | 0.10 | 200 | delong     | 0.000 | 0.520 | 0.480 |
+| 0.85 | 0.10 | 500 | percentile | 0.000 | 0.890 | 0.110 |
+| 0.85 | 0.10 | 500 | delong     | 0.000 | 0.905 | 0.095 |
+| 0.92 | 0.00 | 200 | percentile | 0.390 | 0.000 | 0.610 |
+| 0.92 | 0.00 | 200 | delong     | 0.410 | 0.000 | 0.590 |
+| 0.92 | 0.00 | 500 | percentile | 0.935 | 0.000 | 0.065 |
+| 0.92 | 0.00 | 500 | delong     | 0.940 | 0.000 | 0.060 |
+| 0.92 | 0.05 | 200 | percentile | 0.035 | 0.030 | 0.935 |
+| 0.92 | 0.05 | 200 | delong     | 0.025 | 0.005 | 0.970 |
+| 0.92 | 0.05 | 500 | percentile | 0.030 | 0.040 | 0.930 |
+| 0.92 | 0.05 | 500 | delong     | 0.045 | 0.015 | 0.940 |
+| 0.92 | 0.10 | 200 | percentile | 0.000 | 1.000 | 0.000 |
+| 0.92 | 0.10 | 200 | delong     | 0.000 | 1.000 | 0.000 |
+| 0.92 | 0.10 | 500 | percentile | 0.000 | 1.000 | 0.000 |
+| 0.92 | 0.10 | 500 | delong     | 0.000 | 1.000 | 0.000 |
+
+### Reading the power table
+
+**4a.1. The framework conservatively returns INDETERMINATE rather than over-committing.** Under the null at $n = 200$ and AUC = 0.85, P(`PASS`) is only ~0.01 — almost every trial produces `INDETERMINATE` because the CI half-width (~0.055 at this AUC and $n$) is wider than $\varepsilon = 0.05$. This is the *correct* behaviour: the framework refuses to call equivalence when the evidence does not exceed the design specification. The "missing" verdicts are absorbed into `INDETERMINATE`, not into false `PASS` (P(`PASS`) is bounded above by ~0.05 in any null cell, matching the nominal $\alpha$).
+
+**4a.2. At realistic operating points the framework PASSes cleanly under the null.** AUC = 0.92, $n = 500$ — close to the WS-1 v0.5 cohort + a typical lung-nodule AUC operating point — gives P(`PASS`) = 0.94 under the null, matching nominal $1 - \alpha = 0.95$. The framework's coverage *and* its calibration both hold at this operating point.
+
+**4a.3. Power at $2\varepsilon$ is excellent at the realistic operating point.** At $\Delta_{\text{true}} = 0.10 = 2\varepsilon$ (a "clear non-equivalence" deviation), P(`FAIL`) reaches $1.00$ at AUC = 0.92 (any $n$ in the table) and $\approx 0.90$ at AUC = 0.85, $n = 500$. This is the framework's statistical *power*: a 10-percentage-point AUC degradation is rejected with high probability across the typical operating range.
+
+**4a.4. At the boundary $\Delta_{\text{true}} = \varepsilon$ the framework correctly refuses to commit.** Across all 8 boundary cells, `INDETERMINATE` accounts for $\geq 0.93$ of trials; P(`PASS`) and P(`FAIL`) each remain below $0.05$. This is the desired behaviour at the equivalence margin — a test that decisively called either direction at the boundary would be either anti-conservative (FAIL) or over-permissive (PASS).
+
+**4a.5. Percentile and DeLong agree closely on power.** At $\Delta_{\text{true}} = 0.10$, $n = 500$: percentile gives P(`FAIL`) = $\{0.890, 1.000\}$; DeLong gives $\{0.905, 1.000\}$ for AUC $\in \{0.85, 0.92\}$. Agreement to within 1.5 percentage points — and DeLong is again $\sim 300\times$ faster. The §4 default decision (DeLong for AUC) survives under non-null evaluation.
+
+### Cohort-sizing implication
+
+The non-null table sharpens the §3 cohort-sizing implication: the WS-1 v0.5 cohort of $n \approx 208$ is *exactly* in the regime where P(`PASS`) under the null is sensitive to the operating AUC. At AUC = 0.92 (the typical lung-nodule operating point), $n = 200$ gives P(`PASS`) = 0.40 under the null; expansion to $n \approx 500$ would lift this to $\approx 0.94$. Without that expansion, credentials issued at the v0.5 cohort should be expected to return `INDETERMINATE` rather than `PASS` even when the candidate is truly equivalent — *the absence of a `PASS` verdict is not evidence of non-equivalence*, only of insufficient $n$. This is the reading the manuscript v0.3 §methods-estimator paragraph and `proofs/sample_size.md` §5 jointly endorse.
+
+---
+
 ## 5. Caveats
 
-**5.1. Null only.** The coverage simulation evaluates only the truly-equivalent setting ($\Delta_{\text{true}} = 0$). Coverage under non-null $\Delta$ (i.e.\ a method that is genuinely not equivalent) is conceptually the same theorem but is what determines the framework's *power* to reject non-equivalence; that simulation is open_questions §3-second-deliverable and is not in this writeup.
+**5.1. AUC only.** Both the §2 coverage simulation and the §4a power simulation evaluate only the AUC metric. For Dice (MRI segmentation) and contrast-recovery (PET) the comparable checks are follow-ups; we expect qualitatively similar conclusions because the paired bootstrap is metric-agnostic, but the BCa-vs-percentile-vs-closed-form trade-offs may shift (Dice has no widely-used closed-form equivalent of DeLong).
 
-**5.2. AUC only.** The simulation evaluates only the AUC metric. For Dice (MRI segmentation) and contrast-recovery (PET) the comparable coverage check is a follow-up; we expect qualitatively similar conclusions because the paired bootstrap is metric-agnostic, but the BCa-vs-percentile-vs-closed-form trade-offs may shift (Dice has no widely-used closed-form equivalent of DeLong).
+**5.2. $T = 200$ trials.** Monte-Carlo SE on a probability estimate at $T = 200$ is $\approx \sqrt{p(1-p)/200}$ — at most $\approx 0.035$ for $p$ near $0.5$, and $\approx 0.015$ near the nominal $0.95$. Distinctions smaller than $\sim 0.03$ in the verdict-distribution table should be read with caution; the qualitative conclusions (percentile competitive; BCa not strictly better under null; DeLong fast and mildly conservative; framework conservatively INDET-s under small $n$; power $\to 1$ at $2\varepsilon$) survive at this SE.
 
-**5.3. $T = 200$ trials.** Monte-Carlo SE on coverage is ~0.015, so distinctions smaller than ~0.03 should be read with caution. The qualitative conclusions above (percentile competitive; BCa not strictly better under null; DeLong fast and mildly conservative) survive at this SE.
-
-**5.4. Cross-method correlation $\rho = 0.5$.** The synthetic setup fixes the across-method score correlation at the open-questions §2 default. Real CT lung-nodule scores between two reconstruction methods on the same scan are typically much more correlated (often $\rho > 0.85$). The bootstrap's variance estimate uses the empirical $\rho$ on the test set, so the coverage result generalises, but the relative ranking of methods at very high $\rho$ may compress the half-widths further than this simulation reports.
+**5.3. Cross-method correlation $\rho = 0.5$.** The synthetic setup fixes the across-method score correlation at the open-questions §2 default. Real CT lung-nodule scores between two reconstruction methods on the same scan are typically much more correlated (often $\rho > 0.85$), which *shrinks* the half-widths — at higher $\rho$ the cohort-sizing implications of §4a become more favourable (P(`PASS`) under the null grows faster with $n$). The bootstrap's variance estimate uses the empirical $\rho$ on the test set, so the qualitative conclusions generalise.
 
 ---
 
 ## 6. What this writeup is and is not
 
-**It is** the empirical-coverage anchor for the v0.2 manuscript's §methods-estimator paragraph on percentile / BCa / DeLong defaults. The decision recorded in §4 supersedes the v0.1-draft hedge on BCa.
+**It is** the empirical-coverage *and* empirical-power anchor for the v0.3 manuscript's §methods-estimator paragraph on estimator defaults. The decision recorded in §4 (DeLong default for AUC; percentile otherwise; BCa opt-in) is reaffirmed by the §4a power simulation. The cohort-sizing implication in §4a is the key new finding: the v0.5 WS-1 cohort is *exactly* in the regime where conservative INDETERMINATE outcomes are common even under the null.
 
-**It is not** the formal proof of paired-bootstrap consistency under the framework's specific assumptions (i.i.d.\ from $\Pi$; finite second moment of $\Delta$; content-addressed test set). Those reduce to the cited Efron 1979 and Bickel & Freedman 1981 results; reproducing the proofs here would be padding.
+**It is not** the formal proof of paired-bootstrap consistency under the framework's specific assumptions (i.i.d.\ from $\Pi$; finite second moment of $\Delta$; content-addressed test set). Those reduce to the cited Efron 1979 and Bickel & Freedman 1981 results; reproducing the proofs here would be padding. The §4a simulation does not extend to the Dice / contrast-recovery cases — those are follow-ups (§5.1).
 
 ---
 
-*v0.1 — 2026-06-02. Revise if either (a) the second-deliverable simulation under non-null $\Delta$ surfaces a regime where BCa beats percentile, or (b) the Dice / contrast-recovery coverage check finds a different ranking. Cross-reference the manuscript v0.3 update to keep the §methods-estimator paragraph aligned.*
+*v0.1 — 2026-06-02 (coverage). v0.2 — 2026-06-03 (D9 + 14): §4a non-null power table added, §5 caveats trimmed (the v0.1 "null only" caveat is now superseded), §6 closing reaffirmed.*
