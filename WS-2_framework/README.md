@@ -41,10 +41,10 @@ The framework's SHA-256 hash registers as an L2 specification on PWMRegistry whe
 
 ### Phase 1 — Phase A pilot (D9 + 60 → D9 + 90)
 
-| # | Task | Output | Status @ v0.2 |
+| # | Task | Output | Status @ v0.3 |
 |---|---|---|---|
 | 1.1 | Compute the 5-tuple credential for each of the 3 reproduced WS-3 baselines on AAPM 2016 + LIDC-IDRI | `validation/heyang_pilot_5_tuples.json` | pending (data-blocked on Phase 1 cohort) |
-| 1.2 | End-to-end implementability check — does the v0.1 definition survive contact with real data? | Decision: commit to v0.1 or revise before Phase 2 | **partial** — definition revised to v0.2 (A3 / A5 / B1 / B3 / A4 per [`paper_draft/CHANGELOG.md`](paper_draft/CHANGELOG.md)); empirical "survive contact" test still gated on 1.1 |
+| 1.2 | End-to-end implementability check — does the v0.1 definition survive contact with real data? | Decision: commit to v0.1 or revise before Phase 2 | **partial** — definition revised twice (v0.2: A3 / A5 / B1 / B3 / A4; v0.3: V3-1 / V3-2 / V3-4 / V3-5 propagating the proofs landings — per [`paper_draft/CHANGELOG.md`](paper_draft/CHANGELOG.md)); empirical "survive contact" test still gated on 1.1 |
 | 1.3 | Methodology memo: how the pilot computes the credential | `validation/methodology.md` | pending — manuscript Methods §Estimator now covers the protocol; pilot-specific memo gated on 1.1 |
 | 1.4 | Known limitations memo | `validation/known_limitations.md` | pending — manuscript Discussion §"Failure modes of the framework" covers the methodological limits; pilot-specific limitations gated on 1.1 |
 
@@ -52,7 +52,7 @@ The framework's SHA-256 hash registers as an L2 specification on PWMRegistry whe
 
 Per [`theory/open_questions.md`](theory/open_questions.md), 10 items prioritized BLOCK / SHARPEN / DEFER (~8 weeks total). Sequenced:
 
-| # | Open question | Priority | Effort (wk) | Status @ v0.2 |
+| # | Open question | Priority | Effort (wk) | Status @ v0.3 |
 |---|---|---|---|---|
 | 2.1 | §1 Literature pass (related-work memo + positioning) | SHARPEN | 1.5 | **seeded** — [`theory/related_work.md`](theory/related_work.md) v0.1 (3 TB-IQ + 2 statistical anchor cites + novelty-gate skeleton); manuscript intro carries TB-IQ positioning; depth-pass reading pending |
 | 2.2 | §3 Estimator validity / coverage simulations | BLOCK | 1.5 | **done @ D9 + 13** — [`theory/proofs/estimator.md`](theory/proofs/estimator.md) v0.1 backed by 27-cell sim in [`experiments/estimator_coverage/`](experiments/estimator_coverage/); estimator defaults recorded (percentile / DeLong-for-AUC / BCa opt-in); non-null power sim is the follow-up |
@@ -67,7 +67,7 @@ Phase 2 work runs in parallel with the WS-1 IRB lag — no IRB dependency.
 
 ### Phase 3 — Library + multi-modality validation (D9 + 180 → D9 + 365)
 
-| # | Task | Output | Status @ v0.2 |
+| # | Task | Output | Status @ v0.3 |
 |---|---|---|---|
 | 3.1 | Implement `pwm_dose_equivalence.signal_equivalence_credential()` (CT validator) | Core library + CT example | **partial** — productionised package [`pwm_dose_equivalence/`](pwm_dose_equivalence/) at v0.1.0 alpha (modality-agnostic API + percentile / DeLong estimators + sample-size pre-flight + content-addressed framework hash + Tr_ct/Tr_mri/Tr_pet operators); 60/60 tests pass at 100 % line coverage; real-data CT example gated on Phase 1 pilot |
 | 3.2 | Implement MRI validator (fastMRI knee dataset; variable-density Cartesian masks) | MRI example + integration test | **partial** — synthetic Cartesian-mask channel verified in [`experiments/cross_modality_consistency/`](experiments/cross_modality_consistency/) and via library `Tr_mri`; real fastMRI integration pending (D9 + 270) |
@@ -78,9 +78,9 @@ Phase 2 work runs in parallel with the WS-1 IRB lag — no IRB dependency.
 
 ### Phase 4 — Paper + on-chain (D9 + 270 → D9 + 540)
 
-| # | Task | Output | Status @ v0.2 |
+| # | Task | Output | Status @ v0.3 |
 |---|---|---|---|
-| 4.1 | Draft manuscript (intro, framework definition, theory, validators, three worked examples, discussion) | Draft v1 | **largely done at v0.2** — 19-pp draft in [`paper_draft/`](paper_draft/); intro / framework / methods / discussion complete; per-modality Results tables remain `\todo` pending 1.1, 3.2, 3.3 |
+| 4.1 | Draft manuscript (intro, framework definition, theory, validators, three worked examples, discussion) | Draft v1 | **largely done at v0.3** — 19-pp draft in [`paper_draft/`](paper_draft/); intro / framework / methods (with corrected sample-size formula + estimator defaults) / discussion / software-rigor numbers complete; per-modality Results tables remain `\todo` pending 1.1, 3.2, 3.3 |
 | 4.2 | Submit to *Nature Methods*; respond to reviewer comments (~6 mo) | Acceptance letter | pending |
 | 4.3 | Author and register L2 spec on PWMRegistry (concurrent with submission) | Framework SHA-256 hash registered as L2 spec | pending |
 
@@ -150,7 +150,7 @@ D9 anchor ≈ 2026-05-20 (theory v0.1 seed date); today (2026-06-02) is **≈ D9
 |---|---|---|
 | [`paper_draft/`](paper_draft/) | *Nature Methods* manuscript | **v0.3 working draft** (19 pp; see [`paper_draft/CHANGELOG.md`](paper_draft/CHANGELOG.md)) |
 | [`theory/`](theory/) | Formal definition ([`dose-equivalence-framework.md`](theory/dose-equivalence-framework.md)), open-questions work plan ([`open_questions.md`](theory/open_questions.md)), related-work memo ([`related_work.md`](theory/related_work.md)) | **v0.1 seeded** — definition + work plan + related-work memo |
-| [`theory/proofs/`](theory/proofs/) | Theory-side decision writeups paired with the manuscript v0.2 commitments: `mri_mask.md` (§7), `pet_reduction.md` (§8), `composition.md` (§4), `estimator.md` (§3, with empirical coverage), `sample_size.md` (§2, with numerical table + manuscript-correction note) | **5 writeups landed at D9 + 13** — sections §2 / §3 / §4 / §7 / §8 closed; §1 depth-pass + §5 monotonicity still pending |
+| [`theory/proofs/`](theory/proofs/) | Theory-side decision writeups paired with the manuscript v0.2 / v0.3 commitments: `mri_mask.md` (§7), `pet_reduction.md` (§8), `composition.md` (§4), `estimator.md` (§3, with empirical coverage), `sample_size.md` (§2, with numerical table + the AUC `ε` correction that v0.3 V3-1 applied) | **5 writeups landed at D9 + 13; manuscript-side propagation landed at D9 + 14** (V3-1 / V3-2 / V3-4 / V3-5 — see [`paper_draft/CHANGELOG.md`](paper_draft/CHANGELOG.md)). Sections §2 / §3 / §4 / §7 / §8 closed; §1 depth-pass + §5 monotonicity still pending. |
 | [`experiments/cross_modality_consistency/`](experiments/cross_modality_consistency/) | Synthetic anchor for the modality-general claim — same bootstrap code path applied to 3 `T_r` operators; 6 credentials (3 PASS + 3 FAIL) at seed=42 | **reproducible** — `results.json` committed; not data-blocked |
 | [`experiments/estimator_coverage/`](experiments/estimator_coverage/) | 27-cell empirical coverage simulation for the paired-bootstrap estimator across percentile / BCa / DeLong CI variants; backs the estimator-default decision in `theory/proofs/estimator.md` | **reproducible** — `results.json` committed; ~35 min wall time at seed = 42 |
 | [`pwm_dose_equivalence/`](pwm_dose_equivalence/) | Pip-installable Python library; the productionised counterpart to the experiments-folder prototype | **v0.1.0 alpha** — 60/60 tests pass at 100 % line coverage; TestPyPI publish pending (D9 + 365); v1.0.0 alongside paper acceptance (D9 + 540) |
