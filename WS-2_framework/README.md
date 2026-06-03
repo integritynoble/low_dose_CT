@@ -187,7 +187,7 @@ D9 anchor ≈ 2026-05-20 (theory v0.1 seed date); today (2026-06-03) is **≈ D9
 
 **Inside WS-2 — documents:**
 
-- [`paper_draft/CHANGELOG.md`](paper_draft/CHANGELOG.md) — v0.1 → v0.2 → v0.3 → v0.3-polish deltas with one row per closed audit item / triggered edit and its commit; the manifest for the reviewer-readiness pass + the D9 + 13 / D9 + 14 propagation passes; also logs the V3-9 downstream-doc propagation into the WS-1 README's cohort-sizing note.
+- [`paper_draft/CHANGELOG.md`](paper_draft/CHANGELOG.md) — v0.1 → v0.2 → v0.3 → v0.3-polish deltas with one row per closed audit item / triggered edit and its commit; the manifest for the reviewer-readiness pass + the D9 + 13 / D9 + 14 propagation passes; also logs the V3-9 downstream-doc propagation into the WS-1 README in two passes (Cross-references entry + Target specs new row) and tracks the 7-place audit trail for the V3-9 finding.
 - [`theory/dose-equivalence-framework.md`](theory/dose-equivalence-framework.md) — formal definition v0.1. Intentionally lags the manuscript v0.2; its own header says it is superseded by v0.2 after the literature pass (see `open_questions.md` §1).
 - [`theory/open_questions.md`](theory/open_questions.md) — BLOCK / SHARPEN / DEFER work plan for Phase 2 theory; the §-numbering is cross-referenced from `related_work.md`, the `theory/proofs/*.md` writeups, and this README's `Phase 2` task table above.
 - [`theory/related_work.md`](theory/related_work.md) — 5-paper memo (2 statistical + 3 TB-IQ anchor cites) seeded alongside the manuscript A6 positioning paragraph. Hosts the "what is genuinely new" novelty gate for the theory-doc v0.2 bump.
@@ -208,7 +208,7 @@ D9 anchor ≈ 2026-05-20 (theory v0.1 seed date); today (2026-06-03) is **≈ D9
 
 **Sibling workstreams:**
 
-- [`../WS-1_dataset/`](../WS-1_dataset/) — provides the CT validation data and the **annotation QA protocol** that WS-2's Methods → Estimator section borrows verbatim for ground-truth provenance.
+- [`../WS-1_dataset/`](../WS-1_dataset/) — provides the CT validation data and the **annotation QA protocol** that WS-2's Methods → Estimator section borrows verbatim for ground-truth provenance. The cross-workstream flow is now bidirectional: WS-2's V3-9 power-sim cohort-sizing implication is surfaced into the WS-1 README in two places — the Cross-references → WS-2 entry (`d0569f3`) and the Target specs *Credential-issuance regime* table row (`7817fad`) — telling downstream WS-1 users to expect `INDETERMINATE` verdicts on the v0.5 cohort for genuinely equivalent methods.
 - [`../WS-3_reference_method/`](../WS-3_reference_method/) — Phase 1 pilot consumes WS-3 baselines as `M_ref` candidates; each WS-3 release must publish under a 5-tuple credential issued via this framework.
 - [`../WS-4_leaderboard/`](../WS-4_leaderboard/) — every leaderboard submission is verified by recomputing the credential against the content-addressed framework hash. The manuscript's end-to-end case study points at WS-4 as the acceptance-test community.
 
