@@ -12,15 +12,16 @@ reviewer-readiness audit posted in the 2026-06-01 working session.
 
 ## v0.3 polish — D9 + 14 (2026-06-03, late)
 
-Three small post-v0.3 items closing remaining `\todo{}` placeholders and an open theory section. The manuscript text grows by ~3 pp (the Bernstein supplementary); the credential schema is unchanged.
+Four post-v0.3 items closing remaining `\todo{}` placeholders, an open theory section, and the second deliverable of `open_questions.md` §3 (power simulation). The manuscript text grows by ~3 pp (the Bernstein supplementary); the credential schema is unchanged. V3-6 / V3-7 / V3-8 landed in `1ca1a15`; the power sim (V3-9) landed in `c25b81f`.
 
 | ID | What landed | Commit |
 |---|---|---|
 | **V3-6** | **Supplementary Section S1: Bernstein finite-sample correction.** Self-contained derivation of (S4) appended at the end of `manuscript.tex` inside a `\appendix` block: setup with bounded `|Δ_k - μ| ≤ M`, Bernstein's inequality (cite Boucheron–Lugosi–Massart 2013), substitution at $t = \varepsilon$, the boxed (S4) bound, numerical comparison to (S1), library-behaviour note (both bounds reported in `sample_size_check`), practical guidance ((S1) for n ≥ 100; (S4) for n < 100), two caveats (unbounded metrics → Hoeffding; paired AUC → DeLong instead of (S4)). The §methods-estimator `\todo{supp section}` placeholder is replaced with `\ref{supp:bernstein}`. | `1ca1a15` |
 | **V3-7** | **`theory/proofs/monotonicity.md` v0.1** — closes the theory side of `open_questions.md` §5 (SHARPEN). Frames naive monotonicity as false in general; defines the class $\mathcal{M}_{[r_{\min}, 1]}$ of methods trained over a signal-ratio distribution covering the range; states the conditional-monotonicity conjecture precisely; sketches two candidate counterexamples (catastrophic-overfit-to-low-end; equivariance-breaking architecture); scopes the empirical-check plan against Phase 1 pilot data; recommends a v0.4 manuscript design-recommendation paragraph supported by 3 baselines. Empirical validation gated on D9 + 90 (the Phase 1 pilot's 5-tuples). | `1ca1a15` |
 | **V3-8** | **Pinned library version placeholder filled.** §Code availability: `\todo{pinned-version-at-submission}` → "`pwm_dose_equivalence==0.1.0` (released against credential schema `pwm-signal-equivalence/v0.2`; will be pinned to the journal-acceptance release at submission)". | `1ca1a15` |
+| **V3-9** | **Non-null power simulation — closes `open_questions.md` §3 second deliverable.** The D9 + 13 coverage sim verified the CI's containment of true Δ under the null; this sim verifies the *verdict distribution* under controlled non-null shifts ($\Delta_{\text{AUC,true}} \in \{0, \varepsilon, 2\varepsilon\}$). New `experiments/estimator_coverage/power_sim.py` + frozen `power_results.json` (24 cells; ~25 min wall time; seed = 42). `theory/proofs/estimator.md` bumped from v0.1 to v0.2 with a new §4a (verdict-distribution table + 5 readings: framework conservatively INDET-s rather than over-commits; P(`PASS`) under null hits nominal at AUC = 0.92, n = 500; power at $2\varepsilon$ ≥ 0.90 across the typical operating range; INDETERMINATE dominates at the boundary; percentile and DeLong agree on power to within 1.5 pp). §5 caveats trimmed (the v0.1 "null only" caveat now superseded). **Cohort-sizing implication recorded**: the WS-1 v0.5 cohort ($n \approx 208$) is *exactly* in the regime where INDETERMINATE-but-truly-equivalent is the modal outcome; absence of a `PASS` verdict is not evidence of non-equivalence, only of insufficient n. No manuscript text change (the §methods-estimator "Estimator defaults" paragraph already cites `proofs/estimator.md` inline via V3-2); the manuscript inherits the §4a finding through that link. | `c25b81f` |
 
-PDF rebuilds at **22 pages** (was 19; +3 pp is Supplementary S1). 0 LaTeX errors, 0 undefined references.
+PDF rebuilds at **22 pages** (was 19 before V3-6; +3 pp is Supplementary S1). 0 LaTeX errors, 0 undefined references.
 
 ### Remaining `\todo` placeholders in the manuscript (intentional, submission-gated)
 
@@ -30,7 +31,11 @@ PDF rebuilds at **22 pages** (was 19; +3 pp is Supplementary S1). 0 LaTeX errors
 - §Competing interests: `\todo{Declare at submission. ...}`.
 - §Acknowledgments: `\todo{Fill at submission. ...}`.
 
-The remaining placeholders are all submission-time fields; no further v0.3-level work is feasible without external action (real cohort, author confirmation).
+The remaining placeholders are all submission-time fields; no further v0.3-level work is feasible without external action (real cohort, author confirmation, journal upload, PyPI auth).
+
+### `open_questions.md` re-priority after V3-9
+
+V3-9 closes the second deliverable of §3 (non-null power), leaving §1 (literature depth-pass — external) and §5 (monotonicity *empirical* check — gated on Phase 1 pilot) as the only open theory items. All BLOCK items are now fully done. The recommendation in `proofs/estimator.md` §6 ("estimator-default decision survives under both null coverage and non-null power") is the new theory-side anchor for the v0.3 manuscript's §methods-estimator "Estimator defaults" paragraph; the cohort-sizing implication is the new theory-side anchor for the §sample-size paragraph.
 
 ---
 
