@@ -111,9 +111,9 @@ D9 anchor ≈ 2026-05-20 (theory v0.1 seed date); today (2026-06-03) is **≈ D9
 
 ## Done when
 
-### Progress at D9 + 13 (intermediate, not terminal)
+### Progress at D9 + 14 (intermediate, not terminal)
 
-**Landed at D9 + 12 (manuscript v0.2 pass):**
+**Landed at D9 + 12 (manuscript v0.2 reviewer-readiness pass):**
 
 - [x] Manuscript v0.2 reviewer-readiness pass — 7 audit items closed (see [`paper_draft/CHANGELOG.md`](paper_draft/CHANGELOG.md))
 - [x] Cross-modality consistency synthetic anchor — same code path, 6 expected verdicts, seed-reproducible ([`experiments/cross_modality_consistency/`](experiments/cross_modality_consistency/))
@@ -127,6 +127,14 @@ D9 anchor ≈ 2026-05-20 (theory v0.1 seed date); today (2026-06-03) is **≈ D9
 - [x] Closed-form sample-size derivation (open_questions §2) — [`theory/proofs/sample_size.md`](theory/proofs/sample_size.md) with (S1) / (S3) / (S4) formulas, numerical tables, empirical validation; **v0.3 manuscript correction surfaced** (AUC-task default `ε`)
 - [x] `theory/proofs/{mri_mask,pet_reduction,composition}.md` v0.1 — closes open_questions §4 / §7 / §8 at the theory side
 - [x] [`pwm_dose_equivalence/`](pwm_dose_equivalence/) v0.1.0 alpha scaffold — pip-installable; **60/60 tests pass at 100 % line coverage** (well above the manuscript's 90 % v0.2 target)
+
+**Landed at D9 + 14 (manuscript v0.2 → v0.3 propagation pass):**
+
+- [x] **V3-1**: AUC-task default `ε` corrected (0.02 → 0.05; WS-1 v0.5 cohort now adequate); non-AUC keeps `ε = 0.02`. §methods-estimator "Sample-size formula" paragraph rewritten with the (S1) / (S3) formulas.
+- [x] **V3-2**: §methods-estimator "Estimator defaults" paragraph rewritten — percentile / DeLong-for-AUC / BCa opt-in. Discussion §"Estimator failure modes" softened to DeLong + Monte-Carlo-SE language.
+- [x] **V3-3**: B5 software-rigor placeholders filled — 60 unit tests, 100 % line coverage on 230 statements, v0.1.0 (alpha). Closes audit item B5.
+- [x] **V3-4**: PET Table 1 footnote (activity-reduction canonical; scan-time-reduction is v2); `\footnote` → `\footnotemark` + `\footnotetext` typesetting fix so the body actually renders.
+- [x] **V3-5**: `theory/proofs/{estimator,sample_size,mri_mask,pet_reduction,composition}.md` cross-linked from §framework, §methods-estimator, Discussion §"Point-evaluated by design", and the PET Table 1 footnote.
 
 **Still pending (theory-time-blocked, not data-blocked):**
 
