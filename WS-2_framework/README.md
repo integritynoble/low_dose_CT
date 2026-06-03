@@ -88,7 +88,7 @@ Phase 2 work runs in parallel with the WS-1 IRB lag — no IRB dependency.
 
 ## Timeline (D9-anchored)
 
-D9 anchor ≈ 2026-05-20 (theory v0.1 seed date); today (2026-06-02) is **≈ D9 + 13**. Several pre-empirical milestones originally scheduled for D9 + 150, D9 + 240, and D9 + 270 landed ahead of schedule via the v0.2 reviewer-readiness pass and the D9 + 13 theory-and-library pass.
+D9 anchor ≈ 2026-05-20 (theory v0.1 seed date); today (2026-06-03) is **≈ D9 + 14**. Several pre-empirical milestones originally scheduled for D9 + 150, D9 + 240, and D9 + 270 landed ahead of schedule via the v0.2 reviewer-readiness pass (D9 + 12), the D9 + 13 theory-and-library pass, and the D9 + 14 manuscript-side v0.3 propagation pass.
 
 | Date | Milestone | Status |
 |---|---|---|
@@ -99,6 +99,7 @@ D9 anchor ≈ 2026-05-20 (theory v0.1 seed date); today (2026-06-02) is **≈ D9
 | D9 + 13 (2026-06-02) | **`theory/proofs/estimator.md`** v0.1 + 27-cell coverage simulation in [`experiments/estimator_coverage/`](experiments/estimator_coverage/) — closes open_questions §3 BLOCK; library estimator defaults recorded (percentile / DeLong-for-AUC / BCa opt-in). Original D9 + 240 target. | **done ahead of schedule** |
 | D9 + 13 (2026-06-02) | **`theory/proofs/sample_size.md`** v0.1 — closes open_questions §2 BLOCK with (S1) / (S3) / (S4) formulas, numerical tables, and empirical validation. **Surfaces a v0.3 manuscript correction** (AUC-task default `ε`). Original D9 + 240 target. | **done ahead of schedule** |
 | D9 + 13 (2026-06-02) | **[`pwm_dose_equivalence/`](pwm_dose_equivalence/) v0.1.0 alpha** — pip-installable scaffold with modality-agnostic API + percentile / DeLong + sample-size pre-flight + content-addressed framework hash + Tr_ct/Tr_mri/Tr_pet operators. 60/60 tests, 100 % line coverage. Original D9 + 365 TestPyPI target's *codebase* ships today; the publish step is gated on PyPI auth. | **done ahead of schedule** |
+| **D9 + 14 (2026-06-03)** | **Manuscript v0.2 → v0.3 propagation pass** — applied V3-1 (AUC default ε corrected 0.02 → 0.05; non-AUC stays at 0.02), V3-2 (estimator-default text rewritten: percentile / DeLong-for-AUC / BCa opt-in), V3-3 (B5 software-rigor placeholders filled: 60 tests, 100 % coverage, v0.1.0), V3-4 (PET Table 1 footnote, fix `6fb1ee7` for the `\footnotemark` workaround), V3-5 (proofs cross-linked from §framework + Discussion). 19 pp, 517 KB. See [`paper_draft/CHANGELOG.md`](paper_draft/CHANGELOG.md). | **done** |
 | D9 + 90 | Phase 1 pilot 5-tuples computed on real cohorts (CT) — fills `Results` Table 2 (`\todo` placeholder until then). | pending |
 | D9 + 150 | Literature pass **depth-read** complete (fastMRI reader studies; one CHO-for-low-dose-CT paper; Wunderlich/Noo observer-variance) → `theory/dose-equivalence-framework.md` bumped from v0.1 to v0.2 with the [SHARPEN-N] points reconciled against the manuscript v0.2. | pending |
 | D9 + 270 | MRI worked-example data wrangling for the Results Table 3 fill; theory-side decision already recorded at D9 + 13 via [`proofs/mri_mask.md`](theory/proofs/mri_mask.md). | pending — data side only |
