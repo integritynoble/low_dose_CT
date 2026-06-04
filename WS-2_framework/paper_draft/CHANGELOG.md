@@ -10,6 +10,42 @@ reviewer-readiness audit posted in the 2026-06-01 working session.
 
 ---
 
+## Library v0.2.0 — D9 + 15 (2026-06-04, late)
+
+Closes the three v0.2.0 library items the *v0.3 evidence-completion* section recorded as follow-ups: BCa estimator exposure (deferred from v0.1.0 per the v0.3 estimator-default decision); small-$n$ anti-conservativeness warning surfaced by V3-11; `bound_M` argument for unbounded metrics. **No manuscript text change**: the §software_rigor and §Code availability paragraphs were filled with v0.1.0 numbers via V3-3 / V3-8 and intentionally stay at v0.1.0 (the journal-acceptance re-pin per V3-8 will move them forward when the time comes). The credential JSON schema is unchanged at `pwm-signal-equivalence/v0.2`.
+
+| ID | What landed | Commit |
+|---|---|---|
+| **L0.2-1** | **BCa estimator exposure.** New `bca_ci()` in `pwm_dose_equivalence/src/pwm_dose_equivalence/estimator.py` implementing generalised Efron 1987 bias-corrected accelerated bootstrap on per-patient deltas (not AUC-specific). Vectorised fast-jackknife (`(sum - deltas[i]) / (n - 1)`). Degenerate-input fallback to percentile when `z0` is undefined. Wired into the API as `estimator="bca"`; opt-in only per the v0.3 §4 decision (does not robustly outperform percentile under the null in the 27-cell coverage sim). | `8e6dbdb` |
+| **L0.2-2** | **Small-$n$ anti-conservativeness warning.** New `_SMALL_N_THRESHOLD = 30` constant in `api.py`; `UserWarning` fires for any percentile or BCa call with $n < 30$, citing the V3-11 finding in `theory/proofs/estimator.md` §4c (coverage 0.82–0.93 in that regime). Independent of the existing (S1) sample-size warning — both can fire simultaneously. | `8e6dbdb` |
+| **L0.2-3** | **`bound_M` argument for unbounded metrics.** New `bound_M` argument on `signal_equivalence_credential()` (default 1.0); propagates to `required_n_bernstein`. Allows users to specify $M$ for MAE / MSE on raw HU / unnormalised intensities. The credential's `sample_size_check` field records `bound_M` alongside `n_required_clt` and `n_required_bernstein`. Larger `bound_M` strictly grows the Bernstein requirement; the CLT bound is unaffected. | `8e6dbdb` |
+
+### Test + coverage growth
+
+| Metric | v0.1.0 | v0.2.0 |
+|---:|---:|---:|
+| Tests | 60 | **71** |
+| Statements covered | 230 | **265** |
+| Line coverage | 100 % | **100 %** |
+
+11 new tests in `tests/test_v020_features.py` cover `bca_ci` direct (4 — including degenerate fallback + empty-array rejection), API `estimator="bca"` (2 — PASS verdict + AUC-mode rejection), small-$n$ warning (3 — fires below threshold, silent above, fires for BCa too), and `bound_M` (2 — default 1.0, larger M strictly grows the Bernstein n while CLT n unchanged).
+
+### Manuscript impact
+
+* §software_rigor "Testing" paragraph still cites *60 unit tests / 100 % line coverage on 230 statements* — intentionally **not** updated to v0.2.0 numbers. The V3-3 framing froze those values at the v0.3 draft point; per V3-8 the library version (and these numbers) will be re-pinned at the journal-acceptance release. A future v0.4 manuscript revision will move them to 71 / 265.
+* §Code availability still cites `pwm_dose_equivalence==0.1.0` for the same reason.
+* The §methods-estimator "Estimator defaults" paragraph already mentions BCa as an opt-in alternative via the v0.3 V3-2 rewrite — V3-2's prose remains correct under v0.2.0 (BCa is now actually exposed as it claimed).
+
+### `open_questions.md` status after v0.2.0
+
+No theory-side movement. All BLOCK items remain done. The §3 cross-metric synthesis from V3-10 / V3-11 is now backed by an actual library implementation of the BCa option that the §4 decision discusses, closing the "claimed but not exposed" gap that v0.1.0 had carried.
+
+### v0.2.0 → v1.0.0 remaining items
+
+Per the library README: integration tests, macOS + Windows CI runners, and the manuscript-acceptance fixes journal review surfaces. None of these is methodologically blocking; they are pre-release infrastructure that lands alongside the *Nature Methods* acceptance per the V3-3 / V3-8 framing.
+
+---
+
 ## v0.3 evidence-completion — D9 + 15 (2026-06-04)
 
 Path-1 (Nature Methods) non-AUC blocker closed. The v0.3 manuscript advertised three worked-example metrics — AUC (CT lung-nodule), Dice (MRI knee-meniscus segmentation), CR (PET NEMA NU-2 IQ phantom contrast-recovery) — but the empirical estimator-backing only covered AUC. Two new simulations land today closing the per-modality trio. **No manuscript text changes**: the V3-2 / V3-5 inline cross-link to `proofs/estimator.md` (added during v0.3 main pass) routes both new findings into the §methods-estimator paragraph automatically.
