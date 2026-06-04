@@ -1,6 +1,6 @@
 # Estimator coverage + power simulations
 
-Two empirical simulations of the paired-bootstrap signal-equivalence estimator. The **coverage** simulation (`coverage_sim.py`) verifies that the 95 % CI covers the true $\Delta$ at nominal rate under the truly-equivalent null. The **power** simulation (`power_sim.py`) verifies that the verdict distribution behaves correctly under non-null shifts ($\Delta_{\text{true}} \in \{0, \varepsilon, 2\varepsilon\}$). Together they back the `theory/proofs/estimator.md` decision on the library's estimator defaults and the cohort-sizing implications of `theory/proofs/sample_size.md` §5.
+Three empirical simulations of the paired-bootstrap signal-equivalence estimator. The **AUC coverage** simulation (`coverage_sim.py`) verifies that the 95 % CI covers the true $\Delta$ at nominal rate under the truly-equivalent null. The **AUC power** simulation (`power_sim.py`) verifies that the verdict distribution behaves correctly under non-null shifts ($\Delta_{\text{true}} \in \{0, \varepsilon, 2\varepsilon\}$). The **Dice coverage + power** simulation (`dice_sim.py`) repeats both exercises for Dice-type bounded metrics under the non-AUC default $\varepsilon = 0.02$, closing the *AUC-only* caveat that the previous two simulations had carried. Together the three back the `theory/proofs/estimator.md` §§2 / 4a / 4b decisions on the library's estimator defaults and the cohort-sizing implications of `theory/proofs/sample_size.md` §5.
 
 ---
 
@@ -23,11 +23,12 @@ Coverage = fraction of trials in which the CI contains $0$. Expected coverage = 
 ## Run
 
 ```bash
-python3 coverage_sim.py    # ~35 min; writes results.json
-python3 power_sim.py       # ~25 min; writes power_results.json
+python3 coverage_sim.py    # AUC coverage; ~35 min; writes results.json
+python3 power_sim.py       # AUC power;    ~25 min; writes power_results.json
+python3 dice_sim.py        # Dice coverage + power; ~2.5 min; writes dice_results.json
 ```
 
-Requires `numpy` and `scipy`. Both scripts are bit-for-bit reproducible from `seed = 42`.
+Requires `numpy` and `scipy`. All three scripts are bit-for-bit reproducible from `seed = 42`.
 
 ---
 
@@ -72,9 +73,9 @@ Full 27-cell table and discussion in [`../../theory/proofs/estimator.md`](../../
 
 ## What these experiments are and are not
 
-**They are** the empirical anchor for the `pwm_dose_equivalence` library's estimator-default decision and for the cohort-sizing guidance in `theory/proofs/sample_size.md` §5.
+**They are** the empirical anchor for the `pwm_dose_equivalence` library's estimator-default decision and for the cohort-sizing guidance in `theory/proofs/sample_size.md` §5. With `dice_sim.py`, both AUC and Dice are now empirically backed across coverage and power.
 
-**They are not** a substitute for the Dice / contrast-recovery coverage and power checks (both pending; would extend the simulations to non-AUC metrics). The library's defaults are AUC-anchored; the percentile bootstrap is the conservative choice for any other metric until the equivalent simulation lands.
+**They are not** a complete substitute for the contrast-recovery (PET phantom) coverage check; that is the natural follow-up and would close the per-modality coverage trio (AUC for CT lung-nodule; Dice for MRI segmentation; CR for PET phantom).
 
 ---
 

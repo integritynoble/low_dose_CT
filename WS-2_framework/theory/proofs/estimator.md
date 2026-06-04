@@ -133,9 +133,54 @@ The non-null table sharpens the §3 cohort-sizing implication: the WS-1 v0.5 coh
 
 ---
 
+## 4b. Dice (non-AUC) coverage + power, at the non-AUC default $\varepsilon = 0.02$
+
+The §2 and §4a tables establish coverage and power for the paired-bootstrap estimator on AUC tasks. The companion simulation in [`experiments/estimator_coverage/dice_sim.py`](../../experiments/estimator_coverage/dice_sim.py) repeats the same exercise for Dice-type bounded metrics under the v0.3 non-AUC default $\varepsilon = 0.02$. Setup: paired per-patient differences $\Delta_k \sim \mathcal{N}(\Delta_{\text{true}}, \sigma_\Delta^2)$ — the (S1) general-metric generative model. $\sigma_\Delta \in \{0.05, 0.10\}$ spans the empirically observed range for clinically-meaningful segmentation tasks (Dice means around 0.85). 18 cells; $T = 200$ trials; $B = 2{,}000$; seed = 42.
+
+| $\Delta_{\text{true}}$ | $\sigma_\Delta$ | $n$ | Coverage | Mean half-width | P(`PASS`) | P(`FAIL`) | P(`INDET`) |
+|---:|---:|---:|---:|---:|---:|---:|---:|
+| 0.00 | 0.05 | 100 | 0.940 | 0.0098 | 0.965 | 0.000 | 0.035 |
+| 0.00 | 0.05 | 200 | 0.965 | 0.0069 | 1.000 | 0.000 | 0.000 |
+| 0.00 | 0.05 | 500 | 0.955 | 0.0044 | 1.000 | 0.000 | 0.000 |
+| 0.00 | 0.10 | 100 | 0.955 | 0.0194 | 0.030 | 0.000 | 0.970 |
+| 0.00 | 0.10 | 200 | 0.940 | 0.0138 | 0.605 | 0.000 | 0.395 |
+| 0.00 | 0.10 | 500 | 0.960 | 0.0087 | 1.000 | 0.000 | 0.000 |
+| 0.02 | 0.05 | 100 | 0.940 | 0.0097 | 0.020 | 0.040 | 0.940 |
+| 0.02 | 0.05 | 200 | 0.940 | 0.0068 | 0.030 | 0.030 | 0.940 |
+| 0.02 | 0.05 | 500 | 0.960 | 0.0044 | 0.020 | 0.020 | 0.960 |
+| 0.02 | 0.10 | 100 | 0.980 | 0.0194 | 0.010 | 0.010 | 0.980 |
+| 0.02 | 0.10 | 200 | 0.955 | 0.0139 | 0.030 | 0.015 | 0.955 |
+| 0.02 | 0.10 | 500 | 0.945 | 0.0087 | 0.020 | 0.035 | 0.945 |
+| 0.05 | 0.05 | 100 | 0.940 | 0.0097 | 0.000 | 1.000 | 0.000 |
+| 0.05 | 0.05 | 200 | 0.935 | 0.0069 | 0.000 | 1.000 | 0.000 |
+| 0.05 | 0.05 | 500 | 0.940 | 0.0044 | 0.000 | 1.000 | 0.000 |
+| 0.05 | 0.10 | 100 | 0.950 | 0.0195 | 0.000 | 0.835 | 0.165 |
+| 0.05 | 0.10 | 200 | 0.945 | 0.0137 | 0.000 | 0.985 | 0.015 |
+| 0.05 | 0.10 | 500 | 0.955 | 0.0087 | 0.000 | 1.000 | 0.000 |
+
+### Reading the Dice table
+
+**4b.1. Coverage of $\Delta_{\text{true}}$ is nominal across all 18 cells.** Range 0.935–0.980 (Monte-Carlo SE on $T = 200$ is $\approx 0.015$); the percentile bootstrap is well-calibrated for the Dice generative model. The AUC-only caveat that the v0.1 of this document had carried is now superseded: the estimator's coverage property holds on at least two metric families (AUC via §2 and Dice via this table).
+
+**4b.2. At realistic clinical $\sigma_\Delta = 0.05$, the framework PASSes cleanly under the null even at small $n$.** P(`PASS`) at $\Delta_{\text{true}} = 0$, $\sigma_\Delta = 0.05$: 0.965 at $n = 100$; 1.000 at $n = 200$ and $n = 500$. For Dice tasks at typical segmentation operating points, the WS-1 v0.5-comparable cohort ($n \approx 208$) is *comfortably* in the PASS regime — substantively different from the AUC = 0.92 case (§4a) where the same $n$ was in the INDETERMINATE-dominated regime. The difference is variance: a per-patient Dice SD of 0.05 is much narrower (relative to $\varepsilon = 0.02$) than a per-patient AUC-difference variability of $\sigma_\Delta \approx 0.20$ (relative to $\varepsilon = 0.05$).
+
+**4b.3. At higher $\sigma_\Delta = 0.10$ the cohort-sizing implication parallels the AUC case.** P(`PASS`) at $\Delta_{\text{true}} = 0$, $\sigma_\Delta = 0.10$: 0.030 at $n = 100$; 0.605 at $n = 200$; 1.000 at $n = 500$. The same "INDETERMINATE-dominated at borderline $n$" behaviour as the AUC = 0.92, $n = 200$ cell. Downstream users running Dice credentials on noisy-segmentation tasks (e.g., 3D lesion segmentation with reader disagreement) should expect INDETERMINATE outcomes at $n \approx 200$ unless they expand to $n \approx 500$.
+
+**4b.4. Power at $\Delta_{\text{true}} = 0.05 = 2.5\varepsilon$ is excellent.** P(`FAIL`) = 1.000 at $\sigma_\Delta = 0.05$ (any $n$); 0.835–1.000 at $\sigma_\Delta = 0.10$. The framework correctly rejects equivalence at a 2.5-margin overshoot with effectively perfect power on realistic cohorts.
+
+**4b.5. At the boundary $\Delta_{\text{true}} = \varepsilon$, INDETERMINATE dominates (0.940–0.980 across all 6 boundary cells).** Same desirable refusal-to-commit behaviour as the AUC boundary cells in §4a.
+
+### Cross-metric implication
+
+The estimator's coverage and power properties — and the (S1) sample-size formula that backs them — hold for **both** AUC (§2 + §4a) and Dice (this section). The decision recorded in §4 (percentile for general use; DeLong auto-selected for AUC; BCa opt-in) survives non-AUC extension: percentile is appropriate for Dice and any other bounded sample-mean estimator, and the library's default selection logic does the right thing without modification.
+
+For unbounded metrics (MAE on raw HU; MSE on unnormalised pixel intensities), the (S4) Bernstein bound requires user-specified $M$ as documented in Supplementary S1; the percentile bootstrap remains the default CI variant.
+
+---
+
 ## 5. Caveats
 
-**5.1. AUC only.** Both the §2 coverage simulation and the §4a power simulation evaluate only the AUC metric. For Dice (MRI segmentation) and contrast-recovery (PET) the comparable checks are follow-ups; we expect qualitatively similar conclusions because the paired bootstrap is metric-agnostic, but the BCa-vs-percentile-vs-closed-form trade-offs may shift (Dice has no widely-used closed-form equivalent of DeLong).
+**5.1. AUC + Dice; contrast-recovery still pending.** §2 and §4a evaluate AUC; §4b extends to Dice under the (S1) general-metric model. The qualitative conclusions (percentile competitive; framework conservatively INDET-s under small $n$; power $\to 1$ at $2\varepsilon$) hold for both. A contrast-recovery (PET phantom) extension would close the per-modality coverage trio — currently pending; we expect the same conclusions because the (S1) bootstrap is metric-agnostic and contrast-recovery's per-phantom $\sigma_\Delta$ is empirically similar to Dice's. For unbounded metrics (MAE / MSE) the (S4) Bernstein bound applies with user-specified $M$.
 
 **5.2. $T = 200$ trials.** Monte-Carlo SE on a probability estimate at $T = 200$ is $\approx \sqrt{p(1-p)/200}$ — at most $\approx 0.035$ for $p$ near $0.5$, and $\approx 0.015$ near the nominal $0.95$. Distinctions smaller than $\sim 0.03$ in the verdict-distribution table should be read with caution; the qualitative conclusions (percentile competitive; BCa not strictly better under null; DeLong fast and mildly conservative; framework conservatively INDET-s under small $n$; power $\to 1$ at $2\varepsilon$) survive at this SE.
 
@@ -151,4 +196,4 @@ The non-null table sharpens the §3 cohort-sizing implication: the WS-1 v0.5 coh
 
 ---
 
-*v0.1 — 2026-06-02 (coverage). v0.2 — 2026-06-03 (D9 + 14): §4a non-null power table added, §5 caveats trimmed (the v0.1 "null only" caveat is now superseded), §6 closing reaffirmed.*
+*v0.1 — 2026-06-02 (coverage). v0.2 — 2026-06-03 (D9 + 14): §4a non-null power table added, §5 caveats trimmed (the v0.1 "null only" caveat is now superseded), §6 closing reaffirmed. v0.3 — 2026-06-04 (D9 + 15): §4b Dice coverage + power table added, §5.1 AUC-only caveat softened (now AUC + Dice; contrast-recovery still pending).*
