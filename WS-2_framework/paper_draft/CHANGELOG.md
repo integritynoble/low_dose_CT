@@ -10,6 +10,33 @@ reviewer-readiness audit posted in the 2026-06-01 working session.
 
 ---
 
+## v0.3 evidence-completion — D9 + 15 (2026-06-04)
+
+Path-1 (Nature Methods) non-AUC blocker closed. The v0.3 manuscript advertised three worked-example metrics — AUC (CT lung-nodule), Dice (MRI knee-meniscus segmentation), CR (PET NEMA NU-2 IQ phantom contrast-recovery) — but the empirical estimator-backing only covered AUC. Two new simulations land today closing the per-modality trio. **No manuscript text changes**: the V3-2 / V3-5 inline cross-link to `proofs/estimator.md` (added during v0.3 main pass) routes both new findings into the §methods-estimator paragraph automatically.
+
+| ID | What landed | Commit |
+|---|---|---|
+| **V3-10** | **Dice (MRI segmentation) coverage + power simulation.** New [`experiments/estimator_coverage/dice_sim.py`](../experiments/estimator_coverage/dice_sim.py) — 18 cells under the (S1) general-metric Normal generative model at the v0.3 non-AUC default `ε = 0.02`. Closes the "AUC only" caveat in `proofs/estimator.md` §5.1 that the v0.2 of that document had carried. Headline contrast with AUC: at realistic clinical $\sigma_\Delta = 0.05$ and $n = 200$, P(`PASS`) under the null = 1.000 for Dice — substantively different from the same $n$ at AUC = 0.92 where P(`PASS`) = 0.40 (V3-9 §4a). The difference is variance-relative-to-margin: Dice $\sigma_\Delta = 0.05$ relative to $\varepsilon = 0.02$ is much narrower than AUC placement-difference $s = 0.15$ relative to $\varepsilon = 0.05$. `proofs/estimator.md` bumped v0.2 → v0.3 with new §4b. | `d8c45e1` |
+| **V3-11** | **CR (PET phantom) coverage + power simulation — per-modality trio CLOSED.** New [`experiments/estimator_coverage/cr_sim.py`](../experiments/estimator_coverage/cr_sim.py) — 24 cells at smaller cohort sizes (n ∈ {6, 12, 30, 60}) reflecting per-credential phantom-acquisition counts (6 spheres × 1–10 acquisitions). **New methodological finding the larger-cohort AUC and Dice sims could not surface**: percentile bootstrap is anti-conservative at very small $n$ — coverage 0.82–0.88 at n=6; 0.88–0.93 at n=12. **At $n \geq 30$ coverage returns to nominal** (0.93–0.96). Practical PET recommendation: $n \geq 30$ (≥ 5 NEMA NU-2 IQ phantom acquisitions). `proofs/estimator.md` bumped v0.3 → v0.4 with new §4c; §5.1 caveat closed (per-modality trio now AUC + Dice + CR — only unbounded MAE / MSE pending). **New v0.2.0 library item recorded**: flag credentials issued at $n < 30$ for non-AUC metrics with an explicit small-sample warning citing §4c. | `1911b68` |
+
+### Cross-metric synthesis
+
+The four sims now back the framework's estimator across **93 cells × four metric families** (AUC coverage 27 + AUC power 24 + Dice 18 + CR 24). The cross-metric conclusion: **the framework's coverage and power properties hold across all three worked-example metric families at $n \geq 30$**; below n = 30 the percentile bootstrap is anti-conservative (CR finding); at n ≥ 100 (AUC and Dice cells) calibration is nominal across all tested cells. The estimator-default decision recorded in §4 of `proofs/estimator.md` (percentile general; DeLong-for-AUC auto-selected; BCa opt-in) survives non-AUC extension across both bounded metric families.
+
+### `open_questions.md` status after V3-10 / V3-11
+
+All BLOCK items remain done. The §3 BLOCK now has *four* sub-deliverables closed (under-null AUC; non-null AUC power; Dice coverage + power; CR coverage + power) where the original §3 scoping had only two (under-null + non-null AUC). The next §3 extension would be unbounded metrics (MAE / MSE) where the (S4) Bernstein bound applies with user-specified $M$ per Supplementary S1; this is a v0.2.0 library item, not a v0.3 manuscript item.
+
+### Schema (unchanged at v0.3-evidence-completion)
+
+Credential JSON `schema_version` remains `pwm-signal-equivalence/v0.2`. The library API is unchanged. The new sims exercise the same paired-bootstrap codepath the library v0.1.0 alpha already implements.
+
+### Manuscript text unchanged
+
+The §methods-estimator "Estimator defaults" paragraph already cites `proofs/estimator.md` inline (added during the v0.3 main pass via V3-2 / V3-5). Both V3-10 (§4b) and V3-11 (§4c) findings are routed into the manuscript through that pre-existing link — no manuscript edit required. A future v0.4 manuscript revision could pull explicit numbers from §4b / §4c into the prose; for v0.3 the inline cross-link is sufficient.
+
+---
+
 ## v0.3 polish — D9 + 14 (2026-06-03, late)
 
 Four post-v0.3 items closing remaining `\todo{}` placeholders, an open theory section, and the second deliverable of `open_questions.md` §3 (power simulation). The manuscript text grows by ~3 pp (the Bernstein supplementary); the credential schema is unchanged. V3-6 / V3-7 / V3-8 landed in `1ca1a15`; the power sim (V3-9) landed in `c25b81f`.
