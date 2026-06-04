@@ -36,6 +36,7 @@ from pwm_dose_equivalence.credential import (
     Verdict,
 )
 from pwm_dose_equivalence.estimator import (
+    bca_ci,
     delong_ci,
     percentile_ci,
 )
@@ -54,7 +55,7 @@ from pwm_dose_equivalence.sample_size import (
     required_n_bernstein,
 )
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"
 
 __all__ = [
     "Credential",
@@ -66,6 +67,7 @@ __all__ = [
     "Tr_pet",
     "Verdict",
     "__version__",
+    "bca_ci",
     "delong_ci",
     "framework_hash",
     "percentile_ci",

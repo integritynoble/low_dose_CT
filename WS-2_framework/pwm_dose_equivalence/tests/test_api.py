@@ -199,7 +199,7 @@ def test_unknown_estimator_raises():
             task=Task("dice", metric="dice"),
             subpopulation="test_v1",
             epsilon=0.05,
-            estimator="bca",  # not yet exposed in v0.1.0
+            estimator="jackknife",  # genuinely not a supported estimator
         )
 
 

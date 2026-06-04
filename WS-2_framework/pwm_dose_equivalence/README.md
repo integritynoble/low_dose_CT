@@ -15,7 +15,7 @@ pip install -e ".[test]"
 
 Requires Python ≥ 3.10, `numpy`, `scipy`.
 
-Status: **v0.1.0 — alpha**, scaffolded 2026-06-02. TestPyPI ship at D9 + 365; v1.0.0 alongside paper acceptance.
+Status: **v0.2.0 — alpha**, scaffolded 2026-06-02 (v0.1.0) → extended 2026-06-04 (v0.2.0 adds BCa estimator + small-$n$ anti-conservativeness warning + `bound_M` argument for unbounded metrics). TestPyPI ship at D9 + 365; v1.0.0 alongside paper acceptance.
 
 ---
 
@@ -108,7 +108,7 @@ pip install -e ".[test]"
 pytest
 ```
 
-The v0.1.0 test suite covers:
+The v0.2.0 test suite covers:
 
 * **Estimator** (`test_estimator.py`) — coverage under the null for both percentile and DeLong; verdict logic; edge cases (empty data, perfect classifier).
 * **Sample size** (`test_sample_size.py`) — formula (S1) / (S3) / (S4) values against the numerical table in `theory/proofs/sample_size.md`; scaling laws.
@@ -117,7 +117,22 @@ The v0.1.0 test suite covers:
 * **Framework hash** (`test_framework_hash.py`) — SHA-256 prefix; hash-mutates-on-spec-mutate.
 * **API end-to-end** (`test_api.py`) — equivalent and biased candidates produce expected verdicts; auto-estimator-selection; sample-size warning.
 
-**Current v0.1.0:** 60/60 tests pass at **100 % line coverage** (230/230 statements). The 90 % target from the manuscript's §software-rigor paragraph is the published floor; the library ships well above it.
+**Current v0.2.0:** 71/71 tests pass at **100 % line coverage** (265/265 statements). The 90 % target from the manuscript's §software-rigor paragraph is the published floor; the library continues to ship well above it.
+
+**v0.2.0 additions (D9 + 15, 2026-06-04):**
+
+* **BCa estimator** (`bca_ci` + `estimator="bca"`) — opt-in only per the
+  `theory/proofs/estimator.md` §4 decision (does not robustly outperform
+  percentile under the null). Useful in regimes with visible bootstrap-
+  distribution skew.
+* **Small-$n$ anti-conservativeness warning** — fires for any non-AUC
+  call with $n < 30$, citing the V3-11 finding in
+  `theory/proofs/estimator.md` §4c (percentile bootstrap coverage drops to
+  0.82–0.93 in that regime). Affects both `percentile` and `bca`.
+* **`bound_M` argument** — exposes the Bernstein bound's bound parameter
+  for unbounded metrics (MAE / MSE on raw HU; default `bound_M = 1.0`
+  for bounded metrics). Larger `bound_M` strictly increases the
+  Bernstein-bound sample-size requirement; the CLT bound is unaffected.
 
 ---
 
@@ -129,7 +144,7 @@ Semantic versioning:
 * `MINOR` — add a modality, estimator, or task type; non-breaking
 * `PATCH` — bug fix; preserves credential reproducibility
 
-The current version is `0.1.0` (alpha). `0.2.0` will add BCa + a power-analysis (non-null) pre-flight; `1.0.0` ships alongside the *Nature Methods* paper acceptance with five-year support commitment.
+The current version is `0.2.0` (alpha). v0.2.0 added BCa + small-$n$ warning + `bound_M`; remaining items on the path to `1.0.0` include integration tests, macOS / Windows CI runners, and the manuscript-acceptance fixes the journal review surfaces. `1.0.0` ships alongside the *Nature Methods* paper acceptance with five-year support commitment.
 
 ---
 

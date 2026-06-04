@@ -22,6 +22,7 @@ from pwm_dose_equivalence.credential import (
     Verdict,
 )
 from pwm_dose_equivalence.estimator import (
+    bca_ci,
     delong_ci,
     percentile_ci,
     verdict_from_ci,
@@ -34,6 +35,11 @@ from pwm_dose_equivalence.sample_size import (
 )
 
 _SCHEMA_VERSION = "pwm-signal-equivalence/v0.2"
+
+#: Below this threshold the percentile bootstrap is anti-conservative for
+#: non-AUC metrics; the library emits a warning per
+#: ``theory/proofs/estimator.md`` §4c (V3-11 finding, 2026-06-04).
+_SMALL_N_THRESHOLD = 30
 
 
 def signal_equivalence_credential(
@@ -57,12 +63,13 @@ def signal_equivalence_credential(
     method: str = "M",
     reference_method: str = "M_ref",
     # Estimator config
-    estimator: Literal["auto", "percentile", "delong"] = "auto",
+    estimator: Literal["auto", "percentile", "delong", "bca"] = "auto",
     n_bootstrap: int = 10_000,
     seed: int = 42,
     # Optional sample-size pre-flight
     sigma_delta_hint: float | None = None,
     placement_sd_hint: float | None = None,
+    bound_M: float = 1.0,
 ) -> SignalEquivalenceCredential:
     """Compute a signal-equivalence credential.
 
@@ -135,10 +142,10 @@ def signal_equivalence_credential(
                     UserWarning, stacklevel=2,
                 )
 
-    elif chosen == "percentile":
+    elif chosen in ("percentile", "bca"):
         if auc_mode:
             raise ValueError(
-                "estimator='percentile' expects (paired_a, paired_b) "
+                f"estimator='{chosen}' expects (paired_a, paired_b) "
                 "per-patient score arrays."
             )
         a = np.asarray(paired_a, dtype=np.float64)
@@ -148,11 +155,31 @@ def signal_equivalence_credential(
                 f"paired_a shape {a.shape} != paired_b shape {b.shape}"
             )
         deltas = a - b
-        delta_mean, ci_low, ci_high, _boots = percentile_ci(
-            deltas, alpha=alpha, n_bootstrap=n_bootstrap, rng=rng,
-        )
+        if chosen == "percentile":
+            delta_mean, ci_low, ci_high, _boots = percentile_ci(
+                deltas, alpha=alpha, n_bootstrap=n_bootstrap, rng=rng,
+            )
+        else:  # bca
+            delta_mean, ci_low, ci_high, _boots = bca_ci(
+                deltas, alpha=alpha, n_bootstrap=n_bootstrap, rng=rng,
+            )
         n_test = len(deltas)
         n_bootstrap_used = n_bootstrap
+
+        # Small-n anti-conservativeness warning per proofs/estimator.md §4c
+        # (V3-11). Fires for non-AUC metrics regardless of whether the
+        # sigma-hint check below also fires.
+        if n_test < _SMALL_N_THRESHOLD:
+            warnings.warn(
+                f"Sample size {n_test} is below the small-n threshold "
+                f"({_SMALL_N_THRESHOLD}) for non-AUC metrics. The percentile "
+                f"bootstrap is anti-conservative in this regime (coverage "
+                f"0.82-0.93 per theory/proofs/estimator.md §4c). Consider "
+                f"increasing n or treating any PASS / FAIL verdict with "
+                f"extra caution.",
+                UserWarning, stacklevel=2,
+            )
+
         if sigma_delta_hint is not None:
             n_required = required_n_general(
                 epsilon=epsilon, alpha=alpha,
@@ -161,10 +188,12 @@ def signal_equivalence_credential(
             n_required_b = required_n_bernstein(
                 epsilon=epsilon, alpha=alpha,
                 sigma_delta=sigma_delta_hint,
+                bound_M=bound_M,
             )
             sample_check = {
                 "rule": "S1-clt",
                 "sigma_delta_hint": sigma_delta_hint,
+                "bound_M": bound_M,
                 "n_required_clt": n_required,
                 "n_required_bernstein": n_required_b,
                 "n_actual": n_test,
