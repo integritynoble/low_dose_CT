@@ -2,7 +2,7 @@
 
 The **PWM Low-Dose CT Benchmark Dataset**: a content-addressed harmonization of multi-source CT data, distributable via PhysioNet + Zenodo, supported by a *Nature Scientific Data* paper. Released in two stages per the 2026-05-21 director decision — see [`data_needs.md`](data_needs.md) for the strategy doc.
 
-> **Status (D9 + 14, 2026-06-03):** **v0.5 (public-data harmonization) is the current ship target** — manuscript active in [`paper_draft/manuscript.tex`](paper_draft/manuscript.tex); D9 + 180 submission window. v0.5 unifies LIDC-IDRI + AAPM 2016 + Mayo LDCT-PD under one schema, one Python loader, one harmonized annotation convention, and one content-addressed manifest; cross-vendor (GE ↔ Siemens) paired-dose comes free from the Mayo cohort. **v1.0 (prospective multi-vendor + multi-site extension)** is preserved in [`paper_draft/manuscript_v1.tex`](paper_draft/manuscript_v1.tex) for the D9 + 365–540 submission window once Track K + IRB + clinical acquisition land. The two manuscripts coexist — do not conflate them.
+> **Status (D9 + 15, 2026-06-04):** **v0.5 (public-data harmonization) is the current ship target** — manuscript active in [`paper_draft/manuscript.tex`](paper_draft/manuscript.tex); D9 + 180 submission window. v0.5 unifies LIDC-IDRI + AAPM 2016 + Mayo LDCT-PD under one schema, one Python loader, one harmonized annotation convention, and one content-addressed manifest; cross-vendor (GE ↔ Siemens) paired-dose comes free from the Mayo cohort. **v1.0 (prospective multi-vendor + multi-site extension)** is preserved in [`paper_draft/manuscript_v1.tex`](paper_draft/manuscript_v1.tex) for the D9 + 365–540 submission window once Track K + IRB + clinical acquisition land. The two manuscripts coexist — do not conflate them.
 
 ---
 
@@ -77,7 +77,7 @@ For v0.5 this phase is **brought forward** by ~D9 + 90 because the substrate (Ph
 
 ## Timeline (D9-anchored)
 
-D9 anchor ≈ 2026-05-20; today (2026-06-03) is **≈ D9 + 14**. The two-stage strategy reorders the original single-track timeline: the v0.5 Phase 1 substrate landed ahead of schedule, the v0.5 submission window is brought forward to D9 + 180, and the v1.0 critical-path items move to the D9 + 365 → D9 + 540 window.
+D9 anchor ≈ 2026-05-20; today (2026-06-04) is **≈ D9 + 15**. The two-stage strategy reorders the original single-track timeline: the v0.5 Phase 1 substrate landed ahead of schedule, the v0.5 submission window is brought forward to D9 + 180, and the v1.0 critical-path items move to the D9 + 365 → D9 + 540 window.
 
 | Date | Milestone | Status |
 |---|---|---|
@@ -99,9 +99,9 @@ The critical-path leg for **v0.5** is now GPU access and the radiologist top-up 
 
 ## Done when
 
-The two-stage release strategy has two separate ship gates. The intermediate-progress section shows what is already in hand at D9 + 14.
+The two-stage release strategy has two separate ship gates. The intermediate-progress section shows what is already in hand at D9 + 15.
 
-### v0.5 progress at D9 + 14 (intermediate, not terminal)
+### v0.5 progress at D9 + 15 (intermediate, not terminal)
 
 - [x] Public-data substrate (LIDC-IDRI + AAPM 2016 + Mayo LDCT-PD) staged and reproducibly preprocessed under `pwm_ldct_prep`
 - [x] Canonical schema + DICOM cleaning + annotation-QA protocol drafted in [`schema/`](schema/) (4 specs)
