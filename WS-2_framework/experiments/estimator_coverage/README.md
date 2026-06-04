@@ -1,6 +1,6 @@
 # Estimator coverage + power simulations
 
-Three empirical simulations of the paired-bootstrap signal-equivalence estimator. The **AUC coverage** simulation (`coverage_sim.py`) verifies that the 95 % CI covers the true $\Delta$ at nominal rate under the truly-equivalent null. The **AUC power** simulation (`power_sim.py`) verifies that the verdict distribution behaves correctly under non-null shifts ($\Delta_{\text{true}} \in \{0, \varepsilon, 2\varepsilon\}$). The **Dice coverage + power** simulation (`dice_sim.py`) repeats both exercises for Dice-type bounded metrics under the non-AUC default $\varepsilon = 0.02$, closing the *AUC-only* caveat that the previous two simulations had carried. Together the three back the `theory/proofs/estimator.md` §§2 / 4a / 4b decisions on the library's estimator defaults and the cohort-sizing implications of `theory/proofs/sample_size.md` §5.
+Four empirical simulations of the paired-bootstrap signal-equivalence estimator, covering the per-modality metric trio. The **AUC coverage** simulation (`coverage_sim.py`) verifies that the 95 % CI covers the true $\Delta$ at nominal rate under the truly-equivalent null. The **AUC power** simulation (`power_sim.py`) verifies that the verdict distribution behaves correctly under non-null shifts ($\Delta_{\text{true}} \in \{0, \varepsilon, 2\varepsilon\}$). The **Dice coverage + power** simulation (`dice_sim.py`) repeats both exercises for Dice-type bounded metrics under the non-AUC default $\varepsilon = 0.02$. The **CR coverage + power** simulation (`cr_sim.py`) does the same for PET-phantom contrast-recovery at the smaller cohort sizes (n ∈ {6, 12, 30, 60}) typical of phantom validations. Together the four back the `theory/proofs/estimator.md` §§2 / 4a / 4b / 4c decisions and surface a small-$n$ anti-conservativeness regime (n < 30) that the larger-cohort AUC and Dice sims could not see.
 
 ---
 
@@ -23,12 +23,13 @@ Coverage = fraction of trials in which the CI contains $0$. Expected coverage = 
 ## Run
 
 ```bash
-python3 coverage_sim.py    # AUC coverage; ~35 min; writes results.json
-python3 power_sim.py       # AUC power;    ~25 min; writes power_results.json
+python3 coverage_sim.py    # AUC coverage;          ~35 min; writes results.json
+python3 power_sim.py       # AUC power;             ~25 min; writes power_results.json
 python3 dice_sim.py        # Dice coverage + power; ~2.5 min; writes dice_results.json
+python3 cr_sim.py          # CR coverage + power;   ~3 min;  writes cr_results.json
 ```
 
-Requires `numpy` and `scipy`. All three scripts are bit-for-bit reproducible from `seed = 42`.
+Requires `numpy` and `scipy`. All four scripts are bit-for-bit reproducible from `seed = 42`.
 
 ---
 
@@ -73,9 +74,9 @@ Full 27-cell table and discussion in [`../../theory/proofs/estimator.md`](../../
 
 ## What these experiments are and are not
 
-**They are** the empirical anchor for the `pwm_dose_equivalence` library's estimator-default decision and for the cohort-sizing guidance in `theory/proofs/sample_size.md` §5. With `dice_sim.py`, both AUC and Dice are now empirically backed across coverage and power.
+**They are** the empirical anchor for the `pwm_dose_equivalence` library's estimator-default decision and for the cohort-sizing guidance in `theory/proofs/sample_size.md` §5. With `cr_sim.py` landing, **the per-modality metric trio is closed**: AUC for CT lung-nodule (`coverage_sim.py` + `power_sim.py`), Dice for MRI segmentation (`dice_sim.py`), CR for PET phantom (`cr_sim.py`). The cross-metric synthesis: the framework's coverage and power properties hold across all three metric families at $n \geq 30$.
 
-**They are not** a complete substitute for the contrast-recovery (PET phantom) coverage check; that is the natural follow-up and would close the per-modality coverage trio (AUC for CT lung-nodule; Dice for MRI segmentation; CR for PET phantom).
+**They are not** a substitute for empirical coverage checks on unbounded metrics (MAE on raw HU; MSE on unnormalised intensities); for those the (S4) Bernstein bound applies with user-specified $M$ per Supplementary S1. The four sims here cover the per-modality bounded-metric cases the v0.3 manuscript advertises in its three worked examples.
 
 ---
 

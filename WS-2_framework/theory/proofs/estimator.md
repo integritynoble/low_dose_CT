@@ -178,9 +178,60 @@ For unbounded metrics (MAE on raw HU; MSE on unnormalised pixel intensities), th
 
 ---
 
+## 4c. Contrast-recovery (PET phantom), at the non-AUC default $\varepsilon = 0.02$
+
+§2 and §4a evaluate AUC; §4b evaluates Dice. The companion simulation in [`experiments/estimator_coverage/cr_sim.py`](../../experiments/estimator_coverage/cr_sim.py) closes the per-modality trio by evaluating contrast-recovery (CR) under the PET phantom setting. Setup: paired per-sphere differences $\Delta_k \sim \mathcal{N}(\Delta_{\text{true}}, \sigma_\Delta^2)$ — the same (S1) generative model. $\sigma_\Delta \in \{0.02, 0.05\}$ reflects the empirical range for the NEMA NU-2 IQ phantom (smaller than the Dice range because phantom measurements are physically standardised; no patient motion, no anatomical priors). $n \in \{6, 12, 30, 60\}$ spans "single acquisition (6 spheres)" to "ten acquisitions (60 spheres)" — much smaller than the patient cohort sizes in §2 / §4a / §4b. 24 cells; $T = 200$ trials; $B = 2{,}000$; seed = 42.
+
+| $\Delta_{\text{true}}$ | $\sigma_\Delta$ | $n$ | Coverage | Mean half-width | P(`PASS`) | P(`FAIL`) | P(`INDET`) |
+|---:|---:|---:|---:|---:|---:|---:|---:|
+| 0.00 | 0.02 | 6 | 0.865 | 0.0138 | 0.520 | 0.000 | 0.480 |
+| 0.00 | 0.02 | 12 | 0.880 | 0.0106 | 0.860 | 0.000 | 0.140 |
+| 0.00 | 0.02 | 30 | 0.950 | 0.0070 | 1.000 | 0.000 | 0.000 |
+| 0.00 | 0.02 | 60 | 0.945 | 0.0049 | 1.000 | 0.000 | 0.000 |
+| 0.00 | 0.05 | 6 | 0.875 | 0.0338 | 0.020 | 0.025 | 0.955 |
+| 0.00 | 0.05 | 12 | 0.925 | 0.0259 | 0.025 | 0.005 | 0.970 |
+| 0.00 | 0.05 | 30 | 0.940 | 0.0175 | 0.235 | 0.000 | 0.765 |
+| 0.00 | 0.05 | 60 | 0.945 | 0.0124 | 0.770 | 0.000 | 0.230 |
+| 0.02 | 0.02 | 6 | 0.825 | 0.0136 | 0.095 | 0.080 | 0.825 |
+| 0.02 | 0.02 | 12 | 0.905 | 0.0104 | 0.055 | 0.040 | 0.905 |
+| 0.02 | 0.02 | 30 | 0.925 | 0.0070 | 0.050 | 0.025 | 0.925 |
+| 0.02 | 0.02 | 60 | 0.955 | 0.0050 | 0.025 | 0.020 | 0.955 |
+| 0.02 | 0.05 | 6 | 0.875 | 0.0352 | 0.005 | 0.030 | 0.965 |
+| 0.02 | 0.05 | 12 | 0.915 | 0.0270 | 0.010 | 0.040 | 0.950 |
+| 0.02 | 0.05 | 30 | 0.940 | 0.0175 | 0.035 | 0.020 | 0.945 |
+| 0.02 | 0.05 | 60 | 0.955 | 0.0125 | 0.025 | 0.020 | 0.955 |
+| 0.05 | 0.02 | 6 | 0.820 | 0.0138 | 0.000 | 0.965 | 0.035 |
+| 0.05 | 0.02 | 12 | 0.900 | 0.0105 | 0.000 | 0.995 | 0.005 |
+| 0.05 | 0.02 | 30 | 0.950 | 0.0070 | 0.000 | 1.000 | 0.000 |
+| 0.05 | 0.02 | 60 | 0.935 | 0.0049 | 0.000 | 1.000 | 0.000 |
+| 0.05 | 0.05 | 6 | 0.860 | 0.0326 | 0.000 | 0.475 | 0.525 |
+| 0.05 | 0.05 | 12 | 0.925 | 0.0264 | 0.000 | 0.605 | 0.395 |
+| 0.05 | 0.05 | 30 | 0.935 | 0.0173 | 0.000 | 0.920 | 0.080 |
+| 0.05 | 0.05 | 60 | 0.950 | 0.0125 | 0.000 | 0.995 | 0.005 |
+
+### Reading the CR table
+
+**4c.1. Coverage is anti-conservative at very small $n$ (n = 6, n = 12).** Coverage range at $n = 6$: 0.820–0.875 — *below* the nominal 0.95 by 7–13 percentage points. At $n = 12$: 0.880–0.925, still below nominal. **At $n \geq 30$ coverage returns to nominal** (0.925–0.955), consistent with the AUC and Dice tables. This is a real methodological finding that the AUC and Dice sims could not surface because both used $n \geq 100$. The percentile bootstrap relies on the empirical distribution of $\Delta_k$ being a reasonable approximation to the population distribution; at $n \leq 12$ the empirical distribution has too few quantile points to characterise the tails accurately, and the CI becomes too narrow.
+
+**4c.2. Practical implication for PET phantom credentials.** A single NEMA NU-2 IQ phantom acquisition gives 6 paired CR measurements — *too few* to issue a calibrated credential at $\varepsilon = 0.02$. The recommended cohort is $n \geq 30$ (i.e., $\geq 5$ acquisitions of the phantom), which gives nominal coverage and P(`PASS`) under the null = 1.000 at $\sigma_\Delta = 0.02$.
+
+**4c.3. At realistic phantom $\sigma_\Delta = 0.02$ and $n \geq 30$, the framework PASSes cleanly under the null.** P(`PASS`) at $\Delta = 0$, $\sigma_\Delta = 0.02$: 1.000 at $n \in \{30, 60\}$. This is the cleanest cohort-sizing recommendation in the entire writeup: a 5-acquisition phantom worked example is comfortably calibrated.
+
+**4c.4. At higher $\sigma_\Delta = 0.05$ (atypical for NEMA but plausible for clinical-phantom hybrid setups), the cohort needs to be larger.** P(`PASS`) at $\Delta = 0$, $\sigma_\Delta = 0.05$: 0.770 at $n = 60$; only 0.235 at $n = 30$. Users running phantom validations on noisier reconstruction methods should expect more INDETERMINATE outcomes at the small-cohort end.
+
+**4c.5. Power at $\Delta_{\text{true}} = 2.5\varepsilon$, $\sigma_\Delta = 0.02$, $n \geq 30$:** P(`FAIL`) = 1.000. Strong rejection of non-equivalence at the realistic operating point.
+
+**4c.6. Boundary behaviour matches the other tables.** At $\Delta_{\text{true}} = \varepsilon$, INDETERMINATE dominates (0.825–0.965 across all 8 boundary cells); P(`PASS`) and P(`FAIL`) each remain near or below the nominal $\alpha$.
+
+### Small-$n$ recommendation for the library
+
+Given §4c.1, the library's `sample_size_check` field should flag credentials issued at $n < 30$ for non-AUC metrics with an explicit small-sample warning citing this finding. The current Bernstein note (which fires when $n < n_{\text{S4}}$) covers part of this regime but not all; a dedicated "percentile-bootstrap coverage degrades below $n = 30$" warning is a v0.2.0 library item.
+
+---
+
 ## 5. Caveats
 
-**5.1. AUC + Dice; contrast-recovery still pending.** §2 and §4a evaluate AUC; §4b extends to Dice under the (S1) general-metric model. The qualitative conclusions (percentile competitive; framework conservatively INDET-s under small $n$; power $\to 1$ at $2\varepsilon$) hold for both. A contrast-recovery (PET phantom) extension would close the per-modality coverage trio — currently pending; we expect the same conclusions because the (S1) bootstrap is metric-agnostic and contrast-recovery's per-phantom $\sigma_\Delta$ is empirically similar to Dice's. For unbounded metrics (MAE / MSE) the (S4) Bernstein bound applies with user-specified $M$.
+**5.1. AUC + Dice + contrast-recovery — per-modality trio closed; unbounded metrics still pending.** §2 and §4a evaluate AUC; §4b evaluates Dice; §4c evaluates CR. The qualitative conclusions (percentile is calibrated at $n \geq 30$; framework conservatively INDET-s under small $n$; power $\to 1$ at $2\varepsilon$) hold across all three metric families. §4c surfaced a genuine small-$n$ anti-conservativeness regime (n < 30) that the AUC and Dice sims could not see because both used n ≥ 100; the library should flag credentials issued in that regime. For unbounded metrics (MAE / MSE on raw HU or unnormalised intensities) the (S4) Bernstein bound applies with user-specified $M$ as documented in Supplementary S1; the percentile bootstrap remains the default CI variant.
 
 **5.2. $T = 200$ trials.** Monte-Carlo SE on a probability estimate at $T = 200$ is $\approx \sqrt{p(1-p)/200}$ — at most $\approx 0.035$ for $p$ near $0.5$, and $\approx 0.015$ near the nominal $0.95$. Distinctions smaller than $\sim 0.03$ in the verdict-distribution table should be read with caution; the qualitative conclusions (percentile competitive; BCa not strictly better under null; DeLong fast and mildly conservative; framework conservatively INDET-s under small $n$; power $\to 1$ at $2\varepsilon$) survive at this SE.
 
@@ -196,4 +247,4 @@ For unbounded metrics (MAE on raw HU; MSE on unnormalised pixel intensities), th
 
 ---
 
-*v0.1 — 2026-06-02 (coverage). v0.2 — 2026-06-03 (D9 + 14): §4a non-null power table added, §5 caveats trimmed (the v0.1 "null only" caveat is now superseded), §6 closing reaffirmed. v0.3 — 2026-06-04 (D9 + 15): §4b Dice coverage + power table added, §5.1 AUC-only caveat softened (now AUC + Dice; contrast-recovery still pending).*
+*v0.1 — 2026-06-02 (coverage). v0.2 — 2026-06-03 (D9 + 14): §4a non-null power table added, §5 caveats trimmed (the v0.1 "null only" caveat is now superseded), §6 closing reaffirmed. v0.3 — 2026-06-04 (D9 + 15): §4b Dice coverage + power table added, §5.1 AUC-only caveat softened. v0.4 — 2026-06-04 (D9 + 15, later): §4c contrast-recovery (PET phantom) table added closing the per-modality trio (AUC + Dice + CR); surfaces a small-$n$ anti-conservativeness regime (n < 30) and the corresponding library-side small-sample-warning recommendation; §5.1 caveat updated to reflect that the per-modality trio is closed and only unbounded metrics remain.*
