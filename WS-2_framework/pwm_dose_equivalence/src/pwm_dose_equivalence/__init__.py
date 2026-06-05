@@ -29,12 +29,14 @@ sample-size-formula derivations the API defaults reflect.
 """
 
 from pwm_dose_equivalence.api import signal_equivalence_credential
+from pwm_dose_equivalence.audit import CredentialAudit, audit_credential
 from pwm_dose_equivalence.credential import (
     Credential,
     SignalEquivalenceCredential,
     Task,
     Verdict,
 )
+from pwm_dose_equivalence.credential_schema import CREDENTIAL_JSON_SCHEMA
 from pwm_dose_equivalence.estimator import (
     bca_ci,
     delong_ci,
@@ -55,10 +57,12 @@ from pwm_dose_equivalence.sample_size import (
     required_n_bernstein,
 )
 
-__version__ = "0.2.0"
+__version__ = "0.2.1"
 
 __all__ = [
+    "CREDENTIAL_JSON_SCHEMA",
     "Credential",
+    "CredentialAudit",
     "FRAMEWORK_SPEC",
     "SignalEquivalenceCredential",
     "Task",
@@ -67,6 +71,7 @@ __all__ = [
     "Tr_pet",
     "Verdict",
     "__version__",
+    "audit_credential",
     "bca_ci",
     "delong_ci",
     "framework_hash",

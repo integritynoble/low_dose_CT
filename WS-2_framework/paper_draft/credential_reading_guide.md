@@ -33,12 +33,13 @@ A real credential looks like this:
   "schema_version": "pwm-signal-equivalence/v0.2",
   "framework_hash": "sha256:b366f51c11a8fbdfc7b60f1f977d42a10a8bdaa55521b43de0c428afc289fb58",
   "credential": {
-    "method":            {"name": "my_method", "code_hash": "sha256:..."},
-    "reference_method":  {"name": "FBP_full_dose"},
+    "method":            "my_method",
+    "reference_method":  "FBP_full_dose",
     "signal_ratio":      0.25,
     "modality":          "CT",
     "task":              {"name": "lung_nodule_5mm",
                           "metric": "auc",
+                          "target": null,
                           "ground_truth_protocol":
                             "pwm-ldct/annotation-qa/v0.5#sha256:..."},
     "subpopulation":     "adult_chest_pwm_l3_test_v1",
@@ -61,14 +62,18 @@ A real credential looks like this:
 }
 ```
 
+The exact JSON Schema this credential conforms to is exported from the library as `CREDENTIAL_JSON_SCHEMA` (in `pwm_dose_equivalence.credential_schema`). One `json.dumps(CREDENTIAL_JSON_SCHEMA)` gives you the machine-readable copy if you want to validate a credential outside Python.
+
+> **Schema-evolution note.** The v0.2 schema carries `method` and `reference_method` as bare strings (slugs only). A future v1.0 schema will widen them to `{"name": "...", "code_hash": "sha256:..."}` for full method-bundle provenance. Until then, the `framework_hash` field anchors the *framework version* the credential commits to; method-bundle provenance is recorded separately at the publication venue (Docker image hash in the supplementary materials, pip release hash on PyPI, etc.).
+
 Field by field:
 
 | Field | What it means | What you check |
 |---|---|---|
 | `schema_version` | Which version of the credential schema the authors used | Should be the latest schema you recognise; older schemas are historical |
-| `framework_hash` | SHA-256 of the framework definition the credential commits to | Resolve by hash; if it doesn't match a framework version you trust, ask for clarification |
-| `method.name`, `method.code_hash` | The candidate method and a hash of its code | Authors should publish a method bundle (Docker image, pip release) whose hash matches |
-| `reference_method.name` | The named reference method (FBP at full dose, vendor IR at full dose, etc.) | A *credible* reference. If it is unfamiliar, ask what it is |
+| `framework_hash` | SHA-256 of the framework definition the credential commits to | Resolve by hash; if it doesn't match a framework version you trust, ask for clarification. The library's `audit_credential` function checks this automatically |
+| `method` | The candidate method slug | A descriptive name. v0.2 emits a bare string; v1.0 will widen to `{name, code_hash}` |
+| `reference_method` | The reference method slug (FBP at full dose, vendor IR at full dose, etc.) | A *credible* reference. If it is unfamiliar, ask what it is |
 | `signal_ratio` (= `r`) | The reduction ratio. `0.25` = 25 % of the reference signal | Check this matches the authors' marketing claim. A 50 %-dose-reduction claim should have `r = 0.5` |
 | `modality` | `CT`, `MRI`, `PET`, or a user-defined string | Should match the modality you care about |
 | `task` | The clinical task this credential asserts equivalence on | A credential at `lung_nodule_5mm` is **silent** about, e.g., ground-glass-opacity characterisation |
@@ -173,16 +178,33 @@ These should prompt follow-up questions before you act on the credential:
 | Red flag | Why it matters |
 |---|---|
 | `framework_hash` not resolvable / not on the registry | Provenance broken; you cannot verify what specification was tested |
-| `method.code_hash` missing | The method bundle is not pinned; the authors may be silently iterating |
+| `audit_credential()` returns `ok=False` | The credential is internally inconsistent — verdict does not match its CI, or schema fields are missing or out of range. See §7a |
+| Method bundle (Docker image / pip release) hash not published alongside the credential | The method is not pinned; the authors may be silently iterating between issuances. The v0.2 schema does not yet carry a `method.code_hash` field, so this discipline lives at the publication venue |
 | `subpopulation` slug not resolvable | You cannot tell who is in the cohort; can't transfer the claim |
-| `ground_truth_protocol` undocumented | The labels could be of unknown quality |
+| `ground_truth_protocol` undocumented (or `null`) | The labels could be of unknown quality |
 | `epsilon` much larger than the v0.3 default for the metric | Lax equivalence claim; may not be clinically meaningful |
-| `estimator = "bca"` *without* a percentile companion | BCa as headline result not recommended; ask for the percentile version |
-| `n_test` much smaller than `sample_size_check.n_required` | The verdict may be a fluke; cohort below formula prescription |
+| `estimator = "bca"` *without* a percentile companion | BCa as headline result not recommended; ask for the percentile version. `audit_credential()` emits this warning automatically |
+| `n_test` much smaller than `sample_size_check.n_required` | The verdict may be a fluke; cohort below formula prescription. `audit_credential()` flags this when the verdict is `PASS` |
 | Same-day commit hash on the credential AND on the method bundle | Possible cherry-picking; ask for a longitudinal record |
 | Credentials only published when `verdict = "PASS"` (selective reporting) | Publication bias; ask for the full ledger of issued credentials |
 
 A credential that has none of these flags is *internally consistent*. Whether it is *clinically sufficient* remains your call.
+
+### 7a. The `audit_credential` shortcut
+
+If you have Python installed, you can run every *internal-consistency* check above (schema validity, verdict self-consistency, framework-hash recognition, sample-size-check coherence, BCa-headline warning) in one call:
+
+```python
+from pwm_dose_equivalence import audit_credential
+import json
+
+report = audit_credential(json.load(open("their_credential.json")))
+print(report.ok)                   # True iff every hard check passed
+print(report.issues)               # list of failed checks (hard issues)
+print(report.warnings)             # list of soft signals (non-blocking)
+```
+
+The audit does *not* re-run the bootstrap — that requires the original test-set scores and is the job of `reproduction_guide.md`. The audit *does* verify that the published verdict is what the published CI implies, that the framework hash is one this library version recognises, that the schema is intact, and that no soft signals (BCa-as-headline, undersized cohort with PASS) have been silently issued. Most of the red flags above translate to a check in `audit_credential`; the remainder (subpopulation slug resolution, method-bundle hash, selective reporting) require institutional context the credential JSON cannot carry on its own.
 
 ---
 
@@ -194,7 +216,9 @@ A credential that has none of these flags is *internally consistent*. Whether it
 * [`../theory/proofs/sample_size.md`](../theory/proofs/sample_size.md) — formal sample-size derivation
 * [`../theory/proofs/estimator.md`](../theory/proofs/estimator.md) — formal coverage + power discussion
 * [`../pwm_dose_equivalence/notebooks/`](../pwm_dose_equivalence/notebooks/) — four tutorial notebooks for users learning to *issue* credentials
+* `pwm_dose_equivalence.audit.audit_credential` — Python API for the internal-consistency checks described in §7a
+* `pwm_dose_equivalence.credential_schema.CREDENTIAL_JSON_SCHEMA` — the machine-readable JSON Schema this guide describes
 
 ---
 
-*Reading guide v1.0 — 2026-06-05 (D9 + 16). Aligned with manuscript v0.3 + library v0.2.0 + `proofs/estimator.md` v0.4. Pairs with `reproduction_guide.md`.*
+*Reading guide v1.1 — 2026-06-05 (D9 + 16). Aligned with manuscript v0.3 + library v0.2.1 (adds `audit_credential` + `CREDENTIAL_JSON_SCHEMA`) + `proofs/estimator.md` v0.4. Pairs with `reproduction_guide.md`. v1.0 → v1.1: reconciled JSON example to match the v0.2 schema's bare-string `method` field; added §7a `audit_credential` shortcut and schema-evolution note.*
