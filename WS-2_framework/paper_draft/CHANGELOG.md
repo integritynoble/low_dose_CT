@@ -48,6 +48,29 @@ No theory-side movement. All BLOCK items remain done. The remaining open items a
 | `a5b5163` | `pwm_dose_equivalence/tests/test_integration.py` (new); library README test/coverage line bumped to 81/81 |
 | `558d112` | `paper_draft/reproduction_guide.md` (new) |
 
+### Downstream-doc propagation
+
+The L0.2-4 + R3-1 landings propagated to both READMEs to keep cross-document references in sync:
+
+* **WS-2 README** (`4d80ad2` + `f904a8d`). Status pin date bumped D9 + 15 → D9 + 16; library `v0.1.0 alpha / 60/60` → `v0.2.0 alpha / 81/81 (incl. 10 integration tests)` across the status pin, Goal 2, Phase 3.1 status, Subfolders `paper_draft/` row, Subfolders `pwm_dose_equivalence/` row, and Cross-references library bullet. New "Landed at D9 + 15 late (Library v0.2.0)" sub-block + "Landed at D9 + 16 (reviewer-reproduction surface)" sub-block in the "Done when" intermediate-progress section with L0.2-1 .. L0.2-4 + R3-1 checked. Subfolders `paper_draft/` row description extended to mention the reproduction guide. Timeline preface five-pass enumeration extended (D9 + 12 / 13 / 14 / 15 / 16).
+* **WS-1 README** (`18bcbfe`). Four "as of today" date bumps (status pin + Timeline preface + "Done when" preface + section heading) D9 + 15 → D9 + 16. **Cross-references → WS-2 entry "Downstream-user note"** updated: library v0.1.0 → v0.2.0; tests 60/60 → 81/81; estimator list extended (percentile + DeLong + BCa); sample-size pre-flight gains `bound_M`; small-$n$ warning enumerated. **NEW pointer** to `paper_draft/reproduction_guide.md` for downstream WS-1 researchers who want to verify any specific WS-2 numerical claim against their experimental setup using the 16-row per-claim anchor table as the entry point.
+
+The 16-row per-claim anchor table in the reproduction guide is now referenced directly from the WS-1 README — completing the audit-trail discipline that the v0.3 evidence-completion + Library v0.2.0 sections began.
+
+### Cumulative reviewer-reproduction surface
+
+A reviewer landing on either README today sees:
+
+| Surface | Where | Audience |
+|---|---|---|
+| Manuscript claims | `paper_draft/manuscript.tex` v0.3 | reviewers |
+| What changed and why | `paper_draft/CHANGELOG.md` (this file) | reviewers + maintainers |
+| Where each claim lives + how to re-derive | `paper_draft/reproduction_guide.md` (R3-1) | reviewers |
+| Library implementation + 81 tests at 100 % | `pwm_dose_equivalence/` v0.2.0 alpha | downstream users + reviewers |
+| Cross-workstream cohort-sizing implications | WS-1 README Target specs row + WS-2 cross-reference | downstream WS-1 users |
+
+The discipline is end-to-end: every cited number, every cross-reference, every library feature has an identified anchor and a documented path to verification.
+
 ---
 
 ## Library v0.2.0 — D9 + 15 (2026-06-04, late)
