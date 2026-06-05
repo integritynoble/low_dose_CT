@@ -117,7 +117,7 @@ The v0.2.0 test suite covers:
 * **Framework hash** (`test_framework_hash.py`) — SHA-256 prefix; hash-mutates-on-spec-mutate.
 * **API end-to-end** (`test_api.py`) — equivalent and biased candidates produce expected verdicts; auto-estimator-selection; sample-size warning.
 
-**Current v0.2.0:** 71/71 tests pass at **100 % line coverage** (265/265 statements). The 90 % target from the manuscript's §software-rigor paragraph is the published floor; the library continues to ship well above it.
+**Current v0.2.0:** 81/81 tests pass at **100 % line coverage** (265/265 statements). The 90 % target from the manuscript's §software-rigor paragraph is the published floor; the library continues to ship well above it. The 81 tests now include 10 end-to-end integration tests in `tests/test_integration.py` covering full credential-issuance pipelines across CT / MRI / PET, cross-modality consistency via the public API, JSON round-trip + framework-hash verification, seeded reproducibility, T_r operator integration, and verdict-distribution transitions (boundary INDETERMINATE; FAIL at $\Delta_{\text{true}} > \varepsilon$ + $n = 500$).
 
 **v0.2.0 additions (D9 + 15, 2026-06-04):**
 
@@ -144,7 +144,7 @@ Semantic versioning:
 * `MINOR` — add a modality, estimator, or task type; non-breaking
 * `PATCH` — bug fix; preserves credential reproducibility
 
-The current version is `0.2.0` (alpha). v0.2.0 added BCa + small-$n$ warning + `bound_M`; remaining items on the path to `1.0.0` include integration tests, macOS / Windows CI runners, and the manuscript-acceptance fixes the journal review surfaces. `1.0.0` ships alongside the *Nature Methods* paper acceptance with five-year support commitment.
+The current version is `0.2.0` (alpha). v0.2.0 added BCa + small-$n$ warning + `bound_M` + integration tests; remaining items on the path to `1.0.0` include macOS / Windows CI runners (currently Linux only) and the manuscript-acceptance fixes the journal review surfaces. `1.0.0` ships alongside the *Nature Methods* paper acceptance with five-year support commitment.
 
 ---
 
