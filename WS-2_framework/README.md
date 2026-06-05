@@ -69,7 +69,7 @@ Phase 2 work runs in parallel with the WS-1 IRB lag — no IRB dependency.
 
 | # | Task | Output | Status @ v0.3 |
 |---|---|---|---|
-| 3.1 | Implement `pwm_dose_equivalence.signal_equivalence_credential()` (CT validator) | Core library + CT example | **partial** — productionised package [`pwm_dose_equivalence/`](pwm_dose_equivalence/) at v0.1.0 alpha (modality-agnostic API + percentile / DeLong estimators + sample-size pre-flight + content-addressed framework hash + Tr_ct/Tr_mri/Tr_pet operators); 60/60 tests pass at 100 % line coverage; real-data CT example gated on Phase 1 pilot |
+| 3.1 | Implement `pwm_dose_equivalence.signal_equivalence_credential()` (CT validator) | Core library + CT example | **partial** — productionised package [`pwm_dose_equivalence/`](pwm_dose_equivalence/) at **v0.2.0 alpha** (modality-agnostic API + percentile / DeLong / **BCa** estimators + sample-size pre-flight with `bound_M` for unbounded metrics + small-$n$ anti-conservativeness warning + content-addressed framework hash + Tr_ct/Tr_mri/Tr_pet operators); **81/81 tests (incl. 10 end-to-end integration tests)** at 100 % line coverage on 265 statements; real-data CT example gated on Phase 1 pilot |
 | 3.2 | Implement MRI validator (fastMRI knee dataset; variable-density Cartesian masks) | MRI example + integration test | **partial** — synthetic Cartesian-mask channel verified in [`experiments/cross_modality_consistency/`](experiments/cross_modality_consistency/) and via library `Tr_mri`; real fastMRI integration pending (D9 + 270) |
 | 3.3 | Implement PET validator (NEMA IQ phantom; Poisson list-mode thinning) | PET example + integration test | **partial** — synthetic list-mode channel verified in `experiments/` and via library `Tr_pet`; real NEMA phantom integration pending (D9 + 270) |
 | 3.4 | Pip-package; publish v0.1 to TestPyPI; gather feedback | TestPyPI listing | pending — `pyproject.toml` ready, package installs cleanly via `pip install -e ".[test]"`; TestPyPI upload is a single-command step gated on PyPI account auth (D9 + 365) |
@@ -88,7 +88,7 @@ Phase 2 work runs in parallel with the WS-1 IRB lag — no IRB dependency.
 
 ## Timeline (D9-anchored)
 
-D9 anchor ≈ 2026-05-20 (theory v0.1 seed date); today (2026-06-03) is **≈ D9 + 14**. Several pre-empirical milestones originally scheduled for D9 + 150, D9 + 240, and D9 + 270 landed ahead of schedule via the v0.2 reviewer-readiness pass (D9 + 12), the D9 + 13 theory-and-library pass, and the D9 + 14 manuscript-side v0.3 propagation pass.
+D9 anchor ≈ 2026-05-20 (theory v0.1 seed date); today (2026-06-05) is **≈ D9 + 16**. Several pre-empirical milestones originally scheduled for D9 + 150, D9 + 240, and D9 + 270 landed ahead of schedule via the v0.2 reviewer-readiness pass (D9 + 12), the D9 + 13 theory-and-library pass, the D9 + 14 manuscript-side v0.3 propagation pass, the D9 + 15 path-1 non-AUC extension + library v0.2.0, and the D9 + 16 reviewer-reproduction surface (integration tests + reproduction guide).
 
 | Date | Milestone | Status |
 |---|---|---|
@@ -145,10 +145,21 @@ D9 anchor ≈ 2026-05-20 (theory v0.1 seed date); today (2026-06-03) is **≈ D9
 - [x] **Dice coverage + power sim** ([`experiments/estimator_coverage/dice_sim.py`](experiments/estimator_coverage/dice_sim.py), commit `d8c45e1`): 18 cells; closes the *AUC-only* caveat in `proofs/estimator.md` §5.1. Headline: at realistic clinical $\sigma_\Delta = 0.05$ and $n \geq 200$, the framework PASSes cleanly under the null (P(`PASS`) = 1.000) — substantively different from the AUC-at-the-same-n case (P(`PASS`) ≈ 0.40). `proofs/estimator.md` bumped v0.2 → v0.3 with new §4b.
 - [x] **CR (PET phantom) coverage + power sim** ([`experiments/estimator_coverage/cr_sim.py`](experiments/estimator_coverage/cr_sim.py), commit `1911b68`): 24 cells; **per-modality metric trio CLOSED** (AUC + Dice + CR). Headline finding: percentile bootstrap is anti-conservative at very small $n$ (n=6: coverage 0.82–0.88; n=12: 0.88–0.93). At $n \geq 30$ coverage returns to nominal. Recommended PET phantom cohort: $n \geq 30$ (≥ 5 acquisitions). `proofs/estimator.md` bumped v0.3 → v0.4 with new §4c; §5.1 caveat closed; v0.2.0 library item recorded (small-$n$ warning for non-AUC metrics).
 
-**Still pending (theory-time-blocked, not data-blocked):**
+**Landed at D9 + 15, late (Library v0.2.0):**
+
+- [x] **L0.2-1 BCa estimator exposure** (commit `8e6dbdb`): generalised Efron 1987 bias-corrected accelerated bootstrap exposed as `estimator="bca"`; opt-in only per the v0.3 §4 decision; degenerate-input fallback to percentile.
+- [x] **L0.2-2 Small-$n$ anti-conservativeness warning** (commit `8e6dbdb`): `UserWarning` fires for any percentile or BCa call at $n < 30$, citing the V3-11 finding in `proofs/estimator.md` §4c.
+- [x] **L0.2-3 `bound_M` argument** (commit `8e6dbdb`): exposes the Bernstein bound's $M$ parameter for unbounded metrics (MAE / MSE). Larger `bound_M` strictly grows the Bernstein requirement; CLT bound unaffected.
+- [x] Library version bump 0.1.0 → 0.2.0; 60/60 → 71/71 tests at 100 % coverage on 265 statements.
+
+**Landed at D9 + 16 (reviewer-reproduction surface):**
+
+- [x] **L0.2-4 Integration tests** (commit `a5b5163`): 10 new end-to-end tests in `tests/test_integration.py` exercising the full credential-issuance pipeline through the public API (CT AUC / MRI Dice / PET CR per-modality; cross-modality consistency via production library; JSON round-trip + framework-hash audit; seeded reproducibility; T_r integration; verdict transitions). 71/71 → **81/81 tests** at 100 % coverage (unchanged 265 statements; integration tests exercise existing code paths).
+- [x] **R3-1 `paper_draft/reproduction_guide.md`** (commit `558d112`): 12-section reviewer walkthrough mapping every numerical claim in v0.3 to its repo anchor + the command that re-derives it; 16-row per-claim anchor table; introduces the `R3-N` ID convention for reviewer-facing reproduction artifacts.
+
+**Still pending (theory-time-blocked / data-blocked, not in-session executable):**
 
 - [ ] Literature depth-pass complete (fastMRI reader studies / one CHO-for-LDCT paper / Wunderlich–Noo observer-variance) → `theory/dose-equivalence-framework.md` bumped from v0.1 to v0.2
-- [ ] Non-null power simulation for the paired-bootstrap estimator (open_questions §3 second deliverable)
 - [ ] Conditional monotonicity-in-`r` empirical check (open_questions §5; best after Phase 1 pilot data)
 
 ### Terminal acceptance criteria
