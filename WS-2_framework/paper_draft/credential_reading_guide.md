@@ -204,7 +204,17 @@ print(report.issues)               # list of failed checks (hard issues)
 print(report.warnings)             # list of soft signals (non-blocking)
 ```
 
-The audit does *not* re-run the bootstrap — that requires the original test-set scores and is the job of `reproduction_guide.md`. The audit *does* verify that the published verdict is what the published CI implies, that the framework hash is one this library version recognises, that the schema is intact, and that no soft signals (BCa-as-headline, undersized cohort with PASS) have been silently issued. Most of the red flags above translate to a check in `audit_credential`; the remainder (subpopulation slug resolution, method-bundle hash, selective reporting) require institutional context the credential JSON cannot carry on its own.
+If you would rather not write any Python, the library installs a console entry point that does the same thing from the shell:
+
+```bash
+pwm-audit their_credential.json              # human-readable summary
+pwm-audit their_credential.json --json       # machine-readable JSON report
+cat their_credential.json | pwm-audit -      # read from stdin
+```
+
+The exit code mirrors the verdict: `0` if `ok=True`, `1` if any hard issue, `2` on I/O or argument error. Drop `pwm-audit` into a CI pipeline or a paper-submission checklist and any credential that fails internal consistency will block the workflow.
+
+The audit (library call or CLI) does *not* re-run the bootstrap — that requires the original test-set scores and is the job of `reproduction_guide.md`. The audit *does* verify that the published verdict is what the published CI implies, that the framework hash is one this library version recognises, that the schema is intact, and that no soft signals (BCa-as-headline, undersized cohort with PASS) have been silently issued. Most of the red flags above translate to a check in `audit_credential`; the remainder (subpopulation slug resolution, method-bundle hash, selective reporting) require institutional context the credential JSON cannot carry on its own.
 
 ---
 
@@ -221,4 +231,4 @@ The audit does *not* re-run the bootstrap — that requires the original test-se
 
 ---
 
-*Reading guide v1.1 — 2026-06-05 (D9 + 16). Aligned with manuscript v0.3 + library v0.2.1 (adds `audit_credential` + `CREDENTIAL_JSON_SCHEMA`) + `proofs/estimator.md` v0.4. Pairs with `reproduction_guide.md`. v1.0 → v1.1: reconciled JSON example to match the v0.2 schema's bare-string `method` field; added §7a `audit_credential` shortcut and schema-evolution note.*
+*Reading guide v1.2 — 2026-06-05 (D9 + 16). Aligned with manuscript v0.3 + library v0.2.2 (adds `audit_credential` + `CREDENTIAL_JSON_SCHEMA` at v0.2.1; adds `pwm-audit` console entry point at v0.2.2) + `proofs/estimator.md` v0.4. Pairs with `reproduction_guide.md`. v1.0 → v1.1: reconciled JSON example to match the v0.2 schema's bare-string `method` field; added §7a `audit_credential` shortcut and schema-evolution note. v1.1 → v1.2: §7a now also documents the `pwm-audit` CLI for non-Python-call workflows (CI hooks, submission-checklist scripts).*

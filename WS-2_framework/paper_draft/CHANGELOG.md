@@ -10,6 +10,35 @@ reviewer-readiness audit posted in the 2026-06-01 working session.
 
 ---
 
+## Library v0.2.2 — pwm-audit CLI — D9 + 16 (2026-06-05)
+
+Closes the "no Python required" gap for credential auditing. v0.2.1 gave a non-coder reviewer a one-call Python audit; v0.2.2 puts the same audit behind a `pwm-audit` shell command so a reviewer with the credential JSON and Python installed never has to write a Python line. Drop `pwm-audit credential.json` into a CI hook or a submission-checklist script and any internally-inconsistent credential fails the workflow.
+
+| ID | What landed | Commit |
+|---|---|---|
+| **L0.2.2-1** | **`cli.py` — `pwm-audit` entry point.** New `src/pwm_dose_equivalence/cli.py` with `main(argv=None, *, stdin, stdout, stderr)` function. Argparse-based CLI: one positional argument (credential JSON path, or `-` for stdin), `--json` for machine-readable output, `--version` for library version, `--help` for usage. Human-readable summary names the hard checks, soft signals, and lists issues + warnings; JSON output is `dataclasses.asdict(CredentialAudit)`. Streams are dependency-injected so tests can capture them without monkey-patching. | *(this commit)* |
+| **L0.2.2-2** | **`pyproject.toml` registers `pwm-audit`.** New `[project.scripts]` block points `pwm-audit` at `pwm_dose_equivalence.cli:main`. Version bump 0.2.1 → 0.2.2. `__init__.py` `__version__` follows. After `pip install -e .[test]`, `pwm-audit --version` prints `pwm-audit (pwm_dose_equivalence 0.2.2)`. | *(this commit)* |
+| **L0.2.2-3** | **12 new CLI tests in `tests/test_cli.py`** covering: valid credential → exit 0 + "OK"; tampered verdict → exit 1; bad JSON → exit 1; nonexistent file → exit 2; stdin via `-`; `--json` output round-trips via `json.loads`; `--help` exits 0; `--version` exits 0 with library version printed; missing positional → exit 2; BCa-as-headline warning surfaces in human output; unknown framework-hash surfaces in human output and `framework_hash_known = False`; default sys.* streams when `main()` called without explicit kwargs. **Library coverage now 128/128 tests at 100 % line coverage on 437 statements** (up from 116/378 in v0.2.1; +12 tests, +59 statements). | *(this commit)* |
+| **L0.2.2-4** | **Reading guide v1.1 → v1.2; manuscript + library README + WS-2 README + WS-1 cross-reference propagation.** Reading guide §7a now documents the `pwm-audit` CLI alongside the Python API with the three input modes (file / `--json` / stdin) and the exit-code contract; reading-guide footer bumped to v1.2. Manuscript §software_rigor Testing paragraph updated to v0.2.2 numbers (116/378 → 128/437; CLI exit-code contract exercised). §software_rigor Versioning policy current-version bumped to 0.2.2. §anchoring "Internal-consistency audit" paragraph gains a sentence noting `pwm-audit` is available from the shell. Library README "v0.2.2 additions" section + status line + test-count table + Versioning paragraph all bumped. WS-2 README status pin + Goals 2 + Tasks 3.1 + D9+16 closure list + Subfolders + Cross-references rows all bumped to v0.2.2. WS-1 README cross-reference entry mentions `pwm-audit` as the no-Python-call-needed alternative to the Python API. PDF rebuilt at 22 pp. | *(this commit)* |
+
+### Schema unchanged (again)
+
+v0.2.2 changes neither the credential wire format nor the framework specification. `FRAMEWORK_SPEC` is byte-for-byte identical to v0.2.1; every v0.2.2 credential is bit-identical to what v0.2.1 would have issued from the same inputs. The CLI is a thin shell over the v0.2.1 `audit_credential` function — same checks, same output semantics, different I/O.
+
+### What the §software_rigor paragraph now backs
+
+| Claim in paragraph | Backing artifact |
+|---|---|
+| Documentation site (readthedocs.io URL) | Pending TestPyPI publish; URL is the post-publish anchor |
+| API reference (auto-generated from docstrings) | Pending TestPyPI publish; sphinx-autodoc on docstrings |
+| Three tutorial notebooks (one per validated modality) | `pwm_dose_equivalence/notebooks/01_*.py`, `02_*.py`, `03_*.py` (R3-2) |
+| Optical / fluorescence extension tutorial (Methods Table 7 claim) | `pwm_dose_equivalence/notebooks/04_optical_extending.py` (R3-3) |
+| ``Credential reading guide'' for non-coder reviewers / regulators | `paper_draft/credential_reading_guide.md` v1.2 (R3-4 + audit / CLI shortcuts) |
+| Internal-consistency audit available from Python and shell | `pwm_dose_equivalence.audit_credential` (v0.2.1) + `pwm-audit` (v0.2.2) |
+| 90 % minimum line coverage | 100 % on 437 statements (well above floor) |
+
+---
+
 ## Library v0.2.1 — audit_credential + machine-readable JSON Schema — D9 + 16 (2026-06-05)
 
 Backs the manuscript §software_rigor "Credential reading guide" claim with **code**: anything the reading guide tells a human to check by eye, the library now offers as a one-call audit function. Also closes the latent documentation drift between the reading guide's example JSON and what the library actually emits.

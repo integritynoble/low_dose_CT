@@ -15,7 +15,7 @@ pip install -e ".[test]"
 
 Requires Python ≥ 3.10, `numpy`, `scipy`.
 
-Status: **v0.2.1 — alpha**, scaffolded 2026-06-02 (v0.1.0) → extended 2026-06-04 (v0.2.0 adds BCa estimator + small-$n$ anti-conservativeness warning + `bound_M` argument for unbounded metrics) → extended 2026-06-05 (v0.2.1 adds `audit_credential()` + machine-readable `CREDENTIAL_JSON_SCHEMA` for non-coder auditing). TestPyPI ship at D9 + 365; v1.0.0 alongside paper acceptance.
+Status: **v0.2.2 — alpha**, scaffolded 2026-06-02 (v0.1.0) → extended 2026-06-04 (v0.2.0 adds BCa estimator + small-$n$ anti-conservativeness warning + `bound_M` argument for unbounded metrics) → extended 2026-06-05 (v0.2.1 adds `audit_credential()` + machine-readable `CREDENTIAL_JSON_SCHEMA` for non-coder auditing; v0.2.2 adds the `pwm-audit` console entry point so the audit runs from the shell with no Python call required). TestPyPI ship at D9 + 365; v1.0.0 alongside paper acceptance.
 
 ---
 
@@ -133,7 +133,7 @@ The v0.2.0 test suite covers:
 * **Framework hash** (`test_framework_hash.py`) — SHA-256 prefix; hash-mutates-on-spec-mutate.
 * **API end-to-end** (`test_api.py`) — equivalent and biased candidates produce expected verdicts; auto-estimator-selection; sample-size warning.
 
-**Current v0.2.1:** 116/116 tests pass at **100 % line coverage** (378/378 statements). The 90 % target from the manuscript's §software-rigor paragraph is the published floor; the library continues to ship well above it. The 116 tests now include 10 end-to-end integration tests (`tests/test_integration.py` — full credential-issuance pipelines across CT / MRI / PET, cross-modality consistency via the public API, JSON round-trip + framework-hash verification, seeded reproducibility, T_r operator integration, and verdict-distribution transitions) plus 35 credential-audit tests (`tests/test_credential_audit.py` — schema validation; tampered-verdict detection; framework-hash recognition; sample-size-check coherence; estimator-specific soft signals; deep-copy non-mutation invariant).
+**Current v0.2.2:** 128/128 tests pass at **100 % line coverage** (437/437 statements). The 90 % target from the manuscript's §software-rigor paragraph is the published floor; the library continues to ship well above it. The 128 tests now include 10 end-to-end integration tests (`tests/test_integration.py` — full credential-issuance pipelines across CT / MRI / PET, cross-modality consistency via the public API, JSON round-trip + framework-hash verification, seeded reproducibility, T_r operator integration, and verdict-distribution transitions) plus 35 credential-audit tests (`tests/test_credential_audit.py` — schema validation; tampered-verdict detection; framework-hash recognition; sample-size-check coherence; estimator-specific soft signals; deep-copy non-mutation invariant) plus 12 CLI tests (`tests/test_cli.py` — file / stdin / JSON / help / version / missing-argument / tampered-verdict exit-code paths).
 
 **v0.2.0 additions (D9 + 15, 2026-06-04):**
 
@@ -173,6 +173,26 @@ The v0.2.0 test suite covers:
   (`paper_draft/credential_reading_guide.md`) §7a now demonstrates
   the audit call directly.
 
+**v0.2.2 additions (D9 + 16, 2026-06-05):**
+
+* **`pwm-audit` console entry point** — installs as a shell command
+  via `[project.scripts]`. Calls the same `audit_credential` function
+  but with no Python required by the caller:
+
+  ```bash
+  pwm-audit credential.json          # human-readable summary
+  pwm-audit credential.json --json   # machine-readable JSON report
+  cat credential.json | pwm-audit -  # read from stdin
+  ```
+
+  Exit code: `0` if `ok=True`, `1` if any hard issue, `2` on I/O or
+  argument error. Drop into a CI hook or submission-checklist script
+  and any internally-inconsistent credential fails the workflow.
+
+* The CLI is documented in
+  [`../paper_draft/credential_reading_guide.md`](../paper_draft/credential_reading_guide.md)
+  §7a alongside the Python API.
+
 ---
 
 ## Versioning policy
@@ -183,7 +203,7 @@ Semantic versioning:
 * `MINOR` — add a modality, estimator, or task type; non-breaking
 * `PATCH` — bug fix; preserves credential reproducibility
 
-The current version is `0.2.1` (alpha). v0.2.0 added BCa + small-$n$ warning + `bound_M` + integration tests; v0.2.1 added `audit_credential` + machine-readable `CREDENTIAL_JSON_SCHEMA`; remaining items on the path to `1.0.0` include macOS / Windows CI runners (currently Linux only), a `method.code_hash` extension to the credential schema for full method-bundle provenance, and the manuscript-acceptance fixes the journal review surfaces. `1.0.0` ships alongside the *Nature Methods* paper acceptance with five-year support commitment.
+The current version is `0.2.2` (alpha). v0.2.0 added BCa + small-$n$ warning + `bound_M` + integration tests; v0.2.1 added `audit_credential` + machine-readable `CREDENTIAL_JSON_SCHEMA`; v0.2.2 added the `pwm-audit` console entry point; remaining items on the path to `1.0.0` include macOS / Windows CI runners (currently Linux only), a `method.code_hash` extension to the credential schema for full method-bundle provenance, and the manuscript-acceptance fixes the journal review surfaces. `1.0.0` ships alongside the *Nature Methods* paper acceptance with five-year support commitment.
 
 ---
 

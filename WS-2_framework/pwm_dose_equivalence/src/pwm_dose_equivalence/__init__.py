@@ -57,7 +57,7 @@ from pwm_dose_equivalence.sample_size import (
     required_n_bernstein,
 )
 
-__version__ = "0.2.1"
+__version__ = "0.2.2"
 
 __all__ = [
     "CREDENTIAL_JSON_SCHEMA",

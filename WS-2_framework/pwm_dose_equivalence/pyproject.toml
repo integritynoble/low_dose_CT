@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pwm_dose_equivalence"
-version = "0.2.1"
+version = "0.2.2"
 description = "Reference implementation of the signal-equivalence framework for medical-imaging dose-reduction claims (CT / MRI / PET)."
 readme = "README.md"
 license = { text = "Apache-2.0" }
@@ -29,6 +29,9 @@ dependencies = [
 
 [project.optional-dependencies]
 test = ["pytest>=7", "pytest-cov>=4"]
+
+[project.scripts]
+pwm-audit = "pwm_dose_equivalence.cli:main"
 
 [project.urls]
 Homepage = "https://github.com/integritynoble/low_dose_CT/tree/main/WS-2_framework"
