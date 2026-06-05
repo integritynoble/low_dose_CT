@@ -230,6 +230,19 @@ A reviewer can locate any concrete numerical claim in the manuscript by consulti
 
 ---
 
+## 10a. Companion document for non-coders
+
+This guide is the *technical* reproduction surface. Its companion is [`credential_reading_guide.md`](credential_reading_guide.md) — a field-by-field walk through a published credential JSON for reviewers, regulators, and clinicians who need to *interpret* a credential without re-running the bootstrap themselves. The reading guide covers verdict semantics (PASS / FAIL / INDETERMINATE), CI vs $\varepsilon$ reading, what the framework hash does and does not guarantee, the `sample_size_check` field, common reviewer questions, and a red-flag checklist.
+
+The two guides are deliberately disjoint:
+
+* `reproduction_guide.md` (this document) — "how do I re-derive the numbers?"
+* `credential_reading_guide.md` — "how do I read a credential someone else published?"
+
+A complete reviewer-facing surface needs both.
+
+---
+
 ## 11. What this guide intentionally does *not* cover
 
 * **Per-modality Results tables (Table 2 CT / Table 3 MRI / Table 4 PET).** These remain `\todo` placeholders in the v0.3 manuscript pending the Phase 1 pilot (CT, D9 + 90) and Phase 3 real-data integrations (MRI fastMRI / PET NEMA NU-2 IQ phantom, D9 + 270). When those land, this guide will gain a §12 anchored at the cohorts' content-addressed manifests.

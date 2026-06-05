@@ -10,6 +10,29 @@ reviewer-readiness audit posted in the 2026-06-01 working session.
 
 ---
 
+## v0.3 reviewer-reproduction surface (continued) — D9 + 16 (2026-06-05)
+
+Closes the *non-coder reviewer* gap in the §software_rigor "Documentation and tutorial notebooks" paragraph. The previous v0.3 reproduction-surface entry covered the *code-savvy* reviewer (R3-1 reproduction guide + R3-2 / R3-3 tutorials); today's entry covers the *non-coder* reviewer (R3-4 reading guide), and adds a small manuscript text edit pointing readers at both companion documents.
+
+| ID | What landed | Commit |
+|---|---|---|
+| **R3-4** | **`paper_draft/credential_reading_guide.md`** — 8-section field-by-field walk through a published credential JSON, written for reviewers / regulators / clinicians who need to *interpret* a credential without re-running the bootstrap themselves. Sections: (1) what a credential is + what it is not; (2) JSON field table (14 fields); (3) verdict semantics (PASS / FAIL / INDETERMINATE); (4) sample-size sanity check (with the WS-1 v0.5 INDETERMINATE-dominated regime called out by name at n ≈ 208 / AUC ≈ 0.92, $P(\text{PASS}) \approx 0.40$); (5) framework-hash guarantees + non-guarantees (3 + 3); (6) common reviewer / regulator questions (7); (7) red-flag checklist (9 entries); (8) cross-references. Audience-disjoint from `reproduction_guide.md`: the reproduction guide answers "how do I re-derive the numbers?"; the reading guide answers "how do I read a credential someone else published?" `reproduction_guide.md` §10a added pointing at the reading guide; library `README.md` "Tutorial notebooks" section updated to list *both* reviewer-facing companions; manuscript §software_rigor "Documentation and tutorial notebooks" paragraph updated to name both files by path. **Closes the manuscript §software_rigor "Credential reading guide" claim**, leaving zero unbacked claims in that paragraph. | *(this commit)* |
+
+The §software_rigor "Documentation and tutorial notebooks" paragraph now has every concrete claim backed by an artifact:
+
+| Claim in paragraph | Backing artifact |
+|---|---|
+| Documentation site (readthedocs.io URL) | Pending TestPyPI publish; URL is the post-publish anchor |
+| API reference (auto-generated from docstrings) | Pending TestPyPI publish; sphinx-autodoc on docstrings |
+| Three tutorial notebooks (one per validated modality) | `pwm_dose_equivalence/notebooks/01_*.py`, `02_*.py`, `03_*.py` (R3-2) |
+| Optical / fluorescence extension tutorial (Methods Table 7 claim) | `pwm_dose_equivalence/notebooks/04_optical_extending.py` (R3-3) |
+| ``Credential reading guide'' for non-coder reviewers / regulators | `paper_draft/credential_reading_guide.md` (R3-4, today) |
+| CI testing of the notebooks (runnable as the API evolves) | Pending TestPyPI publish; CI matrix already defined for the test suite |
+
+The remaining "pending TestPyPI publish" items are infrastructure work outside what the local repository can certify on its own and ship with the v1.0.0 release alongside paper acceptance.
+
+---
+
 ## v0.3 reviewer-reproduction surface — D9 + 16 (2026-06-05)
 
 Closes two complementary items that together complete the *reviewer-can-reproduce-every-number* discipline: the last v0.2.0 library follow-up (integration tests), and a new top-level reviewer-facing document (`paper_draft/reproduction_guide.md`). No manuscript text change; both items strengthen what reviewers see *around* the manuscript without changing the manuscript prose.

@@ -1,0 +1,200 @@
+# Credential reading guide
+
+**For reviewers, regulators, and clinicians who need to *interpret* a published signal-equivalence credential — without writing code.**
+
+If you can read JSON, you can read a credential. This guide tells you what each field means, what verdict words you should trust, and what red flags should prompt a follow-up question.
+
+If you *can* write code, the companion document is [`reproduction_guide.md`](reproduction_guide.md), which tells you how to **re-derive** the credential from the published sources.
+
+---
+
+## 1. What a credential is
+
+A signal-equivalence credential is a JSON document a method's authors publish alongside their reconstruction method. It is a structured assertion of the form:
+
+> "Our method `M` produces task outputs on reduced-signal scans that are within $\varepsilon$ of a named reference method `M_ref` on full-signal scans, with confidence $1 - \alpha$, on patient subpopulation `Π`."
+
+That assertion is *machine-verifiable* (someone else can re-run the same library on the same test set and check the verdict) and *content-addressed* (it carries a cryptographic hash of the framework version it was issued against, so the meaning of the assertion is pinned).
+
+A credential is **not**:
+
+* A claim that the candidate method is *better* than the reference (that's superiority, a different test).
+* A claim about a different reduction ratio, different task, different cohort, or different reference than the ones listed.
+* A claim about whether you should personally trust the method clinically — that is your decision based on the credential plus the surrounding evidence.
+
+---
+
+## 2. The credential JSON, field-by-field
+
+A real credential looks like this:
+
+```json
+{
+  "schema_version": "pwm-signal-equivalence/v0.2",
+  "framework_hash": "sha256:b366f51c11a8fbdfc7b60f1f977d42a10a8bdaa55521b43de0c428afc289fb58",
+  "credential": {
+    "method":            {"name": "my_method", "code_hash": "sha256:..."},
+    "reference_method":  {"name": "FBP_full_dose"},
+    "signal_ratio":      0.25,
+    "modality":          "CT",
+    "task":              {"name": "lung_nodule_5mm",
+                          "metric": "auc",
+                          "ground_truth_protocol":
+                            "pwm-ldct/annotation-qa/v0.5#sha256:..."},
+    "subpopulation":     "adult_chest_pwm_l3_test_v1",
+    "epsilon":           0.05,
+    "alpha":             0.05,
+    "estimator":         "delong",
+    "n_test":            500,
+    "n_bootstrap":       0,
+    "seed":              42,
+    "delta_mean":        -0.012,
+    "delta_ci_low":      -0.034,
+    "delta_ci_high":     0.011,
+    "verdict":           "PASS",
+    "sample_size_check": {"rule": "S3-auc-clt",
+                          "placement_sd_hint": 0.15,
+                          "n_required": 246,
+                          "n_actual": 500,
+                          "ok": true}
+  }
+}
+```
+
+Field by field:
+
+| Field | What it means | What you check |
+|---|---|---|
+| `schema_version` | Which version of the credential schema the authors used | Should be the latest schema you recognise; older schemas are historical |
+| `framework_hash` | SHA-256 of the framework definition the credential commits to | Resolve by hash; if it doesn't match a framework version you trust, ask for clarification |
+| `method.name`, `method.code_hash` | The candidate method and a hash of its code | Authors should publish a method bundle (Docker image, pip release) whose hash matches |
+| `reference_method.name` | The named reference method (FBP at full dose, vendor IR at full dose, etc.) | A *credible* reference. If it is unfamiliar, ask what it is |
+| `signal_ratio` (= `r`) | The reduction ratio. `0.25` = 25 % of the reference signal | Check this matches the authors' marketing claim. A 50 %-dose-reduction claim should have `r = 0.5` |
+| `modality` | `CT`, `MRI`, `PET`, or a user-defined string | Should match the modality you care about |
+| `task` | The clinical task this credential asserts equivalence on | A credential at `lung_nodule_5mm` is **silent** about, e.g., ground-glass-opacity characterisation |
+| `task.ground_truth_protocol` | The reader-panel adjudication protocol the labels followed | Should resolve to a documented protocol (board-certified reader panel + calibration gate + consolidation rule) |
+| `subpopulation` (= `Π`) | The patient cohort the credential asserts equivalence over | An adult-chest credential is silent about pediatric / oncology-followup populations |
+| `epsilon` (= `ε`) | The equivalence margin. Smaller = stricter claim | Reasonable defaults: 0.05 for AUC tasks, 0.02 for Dice / MAE / contrast-recovery. **If ε is much larger than these, ask why** |
+| `alpha` (= `α`) | The significance level. `0.05` = 95 % confidence | Standard. Larger than 0.10 is suspicious |
+| `estimator` | The CI computation method | `delong` for AUC; `percentile` for general metrics; `bca` is opt-in. **`bca` as the headline result is a yellow flag** (BCa does not robustly outperform percentile under the null) |
+| `n_test` | The cohort size the credential was issued on | The single biggest determinant of whether the verdict is trustworthy |
+| `delta_mean`, `delta_ci_low`, `delta_ci_high` | The observed performance gap + its 95 % CI | The verdict is determined by whether the CI fits inside `(-ε, ε)` — see §3 |
+| `verdict` | `PASS`, `FAIL`, or `INDETERMINATE` | See §3 for what each one means |
+| `sample_size_check` | The pre-flight sanity check on whether `n_test` was adequate | `"ok": false` means the cohort was too small for the chosen `(ε, α)` |
+
+---
+
+## 3. Reading the verdict
+
+The verdict is one of three words. The framework refuses to issue any other word.
+
+### `PASS`
+
+The 95 % CI `[delta_ci_low, delta_ci_high]` is *fully inside* the equivalence band `(-ε, ε)`. The data are consistent with equivalence; under standard assumptions, the authors have shown the methods agree to within the margin they claimed.
+
+A `PASS` does **not** mean the methods are *identical*. It means the difference is bounded by `ε` at confidence `1 − α`.
+
+### `FAIL`
+
+The 95 % CI is *fully outside* the equivalence band — either entirely above `+ε` or entirely below `−ε`. The data are inconsistent with equivalence. The authors have evidence *against* their own equivalence claim. If they publish this credential, they are being transparent about a negative result.
+
+### `INDETERMINATE`
+
+The 95 % CI *straddles* one of the equivalence band's boundaries. The data are consistent with *both* equivalence and non-equivalence at the chosen `(ε, α)`. The framework refuses to commit either way.
+
+**`INDETERMINATE` is not a failure to issue a credential.** It is the honest answer when the data do not justify a stronger claim. The most common causes are:
+
+1. The cohort is too small (most common; see `sample_size_check`).
+2. The per-patient variance is high relative to the margin.
+3. The methods *are* close to the boundary — neither demonstrably equivalent nor demonstrably non-equivalent at the chosen `ε`.
+
+A research group publishing many `INDETERMINATE` credentials on small cohorts is honestly acknowledging cohort-size limits. That is good practice, not a red flag.
+
+---
+
+## 4. The sample-size sanity check
+
+If the credential carries a `sample_size_check` field with `"ok": false`, the cohort was below the formula prescription at the chosen `(ε, α)`. A `PASS` verdict in that regime should be read with caution: the verdict is more likely to be a fluke than a reliable equivalence claim. Specifically:
+
+* For AUC tasks at the v0.3 default `ε = 0.05`, the WS-1 PWM-LDCT v0.5 cohort of n ≈ 208 patients is *exactly* in the regime where INDETERMINATE-but-truly-equivalent is the modal outcome. P(`PASS`) under the null is approximately **0.40** at n = 200, lifting to 0.94 at n = 500. This means: **on a cohort of ≈ 208 patients, *absence* of a `PASS` verdict is not evidence of non-equivalence** — only of insufficient n.
+* For Dice / MAE / contrast-recovery tasks at the v0.3 default `ε = 0.02`, the same cohort is comfortably above the formula prescription at typical variability values. A `PASS` on these tasks is more meaningful at the same n.
+
+Numerical anchors for these claims are in [`theory/proofs/sample_size.md`](../theory/proofs/sample_size.md) §3 and [`theory/proofs/estimator.md`](../theory/proofs/estimator.md) §§4a / 4b / 4c.
+
+---
+
+## 5. The framework hash — what it guarantees and what it does not
+
+The `framework_hash` field is the SHA-256 of the framework definition the credential commits to. It guarantees:
+
+1. **Provenance.** A reader of the credential can resolve the hash to the exact framework specification the authors used. There is no ambiguity about "which framework" they validated against.
+2. **Tamper detection.** If the authors silently re-evaluate the credential against a later framework version after publication, the hash will not match the published one. A re-evaluated verdict gets a new hash; the old hash continues to point at the old, smaller-evidence specification.
+3. **Independent re-derivation.** A reviewer can pull the framework spec by hash, install the library at the matching version, run the same paired-bootstrap on the same test set, and check the verdict bit-for-bit.
+
+The hash does **not** guarantee:
+
+* That the *test data* are correct (separate dataset-hash discipline).
+* That the *method bundle* is what the authors claim (separate `method.code_hash` field).
+* That the *task ground truth* is reliable (separate `ground_truth_protocol` field).
+
+A complete audit checks all three hashes plus the framework hash.
+
+---
+
+## 6. Common reviewer / regulator questions
+
+**Q. The verdict is `PASS`. Should I approve the method?**
+A. Not on the credential alone. A credential is one piece of evidence that the method achieves the *equivalence* claim it asserts. It is silent about: surgical-quality reader studies, regulatory pathway, post-market surveillance, vendor support life-cycle. Read the credential as "the equivalence claim is internally consistent and statistically supported" — not as a clinical-deployment recommendation.
+
+**Q. The verdict is `INDETERMINATE`. Is the method bad?**
+A. Probably not. The most common cause is that the cohort is too small for the chosen `(ε, α)`. See §4. Ask the authors what cohort size would resolve to `PASS` or `FAIL`, and whether they plan to expand.
+
+**Q. The cohort `n_test` is small (say, < 30 for a non-AUC metric). Should I trust the verdict?**
+A. Be cautious. Below n = 30 for non-AUC metrics the percentile-bootstrap CI is *anti-conservative* — it can be too narrow, which inflates the `PASS` rate slightly above what the nominal `α` would suggest. The library issues an explicit warning in this regime. The verdict is still meaningful but should be cross-checked against a domain expert's prior.
+
+**Q. The credential was issued at `epsilon = 0.10`. Is that lax?**
+A. For AUC tasks the v0.3 manuscript's recommended default is `0.05`. A credential at `0.10` is a *weaker* claim — methods that differ by 10 percentage points of AUC are deemed equivalent. Ask the authors why they used a wider margin than the recommended default. For Dice / MAE / contrast-recovery the recommended default is `0.02`; `0.10` is very loose.
+
+**Q. The estimator field says `bca` instead of `percentile` or `delong`. Is that a problem?**
+A. BCa is a legitimate estimator, but the v0.3 manuscript's recommended default is *not* BCa: BCa does not robustly outperform percentile under the null, and is opt-in only. A credential using BCa as the headline result is not wrong, but should also be reported alongside a percentile-bootstrap version. The library writes both bounds into the credential's `sample_size_check` field; ask for the percentile-CI version.
+
+**Q. The credential references a `subpopulation` slug I don't recognise. What is it?**
+A. The slug should resolve to an operational description of the cohort: inclusion criteria, scanner / vendor / kVp / mask family / tracer (whichever apply), and the dataset spec. Ask the authors for the operational description. A credential whose subpopulation slug is opaque is one whose claim cannot be transferred to your context.
+
+**Q. Two credentials from the same authors on the same dataset have different verdicts. Which do I trust?**
+A. Likely they are at different operating points (different `r`, different task `T`, different `epsilon`). Each credential is a separately-verifiable claim. Read them both — they are not in conflict; they are answering different questions.
+
+---
+
+## 7. Red flags
+
+These should prompt follow-up questions before you act on the credential:
+
+| Red flag | Why it matters |
+|---|---|
+| `framework_hash` not resolvable / not on the registry | Provenance broken; you cannot verify what specification was tested |
+| `method.code_hash` missing | The method bundle is not pinned; the authors may be silently iterating |
+| `subpopulation` slug not resolvable | You cannot tell who is in the cohort; can't transfer the claim |
+| `ground_truth_protocol` undocumented | The labels could be of unknown quality |
+| `epsilon` much larger than the v0.3 default for the metric | Lax equivalence claim; may not be clinically meaningful |
+| `estimator = "bca"` *without* a percentile companion | BCa as headline result not recommended; ask for the percentile version |
+| `n_test` much smaller than `sample_size_check.n_required` | The verdict may be a fluke; cohort below formula prescription |
+| Same-day commit hash on the credential AND on the method bundle | Possible cherry-picking; ask for a longitudinal record |
+| Credentials only published when `verdict = "PASS"` (selective reporting) | Publication bias; ask for the full ledger of issued credentials |
+
+A credential that has none of these flags is *internally consistent*. Whether it is *clinically sufficient* remains your call.
+
+---
+
+## 8. Cross-references
+
+* [`manuscript.tex`](manuscript.tex) v0.3 — the framework paper itself
+* [`CHANGELOG.md`](CHANGELOG.md) — what changed and when
+* [`reproduction_guide.md`](reproduction_guide.md) — the *technical* companion for reviewers who write code
+* [`../theory/proofs/sample_size.md`](../theory/proofs/sample_size.md) — formal sample-size derivation
+* [`../theory/proofs/estimator.md`](../theory/proofs/estimator.md) — formal coverage + power discussion
+* [`../pwm_dose_equivalence/notebooks/`](../pwm_dose_equivalence/notebooks/) — four tutorial notebooks for users learning to *issue* credentials
+
+---
+
+*Reading guide v1.0 — 2026-06-05 (D9 + 16). Aligned with manuscript v0.3 + library v0.2.0 + `proofs/estimator.md` v0.4. Pairs with `reproduction_guide.md`.*

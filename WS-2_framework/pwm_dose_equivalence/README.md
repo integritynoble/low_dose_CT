@@ -110,7 +110,10 @@ Four pedagogical tutorials in [`notebooks/`](notebooks/), one per validated moda
 * [`03_pet_phantom_cr.py`](notebooks/03_pet_phantom_cr.py) — NEMA NU-2 IQ phantom contrast-recovery at 25 % activity (CR; percentile; demonstrates the small-n warning at n = 6)
 * [`04_optical_extending.py`](notebooks/04_optical_extending.py) — Optical / fluorescence imaging at 25 % exposure (closes the manuscript "user-implementable" claim by showing how to define `Tr_optical` and pass it through the unchanged `signal_equivalence_credential` API)
 
-Each file is a `.py` script with `#%%` cell markers — it runs as a normal Python script *and* as a Jupyter notebook (open in JupyterLab / VS Code / Spyder). The reviewer-facing companion is [`../paper_draft/reproduction_guide.md`](../paper_draft/reproduction_guide.md), which verifies the manuscript's numerical claims.
+Each file is a `.py` script with `#%%` cell markers — it runs as a normal Python script *and* as a Jupyter notebook (open in JupyterLab / VS Code / Spyder). Two reviewer-facing companions live alongside the notebooks:
+
+* [`../paper_draft/reproduction_guide.md`](../paper_draft/reproduction_guide.md) — verifies the manuscript's numerical claims (audience: code-savvy reviewers).
+* [`../paper_draft/credential_reading_guide.md`](../paper_draft/credential_reading_guide.md) — walks the credential JSON field-by-field for reviewers, regulators, and clinicians who need to *interpret* a credential without re-running the bootstrap themselves. Covers verdict semantics, CI vs $\varepsilon$ reading, framework-hash guarantees, the `sample_size_check` field, and a red-flag checklist.
 
 ---
 
