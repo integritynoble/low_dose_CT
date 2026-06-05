@@ -10,6 +10,46 @@ reviewer-readiness audit posted in the 2026-06-01 working session.
 
 ---
 
+## v0.3 reviewer-reproduction surface — D9 + 16 (2026-06-05)
+
+Closes two complementary items that together complete the *reviewer-can-reproduce-every-number* discipline: the last v0.2.0 library follow-up (integration tests), and a new top-level reviewer-facing document (`paper_draft/reproduction_guide.md`). No manuscript text change; both items strengthen what reviewers see *around* the manuscript without changing the manuscript prose.
+
+| ID | What landed | Commit |
+|---|---|---|
+| **L0.2-4** | **Integration tests for the library.** New `pwm_dose_equivalence/tests/test_integration.py` — 10 end-to-end tests exercising the full credential-issuance pipeline through the public API: CT AUC / MRI Dice / PET CR per-modality credentials; cross-modality consistency reproduced through the production library (not the prototype); JSON round-trip + framework-hash audit; seeded bit-reproducibility; T_r operator integration; verdict transitions (boundary INDETERMINATE; FAIL at $\Delta_{\text{true}} > \varepsilon$ + $n = 500$). Library README updated: 71/71 → **81/81 tests** at 100 % line coverage (265/265 statements; unchanged — the integration tests exercise existing code paths). | `a5b5163` |
+| **R3-1** | **`paper_draft/reproduction_guide.md`** — 12-section reviewer walkthrough mapping every numerical claim in the v0.3 manuscript to its repo anchor + the command that re-derives it. Sections: install + pytest; cross-modality consistency table (Results §); AUC coverage 27-cell (§2); AUC power 24-cell (§4a); Dice + CR (§§4b / 4c); production-library reproduction; framework hash; sample-size formulas (S1) / (S3) / (S4); BCa / small-n / bound_M; quickstart-on-your-own-method; **per-claim anchor table (16 rows)** mapping every concrete number in the manuscript to its proofs document + reproduction command; what's intentionally not covered (data-blocked / submission-time / literature). | `558d112` |
+
+### `R-N` ID convention
+
+Introduced today for *reviewer-facing reproduction artifacts* — distinct from manuscript-side `V3-N` items and library `L0.2-N` items. Future reviewer-facing artifacts (e.g.\ a tutorial notebook, a "How to integrate a new modality" walkthrough) would use `R3-2`, `R3-3`, etc. Until the manuscript itself bumps, the prefix stays at `R3`.
+
+### What this completes
+
+The repository now answers three orthogonal reviewer questions:
+
+1. *What changed and why?* — `CHANGELOG.md` (this file), one row per substantive edit / artifact.
+2. *Where does each claim live?* — `reproduction_guide.md` §10 per-claim anchor table.
+3. *How do I re-derive the numbers?* — `reproduction_guide.md` §§1–9 commands; library tests at 100 % coverage.
+
+A reviewer can now sit down with the v0.3 manuscript + the repo and verify every numerical claim *without trusting the authors* on any of them. This was the discipline V3-2 / V3-5 had reached for via inline cross-links to `proofs/estimator.md`; today's reproduction guide makes the verification path fully explicit.
+
+### Schema / manuscript unchanged
+
+Credential JSON `schema_version` stays at `pwm-signal-equivalence/v0.2`. The manuscript text is unchanged at v0.3 (22 pp). The reproduction guide is a supplementary document; a future v0.4 manuscript revision could reference it directly from §Code availability, but for v0.3 it lives alongside the manuscript as a peer artifact in `paper_draft/`.
+
+### `open_questions.md` status after R3-1 + L0.2-4
+
+No theory-side movement. All BLOCK items remain done. The remaining open items are the same external-action-blocked ones: §1 literature depth-pass; §5 monotonicity empirical check (gated on Phase 1 pilot).
+
+### Today's commits
+
+| Commit | Touched |
+|---|---|
+| `a5b5163` | `pwm_dose_equivalence/tests/test_integration.py` (new); library README test/coverage line bumped to 81/81 |
+| `558d112` | `paper_draft/reproduction_guide.md` (new) |
+
+---
+
 ## Library v0.2.0 — D9 + 15 (2026-06-04, late)
 
 Closes the three v0.2.0 library items the *v0.3 evidence-completion* section recorded as follow-ups: BCa estimator exposure (deferred from v0.1.0 per the v0.3 estimator-default decision); small-$n$ anti-conservativeness warning surfaced by V3-11; `bound_M` argument for unbounded metrics. **No manuscript text change**: the §software_rigor and §Code availability paragraphs were filled with v0.1.0 numbers via V3-3 / V3-8 and intentionally stay at v0.1.0 (the journal-acceptance re-pin per V3-8 will move them forward when the time comes). The credential JSON schema is unchanged at `pwm-signal-equivalence/v0.2`.
@@ -42,7 +82,7 @@ No theory-side movement. All BLOCK items remain done. The §3 cross-metric synth
 
 ### v0.2.0 → v1.0.0 remaining items
 
-Per the library README: integration tests, macOS + Windows CI runners, and the manuscript-acceptance fixes journal review surfaces. None of these is methodologically blocking; they are pre-release infrastructure that lands alongside the *Nature Methods* acceptance per the V3-3 / V3-8 framing.
+Per the library README: ~~integration tests~~ (done D9 + 16 — see *v0.3 reviewer-reproduction surface* section above), macOS + Windows CI runners (Linux only at v0.2.0), and the manuscript-acceptance fixes journal review surfaces. None of these is methodologically blocking; they are pre-release infrastructure that lands alongside the *Nature Methods* acceptance per the V3-3 / V3-8 framing.
 
 ---
 
