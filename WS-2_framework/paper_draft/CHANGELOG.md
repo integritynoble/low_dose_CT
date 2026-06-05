@@ -19,6 +19,7 @@ Closes two complementary items that together complete the *reviewer-can-reproduc
 | **L0.2-4** | **Integration tests for the library.** New `pwm_dose_equivalence/tests/test_integration.py` — 10 end-to-end tests exercising the full credential-issuance pipeline through the public API: CT AUC / MRI Dice / PET CR per-modality credentials; cross-modality consistency reproduced through the production library (not the prototype); JSON round-trip + framework-hash audit; seeded bit-reproducibility; T_r operator integration; verdict transitions (boundary INDETERMINATE; FAIL at $\Delta_{\text{true}} > \varepsilon$ + $n = 500$). Library README updated: 71/71 → **81/81 tests** at 100 % line coverage (265/265 statements; unchanged — the integration tests exercise existing code paths). | `a5b5163` |
 | **R3-1** | **`paper_draft/reproduction_guide.md`** — 12-section reviewer walkthrough mapping every numerical claim in the v0.3 manuscript to its repo anchor + the command that re-derives it. Sections: install + pytest; cross-modality consistency table (Results §); AUC coverage 27-cell (§2); AUC power 24-cell (§4a); Dice + CR (§§4b / 4c); production-library reproduction; framework hash; sample-size formulas (S1) / (S3) / (S4); BCa / small-n / bound_M; quickstart-on-your-own-method; **per-claim anchor table (16 rows)** mapping every concrete number in the manuscript to its proofs document + reproduction command; what's intentionally not covered (data-blocked / submission-time / literature). | `558d112` |
 | **R3-2** | **Three tutorial notebooks** in `pwm_dose_equivalence/notebooks/`, one per validated modality: `01_ct_lung_nodule_auc.py` (CT AUC, DeLong auto-selection, ε = 0.05, demonstrates the §4a cohort-sizing implication table); `02_mri_meniscus_dice.py` (MRI Dice, percentile + `sigma_delta_hint` triggering (S1) / (S4) pre-flight, demonstrates the Dice-vs-AUC cohort contrast and `estimator="bca"` opt-in); `03_pet_phantom_cr.py` (PET CR, activity-reduction as canonical `T_r`, n = 30 recommended cohort, demonstrates the small-$n$ warning by re-running at n = 6). Format: `.py` files with `#%%` cell markers — run as both Python scripts and Jupyter notebooks (no `.ipynb` binary diffs). Closes the *"three tutorial notebooks (one per validated modality)"* claim in §software_rigor "Documentation and tutorial notebooks". `notebooks/README.md` + library README "Tutorial notebooks" section added. | `db1d31b` |
+| **R3-3** | **Extending-to-new-modality tutorial** — `notebooks/04_optical_extending.py` shows a user how to define their own `T_r` operator (worked example: Optical / fluorescence imaging at 25 % exposure, per Methods Table 1) and plug it through the unchanged `signal_equivalence_credential` API. **Closes the manuscript Methods Table 7 "Optical / fluorescence: specified; not validated; user-implementable" claim** with a concrete worked example. Demonstrates that (a) `Tr_optical` is mathematically identical to `Tr_ct` (Poisson-thinning) but scientifically distinct via Π's acquisition-protocol metadata (fluorophore / wavelength / specimen class); (b) `modality="Optical"` is just a string tag — the library accepts arbitrary modalities; (c) cross-modality consistency demos work for free with user-implemented operators. Tutorial runs cleanly: PASS verdict at n = 80 specimens. `notebooks/README.md` + library README updated to enumerate four tutorials. Test count and coverage unchanged (uses existing code paths via `Tr_ct` re-export). | `00880ed` |
 
 ### `R-N` ID convention
 
@@ -26,14 +27,15 @@ Introduced today for *reviewer-facing reproduction artifacts* — distinct from 
 
 ### What this completes
 
-The repository now answers four orthogonal reviewer + user questions:
+The repository now answers five orthogonal reviewer + user questions:
 
 1. *What changed and why?* — `CHANGELOG.md` (this file), one row per substantive edit / artifact.
 2. *Where does each claim live?* — `reproduction_guide.md` §10 per-claim anchor table (R3-1).
 3. *How do I re-derive the numbers?* — `reproduction_guide.md` §§1–9 commands; library tests at 100 % coverage.
 4. *How do I use the library on my own method?* — three modality-specific tutorial notebooks (R3-2) in `pwm_dose_equivalence/notebooks/`.
+5. *How do I extend the framework to a new modality?* — `04_optical_extending.py` (R3-3) shows the user-implementable path with a worked Optical / fluorescence example.
 
-A reviewer can now sit down with the v0.3 manuscript + the repo and verify every numerical claim *without trusting the authors* on any of them. A new user (PI / postdoc / engineer) can follow the modality-matching tutorial end-to-end without reading the manuscript at all. This was the discipline V3-2 / V3-5 had reached for via inline cross-links to `proofs/estimator.md`; today's reproduction guide (R3-1) makes the *verification* path explicit; today's tutorials (R3-2) make the *usage* path explicit.
+A reviewer can now sit down with the v0.3 manuscript + the repo and verify every numerical claim *without trusting the authors* on any of them. A new user (PI / postdoc / engineer) can follow the modality-matching tutorial end-to-end without reading the manuscript at all. A researcher working in a modality the framework does not yet validate (Optical / OCT / Ultrasound / etc.) can follow `04_optical_extending.py` and have a working credential pipeline in their own modality without touching the library source. This was the discipline V3-2 / V3-5 had reached for via inline cross-links to `proofs/estimator.md`; today's reproduction guide (R3-1) makes the *verification* path explicit; tutorials R3-2 make the *usage* path explicit; and R3-3 makes the *extension* path explicit.
 
 ### Schema / manuscript unchanged
 
@@ -50,6 +52,7 @@ No theory-side movement. All BLOCK items remain done. The remaining open items a
 | `a5b5163` | `pwm_dose_equivalence/tests/test_integration.py` (new); library README test/coverage line bumped to 81/81 |
 | `558d112` | `paper_draft/reproduction_guide.md` (new) |
 | `db1d31b` | `pwm_dose_equivalence/notebooks/` (new dir + 3 tutorials + README); library README "Tutorial notebooks" section added |
+| `00880ed` | `pwm_dose_equivalence/notebooks/04_optical_extending.py` (new); `notebooks/README.md` + library README extended to four tutorials |
 
 ### Downstream-doc propagation
 
@@ -70,11 +73,12 @@ A reviewer landing on either README today sees:
 | Manuscript claims | `paper_draft/manuscript.tex` v0.3 | reviewers |
 | What changed and why | `paper_draft/CHANGELOG.md` (this file) | reviewers + maintainers |
 | Where each claim lives + how to re-derive | `paper_draft/reproduction_guide.md` (R3-1) | reviewers |
-| How to use the library end-to-end per modality | `pwm_dose_equivalence/notebooks/` (R3-2, three tutorials) | new users (PI / postdoc / engineer) |
+| How to use the library end-to-end per modality | `pwm_dose_equivalence/notebooks/` (R3-2, three validated-modality tutorials) | new users (PI / postdoc / engineer) |
+| How to extend the framework to a new modality | `pwm_dose_equivalence/notebooks/04_optical_extending.py` (R3-3) | researchers in unvalidated modalities (Optical / OCT / Ultrasound / …) |
 | Library implementation + 81 tests at 100 % | `pwm_dose_equivalence/` v0.2.0 alpha | downstream users + reviewers |
 | Cross-workstream cohort-sizing implications | WS-1 README Target specs row + WS-2 cross-reference | downstream WS-1 users |
 
-The discipline is end-to-end: every cited number, every cross-reference, every library feature has an identified anchor and a documented path to **verification** (R3-1) or to **usage** (R3-2).
+The discipline is end-to-end: every cited number, every cross-reference, every library feature has an identified anchor and a documented path to **verification** (R3-1), **usage on validated modalities** (R3-2), or **extension to a user-implementable modality** (R3-3).
 
 ---
 
