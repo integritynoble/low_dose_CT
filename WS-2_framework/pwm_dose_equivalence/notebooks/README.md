@@ -1,12 +1,13 @@
 # Tutorial notebooks
 
-Three pedagogical tutorials — one per validated modality — that walk you through computing a signal-equivalence credential end-to-end. Pairs naturally with [`../../paper_draft/reproduction_guide.md`](../../paper_draft/reproduction_guide.md), which is the reviewer-facing companion document.
+Four pedagogical tutorials — one per validated modality plus a user-implementable example — that walk you through computing a signal-equivalence credential end-to-end. Pairs naturally with [`../../paper_draft/reproduction_guide.md`](../../paper_draft/reproduction_guide.md), which is the reviewer-facing companion document.
 
 | File | Modality | Task | Estimator | ε |
 |---|---|---|---|---:|
-| [`01_ct_lung_nodule_auc.py`](01_ct_lung_nodule_auc.py) | CT | lung-nodule detection | DeLong (auto-selected for AUC) | 0.05 |
-| [`02_mri_meniscus_dice.py`](02_mri_meniscus_dice.py) | MRI | knee-meniscus segmentation | percentile bootstrap | 0.02 |
-| [`03_pet_phantom_cr.py`](03_pet_phantom_cr.py) | PET | NEMA NU-2 IQ phantom contrast-recovery | percentile bootstrap (small-n warning) | 0.02 |
+| [`01_ct_lung_nodule_auc.py`](01_ct_lung_nodule_auc.py) | CT (validated) | lung-nodule detection | DeLong (auto-selected for AUC) | 0.05 |
+| [`02_mri_meniscus_dice.py`](02_mri_meniscus_dice.py) | MRI (validated) | knee-meniscus segmentation | percentile bootstrap | 0.02 |
+| [`03_pet_phantom_cr.py`](03_pet_phantom_cr.py) | PET (validated) | NEMA NU-2 IQ phantom contrast-recovery | percentile bootstrap (small-n warning) | 0.02 |
+| [`04_optical_extending.py`](04_optical_extending.py) | Optical (user-implementable) | how to add a new modality | percentile bootstrap | 0.02 |
 
 ## Format
 
@@ -20,7 +21,7 @@ python 01_ct_lung_nodule_auc.py
 
 ## Coverage
 
-Across the three tutorials you will see:
+Across the four tutorials you will see:
 
 * The single modality-agnostic `signal_equivalence_credential(...)` API call producing identical-shape credentials for CT / MRI / PET
 * DeLong auto-selection for AUC tasks (~ 300× faster than the bootstrap variants per `proofs/estimator.md` §4)
@@ -29,6 +30,7 @@ Across the three tutorials you will see:
 * The small-$n$ anti-conservativeness warning (n < 30 for non-AUC) per `proofs/estimator.md` §4c (V3-11)
 * Content-addressed framework hash verification (SHA-256 of the v0.2 framework spec)
 * The cohort-sizing implication: same WS-1 v0.5 n ≈ 208 cohort is comfortable for Dice but INDETERMINATE-dominated for AUC at the typical lung-nodule operating point
+* How to extend the framework to a new modality (Tutorial 4) — define your own `T_r` operator, pass it through the existing `signal_equivalence_credential` API; the library does not need to be modified
 
 ## Cross-references
 
