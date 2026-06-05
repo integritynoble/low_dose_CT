@@ -101,6 +101,18 @@ The library refuses to issue a `PASS` quietly when `n_test` is below the closed-
 
 ---
 
+## Tutorial notebooks
+
+Three pedagogical tutorials in [`notebooks/`](notebooks/), one per validated modality:
+
+* [`01_ct_lung_nodule_auc.py`](notebooks/01_ct_lung_nodule_auc.py) — CT lung-nodule detection at 25 % dose (AUC; DeLong auto-selected; ε = 0.05)
+* [`02_mri_meniscus_dice.py`](notebooks/02_mri_meniscus_dice.py) — MRI knee-meniscus segmentation at 4× acceleration (Dice; percentile bootstrap; ε = 0.02)
+* [`03_pet_phantom_cr.py`](notebooks/03_pet_phantom_cr.py) — NEMA NU-2 IQ phantom contrast-recovery at 25 % activity (CR; percentile; demonstrates the small-n warning at n = 6)
+
+Each file is a `.py` script with `#%%` cell markers — it runs as a normal Python script *and* as a Jupyter notebook (open in JupyterLab / VS Code / Spyder). The reviewer-facing companion is [`../paper_draft/reproduction_guide.md`](../paper_draft/reproduction_guide.md), which verifies the manuscript's numerical claims.
+
+---
+
 ## Tests
 
 ```bash
