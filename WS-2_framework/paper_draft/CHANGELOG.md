@@ -10,6 +10,31 @@ reviewer-readiness audit posted in the 2026-06-01 working session.
 
 ---
 
+## Manuscript §Discussion "Limitations of the present work" — D9 + 19 (2026-06-08)
+
+Adds an explicit limitations surface to the manuscript. The existing §Discussion "Failure modes of the framework" subsubsection covered *methodological* failure modes (INDETERMINATE, point-evaluated by design, estimator failure modes, subpopulation specificity, aggregate-vs-per-patient, reproducibility caveats); a new sibling "Limitations of the present work" subsubsection covers the *empirical-validation scope* — which is the harder thing for a reviewer to read out of the existing prose. Pure manuscript work; no library code change.
+
+| ID | What landed | Commit |
+|---|---|---|
+| **V3-12** | **§Discussion new subsubsection: "Limitations of the present work"** with 5 paragraphs. (1) *Empirical validation is synthetic-anchored, not yet real-cohort.* Names the current evidence (cross-modality consistency table — 6 synthetic credentials; 93 simulated coverage cells across AUC + Dice + CR) and explicitly says the per-modality Results Tables 2 / 3 / 4 carry `\todo{}` placeholders gated on Phase 1 / Phase 3a / Phase 3b data integrations. (2) *Three modalities validated; extension surface is not.* Acknowledges that no independent research group has yet computed a credential under a user-implemented modality. (3) *Credential schema does not yet pin the method bundle.* Acknowledges the v0.2 schema's bare-string `method` / `reference_method` (the documentation-vs-implementation drift L0.2.1 caught) and points at the v1.0 widening to `{name, code_hash}`. (4) *Reader-variability is a hard ceiling on attainable ε.* Spells out that the framework's verdicts are conditional on adjudication-protocol noise; a credential at ε = 0.02 on a task with inter-reader Dice variance σ ≈ 0.05 is operating below the label-noise floor. (5) *The headline WS-1 v0.5 cohort sits in the INDETERMINATE-dominated regime for the recommended AUC default.* Surfaces the V3-9 power-sim finding into the manuscript prose itself (previously only documented in `proofs/estimator.md` §4a and the WS-1 cross-reference): at AUC ≈ 0.92 and ε = 0.05, P(`PASS`) under the null is ≈ 0.40 at n = 200 / 0.94 at n = 500; downstream users should expect `INDETERMINATE` verdicts on the v0.5 cohort for genuinely equivalent methods. PDF rebuilt at 24 pp (up from 22; +2 pages from the new subsubsection). | *(this commit)* |
+| **V3-12-prop** | **Page-count propagation: 22 pp → 24 pp** across status pins and current-state references. Updates: WS-2 README status pin + Subfolders paper_draft row, CONTRIBUTING.md manuscript reference, CITATION.cff preferred-citation `notes`, `reproduction_guide.md` §0 intro. Historical CHANGELOG entries that recorded prior 22-pp landings are left intact (they are accurate records of those past landings). | *(this commit)* |
+
+### Why this lands
+
+Three reviewer-class concerns about the present manuscript draft were detectable from internal documentation (proofs files, reading guide, R3-1 reproduction guide) but not from the manuscript prose itself:
+
+1. **Synthetic-only validation gap.** The Results section displays one synthetic table; the per-modality Tables 2 / 3 / 4 carry `\todo{}` placeholders that any careful reviewer would notice. The §Discussion previously did not acknowledge this scoping decision.
+2. **WS-1 v0.5 INDETERMINATE regime.** The R3-4 reading guide and the WS-1 README cross-reference name this regime explicitly, but the manuscript itself did not. A reviewer reading only the manuscript could conclude an `INDETERMINATE` verdict on the v0.5 cohort was a negative finding about a method, rather than a sample-size limitation of the cohort.
+3. **Reader-variability ceiling.** The §software_rigor paragraph mentioned the `ε / 2` adjudication-disagreement gate but did not draw out the practical implication (`ε` cannot be tighter than the label-noise floor).
+
+The new subsubsection surfaces all three into the manuscript prose so a reviewer does not have to chase them across companion documents.
+
+### Schema unchanged (a fifth time)
+
+Pure manuscript prose addition; no library code, no `FRAMEWORK_SPEC` edit, no schema or test change. The v0.2.2 library is bit-identical to its previous state.
+
+---
+
 ## Governance artifacts: CONTRIBUTING.md + CITATION.cff — D9 + 19 (2026-06-08)
 
 Backs the manuscript §software_rigor "Release cadence and governance" paragraph claim — *"The contribution policy is published as `CONTRIBUTING.md` in the repository."* — with code. Adds a `CITATION.cff` (CFF v1.2.0) so GitHub renders a citation button and the library can be cited as software alongside the methodological paper.

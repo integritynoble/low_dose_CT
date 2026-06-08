@@ -3,7 +3,7 @@
 Thank you for considering a contribution. This library is the reference
 implementation of the **signal-equivalence framework** described in the
 *Nature Methods* manuscript [`paper_draft/manuscript.tex`](../paper_draft/manuscript.tex)
-(v0.3 working draft, 22 pp). Because the library is intended to be cited as a
+(v0.3 working draft, 24 pp). Because the library is intended to be cited as a
 *methodological standard*, the contribution rules are tighter than for an
 ordinary research codebase: a published credential is only as trustworthy as
 the version of this library that issued it.

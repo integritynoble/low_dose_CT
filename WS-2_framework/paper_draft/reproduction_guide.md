@@ -2,7 +2,7 @@
 
 **For reviewers of the v0.3 manuscript.** This document tells a reviewer how to verify, end-to-end, every numerical claim in the *Signal-equivalence: testable dose-reduction claims for medical imaging* manuscript using the released artifacts. Every concrete number in the manuscript has an anchor in the repository — this guide names that anchor and the command that re-derives the number.
 
-The manuscript is `paper_draft/manuscript.tex` v0.3 (22 pp incl. Supplementary S1). All artifacts referenced here live in [`WS-2_framework/`](.) and are seed-reproducible.
+The manuscript is `paper_draft/manuscript.tex` v0.3 (24 pp incl. Supplementary S1). All artifacts referenced here live in [`WS-2_framework/`](.) and are seed-reproducible.
 
 ---
 
