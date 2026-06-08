@@ -10,6 +10,41 @@ reviewer-readiness audit posted in the 2026-06-01 working session.
 
 ---
 
+## Makefile + GitHub Actions CI + dependabot — D9 + 19 (2026-06-08)
+
+Closes the last in-session-executable governance item: backs the manuscript §software_rigor "Continuous integration runs on every commit against Python 3.10, 3.11, and 3.12 on Linux runners" claim with an actual workflow file, and wraps every gate (ruff + mypy + pytest with coverage + framework-hash invariant) behind one local-runnable `make ci` command.
+
+| ID | What landed | Commit |
+|---|---|---|
+| **ci-1** | **`pwm_dose_equivalence/Makefile`** with 11 targets: `install`, `lint`, `typecheck`, `test`, `coverage`, `regenerate-examples`, `regenerate-schema`, `regenerate-snapshots`, `regenerate` (composite), `ci` (= lint + typecheck + coverage; the one-command PR gate), `clean`. `make help` (also the default target) prints the list. Verified `make ci` runs to green on a fresh `pip install -e ".[test,lint]"`. | *(this commit)* |
+| **ci-2** | **`.github/workflows/ci.yml`** at the repo root — GitHub Actions workflow that runs the same gates `make ci` runs, on the matrix `python-version: [3.10, 3.11, 3.12] / ubuntu-latest`. Triggers: push to `main` or `heyang`; PR targeting `main`. Steps: checkout, setup-python with pip cache, install with `.[test,lint]`, ruff, mypy, pytest with coverage, **plus a final framework-hash invariant check that fails CI if any commit edits `FRAMEWORK_SPEC` without a Tier-A MAJOR-version bump** (silent-schema-break protection). Backs the manuscript §software_rigor "CI runs on every commit against Python 3.10, 3.11, and 3.12 on Linux runners" claim. macOS / Windows runners are scheduled at v1.0.0. | *(this commit)* |
+| **ci-3** | **`.github/dependabot.yml`** — passive dependency updates on monthly cadence. Two ecosystems: `pip` (the library's `pyproject.toml` dependencies, scoped to the WS-2 directory) and `github-actions` (the workflow's actions versions). Open-PR limit 5 per ecosystem. Commit-message prefixes `deps` and `deps(ci)`. Labels include `WS-2` so issue triage knows which workstream a dependency PR belongs to. Per CONTRIBUTING.md, Dependabot PRs touching `pyproject.toml` dependencies are Tier B by default unless they bump `numpy` or `scipy` major version, which is Tier A (both packages can move credential numerical reproducibility). | *(this commit)* |
+| **ci-4** | **CONTRIBUTING.md "How to make a PR" section rewritten** — the previous 6-step list described what to do; the new 8-step list names the `make ci` command (step 2), the `make regenerate` command for generated artifacts (step 3), and the explicit 90 %-floor / 100 %-current coverage anchor (step 4). The PR-gate guidance is now actionable: a contributor knows exactly what `make` target to run before opening a PR. | *(this commit)* |
+
+### Why the framework-hash invariant lives in CI
+
+The schema-mutation discipline (CONTRIBUTING.md §"Schema mutation discipline") tells a contributor to bump `FRAMEWORK_SPEC` when changing the framework definition. But discipline is not enforcement. A contributor making a *unrelated* edit (e.g. a whitespace fix in `framework_hash.py`'s docstring) could silently change the bytes of `FRAMEWORK_SPEC` if the bytes happen to be in a string the contributor is editing. The CI step `Verify FRAMEWORK_SPEC hash is unchanged` runs `framework_hash()` on every commit and fails CI if the output does not match the recorded `sha256:b366f51c…` byte-for-byte. A real schema bump produces a new hash and is then a single 2-line update to the CI step (new expected hash + new CHANGELOG row) — explicit by design.
+
+### What §software_rigor now backs (further updated)
+
+| Claim in paragraph | Backing artifact |
+|---|---|
+| CI runs on every commit against Python 3.10 / 3.11 / 3.12 on Linux runners | `.github/workflows/ci.yml` (this commit) |
+| macOS / Windows runners scheduled at v1.0.0 | `.github/workflows/ci.yml` `matrix: os: [ubuntu-latest]` (v1.0 will add `macos-latest`, `windows-latest`) |
+| 90 % minimum line coverage | `pytest --cov=pwm_dose_equivalence` step in CI; currently 100 % on 439 statements |
+| Contribution policy in `CONTRIBUTING.md` | Already backed by L0.2.2-gov-1; "How to make a PR" rewrite tightens it further |
+| Issue template | Already backed by gov-issue-1..4 |
+| Security disclosure | Already backed by gov-sec-1; `SECURITY.md` |
+| Two-tier maintainer sign-off | Already backed; CONTRIBUTING.md "Sign-off tiers" |
+
+Every concrete claim in §software_rigor now resolves to an artifact AND has a CI gate enforcing it.
+
+### Schema unchanged (a ninth time)
+
+`FRAMEWORK_SPEC` byte-for-byte identical (now actually checked by CI). No library code change. `make` is the only new external dependency; on systems without it, the CONTRIBUTING.md commands fall back to direct `pip` / `ruff` / `mypy` / `pytest` invocations as documented.
+
+---
+
 ## ruff + mypy config + 4 type-safety fixes — D9 + 19 (2026-06-08)
 
 Backs the CONTRIBUTING.md "PEP 8 with ruff defaults; line length 100" and "mypy --strict should pass on the src/ tree" claims with actual `[tool.ruff]` / `[tool.mypy]` config blocks in `pyproject.toml`. Previously those claims were narrative-only — there was nothing for `ruff check src/` or `mypy --strict src/` to consult, and four real mypy errors were silently shipping.

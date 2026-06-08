@@ -54,18 +54,29 @@ could be issued under an undocumented framework version.
 
 1. **Fork & branch.** Branch from `main`; name the branch with the issue
    number if one exists (e.g. `42-fix-delong-edge-case`).
-2. **Run the test suite locally.** `pytest --cov=pwm_dose_equivalence`. The
-   ship floor is **90 % line coverage** (manuscript §software_rigor
-   pre-registered floor); the current library ships at **100 %** on 437
-   statements and we expect new PRs to preserve that.
-3. **Add tests for new behaviour.** A PR adding new public API without
+2. **Run the one-command PR gate:** `make ci`. This runs ruff +
+   mypy + pytest with coverage, in the same sequence the GitHub Actions
+   workflow at [`../../.github/workflows/ci.yml`](../../.github/workflows/ci.yml)
+   runs them. Passing locally is necessary but not sufficient (CI also
+   runs the 3.10 / 3.11 / 3.12 matrix). If `make ci` is green and your
+   change does not touch the framework spec / examples / schema, you
+   are ready to open the PR.
+3. **If you edited any generated artifact source,** run `make regenerate`
+   first. This re-runs `examples/regenerate.py`,
+   `scripts/dump_schema.py`, and `examples/regenerate_expected_outputs.py`
+   so the on-disk JSON / standalone schema / snapshot file stay in sync
+   with the Python-side source of truth.
+4. **Coverage floor:** the manuscript §software_rigor pre-registered floor
+   is **90 % line coverage**; the current library ships at **100 %** on
+   439 statements and we expect new PRs to preserve that.
+5. **Add tests for new behaviour.** A PR adding new public API without
    tests will be asked to add them before review.
-4. **Update documentation.** If your PR changes user-facing behaviour, update
+6. **Update documentation.** If your PR changes user-facing behaviour, update
    the relevant section of `README.md`, the manuscript draft, and / or
    `../paper_draft/credential_reading_guide.md`.
-5. **Open the PR.** Use a descriptive title; link the issue if one exists.
+7. **Open the PR.** Use a descriptive title; link the issue if one exists.
    The PR template will prompt you for the sign-off tier (below).
-6. **CI must pass.** All checks green is a prerequisite for review.
+8. **CI must pass.** All checks green is a prerequisite for review.
 
 ---
 

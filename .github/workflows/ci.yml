@@ -1,0 +1,63 @@
+name: CI
+
+# Backs the manuscript §software_rigor "Continuous integration runs on every
+# commit against Python 3.10, 3.11, and 3.12 on Linux runners" claim. The
+# matrix below runs ruff + mypy + pytest with coverage on each Python minor
+# version; the v1.0.0 release will add macOS and Windows runners.
+
+"on":
+  push:
+    branches: [main, heyang]
+  pull_request:
+    branches: [main]
+
+jobs:
+  ci:
+    name: ${{ matrix.python-version }} / ubuntu-latest
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10", "3.11", "3.12"]
+
+    defaults:
+      run:
+        working-directory: WS-2_framework/pwm_dose_equivalence
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+          cache-dependency-path: WS-2_framework/pwm_dose_equivalence/pyproject.toml
+
+      - name: Install package + test + lint extras
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[test,lint]"
+
+      - name: Ruff (PEP 8, imports, pyupgrade)
+        run: ruff check src/ tests/ examples/ scripts/
+
+      - name: Mypy (strict on src/)
+        run: mypy
+
+      - name: Pytest with line coverage
+        run: pytest --cov=pwm_dose_equivalence --cov-report=term-missing -q
+
+      - name: Verify FRAMEWORK_SPEC hash is unchanged
+        # If anyone edits FRAMEWORK_SPEC without a Tier-A MAJOR version
+        # bump (per CONTRIBUTING.md "Schema mutation discipline"), this
+        # step fails CI before the silent-breakage merges.
+        run: |
+          python -c "
+          from pwm_dose_equivalence.framework_hash import framework_hash
+          expected = 'sha256:b366f51c11a8fbdfc7b60f1f977d42a10a8bdaa55521b43de0c428afc289fb58'
+          actual = framework_hash()
+          assert actual == expected, f'FRAMEWORK_SPEC hash changed: {actual}'
+          print(f'framework_hash unchanged: {actual}')
+          "
