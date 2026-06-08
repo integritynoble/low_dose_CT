@@ -238,7 +238,8 @@ The examples are regenerated from `examples/regenerate.py` (fixed seed = 42); `t
 
 * [`manuscript.tex`](manuscript.tex) v0.3 — the framework paper itself
 * [`CHANGELOG.md`](CHANGELOG.md) — what changed and when
-* [`reproduction_guide.md`](reproduction_guide.md) — the *technical* companion for reviewers who write code
+* [`reproduction_guide.md`](reproduction_guide.md) — the *technical positive-claim* companion for reviewers who write code
+* [`limitations_anchors.md`](limitations_anchors.md) — the *negative-claim* companion mapping each V3-12 manuscript limitation to its supporting proofs / simulation / roadmap milestone
 * [`../theory/proofs/sample_size.md`](../theory/proofs/sample_size.md) — formal sample-size derivation
 * [`../theory/proofs/estimator.md`](../theory/proofs/estimator.md) — formal coverage + power discussion
 * [`../pwm_dose_equivalence/notebooks/`](../pwm_dose_equivalence/notebooks/) — four tutorial notebooks for users learning to *issue* credentials

@@ -230,16 +230,22 @@ A reviewer can locate any concrete numerical claim in the manuscript by consulti
 
 ---
 
-## 10a. Companion document for non-coders
+## 10a. Companion documents for non-coders and for limitations
 
-This guide is the *technical* reproduction surface. Its companion is [`credential_reading_guide.md`](credential_reading_guide.md) — a field-by-field walk through a published credential JSON for reviewers, regulators, and clinicians who need to *interpret* a credential without re-running the bootstrap themselves. The reading guide covers verdict semantics (PASS / FAIL / INDETERMINATE), CI vs $\varepsilon$ reading, what the framework hash does and does not guarantee, the `sample_size_check` field, common reviewer questions, and a red-flag checklist.
+This guide is the *technical, positive-claim* reproduction surface. Two companion documents cover the rest of the reviewer surface:
 
-The two guides are deliberately disjoint:
+* [`credential_reading_guide.md`](credential_reading_guide.md) — a field-by-field walk through a published credential JSON for reviewers, regulators, and clinicians who need to *interpret* a credential without re-running the bootstrap themselves. Verdict semantics, CI vs $\varepsilon$ reading, framework-hash guarantees, the `sample_size_check` field, common reviewer questions, red-flag checklist.
+* [`limitations_anchors.md`](limitations_anchors.md) — the *negative-claim* counterpart to §10's per-claim anchor table. Maps each of the five V3-12 manuscript §Discussion "Limitations of the present work" paragraphs to (a) the evidence the limitation is real, (b) the proofs / simulation document that backs its magnitude, and (c) the roadmap milestone that would close it. A reviewer can use it to confirm that each acknowledged gap is *honestly described*, not hand-waved.
 
-* `reproduction_guide.md` (this document) — "how do I re-derive the numbers?"
-* `credential_reading_guide.md` — "how do I read a credential someone else published?"
+The three documents are deliberately disjoint:
 
-A complete reviewer-facing surface needs both.
+| Document | Question it answers |
+|---|---|
+| `reproduction_guide.md` (this document) | How do I re-derive the manuscript's positive numerical claims? |
+| `credential_reading_guide.md` | How do I read a credential someone else published? |
+| `limitations_anchors.md` | Where is each manuscript-acknowledged limitation backed by evidence? |
+
+A complete reviewer-facing surface needs all three.
 
 ---
 

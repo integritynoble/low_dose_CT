@@ -10,6 +10,35 @@ reviewer-readiness audit posted in the 2026-06-01 working session.
 
 ---
 
+## `limitations_anchors.md` — D9 + 19 (2026-06-08)
+
+Companion to the V3-12 manuscript §Discussion "Limitations of the present work" subsubsection. The reproduction guide §10 anchors every *positive* numerical claim in the manuscript; this new document anchors every *limitation* the manuscript explicitly acknowledges. A reviewer can use it to confirm that each acknowledged gap is honestly described, not hand-waved.
+
+| ID | What landed | Commit |
+|---|---|---|
+| **R3-5** | **`paper_draft/limitations_anchors.md`** — 5-section anchor document, one section per V3-12 limitation paragraph. Each section verbatim-quotes the manuscript paragraph, then provides (a) an anchor table mapping the claim to specific repo files (proofs document + experiment + simulation `results.json` + reading-guide section), (b) a "Closes when" entry naming the roadmap milestone that would resolve the limitation, (c) a "Why this is the right framing" / "Practical implication" close that explains the substance. L-1: synthetic vs real-cohort (closes at Phase 1 / 3a / 3b data). L-2: three modalities validated; extension surface not (closes when an independent external group issues a credential under a user-implemented modality). L-3: schema does not pin `method.code_hash` (closes at v1.0 Tier-A schema bump). L-4: reader-variability ceiling on $\varepsilon$ (closes via the v1.0 per-task label-noise registry). L-5: WS-1 v0.5 INDETERMINATE-dominated regime (closes when prospective v1.0 cohort reaches n ≥ 500). | *(this commit)* |
+| **R3-5-prop** | **Cross-link propagation.** `reproduction_guide.md` §10a expanded to a three-document table (positive-claim / non-coder / limitations). `credential_reading_guide.md` §8 cross-references gain a link to the new document. **Manuscript §Discussion intro to "Limitations of the present work" gains one sentence** pointing reviewers at `paper_draft/limitations_anchors.md` for the per-paragraph anchor / closure-milestone tables. PDF rebuilt at 24 pp (unchanged). | *(this commit)* |
+
+### Why this is R3-5 (not V3-N)
+
+The `R3-N` convention (introduced at R3-1) marks *reviewer-facing reproduction artifacts* — documents that sit alongside the manuscript but are not part of the manuscript's submitted text. R3-1 was the reproduction guide; R3-2 / R3-3 were the tutorial notebooks; R3-4 was the credential reading guide. R3-5 follows the same pattern: the manuscript prose is unchanged-modulo-one-sentence, and the substance lives in a companion document that a reviewer can pull alongside the PDF.
+
+### The three-document reviewer surface
+
+| Document | Audience | Question it answers |
+|---|---|---|
+| `reproduction_guide.md` (R3-1) | Code-savvy reviewer | *How do I re-derive the manuscript's positive numerical claims?* |
+| `credential_reading_guide.md` (R3-4) | Non-coder reviewer / regulator / clinician | *How do I read a credential someone else published?* |
+| `limitations_anchors.md` (R3-5, this commit) | Any reviewer | *Where is each manuscript-acknowledged limitation backed by evidence?* |
+
+The three are deliberately disjoint and together cover the full review surface.
+
+### Schema unchanged (a tenth time)
+
+Pure documentation addition. No library code, no `FRAMEWORK_SPEC` edit, no test or schema change. The manuscript prose change is one sentence; the substance is in the companion document.
+
+---
+
 ## Makefile + GitHub Actions CI + dependabot — D9 + 19 (2026-06-08)
 
 Closes the last in-session-executable governance item: backs the manuscript §software_rigor "Continuous integration runs on every commit against Python 3.10, 3.11, and 3.12 on Linux runners" claim with an actual workflow file, and wraps every gate (ruff + mypy + pytest with coverage + framework-hash invariant) behind one local-runnable `make ci` command.
