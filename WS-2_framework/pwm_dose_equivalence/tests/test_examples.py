@@ -13,8 +13,6 @@ import importlib.util
 import json
 from pathlib import Path
 
-import pytest
-
 from pwm_dose_equivalence.audit import audit_credential
 from pwm_dose_equivalence.credential_schema import CREDENTIAL_JSON_SCHEMA
 

@@ -8,7 +8,7 @@ a third party can verify the credential by recomputing the bootstrap.
 from __future__ import annotations
 
 import json
-from dataclasses import dataclass, field, asdict
+from dataclasses import asdict, dataclass, field
 from enum import Enum
 from typing import Any, Literal
 
@@ -20,7 +20,7 @@ class Verdict(str, Enum):
 
 
 Modality = Literal["CT", "MRI", "PET"]
-Estimator = Literal["percentile", "delong"]
+Estimator = Literal["percentile", "delong", "bca"]
 
 
 @dataclass
@@ -91,7 +91,7 @@ class SignalEquivalenceCredential:
         return json.dumps(self.to_dict(), indent=indent, sort_keys=False)
 
     @classmethod
-    def from_dict(cls, d: dict[str, Any]) -> "SignalEquivalenceCredential":
+    def from_dict(cls, d: dict[str, Any]) -> SignalEquivalenceCredential:
         c = d["credential"]
         task_d = c["task"]
         task = Task(
@@ -126,5 +126,5 @@ class SignalEquivalenceCredential:
         )
 
     @classmethod
-    def from_json(cls, s: str) -> "SignalEquivalenceCredential":
+    def from_json(cls, s: str) -> SignalEquivalenceCredential:
         return cls.from_dict(json.loads(s))

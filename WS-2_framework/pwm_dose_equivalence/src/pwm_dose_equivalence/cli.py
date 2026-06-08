@@ -27,7 +27,7 @@ from pathlib import Path
 from typing import IO
 
 from pwm_dose_equivalence import __version__
-from pwm_dose_equivalence.audit import audit_credential
+from pwm_dose_equivalence.audit import CredentialAudit, audit_credential
 
 
 def _build_parser() -> argparse.ArgumentParser:
@@ -62,7 +62,7 @@ def _read_input(path: str, stdin: IO[str]) -> str:
     return Path(path).read_text(encoding="utf-8")
 
 
-def _format_human(report) -> str:
+def _format_human(report: CredentialAudit) -> str:
     lines: list[str] = []
     status = "OK" if report.ok else "FAIL"
     lines.append(f"pwm-audit: {status}")

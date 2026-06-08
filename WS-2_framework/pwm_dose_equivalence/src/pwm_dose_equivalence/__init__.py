@@ -53,8 +53,8 @@ from pwm_dose_equivalence.operators import (
 )
 from pwm_dose_equivalence.sample_size import (
     required_n_auc,
-    required_n_general,
     required_n_bernstein,
+    required_n_general,
 )
 
 __version__ = "0.2.2"

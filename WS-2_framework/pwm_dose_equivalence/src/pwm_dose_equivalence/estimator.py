@@ -19,7 +19,6 @@ from typing import Literal
 import numpy as np
 from scipy import stats
 
-
 # --------------------------------------------------------------------------
 # Generic paired-bootstrap (any metric where Δ_k is a per-patient scalar)
 # --------------------------------------------------------------------------
@@ -100,7 +99,7 @@ def bca_ci(
     jk = (total - deltas) / (n - 1)
     jk_bar = jk.mean()
     num = float(((jk_bar - jk) ** 3).sum())
-    den = 6.0 * float((((jk_bar - jk) ** 2).sum())) ** 1.5
+    den = 6.0 * float(((jk_bar - jk) ** 2).sum()) ** 1.5
     a_accel = num / den if den > 0 else 0.0
 
     # BCa endpoints

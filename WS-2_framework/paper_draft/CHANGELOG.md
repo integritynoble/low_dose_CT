@@ -10,6 +10,34 @@ reviewer-readiness audit posted in the 2026-06-01 working session.
 
 ---
 
+## ruff + mypy config + 4 type-safety fixes — D9 + 19 (2026-06-08)
+
+Backs the CONTRIBUTING.md "PEP 8 with ruff defaults; line length 100" and "mypy --strict should pass on the src/ tree" claims with actual `[tool.ruff]` / `[tool.mypy]` config blocks in `pyproject.toml`. Previously those claims were narrative-only — there was nothing for `ruff check src/` or `mypy --strict src/` to consult, and four real mypy errors were silently shipping.
+
+The four mypy errors are real type-safety bugs (not cosmetic): one would have silently corrupted a credential's `Estimator` literal at v0.2.0 when `bca` was added without updating the dataclass type annotation; one was an unguarded `len()` on a possibly-None ndarray; one was an untyped helper parameter; one was an untyped dict literal that masked downstream type information.
+
+| ID | What landed | Commit |
+|---|---|---|
+| **lint-1** | **`pyproject.toml` `[tool.ruff]` + `[tool.ruff.lint]`**: `line-length = 100`; `target-version = "py310"`; `select = ["E", "F", "I", "UP"]` (pycodestyle errors + pyflakes + isort + pyupgrade — the minimal set that catches common style drift in a typed scientific Python package without adding maintenance noise). New `[project.optional-dependencies] lint = ["ruff>=0.5", "mypy>=1.8"]` extras so `pip install -e ".[lint]"` installs both pinned. | *(this commit)* |
+| **lint-2** | **`pyproject.toml` `[tool.mypy]` + `[[tool.mypy.overrides]]`**: `strict = true`; `python_version = "3.10"`; `files = ["src/pwm_dose_equivalence"]`. Single override for `module = "scipy.*"` with `ignore_missing_imports = true` (SciPy does not publish type stubs as of 2026). | *(this commit)* |
+| **lint-3** | **4 real mypy `--strict` errors fixed.** (a) `credential.py`: `Estimator = Literal["percentile", "delong"]` → `Literal["percentile", "delong", "bca"]` (v0.2.0 added BCa to the API but never updated the dataclass type annotation; would have allowed `Credential(estimator="invalid", ...)` to type-check). (b) `api.py:107`: `sample_check: dict = {}` → `sample_check: dict[str, Any] = {}` (untyped dict). (c) `api.py`: added `assert a_pos is not None and a_neg is not None` (and same for b_pos/b_neg) at the top of the `chosen == "delong"` branch, so the subsequent `len(a_pos) + len(a_neg)` is type-safe; the mode-dispatch logic already guarantees these are non-None but mypy could not deduce it. (d) `cli.py:_format_human`: untyped `report` parameter → `report: CredentialAudit`. | *(this commit)* |
+| **lint-4** | **9 ruff auto-fixes** (6 in src/, 3 in tests/) — import-sort drift (`I001`), redundant quotes on self-referencing type annotations (`UP037`), an extraneous-parentheses idiom in `bca_ci`'s acceleration computation (`UP034`). All cosmetic. | *(this commit)* |
+| **lint-5** | **`FRAMEWORK_SPEC` `# noqa: E501` exception** on the one line that exceeds 100 chars. The string content is part of the SHA-256-hashed framework specification; reformatting it (including any whitespace) would change `framework_hash()` and silently invalidate every credential issued under v0.2. Verified bit-identical: `framework_hash() == sha256:b366f51c...` before and after the noqa. CONTRIBUTING.md "Code style" section updated to call out the exception explicitly as Tier-A load-bearing. | *(this commit)* |
+| **lint-6** | **CONTRIBUTING.md Code style section rewritten** to name the actual `[tool.ruff]` / `[tool.mypy]` config blocks, the install command (`pip install -e ".[lint]"`), the run commands (`ruff check src/ tests/` and `mypy`), and the `FRAMEWORK_SPEC` exception. Previously the section asserted the standards exist; now it points at where they live and how to run them. | *(this commit)* |
+
+### Verification
+
+* `ruff check src/ tests/ examples/ scripts/` — all clean.
+* `mypy` (uses `[tool.mypy] files = ["src/pwm_dose_equivalence"]`) — `Success: no issues found in 10 source files`.
+* `pytest -q` — 140 / 140 passed, 100 % coverage on 437 statements (unchanged).
+* `framework_hash()` returns `sha256:b366f51c11a8fbdfc7b60f1f977d42a10a8bdaa55521b43de0c428afc289fb58` (unchanged from v0.2.x).
+
+### Schema unchanged (an eighth time)
+
+`FRAMEWORK_SPEC` byte-for-byte identical. The `Estimator` literal widening in `credential.py` is a pure type-annotation correction — `Credential(estimator="bca", ...)` already constructed successfully at runtime via the dataclass; we just fixed the static-type lie. Every v0.2.x credential is bit-identical under the same inputs.
+
+---
+
 ## `examples/expected_audit_output.txt` snapshot — D9 + 19 (2026-06-08)
 
 Closes the "show me what `pwm-audit` actually prints" gap with a literal `diff`-able ground-truth file. The R3-4 reading guide §7b table tells a reviewer what each example *should* produce; today's commit captures the concatenated `pwm-audit` output across all seven examples (clean + six failures) as a single text snapshot a reviewer can compare against their own runs. Tiny, self-contained, and closes a regression-testing gap that the per-check unit tests did not.

@@ -10,7 +10,7 @@ recomputing the bootstrap.
 from __future__ import annotations
 
 import warnings
-from typing import Literal
+from typing import Any, Literal
 
 import numpy as np
 
@@ -104,7 +104,7 @@ def signal_equivalence_credential(
         else:
             chosen = "percentile"
 
-    sample_check: dict = {}
+    sample_check: dict[str, Any] = {}
 
     if chosen == "delong":
         if not auc_mode:
@@ -112,6 +112,8 @@ def signal_equivalence_credential(
                 "estimator='delong' requires (a_pos, a_neg, b_pos, b_neg) "
                 "AUC-style inputs."
             )
+        assert a_pos is not None and a_neg is not None
+        assert b_pos is not None and b_neg is not None
         delta_mean, ci_low, ci_high = delong_ci(
             a_pos=np.asarray(a_pos),
             a_neg=np.asarray(a_neg),

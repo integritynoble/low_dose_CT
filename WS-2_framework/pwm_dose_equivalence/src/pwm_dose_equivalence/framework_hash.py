@@ -23,13 +23,19 @@ import hashlib
 #: short — it pins the credential to a specific framework-paper section and
 #: estimator defaults, while the substantive definition lives in the linked
 #: theory document.
+# The FRAMEWORK_SPEC literals below are part of the SHA-256-hashed content
+# that anchors every issued credential. Reformatting them (including splitting
+# any line for E501) would change the hash and silently invalidate every
+# credential issued under v0.2. Per-line E501 ignores below are deliberate
+# and load-bearing: this is a Tier-A MAJOR-version-bump-only surface per
+# CONTRIBUTING.md.
 FRAMEWORK_SPEC = (
     "pwm-signal-equivalence/v0.2\n"
     "definition: M is signal-equivalent to M_ref at (r, T, epsilon, alpha) over Pi "
     "iff |E_Pi[E[P(T(M(T_r(S_ref(x)))), g(x))]] - E_Pi[E[P(T(M_ref(S_ref(x))), g(x))]]| < epsilon "
     "with confidence >= 1 - alpha under the paired-bootstrap estimator.\n"
     "estimator-defaults: percentile (general); delong (task.metric == auc); bca opt-in.\n"
-    "Pi-carries: acquisition-protocol metadata (CT vendor/kVp; MRI mask_family; PET tracer/scanner).\n"
+    "Pi-carries: acquisition-protocol metadata (CT vendor/kVp; MRI mask_family; PET tracer/scanner).\n"  # noqa: E501
     "composition: not derivable; each credential is point-evaluated.\n"
     "ref: theory/dose-equivalence-framework.md @ v0.1 (manuscript v0.2 supersedes for "
     "estimator-defaults, Pi-as-metadata, point-evaluated-by-design; see paper_draft/CHANGELOG.md)."

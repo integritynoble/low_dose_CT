@@ -170,15 +170,32 @@ will catch it.
 
 ## Code style
 
-* PEP 8 with `ruff` defaults; line length 100.
+* PEP 8 with `ruff` defaults; line length 100. Configured in
+  [`pyproject.toml`](pyproject.toml) `[tool.ruff]` (line-length = 100;
+  target-version = py310) and `[tool.ruff.lint]` (select = E, F, I, UP).
+  Install via `pip install -e ".[lint]"` and run with `ruff check src/
+  tests/`. All currently-committed code passes cleanly.
 * PEP 484 type annotations on every public function; `mypy --strict`
-  should pass on the `src/` tree.
+  should pass on the `src/` tree. Configured in [`pyproject.toml`](pyproject.toml)
+  `[tool.mypy]` (strict = true; python_version = 3.10) with a single
+  `[[tool.mypy.overrides]]` entry for `scipy.*` (SciPy does not publish
+  type stubs as of 2026). Run with `mypy`. All currently-committed code
+  passes cleanly.
 * Docstrings: short imperative first line; reST or plain prose body;
   cite the corresponding manuscript section / proofs document where
   the implementation choice is justified.
 * No emojis in code or commit messages.
 * Comments only when the *why* is non-obvious — no comments that
   restate what the code does.
+
+> **The `FRAMEWORK_SPEC` exception.** `src/pwm_dose_equivalence/framework_hash.py`
+> carries one `# noqa: E501` per long-line literal. The literals are part
+> of the SHA-256-hashed content that anchors every issued credential;
+> reformatting them (including any whitespace change) would change the
+> framework hash and silently invalidate every credential issued under
+> the current `FRAMEWORK_SPEC`. The `noqa` is deliberate and load-bearing.
+> A PR that removes it without bumping the framework spec is Tier A and
+> will not be accepted.
 
 ---
 

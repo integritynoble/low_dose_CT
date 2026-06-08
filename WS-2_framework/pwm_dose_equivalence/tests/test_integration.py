@@ -33,7 +33,6 @@ from pwm_dose_equivalence import (
     signal_equivalence_credential,
 )
 
-
 # --------------------------------------------------------------------------
 # End-to-end per-modality credential issuance
 # --------------------------------------------------------------------------

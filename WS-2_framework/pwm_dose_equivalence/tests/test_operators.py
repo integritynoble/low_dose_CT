@@ -7,7 +7,6 @@ import pytest
 
 from pwm_dose_equivalence.operators import Tr_ct, Tr_mri, Tr_pet
 
-
 # --------------------------------------------------------------------------
 # CT — Poisson-thinning
 # --------------------------------------------------------------------------
