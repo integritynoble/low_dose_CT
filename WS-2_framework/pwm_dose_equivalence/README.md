@@ -239,6 +239,22 @@ The current version is `0.2.2` (alpha). v0.2.0 added BCa + small-$n$ warning + `
 
 ---
 
+## Contributing
+
+See [`CONTRIBUTING.md`](CONTRIBUTING.md) for the contribution policy. The
+policy defines two sign-off tiers — Tier A (two of three maintainers) for
+changes to `framework_hash.py`, `credential.py`, `credential_schema.py`,
+`estimator.py`, `sample_size.py`, and `operators.py`; Tier B (one
+maintainer) for documentation, tests, tutorials, examples, and
+API-additive changes — plus the schema-mutation discipline, testing
+floor, security-disclosure window, and license intent.
+
+## Citation
+
+See [`CITATION.cff`](CITATION.cff) (CFF v1.2.0). The preferred citation
+is the *Nature Methods* manuscript (in preparation); the CFF also
+declares a software-citation entry for the library itself.
+
 ## License
 
-Apache 2.0.
+Apache 2.0 ([LICENSE](LICENSE)).

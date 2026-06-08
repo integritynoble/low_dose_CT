@@ -10,6 +10,44 @@ reviewer-readiness audit posted in the 2026-06-01 working session.
 
 ---
 
+## Governance artifacts: CONTRIBUTING.md + CITATION.cff — D9 + 19 (2026-06-08)
+
+Backs the manuscript §software_rigor "Release cadence and governance" paragraph claim — *"The contribution policy is published as `CONTRIBUTING.md` in the repository."* — with code. Adds a `CITATION.cff` (CFF v1.2.0) so GitHub renders a citation button and the library can be cited as software alongside the methodological paper.
+
+No library version bump — pure governance artifacts.
+
+| ID | What landed | Commit |
+|---|---|---|
+| **L0.2.2-gov-1** | **`pwm_dose_equivalence/CONTRIBUTING.md`** — full contribution policy. Sections: dev-env setup; "what you can change without a PR" (nothing — every change goes through a PR because of the framework-hash discipline); PR workflow (fork → branch → tests → docs → CI); **two-tier sign-off rule** (Tier A = two of three maintainers for `framework_hash.py` / `credential*.py` / `estimator.py` / `sample_size.py` / `operators.py`; Tier B = one maintainer for documentation / tests / tutorials / examples / API-additive); versioning policy (MAJOR = `FRAMEWORK_SPEC` bump; MINOR = additive; PATCH = bug fix); schema-mutation discipline (6-step checklist including `scripts/dump_schema.py` re-run and `examples/regenerate.py` re-run); code style (PEP 8 / mypy strict / 100-col / no comment-restate-code / no emojis); testing (100 % coverage discipline; happy-path + failure-mode for every new public function); bug reporting (issue template with version + reproducer); security disclosure (private channel for credential-forgery vulnerabilities); maintainers (placeholder TBA until v0.3 → v0.4 manuscript revision); license intent (Apache 2.0 contributor agreement). Closes the manuscript §software_rigor claim. | *(this commit)* |
+| **L0.2.2-gov-2** | **`pwm_dose_equivalence/CITATION.cff`** (CFF v1.2.0). Software-citation metadata: title, version (`0.2.2`), date-released (`2026-06-08`), license (`Apache-2.0`), repository-code URL, keywords, authors (`PWM Protocol Foundation` as organisational author until manuscript `\todo{author list}` populates). `preferred-citation` block points at the *Nature Methods* manuscript (in preparation). `identifiers` block includes the framework spec SHA-256 hash so a citer can resolve which framework version the cited library version commits to. Validated via `yaml.safe_load`. | *(this commit)* |
+| **L0.2.2-gov-3** | **Manuscript §software_rigor "Release cadence and governance" paragraph rewritten** to name the actual `CONTRIBUTING.md` path, list the Tier-A and Tier-B module surfaces explicitly, mention the schema-mutation discipline and security-disclosure window, and cite `CITATION.cff` at the same path. Adds substance: the previous paragraph asserted a contribution policy existed; the new paragraph names the modules it governs and the disciplines it documents. PDF rebuilt at 22 pp; no LaTeX errors. | *(this commit)* |
+| **L0.2.2-gov-4** | **Library README + WS-2 README + WS-1 cross-reference propagation.** Library `README.md` gains "Contributing" + "Citation" sections (replacing the bare "License" section). WS-2 README status pin updated to include the governance landing; D9+19 closure list gains the gov rows; Subfolders pwm_dose_equivalence row mentions CONTRIBUTING + CITATION. | *(this commit)* |
+
+### What §software_rigor now backs (updated table)
+
+| Claim in paragraph | Backing artifact |
+|---|---|
+| Documentation site (readthedocs.io URL) | Pending TestPyPI publish |
+| API reference (auto-generated from docstrings) | Pending TestPyPI publish |
+| Three tutorial notebooks (one per validated modality) | `pwm_dose_equivalence/notebooks/01_*.py`, `02_*.py`, `03_*.py` (R3-2) |
+| Optical / fluorescence extension tutorial | `pwm_dose_equivalence/notebooks/04_optical_extending.py` (R3-3) |
+| ``Credential reading guide'' for non-coder reviewers | `paper_draft/credential_reading_guide.md` v1.3 (R3-4 + audit / CLI / examples shortcuts) |
+| Internal-consistency audit available from Python and shell | `pwm_dose_equivalence.audit_credential` + `pwm-audit` (L0.2.1 / L0.2.2) |
+| Worked example credentials (one clean + six broken) | `pwm_dose_equivalence/examples/` (D9 + 19) |
+| Standalone JSON Schema artifact | `pwm_dose_equivalence/credential_schema.json` (D9 + 19) |
+| 90 % minimum line coverage | 100 % on 437 statements |
+| Contribution policy in `CONTRIBUTING.md` | `pwm_dose_equivalence/CONTRIBUTING.md` (this commit) |
+| Two-tier maintainer sign-off | `CONTRIBUTING.md` "Sign-off tiers" section (this commit) |
+| Software citation | `pwm_dose_equivalence/CITATION.cff` (this commit) |
+
+Every concrete claim in the §software_rigor paragraph now resolves to an artifact in this repository.
+
+### Schema unchanged (a fourth time)
+
+FRAMEWORK_SPEC byte-for-byte identical to v0.2.1 / v0.2.2; CITATION.cff and CONTRIBUTING.md are governance documents, not credential code.
+
+---
+
 ## Worked examples + standalone JSON Schema artifact — D9 + 19 (2026-06-08)
 
 Closes the "show me what each red flag actually looks like" gap. The R3-4 reading guide tells reviewers what to look for; the v0.2.1 `audit_credential` function and v0.2.2 `pwm-audit` CLI run those checks; today's commit adds **concrete example credentials** — one clean PASS and six deliberately-broken variants, one per audit signal — so a reviewer can play with the audit on actual files without having to construct credentials themselves. Adds a top-level **standalone `credential_schema.json`** so non-Python tooling (JSON-Schema-aware editors, `ajv`, registry validators) can validate credentials without importing the library.
