@@ -133,7 +133,7 @@ The v0.2.0 test suite covers:
 * **Framework hash** (`test_framework_hash.py`) — SHA-256 prefix; hash-mutates-on-spec-mutate.
 * **API end-to-end** (`test_api.py`) — equivalent and biased candidates produce expected verdicts; auto-estimator-selection; sample-size warning.
 
-**Current v0.2.2:** 128/128 tests pass at **100 % line coverage** (437/437 statements). The 90 % target from the manuscript's §software-rigor paragraph is the published floor; the library continues to ship well above it. The 128 tests now include 10 end-to-end integration tests (`tests/test_integration.py` — full credential-issuance pipelines across CT / MRI / PET, cross-modality consistency via the public API, JSON round-trip + framework-hash verification, seeded reproducibility, T_r operator integration, and verdict-distribution transitions) plus 35 credential-audit tests (`tests/test_credential_audit.py` — schema validation; tampered-verdict detection; framework-hash recognition; sample-size-check coherence; estimator-specific soft signals; deep-copy non-mutation invariant) plus 12 CLI tests (`tests/test_cli.py` — file / stdin / JSON / help / version / missing-argument / tampered-verdict exit-code paths).
+**Current v0.2.2:** 139/139 tests pass at **100 % line coverage** (437/437 statements). The 90 % target from the manuscript's §software-rigor paragraph is the published floor; the library continues to ship well above it. The 139 tests now include 10 end-to-end integration tests (`tests/test_integration.py` — full credential-issuance pipelines across CT / MRI / PET, cross-modality consistency via the public API, JSON round-trip + framework-hash verification, seeded reproducibility, T_r operator integration, and verdict-distribution transitions) plus 35 credential-audit tests (`tests/test_credential_audit.py` — schema validation; tampered-verdict detection; framework-hash recognition; sample-size-check coherence; estimator-specific soft signals; deep-copy non-mutation invariant) plus 12 CLI tests (`tests/test_cli.py` — file / stdin / JSON / help / version / missing-argument / tampered-verdict exit-code paths) plus 11 examples + schema-artifact tests (`tests/test_examples.py` — clean credential audits ok; each failure example produces its expected hard issue or soft warning; on-disk JSON stays bit-identical to `examples/regenerate.py` output and to `CREDENTIAL_JSON_SCHEMA`).
 
 **v0.2.0 additions (D9 + 15, 2026-06-04):**
 
@@ -192,6 +192,25 @@ The v0.2.0 test suite covers:
 * The CLI is documented in
   [`../paper_draft/credential_reading_guide.md`](../paper_draft/credential_reading_guide.md)
   §7a alongside the Python API.
+
+**Examples + standalone schema (D9 + 19, 2026-06-08):**
+
+* **`examples/`** — one clean PASS credential
+  ([`examples/valid_ct_lung_nodule.json`](examples/valid_ct_lung_nodule.json))
+  plus six deliberately-broken variants in
+  [`examples/failures/`](examples/failures/), one per audit signal:
+  `tampered_verdict.json`, `inverted_ci.json`, `missing_field.json`
+  (hard issues, exit 1); `unknown_framework_hash.json`,
+  `undersized_pass.json`, `bca_headline.json` (soft warnings, exit 0).
+  See [`examples/README.md`](examples/README.md) for the per-file
+  audit-signal table and expected `pwm-audit` output. The examples are
+  regenerated from `examples/regenerate.py` at seed = 42;
+  `tests/test_examples.py` catches drift if any file is hand-edited.
+* **`credential_schema.json`** (top-level of the library) — a
+  standalone download of `CREDENTIAL_JSON_SCHEMA` for non-Python
+  validators (JSON-Schema-aware editors, `ajv`, registry tooling,
+  etc.). Regenerated from `scripts/dump_schema.py`; drift caught by
+  `test_examples.py`.
 
 ---
 

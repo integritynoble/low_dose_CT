@@ -216,6 +216,22 @@ The exit code mirrors the verdict: `0` if `ok=True`, `1` if any hard issue, `2` 
 
 The audit (library call or CLI) does *not* re-run the bootstrap — that requires the original test-set scores and is the job of `reproduction_guide.md`. The audit *does* verify that the published verdict is what the published CI implies, that the framework hash is one this library version recognises, that the schema is intact, and that no soft signals (BCa-as-headline, undersized cohort with PASS) have been silently issued. Most of the red flags above translate to a check in `audit_credential`; the remainder (subpopulation slug resolution, method-bundle hash, selective reporting) require institutional context the credential JSON cannot carry on its own.
 
+### 7b. Worked examples
+
+The library ships a small `examples/` directory with one clean credential and six deliberately-broken variants — one per audit signal — so a reviewer can see what each red flag *actually looks like* in the JSON and in the `pwm-audit` output:
+
+| File | Demonstrates | Expected exit |
+|---|---|---|
+| `examples/valid_ct_lung_nodule.json` | Clean PASS credential at the WS-1 v0.5 lung-nodule operating point | `0` (OK, no warnings) |
+| `examples/failures/tampered_verdict.json` | `verdict` flipped to FAIL on a PASSing CI | `1` (hard issue: `verdict_self_consistent = False`) |
+| `examples/failures/inverted_ci.json` | `delta_ci_low > delta_ci_high` | `1` (hard issue: empty CI) |
+| `examples/failures/missing_field.json` | Required `verdict` field removed | `1` (hard issue: schema invalid) |
+| `examples/failures/unknown_framework_hash.json` | `framework_hash` replaced with a different SHA-256 | `0` (soft warning: framework version not recognised) |
+| `examples/failures/undersized_pass.json` | `PASS` verdict with `sample_size_check.ok = False` | `0` (soft warning: cohort below formula prescription) |
+| `examples/failures/bca_headline.json` | `estimator = "bca"` as the headline result | `0` (soft warning: BCa is opt-in per `proofs/estimator.md` §4) |
+
+The examples are regenerated from `examples/regenerate.py` (fixed seed = 42); `tests/test_examples.py` catches drift if any file is hand-edited. The on-disk `credential_schema.json` (top-level of the library) is the same `CREDENTIAL_JSON_SCHEMA` dict serialised to a stand-alone JSON Schema file for non-Python validators.
+
 ---
 
 ## 8. Cross-references
@@ -227,8 +243,11 @@ The audit (library call or CLI) does *not* re-run the bootstrap — that require
 * [`../theory/proofs/estimator.md`](../theory/proofs/estimator.md) — formal coverage + power discussion
 * [`../pwm_dose_equivalence/notebooks/`](../pwm_dose_equivalence/notebooks/) — four tutorial notebooks for users learning to *issue* credentials
 * `pwm_dose_equivalence.audit.audit_credential` — Python API for the internal-consistency checks described in §7a
+* `pwm-audit` — shell entry point installed alongside the library (§7a)
 * `pwm_dose_equivalence.credential_schema.CREDENTIAL_JSON_SCHEMA` — the machine-readable JSON Schema this guide describes
+* [`../pwm_dose_equivalence/credential_schema.json`](../pwm_dose_equivalence/credential_schema.json) — standalone JSON Schema artifact for non-Python validators
+* [`../pwm_dose_equivalence/examples/`](../pwm_dose_equivalence/examples/) — clean + 6 broken example credentials, one per audit signal (§7b)
 
 ---
 
-*Reading guide v1.2 — 2026-06-05 (D9 + 16). Aligned with manuscript v0.3 + library v0.2.2 (adds `audit_credential` + `CREDENTIAL_JSON_SCHEMA` at v0.2.1; adds `pwm-audit` console entry point at v0.2.2) + `proofs/estimator.md` v0.4. Pairs with `reproduction_guide.md`. v1.0 → v1.1: reconciled JSON example to match the v0.2 schema's bare-string `method` field; added §7a `audit_credential` shortcut and schema-evolution note. v1.1 → v1.2: §7a now also documents the `pwm-audit` CLI for non-Python-call workflows (CI hooks, submission-checklist scripts).*
+*Reading guide v1.3 — 2026-06-08 (D9 + 19). Aligned with manuscript v0.3 + library v0.2.2 + `examples/` directory + standalone `credential_schema.json`. Pairs with `reproduction_guide.md`. v1.0 → v1.1: reconciled JSON example to match the v0.2 schema's bare-string `method` field; added §7a `audit_credential` shortcut and schema-evolution note. v1.1 → v1.2: §7a documented the `pwm-audit` CLI. v1.2 → v1.3: added §7b "Worked examples" linking to `examples/` (one clean + six broken credentials, one per audit signal) and the standalone `credential_schema.json` artifact for non-Python validators.*

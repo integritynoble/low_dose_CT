@@ -10,6 +10,41 @@ reviewer-readiness audit posted in the 2026-06-01 working session.
 
 ---
 
+## Worked examples + standalone JSON Schema artifact — D9 + 19 (2026-06-08)
+
+Closes the "show me what each red flag actually looks like" gap. The R3-4 reading guide tells reviewers what to look for; the v0.2.1 `audit_credential` function and v0.2.2 `pwm-audit` CLI run those checks; today's commit adds **concrete example credentials** — one clean PASS and six deliberately-broken variants, one per audit signal — so a reviewer can play with the audit on actual files without having to construct credentials themselves. Adds a top-level **standalone `credential_schema.json`** so non-Python tooling (JSON-Schema-aware editors, `ajv`, registry validators) can validate credentials without importing the library.
+
+No library version bump — these are pure artifacts + tests.
+
+| ID | What landed | Commit |
+|---|---|---|
+| **L0.2.2-ex-1** | **`pwm_dose_equivalence/examples/`** directory. `regenerate.py` issues every example from seed = 42 (the clean credential via `signal_equivalence_credential` on synthetic AUC scores with realistic overlap; the failure variants by deterministic JSON perturbation of the clean credential). `valid_ct_lung_nodule.json` — clean PASS credential at the WS-1 v0.5 lung-nodule operating point (n_test = 500, ε = 0.05, DeLong, delta_mean ≈ −0.007, CI ≈ [−0.013, −0.0002]). `failures/tampered_verdict.json` — verdict flipped on a valid CI (hard issue). `failures/inverted_ci.json` — delta_ci_low > delta_ci_high (hard issue). `failures/missing_field.json` — required `verdict` field removed (hard issue, schema invalid). `failures/unknown_framework_hash.json` — framework_hash replaced with sha256:0…0 (soft warning). `failures/undersized_pass.json` — PASS verdict with sample_size_check.ok = False (soft warning). `failures/bca_headline.json` — estimator = "bca" (soft warning per `proofs/estimator.md` §4). `examples/README.md` documents each file with its expected `pwm-audit` output and exit code. | *(this commit)* |
+| **L0.2.2-ex-2** | **`pwm_dose_equivalence/credential_schema.json`** — top-level standalone artifact, `json.dump`ed from `CREDENTIAL_JSON_SCHEMA` with `indent=2, ensure_ascii=False`. Non-Python validators can reference this file directly: JSON-Schema-aware editors auto-validate when `"$schema"` resolves to it; `ajv` and similar libraries can validate without installing the Python package. Regenerated from `scripts/dump_schema.py` so the artifact stays in sync with the Python-side dict. | *(this commit)* |
+| **L0.2.2-ex-3** | **11 new tests in `tests/test_examples.py`** covering: the clean example audits OK with no warnings; the clean example's verdict is PASS (not INDETERMINATE — guards against the degenerate-CI bug fixed during initial development); each failure example produces its expected hard issue or soft warning by substring match; **drift detection** that regenerates every example into `tmp_path` and asserts byte-identical match against the committed JSON (catches hand-edits); the standalone `credential_schema.json` is byte-identical to `json.dumps(CREDENTIAL_JSON_SCHEMA)`; the standalone artifact is draft-07-compatible. **Library coverage now 128 → 139 tests at 100 % line coverage** (statement count unchanged at 437; new tests exercise existing code paths). | *(this commit)* |
+| **L0.2.2-ex-4** | **Reading guide v1.2 → v1.3** — new §7b "Worked examples" with the per-file audit-signal table; §8 cross-references gain links to `examples/` and `credential_schema.json`. Library README gains "Examples + standalone schema" subsection. WS-2 README status pin bumped to D9 + 19 / 2026-06-08; Subfolders pwm_dose_equivalence row mentions examples + schema artifact; D9+19 closure row added. WS-1 cross-reference mentions the examples directory as the "see what a clean credential on a WS-1-like cohort looks like" entry point. | *(this commit)* |
+
+### Why this lands
+
+The R3-4 reading guide (D9 + 16) is *prescriptive* — it tells a reviewer what to check for. The v0.2.1 `audit_credential` (D9 + 16) and v0.2.2 `pwm-audit` CLI (D9 + 16) are *automated* — they run those checks. But neither is *concrete*: a reviewer reading the guide and the CLI docs still has to construct example credentials themselves to see what each red flag looks like. The `examples/` directory closes that gap with 7 ready-to-audit files, and the per-file table in `examples/README.md` is the cheat-sheet that maps "this kind of tampering" to "this exact audit output."
+
+The standalone `credential_schema.json` extends the same discipline to non-Python tooling. Any future registry that wants to validate credentials at submission time can point its JSON-Schema validator at this file. No Python install required at the validating end.
+
+### What the reviewer can now do, end-to-end
+
+1. Read [`paper_draft/credential_reading_guide.md`](credential_reading_guide.md) §1–§8 to understand what a credential asserts and what to look for.
+2. Run `pwm-audit pwm_dose_equivalence/examples/valid_ct_lung_nodule.json` to see a clean PASS audit.
+3. Run `pwm-audit pwm_dose_equivalence/examples/failures/tampered_verdict.json` (and the other five failure variants) to see how each audit signal surfaces.
+4. Take a credential they want to evaluate (from an author submission, a registry, a paper supplement) and run `pwm-audit their_credential.json`.
+5. If the audit returns `ok=True` and they want full reproduction, follow `paper_draft/reproduction_guide.md` to re-derive every numerical claim against the published artifacts.
+
+That is the full *reviewer surface*: definition, audit, examples, reproduction. All four anchored to artifacts in this repository at SHA-256-pinned framework version.
+
+### Schema unchanged (a third time)
+
+FRAMEWORK_SPEC byte-for-byte identical to v0.2.1 / v0.2.2; every credential in `examples/valid_ct_lung_nodule.json` is bit-identical to what v0.2.1 would emit from the same inputs. The standalone `credential_schema.json` is a *serialisation* of an existing constant, not a new constant. Pure additive change.
+
+---
+
 ## Library v0.2.2 — pwm-audit CLI — D9 + 16 (2026-06-05)
 
 Closes the "no Python required" gap for credential auditing. v0.2.1 gave a non-coder reviewer a one-call Python audit; v0.2.2 puts the same audit behind a `pwm-audit` shell command so a reviewer with the credential JSON and Python installed never has to write a Python line. Drop `pwm-audit credential.json` into a CI hook or a submission-checklist script and any internally-inconsistent credential fails the workflow.
