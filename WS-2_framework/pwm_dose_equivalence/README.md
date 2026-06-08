@@ -133,7 +133,7 @@ The v0.2.0 test suite covers:
 * **Framework hash** (`test_framework_hash.py`) — SHA-256 prefix; hash-mutates-on-spec-mutate.
 * **API end-to-end** (`test_api.py`) — equivalent and biased candidates produce expected verdicts; auto-estimator-selection; sample-size warning.
 
-**Current v0.2.2:** 139/139 tests pass at **100 % line coverage** (437/437 statements). The 90 % target from the manuscript's §software-rigor paragraph is the published floor; the library continues to ship well above it. The 139 tests now include 10 end-to-end integration tests (`tests/test_integration.py` — full credential-issuance pipelines across CT / MRI / PET, cross-modality consistency via the public API, JSON round-trip + framework-hash verification, seeded reproducibility, T_r operator integration, and verdict-distribution transitions) plus 35 credential-audit tests (`tests/test_credential_audit.py` — schema validation; tampered-verdict detection; framework-hash recognition; sample-size-check coherence; estimator-specific soft signals; deep-copy non-mutation invariant) plus 12 CLI tests (`tests/test_cli.py` — file / stdin / JSON / help / version / missing-argument / tampered-verdict exit-code paths) plus 11 examples + schema-artifact tests (`tests/test_examples.py` — clean credential audits ok; each failure example produces its expected hard issue or soft warning; on-disk JSON stays bit-identical to `examples/regenerate.py` output and to `CREDENTIAL_JSON_SCHEMA`).
+**Current v0.2.2:** 140/140 tests pass at **100 % line coverage** (437/437 statements). The 90 % target from the manuscript's §software-rigor paragraph is the published floor; the library continues to ship well above it. The 140 tests now include 10 end-to-end integration tests (`tests/test_integration.py` — full credential-issuance pipelines across CT / MRI / PET, cross-modality consistency via the public API, JSON round-trip + framework-hash verification, seeded reproducibility, T_r operator integration, and verdict-distribution transitions) plus 35 credential-audit tests (`tests/test_credential_audit.py` — schema validation; tampered-verdict detection; framework-hash recognition; sample-size-check coherence; estimator-specific soft signals; deep-copy non-mutation invariant) plus 12 CLI tests (`tests/test_cli.py` — file / stdin / JSON / help / version / missing-argument / tampered-verdict exit-code paths) plus 12 examples + schema-artifact + snapshot tests (`tests/test_examples.py` — clean credential audits ok; each failure example produces its expected hard issue or soft warning; on-disk JSON stays bit-identical to `examples/regenerate.py` output and to `CREDENTIAL_JSON_SCHEMA`; `examples/expected_audit_output.txt` snapshot of `pwm-audit` output stays bit-identical to a fresh in-process re-run).
 
 **v0.2.0 additions (D9 + 15, 2026-06-04):**
 
@@ -211,6 +211,13 @@ The v0.2.0 test suite covers:
   validators (JSON-Schema-aware editors, `ajv`, registry tooling,
   etc.). Regenerated from `scripts/dump_schema.py`; drift caught by
   `test_examples.py`.
+* **`examples/expected_audit_output.txt`** — snapshot of the
+  expected `pwm-audit` output on every example credential. A
+  reviewer can confirm bit-identical behaviour by running
+  `pwm-audit examples/<each>` themselves and diffing against this
+  file. Regenerated from `examples/regenerate_expected_outputs.py`;
+  drift caught by
+  `tests/test_examples.py::test_expected_audit_output_matches_snapshot`.
 
 ---
 

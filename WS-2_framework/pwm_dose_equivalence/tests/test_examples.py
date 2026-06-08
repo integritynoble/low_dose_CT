@@ -151,3 +151,32 @@ def test_schema_json_is_draft_07_compatible():
     on_disk = json.loads(SCHEMA_JSON.read_text(encoding="utf-8"))
     assert on_disk["$schema"].startswith("http://json-schema.org/draft-07")
     assert on_disk["type"] == "object"
+
+
+# -- snapshot of expected pwm-audit output stays in sync ----------------
+
+def test_expected_audit_output_matches_snapshot():
+    """Drift detection on examples/expected_audit_output.txt — re-runs
+    pwm-audit on every example and asserts the concatenated output is
+    bit-identical to the committed snapshot.
+
+    Failures here mean either (a) the CLI's output formatting changed,
+    (b) the audit logic changed, (c) an example was edited, or (d) the
+    snapshot was edited by hand. In all four cases the fix is to
+    re-run examples/regenerate_expected_outputs.py and commit the
+    refreshed file alongside whatever else changed.
+    """
+    spec = importlib.util.spec_from_file_location(
+        "examples_regenerate_outputs",
+        EXAMPLES / "regenerate_expected_outputs.py",
+    )
+    module = importlib.util.module_from_spec(spec)
+    assert spec.loader is not None
+    spec.loader.exec_module(module)
+
+    regenerated = module.regenerate()
+    on_disk = (EXAMPLES / "expected_audit_output.txt").read_text(encoding="utf-8")
+    assert regenerated == on_disk, (
+        "Drift detected in examples/expected_audit_output.txt: re-run "
+        "python3 examples/regenerate_expected_outputs.py"
+    )

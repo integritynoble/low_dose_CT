@@ -1,0 +1,109 @@
+# Expected pwm-audit output on every example credential.
+#
+# Regenerate with: python3 examples/regenerate_expected_outputs.py
+# Drift detected by: tests/test_examples.py
+
+=== valid_ct_lung_nodule.json (exit=0) ===
+pwm-audit: OK
+
+Hard checks:
+  schema_valid             = True
+  verdict_self_consistent  = True
+Soft signals:
+  framework_hash_known     = True
+  sample_size_check_ok     = True
+
+Issues: none
+
+Warnings: none
+
+=== failures/tampered_verdict.json (exit=1) ===
+pwm-audit: FAIL
+
+Hard checks:
+  schema_valid             = True
+  verdict_self_consistent  = False
+Soft signals:
+  framework_hash_known     = True
+  sample_size_check_ok     = True
+
+Issues (1):
+  - $.credential.verdict: stored 'FAIL' but (-0.0133209362706025, -0.00021506372939726886) vs epsilon=0.05 implies 'PASS'
+
+Warnings: none
+
+=== failures/inverted_ci.json (exit=1) ===
+pwm-audit: FAIL
+
+Hard checks:
+  schema_valid             = True
+  verdict_self_consistent  = True
+Soft signals:
+  framework_hash_known     = True
+  sample_size_check_ok     = True
+
+Issues (1):
+  - $.credential: delta_ci_low > delta_ci_high (empty CI is impossible)
+
+Warnings: none
+
+=== failures/missing_field.json (exit=1) ===
+pwm-audit: FAIL
+
+Hard checks:
+  schema_valid             = False
+  verdict_self_consistent  = False
+Soft signals:
+  framework_hash_known     = False
+  sample_size_check_ok     = None
+
+Issues (1):
+  - $.credential: missing required field 'verdict'
+
+Warnings: none
+
+=== failures/unknown_framework_hash.json (exit=0) ===
+pwm-audit: OK
+
+Hard checks:
+  schema_valid             = True
+  verdict_self_consistent  = True
+Soft signals:
+  framework_hash_known     = False
+  sample_size_check_ok     = True
+
+Issues: none
+
+Warnings (1):
+  - framework_hash sha256:0000000000000000000000000000000000000000000000000000000000000000 does not match the currently-installed library's sha256:b366f51c11a8fbdfc7b60f1f977d42a10a8bdaa55521b43de0c428afc289fb58. The credential was likely issued under an earlier framework version; resolve the hash against the matching FRAMEWORK_SPEC string.
+
+=== failures/undersized_pass.json (exit=0) ===
+pwm-audit: OK
+
+Hard checks:
+  schema_valid             = True
+  verdict_self_consistent  = True
+Soft signals:
+  framework_hash_known     = True
+  sample_size_check_ok     = False
+
+Issues: none
+
+Warnings (1):
+  - $.credential: PASS verdict issued on a cohort below the formula prescription (sample_size_check.ok=False). The verdict may be a fluke; treat with caution.
+
+=== failures/bca_headline.json (exit=0) ===
+pwm-audit: OK
+
+Hard checks:
+  schema_valid             = True
+  verdict_self_consistent  = True
+Soft signals:
+  framework_hash_known     = True
+  sample_size_check_ok     = True
+
+Issues: none
+
+Warnings (1):
+  - $.credential.estimator: BCa is opt-in only per theory/proofs/estimator.md §4 — does not robustly outperform percentile under the null. Confirm a percentile companion exists.
+

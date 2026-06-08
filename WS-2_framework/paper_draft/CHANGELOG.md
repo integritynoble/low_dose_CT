@@ -10,6 +10,29 @@ reviewer-readiness audit posted in the 2026-06-01 working session.
 
 ---
 
+## `examples/expected_audit_output.txt` snapshot — D9 + 19 (2026-06-08)
+
+Closes the "show me what `pwm-audit` actually prints" gap with a literal `diff`-able ground-truth file. The R3-4 reading guide §7b table tells a reviewer what each example *should* produce; today's commit captures the concatenated `pwm-audit` output across all seven examples (clean + six failures) as a single text snapshot a reviewer can compare against their own runs. Tiny, self-contained, and closes a regression-testing gap that the per-check unit tests did not.
+
+| ID | What landed | Commit |
+|---|---|---|
+| **gov-snap-1** | **`pwm_dose_equivalence/examples/regenerate_expected_outputs.py`** — runs `pwm-audit` (via in-process `cli.main` for deterministic output) on every JSON file under `examples/`, in a stable `EXAMPLE_ORDER` tuple, and writes the concatenated human-readable output to `examples/expected_audit_output.txt`. Each example is delimited by `=== <relpath> (exit=<code>) ===`. New examples should be appended to the end of `EXAMPLE_ORDER` so existing rows diff cleanly. | *(this commit)* |
+| **gov-snap-2** | **`pwm_dose_equivalence/examples/expected_audit_output.txt`** — 109-line snapshot file. Seven sections (one per example) carrying the full `pwm-audit` output the user would see at the shell: header (`pwm-audit: OK` / `FAIL`), hard checks (schema_valid, verdict_self_consistent), soft signals (framework_hash_known, sample_size_check_ok), full issue list, full warning list. A reviewer can confirm bit-identical behaviour with `pwm-audit examples/<each> \| diff - <(grep -A 10 '<each>' examples/expected_audit_output.txt)`. | *(this commit)* |
+| **gov-snap-3** | **New test `tests/test_examples.py::test_expected_audit_output_matches_snapshot`** — re-imports `examples/regenerate_expected_outputs.py` in-process, calls its `regenerate()` function, and asserts byte-identical match against the committed snapshot. Catches four classes of regression at once: (a) CLI output formatting change; (b) audit logic change; (c) example credential edit; (d) hand-edit of the snapshot. Test count 139 → 140 at 100 % coverage on unchanged 437 statements. | *(this commit)* |
+| **gov-snap-4** | **`examples/README.md` + library README** updated to mention the snapshot as a verification surface alongside the existing `regenerate.py` and `credential_schema.json`. | *(this commit)* |
+
+### Why this lands
+
+The audit's *unit* tests (`tests/test_credential_audit.py`, 35 tests) prove that `audit_credential` returns the right `CredentialAudit` dataclass on each tampering. The CLI's *unit* tests (`tests/test_cli.py`, 12 tests) prove the formatter renders that dataclass into the expected shape. But neither tests the *concrete strings* a reviewer will see, which is what matters for the reading guide's §7b promise. A snapshot test does. If the next contributor adjusts the human-readable formatter (e.g., renames a soft-signal label), the snapshot test fails immediately and forces an explicit "yes I meant to change the user-facing output" PR moment.
+
+The snapshot file is also a *documentation artifact*: a regulator reading the reading guide can open this file to see what the audit actually says, without installing Python. That parallels the standalone `credential_schema.json` for the schema side of the surface.
+
+### Schema unchanged (a seventh time)
+
+No library code, no `FRAMEWORK_SPEC` edit. The snapshot file is captured *from* the existing library; it does not change anything the library emits.
+
+---
+
 ## Issue templates + SECURITY.md — D9 + 19 (2026-06-08)
 
 Backs two CONTRIBUTING.md claims that were previously narrative-only: the "issue template" sentence in §Reporting bugs, and the "private channel for credential-forgery vulnerabilities" sentence in §Security. Both now resolve to concrete files. GitHub's "New issue" UI will render the three templates; the "Security" tab will render `SECURITY.md`.

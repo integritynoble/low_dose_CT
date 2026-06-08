@@ -10,6 +10,16 @@ seed = 42. Do not hand-edit them — re-run the script. The
 `tests/test_examples.py` suite catches drift between the script's output and
 the on-disk JSON.
 
+The expected `pwm-audit` output on every example is captured in
+[`expected_audit_output.txt`](expected_audit_output.txt) — a single concatenated
+snapshot a reviewer can `diff` against their own runs to confirm bit-identical
+behaviour. Regenerate it with
+[`regenerate_expected_outputs.py`](regenerate_expected_outputs.py); the
+companion test
+`tests/test_examples.py::test_expected_audit_output_matches_snapshot` catches
+drift if either the audit logic, the CLI formatting, or an example file
+changes without the snapshot being refreshed.
+
 ---
 
 ## Clean credential
