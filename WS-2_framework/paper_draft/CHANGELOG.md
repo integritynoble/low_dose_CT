@@ -10,6 +10,40 @@ reviewer-readiness audit posted in the 2026-06-01 working session.
 
 ---
 
+## Issue templates + SECURITY.md — D9 + 19 (2026-06-08)
+
+Backs two CONTRIBUTING.md claims that were previously narrative-only: the "issue template" sentence in §Reporting bugs, and the "private channel for credential-forgery vulnerabilities" sentence in §Security. Both now resolve to concrete files. GitHub's "New issue" UI will render the three templates; the "Security" tab will render `SECURITY.md`.
+
+Repo-root locality: GitHub looks for `.github/ISSUE_TEMPLATE/` and `SECURITY.md` at the repository root, not in sub-folders. The library will spawn its own repo at v1.0.0; until then these files live at the parent-repo root with workstream-aware content (a "Which workstream?" picker on the bug-report and feature-request templates).
+
+| ID | What landed | Commit |
+|---|---|---|
+| **gov-issue-1** | **`.github/ISSUE_TEMPLATE/bug_report.md`** — workstream picker (WS-1 / WS-2 / WS-3 / WS-4 / Other); pre-fills environment fields (OS, Python, library version, NumPy, SciPy, commit hash); reproducer + expected + actual + additional-context structure; redirects credential-audit-specific reports to the dedicated template. | *(this commit)* |
+| **gov-issue-2** | **`.github/ISSUE_TEMPLATE/feature_request.md`** — same workstream picker; problem / proposed solution / sign-off tier checkbox (Tier A / Tier B / Unsure) so the proposer knows what level of review their change will need; alternatives-considered field; schema-implications field (does this require a `FRAMEWORK_SPEC` bump?); additional-context field for citations to manuscript sections / proofs. | *(this commit)* |
+| **gov-issue-3** | **`.github/ISSUE_TEMPLATE/credential_audit_issue.md`** — library-specific template for "the audit returned a verdict I disagree with" reports. Asks for library version + NumPy/SciPy/Python/OS, the credential JSON (with redaction guidance that keeps audit-relevant fields intact), the full `pwm-audit --json` and human-readable output, the specific check the reporter thinks misfired (with examples), and a suspected-severity checkbox (Critical / High / Medium / Low). Critical-class reports are redirected to the SECURITY.md private channel. | *(this commit)* |
+| **gov-issue-4** | **`.github/ISSUE_TEMPLATE/config.yml`** — disables blank issues (so reporters land in one of the three templates by default) and lists four contact-link shortcuts: reading guide (for "is the audit behaving correctly?"), reproduction guide (for "I can't reproduce this number"), SECURITY.md (for "I think I found a forgery surface"), CONTRIBUTING.md (for "should this be a PR or an issue?"). | *(this commit)* |
+| **gov-sec-1** | **`SECURITY.md`** at the repository root — full security policy. Sections: supported versions table (WS-2 0.2.x supported; <0.2.0 unsupported; WS-1 v0.5 supported; WS-3 / WS-4 pre-release / not yet covered); what counts as a security issue (critical: credential forgery, hash collision, schema bypass, audit-state injection; non-critical: DoS, info disclosure; explicit out-of-scope list); how to report (private channel via the CITATION.cff `authors[].website`; **NO public GitHub issues for security-class problems**); 90-day default coordinated-disclosure window with 5-day acknowledgment and 15-day initial-assessment SLAs; explicit "what we will not do" enumeration (no silent landings, no retroactive FRAMEWORK_SPEC edits, no intake via social media / forums); acknowledgments placeholder. Closes the CONTRIBUTING.md §Security "see SECURITY.md" claim. | *(this commit)* |
+| **gov-sec-2** | **CONTRIBUTING.md §Reporting bugs + §Security rewrites.** §Reporting bugs now names all three issue templates and explains the workstream picker + sign-off-tier checkbox + environment pre-fill mechanics; references the `config.yml`'s four contact-link shortcuts. §Security now points at `../../SECURITY.md` by relative path instead of the prior generic "report privately to the maintainers" sentence; summarises the policy's coordinated-disclosure window, advisory publication, and `FRAMEWORK_SPEC`-bump procedure. | *(this commit)* |
+
+### What §CONTRIBUTING.md now backs (updated mapping)
+
+| Claim in CONTRIBUTING.md | Backing artifact |
+|---|---|
+| "every change goes through a PR" | Manuscript §software_rigor + this file's PR workflow |
+| Tier A / Tier B sign-off rule | Manuscript §software_rigor + this file's "Sign-off tiers" |
+| Schema-mutation discipline (6-step checklist) | `scripts/dump_schema.py` + `examples/regenerate.py` + `tests/test_examples.py` drift checks |
+| 100 % coverage discipline | `tests/` suite (139 tests at 100 % coverage on 437 statements) |
+| Bug reporting via issue templates | `.github/ISSUE_TEMPLATE/{bug_report,feature_request,credential_audit_issue}.md` (this commit) |
+| Security disclosure window for credential-forgery vulnerabilities | `SECURITY.md` (this commit) |
+| Maintainer list (placeholder) | CONTRIBUTING.md "Maintainers" section — `TBA` until v0.3 → v0.4 manuscript revision |
+| Apache 2.0 contributor agreement | `LICENSE` |
+
+### Schema unchanged (a sixth time)
+
+Pure governance + issue-tracking artifacts. No library code, no `FRAMEWORK_SPEC` edit, no test or schema change. The v0.2.2 library is bit-identical to its previous state. The manuscript at 24 pp is unchanged from V3-12.
+
+---
+
 ## Manuscript §Discussion "Limitations of the present work" — D9 + 19 (2026-06-08)
 
 Adds an explicit limitations surface to the manuscript. The existing §Discussion "Failure modes of the framework" subsubsection covered *methodological* failure modes (INDETERMINATE, point-evaluated by design, estimator failure modes, subpopulation specificity, aggregate-vs-per-patient, reproducibility caveats); a new sibling "Limitations of the present work" subsubsection covers the *empirical-validation scope* — which is the harder thing for a reviewer to read out of the existing prose. Pure manuscript work; no library code change.

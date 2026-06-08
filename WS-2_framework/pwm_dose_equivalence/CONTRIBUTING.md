@@ -202,22 +202,42 @@ will catch it.
 
 * Open an issue at
   [github.com/integritynoble/low_dose_CT/issues](https://github.com/integritynoble/low_dose_CT/issues)
-  with a minimal reproducer, the library version (`python -c "import
-  pwm_dose_equivalence; print(pwm_dose_equivalence.__version__)"`), and
-  the Python / NumPy / SciPy versions.
-* If the bug affects an *issued credential* (e.g. you suspect
-  `audit_credential` returns the wrong verdict on a known-good
-  credential), include the credential JSON file.
+  using the appropriate template:
+  * **Bug report** (`.github/ISSUE_TEMPLATE/bug_report.md`) — for general
+    library / data / documentation defects.
+  * **Credential audit issue** (`.github/ISSUE_TEMPLATE/credential_audit_issue.md`)
+    — when you believe `audit_credential` or `pwm-audit` returned the
+    wrong verdict on a credential.
+  * **Feature request** (`.github/ISSUE_TEMPLATE/feature_request.md`) —
+    for new functionality or methodological extensions; includes a
+    sign-off-tier checkbox so reviewers know what level of review the
+    proposal will need.
+* The templates pre-fill the environment information we need (library
+  version, Python / NumPy / SciPy versions, OS) so we do not have to
+  ask for it as a follow-up.
+* GitHub's "blank issue" option is disabled (via
+  `.github/ISSUE_TEMPLATE/config.yml`) so reporters land in one of the
+  three templates by default. The `config.yml` also lists four
+  contact-link shortcuts: reading guide, reproduction guide, security
+  channel, contribution policy.
 
 ---
 
 ## Security
 
-Security issues — for example, a way to construct a credential that
-audits as `ok=True` but does not match its CI — should be reported
-privately to the maintainers (see `CITATION.cff` `authors`) **before**
-opening a public issue. A coordinated disclosure window will be agreed
-case by case.
+Security issues — including credential forgery (a credential that
+audits as `ok=True` but does not match its CI), framework-hash
+collision, schema-validation bypass, and audit-state injection — are
+covered by the repository-root [`SECURITY.md`](../../SECURITY.md). The
+short version: **do not open a public GitHub issue**. Use the private
+channel listed in `SECURITY.md`. The default coordinated-disclosure
+window is 90 days; the policy describes acknowledgment, advisory
+publication, and the `FRAMEWORK_SPEC`-bump procedure when a fix
+requires a schema change.
+
+`SECURITY.md` also explicitly enumerates what is and is not in scope
+(in: credential reproducibility breaks; out: upstream NumPy/SciPy
+bugs, manuscript typos, the placeholder maintainer list).
 
 ---
 
