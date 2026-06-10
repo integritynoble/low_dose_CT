@@ -7,9 +7,26 @@ submitting the *Scientific Data* Data Descriptor (`../paper_draft/manuscript.tex
 |---|---|
 | [`DEPOSIT_CHECKLIST.md`](DEPOSIT_CHECKLIST.md) | End-to-end gating checklist: generate → validate → package → deposit (DOI) → fill manuscript → submit. Hard-gated on Phase-3 data existing and on a minted figshare/Zenodo DOI. |
 | [`dataset_metadata.schema.json`](dataset_metadata.schema.json) | JSON Schema (draft-07) for the `dataset_metadata.json` that ships at the corpus archive root. Pins record types, licences, source-dataset relation, credential framework hash, integrity manifest. |
-| [`dataset_metadata.example.json`](dataset_metadata.example.json) | Filled template with deposit-time placeholders (`null` / `TBD-at-deposit` / zero counts). Validates against the schema today; replace placeholders at deposit. |
+| [`dataset_metadata.example.json`](dataset_metadata.example.json) | Seed template with descriptive fields + deposit-time placeholders. The human fills the descriptive fields; `package_corpus.py` overlays the counts/sizes. Validates against the schema today. |
+| [`package_corpus.py`](package_corpus.py) | Writes `dataset_metadata.json` (counts/sizes filled from disk) **then** `MANIFEST.sha256` (covers the metadata). `verify` recomputes hashes vs the manifest. CLI + importable API; 13 tests. |
 
-## Validate the metadata before deposit
+## Package + verify the corpus
+
+```
+# fill metadata counts from disk + write the integrity manifest
+python package_corpus.py package <corpus_root> --seed dataset_metadata.example.json
+
+# later (reuser / CI): confirm nothing drifted
+python package_corpus.py verify <corpus_root>          # -> {"ok": true, ...}
+# or with standard tooling, from the corpus root:
+( cd <corpus_root> && sha256sum -c MANIFEST.sha256 )
+```
+
+`package` writes metadata first so the manifest covers it; the filled metadata is
+validated against `dataset_metadata.schema.json` (pass `--require-schema-valid`
+to make a violation a non-zero exit).
+
+## Validate the metadata standalone
 
 ```
 python -c "import json,jsonschema; jsonschema.validate(

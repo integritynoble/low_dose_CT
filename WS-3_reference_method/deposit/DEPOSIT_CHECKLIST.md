@@ -61,8 +61,8 @@ Compute on the held-out test split and save the raw numbers + the figure source:
 ## 3. Packaging & integrity
 
 - [ ] Freeze the corpus tree under a single root `pwm-ldct-recon-corpus/`.
-- [ ] Generate `MANIFEST.sha256` — SHA-256 of **every leaf file**, relative paths, sorted.
-- [ ] Write `dataset_metadata.json` at the archive root (validate against `deposit/dataset_metadata.schema.json` — see §6).
+- [ ] Run `python deposit/package_corpus.py package <corpus_root>` — writes `dataset_metadata.json` (counts/sizes filled from disk) **then** `MANIFEST.sha256` (SHA-256 of every leaf file, sorted, covering the metadata). One command does §3's manifest + §6's metadata fill.
+- [ ] Confirm `python deposit/package_corpus.py verify <corpus_root>` returns `{"ok": true}` (equivalently `sha256sum -c MANIFEST.sha256` from the corpus root).
 - [ ] Package the Apache-2.0 generating pipeline as a pinned Docker RunBundle; record the **image digest** and **IPFS CID**.
 - [ ] Verify regeneration: `docker run` on a fresh machine reproduces records bit-identically within IEEE-754 tolerance.
 - [ ] (Optional but recommended) split very large NIfTI archives into per-vendor tarballs so partial download is possible.
@@ -97,12 +97,15 @@ Emitted by [`../corpus_emit/`](../corpus_emit/) (`emit_stratum_credential` →
 
 ## 6. Metadata (`dataset_metadata.json`)
 
-- [ ] Fill `deposit/dataset_metadata.example.json` with real values.
-- [ ] Validate against `deposit/dataset_metadata.schema.json`:
-      `python -c "import json,jsonschema; jsonschema.validate(json.load(open('dataset_metadata.json')), json.load(open('dataset_metadata.schema.json')))"`
-- [ ] `related_identifiers` includes: WS-1 source DOI, WS-2 framework hash, RunBundle CID, L4 cert id, and (once known) the manuscript DOI.
+The **counts/sizes** are filled automatically by `package_corpus.py` (§3); the
+human only fills the **descriptive** fields in the seed
+(`deposit/dataset_metadata.example.json`).
+
+- [ ] Fill the seed's descriptive fields with real values: `title`, `creators[]` (+ ORCIDs), `doi`, `release_date`, `source_dataset.doi`, `generating_pipeline.*` (commit, image digest, RunBundle CID), `related_identifiers`.
 - [ ] `creators[]` have ORCIDs (the journal requires a corresponding author with ORCID).
-- [ ] `record_types[]` counts/sizes match `MANIFEST.sha256` and `tab:records_counts`.
+- [ ] `related_identifiers` includes: WS-1 source DOI, WS-2 framework hash, RunBundle CID, L4 cert id, and (once known) the manuscript DOI.
+- [ ] Re-run `package_corpus.py package` after the corpus is final so counts/sizes match the frozen tree; it validates the result against `dataset_metadata.schema.json` automatically.
+- [ ] Spot-check `record_types[]` counts against `tab:records_counts` in the manuscript.
 
 ---
 

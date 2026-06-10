@@ -110,7 +110,7 @@ Three baselines reproduced inside this folder under `baselines/`. They serve thr
 | Path | Purpose | Status |
 |---|---|---|
 | `corpus_emit/` | Credential-emission step: turns cohort task scores into deposit-ready `credential.json` records + `all_credentials.jsonl` index, via the WS-2 library | **wired + tested** (18 tests pass on synthetic scores; real scores arrive Phase 3) |
-| `deposit/` | *Scientific Data* deposit kit: checklist + `dataset_metadata.json` schema + validating template | **ready** (corpus + DOI gated on Phase 3) |
+| `deposit/` | *Scientific Data* deposit kit: checklist + `dataset_metadata.json` schema/template + `package_corpus.py` (fills metadata counts + writes/verifies `MANIFEST.sha256`) | **ready + tested** (13 tests; corpus + DOI gated on Phase 3) |
 | `baselines/` | RED-CNN + transformer + diffusion + comparison harness | pending Phase 1 |
 | `v0.1/` | Phase 2 prototype | pending Phase 2 |
 | `v1/` | Phase 3 production version | pending Phase 3 |
