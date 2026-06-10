@@ -98,7 +98,7 @@
     {
       "type": "credential",
       "format": "json",
-      "path_glob": "reconstructions/*/*/r*/credential.json",
+      "path_glob": "credentials/*/r*/*.json",
       "count": 0,
       "total_bytes": 0,
       "dtype": null,

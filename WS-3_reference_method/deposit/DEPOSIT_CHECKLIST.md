@@ -71,9 +71,15 @@ Compute on the held-out test split and save the raw numbers + the figure source:
 
 ## 4. Credential records
 
-- [ ] Every `credential.json` validates against the WS-2 `credential_schema.json`.
+Emitted by [`../corpus_emit/`](../corpus_emit/) (`emit_stratum_credential` →
+`rebuild_index`); credentials are **cohort-level**, one per
+`(task × dose × method × vendor)` stratum under
+`credentials/<task>/r<dd>/<method>__<vendor>.json`.
+
+- [ ] Every `credential.json` validates against the WS-2 `credential_schema.json` (the emitter builds via the WS-2 API, so this holds by construction).
 - [ ] Each carries the **framework hash** (`sha256:b366f51c…`) so reusers know the framework version.
-- [ ] `pwm-audit credential.json` returns `ok=True` for every record (or the failure is documented as intentional).
+- [ ] `verify_corpus_credentials(corpus_root)` returns `ok=True` (equivalently `pwm-audit` returns `ok=True` on every record) — the emitter already blocks hard-audit failures at write time.
+- [ ] `credentials/all_credentials.jsonl` regenerated with `rebuild_index` after the last credential lands.
 - [ ] `INDETERMINATE` verdicts annotated as sample-size artifacts (per WS-2), not negative findings.
 
 ---

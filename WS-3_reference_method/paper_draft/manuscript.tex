@@ -243,13 +243,18 @@ the released error map.
 For each test scan and dose level the pipeline emits, in addition to
 $\hat{x}(y)$ and $\sigma(y)$: the \textbf{per-pixel error map}
 $e(y)_{ij} = |\hat{x}(y)_{ij} - x^{\textrm{ref}}_{ij}|$ against the
-full-dose reference; a \textbf{lung-nodule detection score map} from a
-frozen pre-trained detector applied to $\hat{x}(y)$; and a
-\textbf{signal-equivalence credential} computed with the
-\texttt{pwm\_dose\_equivalence} library~\citep{ws2framework} (5-tuple
-$(r, T, \varepsilon, \alpha, \Pi)$ with verdict and confidence interval).
-The five baseline methods (Section~\ref{sec:datarecords}) are run through
-the identical emit path so their records are field-for-field comparable.
+full-dose reference, and a \textbf{lung-nodule detection score map} from a
+frozen pre-trained detector applied to $\hat{x}(y)$. In addition, at the
+\emph{cohort} level---one record per $(\textrm{task}, r,
+\textrm{subpopulation}, \textrm{method})$ stratum rather than per
+scan---the pipeline emits a \textbf{signal-equivalence credential}
+(5-tuple $(r, T, \varepsilon, \alpha, \Pi)$ with verdict and confidence
+interval) computed with the \texttt{pwm\_dose\_equivalence}
+library~\citep{ws2framework}; each credential is internally audited with
+\texttt{pwm-audit} before it is written, and is regenerable from the
+released task-score arrays. The five baseline methods
+(Section~\ref{sec:datarecords}) are run through the identical emit path so
+their records are field-for-field comparable.
 
 \subsection{Training and generation configuration}
 Models are trained on the PWM-LDCT training split with paired targets at
@@ -307,16 +312,15 @@ pwm-ldct-recon-corpus/
       uncertainty_sigma.nii.gz    # per-pixel ensemble std dev
       error_abs.nii.gz            # |recon - full_dose_ref|
       task_nodule_score.nii.gz    # frozen-detector score map
-      credential.json             # signal-equivalence credential
       scan_meta.json              # vendor, r, anatomy, split, WS-1 source id
   baselines/
-    <method>/<vendor>/<scan_id>/r<dd>/  # method in {fbp,redcnn,transformer,
-      recon.nii.gz                      #            diffusion,wgan_vgg}
+    <method>/<vendor>/<scan_id>/r<dd>/  # method in {fbp,redcnn,wgan_vgg,
+      recon.nii.gz                      #            transformer,diffusion}
       error_abs.nii.gz
       task_nodule_score.nii.gz
-      credential.json
-  credentials/
-    all_credentials.jsonl         # flat index of every credential.json
+  credentials/                    # cohort-level: one credential per
+    <task>/r<dd>/<method>__<vendor>.json  #   (task x dose x method x vendor)
+    all_credentials.jsonl         # flat queryable index of every credential
   checksums_and_versions.json     # library version pins for regeneration
 \end{verbatim}
 
