@@ -547,6 +547,13 @@ regeneration of the corpus within floating-point tolerance on equivalent
 hardware. The forward model is the upstream
 \texttt{pwm\_core.contrib.modalities.ct\_radon}~\citep{pwmcore}; the
 credentialing library is \texttt{pwm\_dose\_equivalence}~\citep{ws2framework}.
+The credential-emission and corpus-packaging steps (record layout,
+\texttt{pwm-audit}ed credential issuance, machine-readable metadata, and the
+SHA-256 integrity manifest) are unit-tested, and a runnable synthetic fixture
+reproduces the full record-generation $\rightarrow$ credential $\rightarrow$
+metadata $\rightarrow$ manifest pipeline end-to-end on miniature data, so a
+reviewer can exercise the corpus structure and audit chain in one command
+without the full dataset.
 
 %% =====================================================================
 \section*{Data Citations}
