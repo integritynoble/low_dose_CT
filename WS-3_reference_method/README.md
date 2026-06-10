@@ -120,6 +120,19 @@ Three baselines reproduced inside this folder under `baselines/`. They serve thr
 
 ---
 
+## Continuous integration
+
+[`../.github/workflows/ws3-ci.yml`](../.github/workflows/ws3-ci.yml) runs on every
+push to `main` / `heyang` (and PRs to `main`) that touches WS-3 or the WS-2
+library, on Python 3.10 / 3.11 / 3.12. It installs the WS-2 library, runs all
+three suites (`corpus_emit` 18 + `deposit` 13 + `fixture` 11 tests), builds the
+synthetic corpus end-to-end and confirms its `MANIFEST.sha256` with
+`sha256sum -c`, and asserts a cross-workstream invariant: a WS-3-emitted
+credential carries the same `FRAMEWORK_SPEC` hash the installed WS-2 library
+reports (catches issuance against a stale framework version).
+
+---
+
 ## Per-baseline contract
 
 Each baseline directory must contain:

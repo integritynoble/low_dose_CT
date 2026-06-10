@@ -1,0 +1,104 @@
+name: WS-3 CI
+
+# Runs the WS-3 deposit-pipeline test suites and the synthetic end-to-end
+# corpus build on every push, mirroring the WS-2 library CI. WS-3 depends on
+# the WS-2 library (pwm_dose_equivalence) for credential issuance, so the
+# library is installed editable before the suites run.
+#
+# Three suites + one end-to-end build:
+#   corpus_emit/  -> credential-emission step (18 tests)
+#   deposit/      -> MANIFEST + dataset_metadata writer (13 tests)
+#   fixture/      -> synthetic end-to-end generator (11 tests)
+#   fixture build -> emit -> package -> verify, then `sha256sum -c`
+
+"on":
+  push:
+    branches: [main, heyang]
+    paths:
+      - "WS-3_reference_method/**"
+      - "WS-2_framework/pwm_dose_equivalence/**"
+      - ".github/workflows/ws3-ci.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "WS-3_reference_method/**"
+      - "WS-2_framework/pwm_dose_equivalence/**"
+      - ".github/workflows/ws3-ci.yml"
+
+jobs:
+  ws3:
+    name: ${{ matrix.python-version }} / ubuntu-latest
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10", "3.11", "3.12"]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+          cache-dependency-path: WS-2_framework/pwm_dose_equivalence/pyproject.toml
+
+      - name: Install WS-2 library + test deps
+        # The WS-2 library pulls numpy/scipy; nibabel backs the fixture's
+        # NIfTI round-trip test; jsonschema backs the metadata-validity tests.
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e WS-2_framework/pwm_dose_equivalence
+          pip install pytest jsonschema nibabel
+
+      - name: corpus_emit suite (credential emission)
+        working-directory: WS-3_reference_method/corpus_emit
+        env:
+          PYTHONPATH: .
+        run: pytest -q
+
+      - name: deposit suite (manifest + metadata writer)
+        working-directory: WS-3_reference_method/deposit
+        env:
+          PYTHONPATH: .
+        run: pytest -q
+
+      - name: fixture suite (synthetic end-to-end)
+        working-directory: WS-3_reference_method/fixture
+        env:
+          PYTHONPATH: .
+        run: pytest -q
+
+      - name: End-to-end fixture build + integrity verify
+        # Builds a synthetic corpus through emit -> package -> verify, then
+        # confirms the integrity manifest with standard tooling. Fails CI if
+        # the credential schema, metadata schema, or corpus layout drift.
+        run: |
+          python WS-3_reference_method/fixture/make_synthetic_corpus.py "${RUNNER_TEMP}/ws3_ci_corpus" --seed 42
+          cd "${RUNNER_TEMP}/ws3_ci_corpus"
+          sha256sum -c MANIFEST.sha256
+
+      - name: Verify emitted credential framework hash matches WS-2
+        # Cross-workstream invariant: a credential emitted by WS-3 must carry
+        # the same FRAMEWORK_SPEC hash the installed WS-2 library reports. A
+        # mismatch means WS-3 is issuing against a stale framework version.
+        run: |
+          python -c "
+          import numpy as np
+          from pwm_dose_equivalence.framework_hash import framework_hash
+          import sys
+          sys.path.insert(0, 'WS-3_reference_method/corpus_emit')
+          from emit_credentials import StratumSpec, AucScores, build_credential
+          rng = np.random.default_rng(0); n = 200
+          cred = build_credential(
+              StratumSpec('lung_nodule_5mm', 'auc', 0.25,
+                          'adult_chest_pwm_l3_test_v1', 0.05, method='pwm_ref_v1'),
+              AucScores(rng.normal(.65,.18,n), rng.normal(.35,.18,n),
+                        rng.normal(.65,.18,n), rng.normal(.35,.18,n)))
+          got = cred.to_dict()['framework_hash']
+          exp = framework_hash()
+          assert got == exp, f'WS-3 credential hash {got} != WS-2 library {exp}'
+          print(f'framework hash consistent: {got}')
+          "
