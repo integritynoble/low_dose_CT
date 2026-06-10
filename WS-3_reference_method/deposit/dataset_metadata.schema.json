@@ -1,0 +1,257 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/integritynoble/low_dose_CT/WS-3_reference_method/deposit/dataset_metadata.schema.json",
+  "title": "WS-3 derived-reconstruction corpus metadata",
+  "description": "Top-level metadata file (dataset_metadata.json) deposited at the root of the WS-3 derived-reconstruction corpus alongside MANIFEST.sha256. Describes a Scientific Data Data Descriptor's released artifact: reference reconstructions + per-pixel uncertainty maps + paired error maps + task-score maps + signal-equivalence credentials over the WS-1 PWM-LDCT benchmark. Validate the corpus's dataset_metadata.json against this schema before deposit.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "title",
+    "description",
+    "version",
+    "data_license",
+    "code_license",
+    "creators",
+    "keywords",
+    "source_dataset",
+    "generating_pipeline",
+    "acquisition",
+    "splits",
+    "record_types",
+    "credential",
+    "integrity",
+    "counts"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "ws3-recon-corpus-metadata/v1",
+      "description": "Pinned metadata-schema identifier. Bump only on a breaking metadata change."
+    },
+    "title": {
+      "type": "string",
+      "minLength": 10,
+      "description": "Human-readable corpus title; should match the manuscript and repository landing page."
+    },
+    "description": {
+      "type": "string",
+      "minLength": 50,
+      "description": "One-paragraph summary of what the corpus contains and what it is for."
+    },
+    "doi": {
+      "type": ["string", "null"],
+      "pattern": "^10\\.[0-9]{4,}/.+$",
+      "description": "Repository DOI (figshare/Zenodo). null until minted; required to be non-null at submission. IPFS CID is NOT a substitute."
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
+      "description": "Corpus release version, e.g. 1.0.0."
+    },
+    "release_date": {
+      "type": ["string", "null"],
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+      "description": "ISO-8601 release date; null until deposit is finalized."
+    },
+    "data_license": {
+      "type": "string",
+      "const": "CC-BY-4.0",
+      "description": "Licence for the data records. Scientific Data preference."
+    },
+    "code_license": {
+      "type": "string",
+      "const": "Apache-2.0",
+      "description": "Licence for the generating pipeline / RunBundle."
+    },
+    "creators": {
+      "type": "array",
+      "minItems": 1,
+      "description": "Authors/creators. At least one must be the corresponding author with an ORCID.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "affiliation"],
+        "properties": {
+          "name": { "type": "string", "description": "Family, Given" },
+          "orcid": {
+            "type": ["string", "null"],
+            "pattern": "^0000-000[0-9]-[0-9]{4}-[0-9]{3}[0-9X]$",
+            "description": "ORCID iD; required for the corresponding author."
+          },
+          "affiliation": { "type": "string" },
+          "corresponding": { "type": "boolean", "default": false }
+        }
+      }
+    },
+    "keywords": {
+      "type": "array",
+      "minItems": 3,
+      "items": { "type": "string" }
+    },
+    "source_dataset": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "relation"],
+      "description": "The raw benchmark this corpus is derived from (WS-1). Establishes distinctness for Scientific Data review.",
+      "properties": {
+        "name": { "type": "string", "description": "e.g. PWM-LDCT benchmark (WS-1)" },
+        "doi": { "type": ["string", "null"], "pattern": "^10\\.[0-9]{4,}/.+$" },
+        "relation": {
+          "type": "string",
+          "const": "isDerivedFrom",
+          "description": "This corpus is the reconstruction/uncertainty/credential layer derived from the source raw scans."
+        }
+      }
+    },
+    "generating_pipeline": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["repository_url", "commit", "runbundle_cid"],
+      "description": "How the records were produced; must permit bit-identical regeneration.",
+      "properties": {
+        "repository_url": { "type": "string", "format": "uri" },
+        "commit": { "type": "string", "pattern": "^[0-9a-f]{7,40}$", "description": "Git commit the pipeline was run at." },
+        "docker_image_digest": { "type": ["string", "null"], "pattern": "^sha256:[0-9a-f]{64}$" },
+        "runbundle_cid": { "type": ["string", "null"], "description": "IPFS CID of the pinned RunBundle (supplementary integrity anchor)." },
+        "l4_cert_id": { "type": ["string", "null"], "description": "PWM L4 cert identifier anchoring the RunBundle." },
+        "library_versions": {
+          "type": "object",
+          "description": "Exact pins of load-bearing libraries used for generation.",
+          "additionalProperties": { "type": "string" }
+        }
+      }
+    },
+    "acquisition": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["dose_ratios", "vendors", "anatomy"],
+      "properties": {
+        "dose_ratios": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "number", "exclusiveMinimum": 0, "maximum": 1.0 },
+          "description": "Signal ratios r present in the corpus, e.g. [0.10, 0.25, 0.50, 1.00]."
+        },
+        "vendors": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string" },
+          "description": "CT vendors represented, e.g. [Siemens, GE, Canon]."
+        },
+        "anatomy": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string" },
+          "description": "e.g. [chest, abdomen]."
+        }
+      }
+    },
+    "splits": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["released_split"],
+      "properties": {
+        "released_split": {
+          "type": "string",
+          "const": "test",
+          "description": "Only the held-out test split is released as records (train/val are not, to avoid leakage)."
+        },
+        "patient_level": {
+          "type": "boolean",
+          "const": true,
+          "description": "Splits are patient-level (no patient crosses train/test)."
+        }
+      }
+    },
+    "record_types": {
+      "type": "array",
+      "minItems": 1,
+      "description": "One entry per released record type; counts/sizes must match MANIFEST.sha256 and the manuscript tab:records_counts.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["type", "format", "path_glob", "count", "total_bytes"],
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "reference_reconstruction",
+              "uncertainty_map",
+              "error_map",
+              "task_score_map",
+              "credential",
+              "baseline_reconstruction",
+              "scan_metadata",
+              "index"
+            ]
+          },
+          "format": { "type": "string", "enum": ["nifti", "json", "jsonl"] },
+          "path_glob": { "type": "string", "description": "Glob locating these records within the corpus root." },
+          "count": { "type": "integer", "minimum": 0 },
+          "total_bytes": { "type": "integer", "minimum": 0 },
+          "dtype": { "type": ["string", "null"], "description": "e.g. float32 for NIfTI image records." },
+          "units": { "type": ["string", "null"], "description": "e.g. HU for reconstructions." }
+        }
+      }
+    },
+    "credential": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["framework_hash", "schema_version"],
+      "description": "Pins the WS-2 framework version every credential.json was issued under.",
+      "properties": {
+        "framework_hash": {
+          "type": "string",
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "description": "WS-2 FRAMEWORK_SPEC hash, e.g. sha256:b366f51c..."
+        },
+        "schema_version": {
+          "type": "string",
+          "description": "Credential wire-format version, e.g. pwm-signal-equivalence/v0.2."
+        },
+        "audited_with": {
+          "type": ["string", "null"],
+          "description": "Tool + version used to audit every credential, e.g. pwm-audit 0.2.2."
+        }
+      }
+    },
+    "integrity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["manifest_file", "algorithm"],
+      "properties": {
+        "manifest_file": { "type": "string", "const": "MANIFEST.sha256" },
+        "algorithm": { "type": "string", "const": "sha256" }
+      }
+    },
+    "counts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["n_patients", "n_scans", "n_records_total"],
+      "properties": {
+        "n_patients": { "type": "integer", "minimum": 1 },
+        "n_scans": { "type": "integer", "minimum": 1 },
+        "n_records_total": { "type": "integer", "minimum": 1 },
+        "total_bytes": { "type": ["integer", "null"], "minimum": 0 }
+      }
+    },
+    "related_identifiers": {
+      "type": "array",
+      "description": "External identifiers this corpus relates to (manuscript DOI, WS-1 DOI, RunBundle CID, L4 cert).",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["identifier", "relation"],
+        "properties": {
+          "identifier": { "type": "string" },
+          "relation": {
+            "type": "string",
+            "enum": ["isSupplementTo", "isDerivedFrom", "isDocumentedBy", "isVersionOf", "references"]
+          },
+          "scheme": { "type": ["string", "null"], "enum": ["doi", "ipfs", "url", "sha256", "pwm-l4", null] }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,156 @@
+{
+  "schema_version": "ws3-recon-corpus-metadata/v1",
+  "title": "A Multi-Vendor Corpus of Reference Low-Dose CT Reconstructions with Calibrated Per-Pixel Uncertainty and Signal-Equivalence Credentials",
+  "description": "Derived-data corpus over the PWM-LDCT benchmark (WS-1). For every held-out test scan, at four dose levels (10/25/50/100%) and across multiple CT vendors, the corpus provides a reference reconstruction, a per-pixel ensemble uncertainty map, the paired per-pixel error map against the full-dose reference, a downstream lung-nodule task-score map, and a machine-readable signal-equivalence credential, plus matched reconstructions of five baseline methods.",
+  "doi": null,
+  "version": "1.0.0",
+  "release_date": null,
+  "data_license": "CC-BY-4.0",
+  "code_license": "Apache-2.0",
+  "creators": [
+    {
+      "name": "TBD-at-submission, Corresponding",
+      "orcid": "0000-0000-0000-0000",
+      "affiliation": "University of Texas Southwestern Medical Center, Dallas, TX, USA",
+      "corresponding": true
+    },
+    {
+      "name": "PWM Protocol Foundation",
+      "orcid": null,
+      "affiliation": "PWM Protocol Foundation",
+      "corresponding": false
+    }
+  ],
+  "keywords": [
+    "low-dose CT",
+    "image reconstruction",
+    "uncertainty quantification",
+    "deep ensembles",
+    "cross-vendor generalization",
+    "signal-equivalence credentials",
+    "reproducible benchmark"
+  ],
+  "source_dataset": {
+    "name": "PWM-LDCT benchmark (WS-1)",
+    "doi": null,
+    "relation": "isDerivedFrom"
+  },
+  "generating_pipeline": {
+    "repository_url": "https://github.com/integritynoble/low_dose_CT/tree/main/WS-3_reference_method",
+    "commit": "0000000",
+    "docker_image_digest": null,
+    "runbundle_cid": null,
+    "l4_cert_id": null,
+    "library_versions": {
+      "python": "3.10",
+      "torch": "TBD-at-deposit",
+      "numpy": "TBD-at-deposit",
+      "pwm_core": "TBD-at-deposit",
+      "pwm_dose_equivalence": "0.2.2"
+    }
+  },
+  "acquisition": {
+    "dose_ratios": [0.10, 0.25, 0.50, 1.00],
+    "vendors": ["Siemens", "GE", "Canon"],
+    "anatomy": ["chest", "abdomen"]
+  },
+  "splits": {
+    "released_split": "test",
+    "patient_level": true
+  },
+  "record_types": [
+    {
+      "type": "reference_reconstruction",
+      "format": "nifti",
+      "path_glob": "reconstructions/*/*/r*/recon_mean.nii.gz",
+      "count": 0,
+      "total_bytes": 0,
+      "dtype": "float32",
+      "units": "HU"
+    },
+    {
+      "type": "uncertainty_map",
+      "format": "nifti",
+      "path_glob": "reconstructions/*/*/r*/uncertainty_sigma.nii.gz",
+      "count": 0,
+      "total_bytes": 0,
+      "dtype": "float32",
+      "units": "HU"
+    },
+    {
+      "type": "error_map",
+      "format": "nifti",
+      "path_glob": "reconstructions/*/*/r*/error_abs.nii.gz",
+      "count": 0,
+      "total_bytes": 0,
+      "dtype": "float32",
+      "units": "HU"
+    },
+    {
+      "type": "task_score_map",
+      "format": "nifti",
+      "path_glob": "reconstructions/*/*/r*/task_nodule_score.nii.gz",
+      "count": 0,
+      "total_bytes": 0,
+      "dtype": "float32",
+      "units": "score"
+    },
+    {
+      "type": "credential",
+      "format": "json",
+      "path_glob": "reconstructions/*/*/r*/credential.json",
+      "count": 0,
+      "total_bytes": 0,
+      "dtype": null,
+      "units": null
+    },
+    {
+      "type": "scan_metadata",
+      "format": "json",
+      "path_glob": "reconstructions/*/*/r*/scan_meta.json",
+      "count": 0,
+      "total_bytes": 0,
+      "dtype": null,
+      "units": null
+    },
+    {
+      "type": "baseline_reconstruction",
+      "format": "nifti",
+      "path_glob": "baselines/*/*/*/r*/recon.nii.gz",
+      "count": 0,
+      "total_bytes": 0,
+      "dtype": "float32",
+      "units": "HU"
+    },
+    {
+      "type": "index",
+      "format": "jsonl",
+      "path_glob": "credentials/all_credentials.jsonl",
+      "count": 1,
+      "total_bytes": 0,
+      "dtype": null,
+      "units": null
+    }
+  ],
+  "credential": {
+    "framework_hash": "sha256:b366f51c11a8fbdfc7b60f1f977d42a10a8bdaa55521b43de0c428afc289fb58",
+    "schema_version": "pwm-signal-equivalence/v0.2",
+    "audited_with": "pwm-audit 0.2.2"
+  },
+  "integrity": {
+    "manifest_file": "MANIFEST.sha256",
+    "algorithm": "sha256"
+  },
+  "counts": {
+    "n_patients": 1,
+    "n_scans": 1,
+    "n_records_total": 1,
+    "total_bytes": null
+  },
+  "related_identifiers": [
+    { "identifier": "TBD-manuscript-DOI", "relation": "isSupplementTo", "scheme": "doi" },
+    { "identifier": "TBD-WS1-DOI", "relation": "isDerivedFrom", "scheme": "doi" },
+    { "identifier": "TBD-runbundle-CID", "relation": "isDocumentedBy", "scheme": "ipfs" },
+    { "identifier": "sha256:b366f51c11a8fbdfc7b60f1f977d42a10a8bdaa55521b43de0c428afc289fb58", "relation": "references", "scheme": "sha256" }
+  ]
+}

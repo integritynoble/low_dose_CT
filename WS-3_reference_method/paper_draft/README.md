@@ -73,6 +73,14 @@ There is **no** Discussion/Conclusion — that framing signals method-paper scop
 - Fidelity / cross-vendor / UQ-calibration / task-AUC / credential tables + reliability figure.
 - Baseline selections (transformer / diffusion) finalized and reproduced ≤ 0.5 dB.
 
+## Deposit kit
+
+The deposit checklist and the `dataset_metadata.json` spec live in
+[`../deposit/`](../deposit/): `DEPOSIT_CHECKLIST.md` (generate → validate →
+package → DOI → fill → submit), `dataset_metadata.schema.json` (JSON Schema for
+the corpus root metadata), and `dataset_metadata.example.json` (a validating
+template with deposit-time placeholders).
+
 ## Submission-readiness gates (hard requirements)
 
 - [ ] Corpus generated on **real** data (not synthetic placeholders) and deposited with a DOI.
