@@ -6,7 +6,7 @@ An **improvable, open-source low-dose CT reconstruction method** scoring top-25%
 
 ## Goals
 
-1. **Publish a peer-reviewed paper** at **MICCAI** (primary) or ***IEEE TMI*** (fallback) describing the unrolled-iterative reconstruction architecture, UQ, and cross-vendor evaluation.
+1. **Publish a peer-reviewed paper** at ***Nature Scientific Data*** (primary) as a **Data Descriptor** for the released derived-data corpus — reference reconstructions + per-pixel uncertainty maps + paired error maps + downstream-task score maps + signal-equivalence credentials over the WS-1 benchmark (the reconstruction pipeline is demoted to data provenance). The prior MICCAI / *IEEE TMI* **method**-paper framing is preserved at [`paper_draft/manuscript_method_miccai.tex`](paper_draft/manuscript_method_miccai.tex) as a fallback. See [`paper_draft/README.md`](paper_draft/README.md) for the reframe rationale and submission-readiness gates.
 2. **Register L4 cert on PWMRegistry** — the first L4 cert against the WS-1 L3 benchmark. Future community submissions reproduce this pattern; cleanliness here scales.
 3. **Open-source the code under Apache 2.0** with a reproducible RunBundle on IPFS — `docker run` reproduces published numbers bit-identically (within FP tolerance).
 
@@ -69,7 +69,7 @@ Three baselines reproduced inside this folder under `baselines/`. They serve thr
 | # | Task | Output |
 |---|---|---|
 | 4.1 | Draft manuscript (Methods, Architecture, UQ, Cross-vendor, Credentials, Comparison) | Draft v1 |
-| 4.2 | Submit to MICCAI (or *IEEE TMI*); respond to reviewer comments | Acceptance letter |
+| 4.2 | Deposit the corpus (figshare/Zenodo DOI); submit Data Descriptor to *Scientific Data*; respond to reviewer comments | Acceptance letter |
 | 4.3 | Publish RunBundle to IPFS with stable CID | CID recorded in L4 cert |
 | 4.4 | Author and register L4 cert on PWMRegistry | L4 hash on chain |
 | 4.5 | Validate Track 7 agent-query loop returns this cert as the SOTA pointer | Agent demo proven |
@@ -86,14 +86,15 @@ Three baselines reproduced inside this folder under `baselines/`. They serve thr
 | D9 + 180 | v1 single-model ablation done; deep-ensemble training started | pending |
 | D9 + 270 | v1 deep ensemble + UQ calibration validated; cross-vendor results | pending |
 | D9 + 365 | RunBundle packaged; 5-tuple credentials computed; manuscript drafted | pending |
-| D9 + 540 | **Paper submitted to MICCAI / *IEEE TMI*; L4 cert on chain; agent-query loop validated** | pending |
+| D9 + 540 | **Corpus deposited + Data Descriptor submitted to *Scientific Data*; L4 cert on chain; agent-query loop validated** | pending |
 | D9 + 730 | Paper accepted; method is one of the seed leaderboard entries when WS-4 launches | pending |
 
 ---
 
 ## Done when
 
-- [ ] Paper accepted at MICCAI or *IEEE TMI*
+- [ ] Data Descriptor accepted at *Nature Scientific Data* (fallback: MICCAI / *IEEE TMI* via the preserved method draft)
+- [ ] Derived-data corpus deposited (figshare/Zenodo DOI, CC BY 4.0) and distinct from the WS-1 raw-scan release
 - [ ] Code open-sourced under Apache 2.0
 - [ ] L4 cert against WS-1 benchmark on PWM mainnet
 - [ ] RunBundle reproducible from IPFS (verified by external party)
@@ -112,7 +113,7 @@ Three baselines reproduced inside this folder under `baselines/`. They serve thr
 | `v0.1/` | Phase 2 prototype | pending Phase 2 |
 | `v1/` | Phase 3 production version | pending Phase 3 |
 | `runbundle/` | PWM-format RunBundle for L4 cert | pending Phase 3 |
-| `paper_draft/` | MICCAI / *IEEE TMI* manuscript | pending Phase 4 |
+| `paper_draft/` | *Scientific Data* **Data Descriptor** (`manuscript.tex`, 8 pp, compiles clean) + preserved MICCAI method draft (`manuscript_method_miccai.tex`) | reframed; validation tables gated on Phase 3 data + deposit |
 
 ---
 
