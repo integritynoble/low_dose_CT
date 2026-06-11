@@ -1,5 +1,7 @@
 # WS-3 — Reference Reconstruction Method (Track 9 sub-track 9c)
 
+[![WS-3 CI](https://github.com/integritynoble/low_dose_CT/actions/workflows/ws3-ci.yml/badge.svg?branch=heyang)](https://github.com/integritynoble/low_dose_CT/actions/workflows/ws3-ci.yml)
+
 An **improvable, open-source low-dose CT reconstruction method** scoring top-25% on the (initially empty) leaderboard, with rigorous uncertainty quantification, cross-vendor generalization, and a verified L4 cert on PWM mainnet.
 
 ---
