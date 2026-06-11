@@ -179,13 +179,34 @@ interpretable; it is not a methodological contribution of this Data
 Descriptor.
 
 \subsection{Input data and provenance}
-Inputs are the PWM-LDCT~\citep{ws1dataset} scans: paired full-dose and
-simulated/real low-dose acquisitions at signal ratios $r \in \{0.10,
-0.25, 0.50\}$ (with $r = 1.00$ the full-dose reference), patient-level
-split into train/validation/test, vendor-labelled. Reference (target)
-images are the patient's full-dose reconstruction. No scan crosses the
-train/test boundary at the patient level; all released records are for
-the held-out test split.
+Inputs are the PWM-LDCT~\citep{ws1dataset} scans at signal ratios $r \in
+\{0.10, 0.25, 0.50\}$, patient-level split into train/validation/test,
+vendor-labelled. Reference (target) images are the patient's full-dose
+reconstruction. No scan crosses the train/test boundary at the patient
+level; all released records are for the held-out test split.
+
+\paragraph{Low-dose provenance (real-paired vs simulated).} Each
+(vendor, dose) stratum is one of two kinds, recorded per record in
+\texttt{scan\_meta.json} (\texttt{low\_dose\_origin} $\in$
+\{\texttt{real\_paired}, \texttt{simulated}\}): \emph{real-paired}
+acquisitions are genuine repeat low-dose scans from the source
+benchmark~\citep{ws1dataset}; \emph{simulated} low-dose is generated from
+the full-dose projections by Poisson photon-count reduction in the
+\texttt{ct\_radon} forward model~\citep{pwmcore} at the stated $r$. Reusers
+must not treat the two as interchangeable: simulated strata characterise
+algorithmic behaviour under an idealised noise model, real-paired strata
+characterise behaviour under true acquisition physics. The per-stratum
+breakdown is reported in \autoref{tab:cohort} and carried in every
+record's metadata.
+
+\paragraph{The $r = 1.00$ level.} Full dose is the reference, not a
+credentialed dose level. Where an $r = 1.00$ reconstruction is released it
+is the reference image $x^{\textrm{ref}}$ itself; no error map is emitted
+at $r = 1.00$ (the error against the reference is identically zero) and no
+credential is defined there (signal-equivalence credentials compare a
+\emph{reduced}-dose method against the full-dose reference). All released
+error maps, task-score maps, and credentials are therefore at $r \in
+\{0.10, 0.25, 0.50\}$.
 
 \paragraph{Ethics and human-subjects provenance.} This corpus contains no
 new human-subjects data: every record is a derived image or a numerical
@@ -351,7 +372,12 @@ walking the tree.
 \paragraph{File-format conventions.} All image records are single-file
 gzip-compressed NIfTI-1 (\texttt{.nii.gz}), \texttt{float32}, with an
 \texttt{sform} set to a scaled identity and voxel spacing carried in the
-header \texttt{pixdim}. Reconstruction, reference, and error volumes are in
+header \texttt{pixdim}. The affine is an orientation-normalised scaled
+identity by design (patient-position and origin fields from the source
+DICOM are not propagated, as part of de-identification); records are
+therefore in a canonical voxel frame, not the original scanner frame, and
+should not be re-registered to source-patient coordinates. Reconstruction,
+reference, and error volumes are in
 Hounsfield units (HU); uncertainty maps are in HU (the ensemble standard
 deviation of the reconstruction); task-score maps are unitless detector
 scores in $[0, 1]$. All maps for one record share an identical voxel grid,
@@ -384,11 +410,32 @@ JSON Schema.
         \texttt{anatomy}         & string & body region (\texttt{chest} in the v1 lung-nodule corpus) \\
         \texttt{split}           & string & always \texttt{test} for released records \\
         \texttt{source\_scan\_id}& string & WS-1 series this record was reconstructed from \\
+        \texttt{low\_dose\_origin}& string & \texttt{real\_paired} or \texttt{simulated} (see Methods) \\
         \bottomrule
     \end{tabular}
     \caption{\texttt{scan\_meta.json} fields. No field finer than
     anatomy/vendor is released (see Ethics and human-subjects provenance).}
     \label{tab:scan_meta_fields}
+\end{table}
+
+\begin{table}[h]
+    \centering
+    \small
+    \begin{tabular}{lcccc}
+        \toprule
+        \textbf{Vendor} & \textbf{Patients} & \textbf{Scans} & \textbf{Real-paired strata} & \textbf{Simulated strata} \\
+        \midrule
+        \todo{vendor 1} & \todo{N} & \todo{N} & \todo{N} & \todo{N} \\
+        \todo{vendor 2} & \todo{N} & \todo{N} & \todo{N} & \todo{N} \\
+        \midrule
+        \textbf{Total}  & \todo{N} & \todo{N} & \todo{N} & \todo{N} \\
+        \bottomrule
+    \end{tabular}
+    \caption{Cohort composition by vendor: distinct patients and scans, and
+    how many (vendor, dose) strata are real-paired vs simulated low-dose.
+    Populated at deposit (\texttt{package\_corpus.py} derives the patient /
+    scan counts from \texttt{scan\_meta.json}).}
+    \label{tab:cohort}
 \end{table}
 
 \begin{table}[h]
@@ -422,7 +469,11 @@ WGAN-VGG~\citep{yang2018ctgan}; a transformer
 reconstruction~\citep{wang2023ctformer}; and a diffusion / score-based
 reconstruction~\citep{liu2024diffusion}. Each baseline is reproduced
 within $\leq 0.5$\,dB PSNR of its published numbers before its records are
-emitted; reproduction recipes accompany the deposit.
+emitted; reproduction recipes accompany the deposit. The baselines are
+single-model methods and therefore carry no \texttt{uncertainty\_sigma}
+record (ensemble disagreement is defined only for the deep-ensemble
+reference method); their record set is reconstruction, error map,
+task-score map, and credential.
 
 %% =====================================================================
 \section{Technical Validation}
@@ -478,13 +529,23 @@ vendor records are interpolation vs extrapolation}
 
 \paragraph{Uncertainty--error agreement (central reuse validation).} The
 corpus's distinctive reuse value is the paired (uncertainty, error)
-records. We validate that the released $\sigma(y)$ tracks the released
-error $e(y)$ by the Spearman correlation between them, per pixel and
-aggregated per case, on the held-out test split
-(\autoref{fig:reliability}, \autoref{tab:uq_calibration}). A high
-correlation certifies the uncertainty maps as a usable triage signal; a
-low correlation is itself reported so reusers do not over-trust the
-variance. This is the single most important validation for the corpus's
+records, so we validate it along three complementary axes rather than one.
+\textbf{(i) Rank tracking:} the Spearman correlation between $\sigma(y)$
+and $e(y)$, per pixel and aggregated per case
+(\autoref{tab:uq_calibration}) --- does larger predicted uncertainty
+co-occur with larger error? \textbf{(ii) Calibration magnitude:} a
+reliability diagram of predicted $\sigma$ against observed RMS error per
+$\sigma$-bin (\autoref{fig:reliability}), summarised by an
+expected-calibration-error (ECE), the mean absolute gap between the two ---
+rank correlation can be high while the variance is systematically mis-scaled,
+which ECE catches. \textbf{(iii) Interval coverage:} the empirical fraction
+of voxels whose true error falls within $\pm k\,\sigma$ for $k \in
+\{1, 2, 3\}$ (\autoref{tab:uq_coverage}); a well-calibrated Gaussian-like
+variance yields $\approx 68/95/99.7\%$. Reporting all three lets a reuser
+distinguish a uncertainty map that merely \emph{ranks} error from one that
+is \emph{quantitatively} calibrated for interval-based triage; where they
+disagree, the corpus documents which property holds so the variance is not
+over-trusted. This is the single most important validation for the corpus's
 stated calibration-research reuse.
 
 \begin{table}[h]
@@ -505,8 +566,28 @@ stated calibration-research reuse.
 \end{table}
 
 \todoFigure{fig:reliability}{Reliability diagram: released per-pixel
-ensemble standard deviation vs observed per-pixel reconstruction error on
-the held-out test split.}
+ensemble standard deviation vs observed per-pixel reconstruction error
+(RMS per $\sigma$-bin) on the held-out test split, annotated with the
+expected-calibration-error (ECE).}
+
+\begin{table}[h]
+    \centering
+    \small
+    \begin{tabular}{lcccc}
+        \toprule
+        \textbf{Dose} & \textbf{ECE} & \textbf{$\pm1\sigma$ cov.} & \textbf{$\pm2\sigma$ cov.} & \textbf{$\pm3\sigma$ cov.} \\
+        \midrule
+        $r = 0.10$ & \todo{} & \todo{} & \todo{} & \todo{} \\
+        $r = 0.25$ & \todo{} & \todo{} & \todo{} & \todo{} \\
+        $r = 0.50$ & \todo{} & \todo{} & \todo{} & \todo{} \\
+        \bottomrule
+    \end{tabular}
+    \caption{Calibration magnitude (expected-calibration-error) and
+    empirical $\pm k\,\sigma$ interval coverage of the released uncertainty
+    maps; well-calibrated variance yields coverage $\approx 68/95/99.7\%$.
+    Populated at deposit (D9+270).}
+    \label{tab:uq_coverage}
+\end{table}
 
 \paragraph{Downstream-task validity.} \autoref{tab:task_auc} reports
 lung-nodule detection AUC (fixed FPR $=0.1$) computed from the released

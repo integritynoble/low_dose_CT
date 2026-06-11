@@ -32,24 +32,24 @@ before acceptance; **[MINOR]** strengthening / discretionary.
 | M1 | **Supplementary Table S1 (hyperparameters, seeds, compute) is referenced but absent** from the draft. Reproducibility claims hang on it. | **MAJOR** | Author Supplementary S1–S2; include in the submission package. |
 | M2 | **The frozen lung-nodule detector is underspecified** — architecture, version, training data, and the FPR=0.1 operating-point provenance are not given. Every task-AUC number and the AUC credentials depend on it. | **MAJOR** | Name + version the detector; deposit or cite it; state how the operating point was fixed. Without this the task layer is not reproducible. |
 | M3 | **Internal inconsistency: the abdomen / liver-lesion Dice task is unsupported in Methods.** §"Derived per-record quantities" describes only a *lung-nodule* score map, and the only task-score record type is `task_nodule_score.nii.gz`, yet `tab:credentials` includes a liver-lesion Dice row and the data dictionary lists `anatomy=abdomen`. A referee will catch this. | **~~MAJOR~~ RESOLVED (2026-06-11)** | Option (b) applied: v1 is **lung-nodule-only**. Removed the liver-lesion credential row + abdomen from the data dictionary; added an explicit v1-scope note in Methods (abdominal liver-lesion deferred to a future release). Propagated to `dataset_metadata.example.json` (`anatomy:["chest"]`) and the fixture (chest/AUC-only; Dice/percentile path retains unit coverage in `corpus_emit/tests`). Text, metadata, and tooling now agree. |
-| M4 | **`r = 1.00` semantics are ambiguous.** The dose set includes 1.00, but a "reconstruction" and an `error_abs` at full dose are degenerate (error ≈ 0; no credential). | **MINOR** | State that r100 records are the full-dose reference itself (error/credential omitted at r100), or exclude r100 from the released reduced-dose records. |
-| M5 | **Real-paired vs simulated low-dose is not delineated.** "simulated/real low-dose" is inherited from WS-1 but a referee will want to know which (vendor, dose) strata are real-paired acquisitions vs simulated photon-count reductions. | **MAJOR** | Add a provenance line per (vendor, dose): real-paired or simulated, with the simulation model cited where simulated. |
+| M4 | **`r = 1.00` semantics are ambiguous.** The dose set includes 1.00, but a "reconstruction" and an `error_abs` at full dose are degenerate (error ≈ 0; no credential). | **~~MINOR~~ RESOLVED (2026-06-11)** | Methods now states $r=1.00$ is the reference (not a credentialed level): no error map and no credential at $r=1$; all error/task/credential records are at $r \in \{0.10, 0.25, 0.50\}$. |
+| M5 | **Real-paired vs simulated low-dose is not delineated.** "simulated/real low-dose" is inherited from WS-1 but a referee will want to know which (vendor, dose) strata are real-paired acquisitions vs simulated photon-count reductions. | **~~MAJOR~~ ADDRESSED (text, 2026-06-11)** | Methods now records per-record `low_dose_origin ∈ {real_paired, simulated}` (simulated = Poisson photon-count reduction in `ct_radon`), with a cohort table (`tab:cohort`) breaking strata down by kind. Field added to the data dictionary + fixture. Per-stratum *numbers* still gated on data. |
 
 ## Q2 — Data-record completeness
 
 | ID | Finding | Severity | Action to close |
 |---|---|---|---|
 | D1 | **`tab:records_counts` is entirely `\todo`** (counts + sizes). | **BLOCK** | `package_corpus.py` fills these from the frozen corpus. |
-| D2 | **NIfTI affine provenance unstated.** Conventions say `sform` = scaled identity; a referee will ask whether patient orientation/origin from the source DICOM is preserved or discarded. | **MINOR** | State explicitly: identity affine by design (de-identification / orientation-normalised), or preserved-from-source. |
-| D3 | **No cohort-composition summary** — number of patients, scans per vendor, per anatomy, per dose. Reusers need the sampling shape. | **MAJOR** | Add a cohort-composition table (gated on data); `package_corpus` already derives `n_scans`/`n_patients`. |
-| D4 | **Baseline records lack uncertainty maps** — asymmetry vs the reference record set. Correct (single-model baselines have no ensemble σ) but unstated. | **MINOR** | One sentence in §Baselines: baselines are single-model, so no `uncertainty_sigma`. |
+| D2 | **NIfTI affine provenance unstated.** Conventions say `sform` = scaled identity; a referee will ask whether patient orientation/origin from the source DICOM is preserved or discarded. | **~~MINOR~~ RESOLVED (2026-06-11)** | Conventions now state the affine is an orientation-normalised scaled identity by design (DICOM position/origin not propagated, as de-identification); records are in a canonical voxel frame, not re-registrable to source-patient coordinates. |
+| D3 | **No cohort-composition summary** — number of patients, scans per vendor, per anatomy, per dose. Reusers need the sampling shape. | **MAJOR — table added (2026-06-11); numbers gated** | `tab:cohort` now reports per-vendor patients/scans + real-paired-vs-simulated strata; `package_corpus.py` derives the counts at deposit. |
+| D4 | **Baseline records lack uncertainty maps** — asymmetry vs the reference record set. Correct (single-model baselines have no ensemble σ) but unstated. | **~~MINOR~~ RESOLVED (2026-06-11)** | §Baselines now states baselines are single-model and carry no `uncertainty_sigma` (ensemble disagreement is defined only for the deep-ensemble reference). |
 
 ## Q3 — Technical-validation sufficiency
 
 | ID | Finding | Severity | Action to close |
 |---|---|---|---|
 | V1 | **All four validation tables + the reliability figure are `\todo`** (fidelity, cross-vendor, UQ Spearman, task AUC, credentials). Validation is the heart of an SD review; it is currently unverifiable. | **BLOCK** | Fill from Phase-3 runs. |
-| V2 | **UQ calibration reported only as Spearman ρ.** Rank-correlation shows monotone tracking but not calibration magnitude; a UQ-savvy referee will ask for a calibration curve / expected-calibration-error or σ-interval coverage. | **MAJOR** | Add a calibration metric beyond rank-correlation (reliability curve with ECE, or empirical coverage of k·σ bands) — the corpus's headline reuse claim should be validated more than one way. |
+| V2 | **UQ calibration reported only as Spearman ρ.** Rank-correlation shows monotone tracking but not calibration magnitude; a UQ-savvy referee will ask for a calibration curve / expected-calibration-error or σ-interval coverage. | **~~MAJOR~~ ADDRESSED (methodology, 2026-06-11)** | Validation now reports calibration three ways: rank (Spearman), magnitude (reliability diagram + ECE), and interval coverage (±kσ for k∈{1,2,3}, new `tab:uq_coverage`). Numbers gated on data; the methodology gap is closed. |
 | V3 | **Cross-vendor "interpolation vs extrapolation" framing** is only meaningful once the Δ numbers exist. | (folds into V1) | Fill `tab:cross_vendor`. |
 | V4 | **No validation that the released `error_abs` equals `|recon − full_dose|`** by construction-check on a sample (a reuser's trust anchor). | **MINOR** | Add a one-line integrity check in Technical Validation (e.g., spot-recompute error on N random records). |
 
@@ -87,7 +87,10 @@ Spearman), and S2 (licence basis for derived data).
 5. **Authors, ORCIDs, citations, ethics approval name** (E2, S1, S3).
 6. Run `package_corpus.py` to refresh metadata/manifest; re-audit all credentials; rebuild PDF; remove every `\todo`.
 
-The non-data MAJOR items that can be drafted **now**, before Phase 3: ~~M3
-decision + text~~ (done 2026-06-11), M5 provenance scaffold, V2
-calibration-metric description, D4 baseline-σ sentence, M4 r100 clarification,
-D2 affine statement.
+The non-data items draftable before Phase 3 are now **all applied**
+(2026-06-11): ~~M3~~ scope decision, ~~M5~~ provenance scaffold + cohort
+table, ~~V2~~ three-axis calibration methodology, ~~D4~~ baseline-σ sentence,
+~~M4~~ r100 clarification, ~~D2~~ affine statement, ~~D3~~ cohort-table
+structure. What remains is **data-gated** (fill every `\todo` from Phase-3
+runs) and **process** (E1–E3 deposit/DOI/authors, M1 Supplementary S1, M2
+detector spec, S2 licence basis, S3 citations).

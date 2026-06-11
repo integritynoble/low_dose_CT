@@ -165,6 +165,7 @@ def build_synthetic_corpus(
                 (scan_dir / "scan_meta.json").write_text(json.dumps({
                     "vendor": vendor, "r": r, "anatomy": anatomy, "split": "test",
                     "source_scan_id": scan_id, "patient_id": pid,
+                    "low_dose_origin": "simulated",  # synthetic fixture
                 }, indent=2) + "\n", encoding="utf-8")
 
                 spec = StratumSpec(
