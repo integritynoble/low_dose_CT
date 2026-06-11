@@ -15,17 +15,20 @@ and the RNG; their statistical properties match the modality's physics:
 
 from __future__ import annotations
 
+from typing import Any
+
 import numpy as np
+import numpy.typing as npt
 
 
-def Tr_ct(s_ref: np.ndarray, r: float, rng: np.random.Generator) -> np.ndarray:
+def Tr_ct(s_ref: npt.NDArray[Any], r: float, rng: np.random.Generator) -> npt.NDArray[Any]:
     """Poisson-thinning of CT photon counts at rate ``r``."""
     if not 0 < r <= 1:
         raise ValueError("r must be in (0, 1]")
     return rng.binomial(s_ref.astype(np.int64), r)
 
 
-def Tr_pet(s_ref: np.ndarray, r: float, rng: np.random.Generator) -> np.ndarray:
+def Tr_pet(s_ref: npt.NDArray[Any], r: float, rng: np.random.Generator) -> npt.NDArray[Any]:
     """Poisson-thinning of PET list-mode counts at rate ``r`` (activity reduction)."""
     if not 0 < r <= 1:
         raise ValueError("r must be in (0, 1]")
@@ -33,9 +36,9 @@ def Tr_pet(s_ref: np.ndarray, r: float, rng: np.random.Generator) -> np.ndarray:
 
 
 def Tr_mri(
-    s_ref: np.ndarray, r: float, rng: np.random.Generator,
+    s_ref: npt.NDArray[Any], r: float, rng: np.random.Generator,
     *, central_fraction: float = 0.25,
-) -> np.ndarray:
+) -> npt.NDArray[Any]:
     """Variable-density Cartesian k-space mask at acceleration ``1 / r``.
 
     A fraction ``central_fraction`` of the kept lines is placed at the

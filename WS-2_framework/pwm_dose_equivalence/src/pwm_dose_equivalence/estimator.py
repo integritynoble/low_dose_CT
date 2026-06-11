@@ -14,9 +14,10 @@ Default selection per ``theory/proofs/estimator.md`` (2026-06-02 decision):
 
 from __future__ import annotations
 
-from typing import Literal
+from typing import Any, Literal
 
 import numpy as np
+import numpy.typing as npt
 from scipy import stats
 
 # --------------------------------------------------------------------------
@@ -24,12 +25,12 @@ from scipy import stats
 # --------------------------------------------------------------------------
 
 def percentile_ci(
-    deltas: np.ndarray,
+    deltas: npt.NDArray[Any],
     *,
     alpha: float,
     n_bootstrap: int,
     rng: np.random.Generator,
-) -> tuple[float, float, float, np.ndarray]:
+) -> tuple[float, float, float, npt.NDArray[Any]]:
     """Paired bootstrap percentile CI for ``E[delta]``.
 
     ``deltas`` is the array of per-case differences ``a_k - b_k`` for the
@@ -56,12 +57,12 @@ def percentile_ci(
 # --------------------------------------------------------------------------
 
 def bca_ci(
-    deltas: np.ndarray,
+    deltas: npt.NDArray[Any],
     *,
     alpha: float,
     n_bootstrap: int,
     rng: np.random.Generator,
-) -> tuple[float, float, float, np.ndarray]:
+) -> tuple[float, float, float, npt.NDArray[Any]]:
     """Bias-corrected accelerated (BCa) bootstrap CI for ``E[delta]``.
 
     Efron 1987. Adjusts the percentile-bootstrap CI endpoints via:
@@ -124,8 +125,8 @@ def bca_ci(
 # --------------------------------------------------------------------------
 
 def _auc_components(
-    scores_pos: np.ndarray, scores_neg: np.ndarray,
-) -> tuple[np.ndarray, np.ndarray]:
+    scores_pos: npt.NDArray[Any], scores_neg: npt.NDArray[Any],
+) -> tuple[npt.NDArray[Any], npt.NDArray[Any]]:
     """DeLong placement components (V10 per positive case, V01 per negative)."""
     s_pos = scores_pos[:, None]
     s_neg = scores_neg[None, :]
@@ -149,10 +150,10 @@ def _nonnegative_variance(v: float) -> float:
 
 def delong_ci(
     *,
-    a_pos: np.ndarray,
-    a_neg: np.ndarray,
-    b_pos: np.ndarray,
-    b_neg: np.ndarray,
+    a_pos: npt.NDArray[Any],
+    a_neg: npt.NDArray[Any],
+    b_pos: npt.NDArray[Any],
+    b_neg: npt.NDArray[Any],
     alpha: float,
 ) -> tuple[float, float, float]:
     """Paired DeLong 1988 / Sun & Xu 2014 CI for ``AUC_A - AUC_B``.

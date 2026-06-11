@@ -13,6 +13,7 @@ import warnings
 from typing import Any, Literal
 
 import numpy as np
+import numpy.typing as npt
 
 from pwm_dose_equivalence.credential import (
     Credential,
@@ -46,12 +47,12 @@ def signal_equivalence_credential(
     *,
     # Estimator inputs — supply either (paired_a, paired_b) for general metrics
     # or (a_pos, a_neg, b_pos, b_neg) for AUC. Mutually exclusive.
-    paired_a: np.ndarray | None = None,
-    paired_b: np.ndarray | None = None,
-    a_pos: np.ndarray | None = None,
-    a_neg: np.ndarray | None = None,
-    b_pos: np.ndarray | None = None,
-    b_neg: np.ndarray | None = None,
+    paired_a: npt.NDArray[Any] | None = None,
+    paired_b: npt.NDArray[Any] | None = None,
+    a_pos: npt.NDArray[Any] | None = None,
+    a_neg: npt.NDArray[Any] | None = None,
+    b_pos: npt.NDArray[Any] | None = None,
+    b_neg: npt.NDArray[Any] | None = None,
     # Credential fields
     signal_ratio: float,
     modality: Modality,
