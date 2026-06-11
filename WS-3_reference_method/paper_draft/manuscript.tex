@@ -187,6 +187,21 @@ images are the patient's full-dose reconstruction. No scan crosses the
 train/test boundary at the patient level; all released records are for
 the held-out test split.
 
+\paragraph{Ethics and human-subjects provenance.} This corpus contains no
+new human-subjects data: every record is a derived image or a numerical
+summary computed from the PWM-LDCT benchmark~\citep{ws1dataset}, which
+governs the underlying acquisitions, their institutional-review-board
+approvals, and informed-consent basis. The released NIfTI volumes carry no
+protected health information: voxel arrays only, with all DICOM
+patient-identifying header fields removed at generation, and
+\texttt{scan\_id} is the WS-1 pseudonymous identifier (never an
+institutional medical-record number). Redistribution of these derived
+reconstructions under CC~BY~4.0 is permitted by the WS-1 data-use terms;
+reusers remain bound by those terms for any attempt to re-link records to
+source acquisitions. No date-of-service, geographic, or demographic field
+finer than the anatomy/vendor labels in \texttt{scan\_meta.json} is
+released.
+
 \subsection{Reconstruction pipeline}
 \label{sec:method_overview}
 Reconstructions are produced by an unrolled iterative
@@ -329,6 +344,49 @@ identifier, so any record back-links to its raw input. \texttt{r<dd>}
 encodes the dose ratio. The flat \texttt{all\_credentials.jsonl} index
 lets a reuser query credentials (by vendor, dose, task, verdict) without
 walking the tree.
+
+\paragraph{File-format conventions.} All image records are single-file
+gzip-compressed NIfTI-1 (\texttt{.nii.gz}), \texttt{float32}, with an
+\texttt{sform} set to a scaled identity and voxel spacing carried in the
+header \texttt{pixdim}. Reconstruction, reference, and error volumes are in
+Hounsfield units (HU); uncertainty maps are in HU (the ensemble standard
+deviation of the reconstruction); task-score maps are unitless detector
+scores in $[0, 1]$. All maps for one record share an identical voxel grid,
+so $\hat{x}$, $\sigma$, and $e$ are voxel-aligned and can be stacked
+without resampling. JSON records are UTF-8; credentials validate against
+the machine-readable schema bundled with the deposit
+(\texttt{credential\_schema.json}) and the WS-2 library~\citep{ws2framework}.
+
+\paragraph{Data dictionary.} Each \texttt{scan\_meta.json} carries the
+fields in \autoref{tab:scan_meta_fields}; each \texttt{credential.json} is
+the WS-2 5-tuple wire format (top-level \texttt{schema\_version},
+\texttt{framework\_hash}, and a \texttt{credential} object holding
+\texttt{signal\_ratio}, \texttt{task}, \texttt{epsilon}, \texttt{alpha},
+\texttt{subpopulation}, \texttt{estimator}, \texttt{n\_test},
+\texttt{delta\_mean}, \texttt{delta\_ci\_low}, \texttt{delta\_ci\_high},
+\texttt{verdict}, and a \texttt{sample\_size\_check} block), specified
+field-by-field in the companion credential reading guide and the bundled
+JSON Schema.
+
+\begin{table}[h]
+    \centering
+    \small
+    \begin{tabular}{lll}
+        \toprule
+        \textbf{Field} & \textbf{Type} & \textbf{Meaning} \\
+        \midrule
+        \texttt{scan\_id}        & string & WS-1 pseudonymous source identifier (back-link) \\
+        \texttt{vendor}          & string & CT manufacturer (e.g.\ Siemens / GE / Canon) \\
+        \texttt{r}               & float  & signal ratio $\in (0, 1]$ (dose level) \\
+        \texttt{anatomy}         & string & body region (e.g.\ chest / abdomen) \\
+        \texttt{split}           & string & always \texttt{test} for released records \\
+        \texttt{source\_scan\_id}& string & WS-1 series this record was reconstructed from \\
+        \bottomrule
+    \end{tabular}
+    \caption{\texttt{scan\_meta.json} fields. No field finer than
+    anatomy/vendor is released (see Ethics and human-subjects provenance).}
+    \label{tab:scan_meta_fields}
+\end{table}
 
 \begin{table}[h]
     \centering
@@ -505,7 +563,18 @@ standard reader (\texttt{nibabel}, ITK); credentials are JSON validated
 against the published schema~\citep{ws2framework}. The
 \texttt{all\_credentials.jsonl} index supports tabular queries by vendor,
 dose, task, and verdict. Each record's \texttt{scan\_meta.json} links back
-to its WS-1 raw source~\citep{ws1dataset}.
+to its WS-1 raw source~\citep{ws1dataset}. A minimal read of one record's
+voxel-aligned reconstruction, uncertainty, and error maps:
+
+\begin{verbatim}
+import nibabel as nib, json
+base = "reconstructions/Siemens/<scan_id>/r025/"
+recon = nib.load(base + "recon_mean.nii.gz").get_fdata()        # HU
+sigma = nib.load(base + "uncertainty_sigma.nii.gz").get_fdata() # HU, same grid
+error = nib.load(base + "error_abs.nii.gz").get_fdata()         # |recon - full_dose|
+meta  = json.load(open(base + "scan_meta.json"))                # vendor, r, anatomy, ...
+# the (sigma, error) pair is the ready-made calibration benchmark
+\end{verbatim}
 
 \paragraph{Intended reuses.} (1) Uncertainty-calibration research: treat
 the paired (\texttt{uncertainty\_sigma}, \texttt{error\_abs}) maps as a
