@@ -42,7 +42,6 @@ sys.path.insert(0, str(_HERE.parent / "deposit"))
 
 from emit_credentials import (  # noqa: E402
     AucScores,
-    PairedScores,
     StratumSpec,
     emit_stratum_credential,
     rebuild_index,
@@ -56,10 +55,10 @@ SCHEMA = _HERE.parent / "deposit" / "dataset_metadata.schema.json"
 # Small image grid keeps the fixture tiny but multi-slice.
 _SHAPE = (8, 8, 2)
 
-# Anatomy -> (task_name, metric, subpopulation, epsilon)
+# Anatomy -> (task_name, metric, subpopulation, epsilon).
+# v1 corpus is lung-nodule-only (chest); see manuscript M3 scope decision.
 _TASKS = {
     "chest": ("lung_nodule_5mm", "auc", "adult_chest_pwm_l3_test_v1", 0.05),
-    "abdomen": ("liver_lesion", "dice", "adult_abdomen_pwm_l3_test_v1", 0.03),
 }
 
 
@@ -130,12 +129,6 @@ def _auc_scores(rng: np.random.Generator, n: int) -> AucScores:
     )
 
 
-def _dice_scores(rng: np.random.Generator, n: int) -> PairedScores:
-    base = rng.uniform(0.80, 0.92, n)
-    return PairedScores(paired_a=base + rng.normal(0, 0.01, n),
-                        paired_b=base + rng.normal(0, 0.01, n))
-
-
 # --------------------------------------------------------------------------- #
 # Build
 # --------------------------------------------------------------------------- #
@@ -143,7 +136,7 @@ def build_synthetic_corpus(
     out_dir: Path | str,
     *,
     vendors: tuple[str, ...] = ("Siemens", "GE"),
-    anatomies: tuple[str, ...] = ("chest", "abdomen"),
+    anatomies: tuple[str, ...] = ("chest",),
     doses: tuple[float, ...] = (0.25, 0.10),
     n_cohort: int = 200,
     seed: int = 42,
@@ -180,8 +173,7 @@ def build_synthetic_corpus(
                     method="pwm_ref_v1", reference_method="full_dose_fbp",
                     vendor=vendor, anatomy=anatomy,
                 )
-                scores = (_auc_scores(rng, n_cohort) if metric == "auc"
-                          else _dice_scores(rng, n_cohort))
+                scores = _auc_scores(rng, n_cohort)  # v1: lung-nodule AUC only
                 emit_stratum_credential(root, spec, scores)
 
     # one baseline reconstruction stratum (chest, r025) per vendor, with records.

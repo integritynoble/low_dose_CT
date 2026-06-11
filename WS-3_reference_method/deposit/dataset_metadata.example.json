@@ -52,7 +52,7 @@
   "acquisition": {
     "dose_ratios": [0.10, 0.25, 0.50, 1.00],
     "vendors": ["Siemens", "GE", "Canon"],
-    "anatomy": ["chest", "abdomen"]
+    "anatomy": ["chest"]
   },
   "splits": {
     "released_split": "test",

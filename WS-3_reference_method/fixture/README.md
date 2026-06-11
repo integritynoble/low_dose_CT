@@ -27,17 +27,17 @@ doesn't verify, or the metadata isn't schema-valid. What it builds (default):
 
 | | |
 |---|---|
-| Scans | 2 vendors × 2 anatomies = 4 (chest → lung-nodule AUC; abdomen → liver-lesion Dice) |
-| Record folders | 4 scans × 2 doses (r025, r010) = 8 |
+| Scans | 2 vendors × 1 anatomy (chest) = 2 (chest → lung-nodule AUC; v1 is lung-nodule-only) |
+| Record folders | 2 scans × 2 doses (r025, r010) = 4 |
 | Per folder | `recon_mean` / `uncertainty_sigma` / `error_abs` / `task_nodule_score` (valid `.nii.gz`) + `scan_meta.json` |
 | Baselines | `red_cnn` chest r025 per vendor (recon / error / task) |
-| Credentials | 10 cohort-level (AUC via DeLong + Dice via percentile; reference + baseline), all audit-clean |
+| Credentials | 6 cohort-level (lung-nodule AUC via DeLong; reference + baseline), all audit-clean |
 | Packaged | `dataset_metadata.json` (counts filled, schema-valid) + `MANIFEST.sha256` (passes `sha256sum -c`) |
 
 ## What it proves
 
 - **The NIfTI records are real** — they load with `nibabel` (tests assert a round-trip). The writer (`write_nifti`) is self-contained: numpy-only, gzip with `mtime=0` for deterministic bytes; no nibabel needed to *write*.
-- **Both estimator paths run** — AUC (DeLong) and Dice (percentile).
+- **The AUC (DeLong) credential path runs end-to-end** — matching the v1 lung-nodule corpus. (The percentile/Dice path retains unit coverage in `corpus_emit/tests`.)
 - **Reference and baseline credentials coexist** without filename collision.
 - **The integrity manifest is standard-tool compatible** — `sha256sum -c MANIFEST.sha256` exits 0.
 - **The whole chain is deterministic** at a fixed seed (same recon bytes, same counts).

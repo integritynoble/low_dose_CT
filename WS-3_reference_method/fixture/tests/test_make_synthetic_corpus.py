@@ -59,9 +59,9 @@ def test_build_reports_all_green(built):
 
 def test_build_has_expected_structure(built):
     root, _ = built
-    # 2 vendors x 2 anatomies x 2 doses = 8 scan-record folders
+    # v1: 2 vendors x 1 anatomy (chest) x 2 doses = 4 scan-record folders
     scan_dirs = [d for d in (root / "reconstructions").glob("*/*/r*") if d.is_dir()]
-    assert len(scan_dirs) == 8
+    assert len(scan_dirs) == 4
     # every scan folder has the 4 maps + scan_meta
     for d in scan_dirs:
         for f in ["recon_mean.nii.gz", "uncertainty_sigma.nii.gz",
@@ -69,14 +69,17 @@ def test_build_has_expected_structure(built):
             assert (d / f).exists(), f"{d}/{f} missing"
 
 
-def test_build_credentials_cover_both_estimators(built):
+def test_build_credentials_are_lung_nodule_auc(built):
+    # v1 corpus is lung-nodule-only: every credential is an AUC (DeLong) task.
+    # The percentile/Dice estimator path retains unit coverage in
+    # corpus_emit/tests/test_emit_credentials.py.
     root, _ = built
     creds = list((root / "credentials").rglob("*.json"))
-    metrics = set()
+    assert creds
     for c in creds:
         payload = json.loads(c.read_text())
-        metrics.add(payload["credential"]["task"]["metric"])
-    assert {"auc", "dice"} <= metrics  # AUC (DeLong) and Dice (percentile) both exercised
+        assert payload["credential"]["task"]["metric"] == "auc"
+        assert payload["credential"]["task"]["name"] == "lung_nodule_5mm"
 
 
 def test_build_reference_and_baseline_coexist(built):
@@ -108,11 +111,11 @@ def test_manifest_passes_system_sha256sum(built):
 def test_metadata_counts_filled(built):
     root, _ = built
     md = json.loads((root / "dataset_metadata.json").read_text())
-    assert md["counts"]["n_scans"] == 4    # 2 vendors x 2 anatomies = 4 distinct scans
-    assert md["counts"]["n_patients"] == 4   # one patient per (vendor, anatomy)
+    assert md["counts"]["n_scans"] == 2    # v1: 2 vendors x 1 anatomy (chest)
+    assert md["counts"]["n_patients"] == 2   # one patient per (vendor, chest scan)
     assert md["counts"]["n_records_total"] > 0
     by_type = {rt["type"]: rt["count"] for rt in md["record_types"]}
-    assert by_type["reference_reconstruction"] == 8   # 4 scans x 2 doses
+    assert by_type["reference_reconstruction"] == 4   # 2 scans x 2 doses
     assert by_type["baseline_reconstruction"] == 2
     assert by_type["credential"] == _cred_count(root)
 

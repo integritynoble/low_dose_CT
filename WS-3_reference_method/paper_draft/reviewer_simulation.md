@@ -31,7 +31,7 @@ before acceptance; **[MINOR]** strengthening / discretionary.
 |---|---|---|---|
 | M1 | **Supplementary Table S1 (hyperparameters, seeds, compute) is referenced but absent** from the draft. Reproducibility claims hang on it. | **MAJOR** | Author Supplementary S1–S2; include in the submission package. |
 | M2 | **The frozen lung-nodule detector is underspecified** — architecture, version, training data, and the FPR=0.1 operating-point provenance are not given. Every task-AUC number and the AUC credentials depend on it. | **MAJOR** | Name + version the detector; deposit or cite it; state how the operating point was fixed. Without this the task layer is not reproducible. |
-| M3 | **Internal inconsistency: the abdomen / liver-lesion Dice task is unsupported in Methods.** §"Derived per-record quantities" describes only a *lung-nodule* score map, and the only task-score record type is `task_nodule_score.nii.gz`, yet `tab:credentials` includes a liver-lesion Dice row and the data dictionary lists `anatomy=abdomen`. A referee will catch this. | **MAJOR** | Either (a) add the liver-lesion ground-truth segmentation provenance + a `task_dice_score`/seg record type and describe it in Methods, or (b) drop the abdomen credential row and abdomen scans to a single-task (lung-nodule) corpus for v1. Decide before deposit so the data match the text. |
+| M3 | **Internal inconsistency: the abdomen / liver-lesion Dice task is unsupported in Methods.** §"Derived per-record quantities" describes only a *lung-nodule* score map, and the only task-score record type is `task_nodule_score.nii.gz`, yet `tab:credentials` includes a liver-lesion Dice row and the data dictionary lists `anatomy=abdomen`. A referee will catch this. | **~~MAJOR~~ RESOLVED (2026-06-11)** | Option (b) applied: v1 is **lung-nodule-only**. Removed the liver-lesion credential row + abdomen from the data dictionary; added an explicit v1-scope note in Methods (abdominal liver-lesion deferred to a future release). Propagated to `dataset_metadata.example.json` (`anatomy:["chest"]`) and the fixture (chest/AUC-only; Dice/percentile path retains unit coverage in `corpus_emit/tests`). Text, metadata, and tooling now agree. |
 | M4 | **`r = 1.00` semantics are ambiguous.** The dose set includes 1.00, but a "reconstruction" and an `error_abs` at full dose are degenerate (error ≈ 0; no credential). | **MINOR** | State that r100 records are the full-dose reference itself (error/credential omitted at r100), or exclude r100 from the released reduced-dose records. |
 | M5 | **Real-paired vs simulated low-dose is not delineated.** "simulated/real low-dose" is inherited from WS-1 but a referee will want to know which (vendor, dose) strata are real-paired acquisitions vs simulated photon-count reductions. | **MAJOR** | Add a provenance line per (vendor, dose): real-paired or simulated, with the simulation model cited where simulated. |
 
@@ -80,13 +80,14 @@ Spearman), and S2 (licence basis for derived data).
 
 ## Pre-submission gate (ordered)
 
-1. **Decide the task scope** (M3) — lung-nodule-only v1, or add liver-lesion seg records — *before* generating data, so text and data agree.
+1. **Task scope — DONE (M3):** v1 is lung-nodule-only; text, metadata, and fixture are consistent. Generate data to this single-task shape.
 2. **Generate Phase-3 corpus**; specify the detector (M2) and real-vs-simulated provenance (M5).
 3. **Deposit + DOI** (E1, E3); confirm the licence basis (S2).
 4. **Fill** all validation/record/cohort tables + reliability figure + Supplementary S1 (V1, V2, D1, D3, M1); add the calibration metric.
 5. **Authors, ORCIDs, citations, ethics approval name** (E2, S1, S3).
 6. Run `package_corpus.py` to refresh metadata/manifest; re-audit all credentials; rebuild PDF; remove every `\todo`.
 
-The non-data MAJOR items that can be drafted **now**, before Phase 3: M3 decision
-+ text, M5 provenance scaffold, V2 calibration-metric description, D4 baseline-σ
-sentence, M4 r100 clarification, D2 affine statement.
+The non-data MAJOR items that can be drafted **now**, before Phase 3: ~~M3
+decision + text~~ (done 2026-06-11), M5 provenance scaffold, V2
+calibration-metric description, D4 baseline-σ sentence, M4 r100 clarification,
+D2 affine statement.
