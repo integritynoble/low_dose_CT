@@ -517,6 +517,20 @@ reconstructions are faithful, that they are consistent across vendors, and
 that the released uncertainty maps actually track the released error
 maps.
 
+\paragraph{Record integrity (construction check).} As a reuse trust
+anchor we verify that every released \texttt{error\_abs} map equals its
+defining quantity $|\hat{x}(y)-x^{\textrm{ref}}|$ by reconstruction
+rather than by assertion. The deposited tool
+\texttt{package\_corpus.py\ verify-error-maps} draws a random sample of
+records, reloads the reconstruction together with the scan's full-dose
+reference (the released $r=1.00$ \texttt{recon\_mean}), recomputes
+$|\hat{x}-x^{\textrm{ref}}|$, and confirms it matches the released
+\texttt{error\_abs} voxelwise within float32 tolerance
+($\leq 10^{-3}$\,HU). The synthetic end-to-end fixture runs this check in
+continuous integration on every commit, and a reuser can re-run it on the
+deposit with a single command, so the error layer is independently
+checkable, not merely trusted.
+
 \paragraph{Reconstruction fidelity.} \autoref{tab:reconstruction_quality}
 reports PSNR, SSIM, and LPIPS~\citep{zhang2018lpips} of every released
 reconstruction against its full-dose reference, per dose level, for the

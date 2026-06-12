@@ -106,9 +106,13 @@ def write_nifti(path: Path, data: np.ndarray, voxel: tuple[float, float, float] 
 # --------------------------------------------------------------------------- #
 # Per-scan image records
 # --------------------------------------------------------------------------- #
-def _emit_scan_records(scan_dir: Path, rng: np.random.Generator) -> None:
-    """Write the four NIfTI maps with a faintly realistic uncertainty<->error link."""
-    ref = rng.normal(0.0, 1.0, _SHAPE).astype("f4")
+def _emit_scan_records(scan_dir: Path, ref: np.ndarray, rng: np.random.Generator) -> None:
+    """Write the four NIfTI maps for one reduced-dose level against a shared ``ref``.
+
+    ``error_abs`` is exactly ``|recon - ref|`` against the scan's full-dose
+    reference, so the deposited error maps satisfy the construction-check
+    asserted in Technical Validation (and verifiable with
+    ``package_corpus.verify_error_maps``)."""
     recon = ref + rng.normal(0.0, 0.3, _SHAPE).astype("f4")
     error = np.abs(recon - ref)
     # sigma tracks error (positive correlation) plus independent noise — so the
@@ -152,16 +156,31 @@ def build_synthetic_corpus(
     rng = np.random.default_rng(seed)
 
     patient = 0
+    scan_refs: dict[tuple[str, str], np.ndarray] = {}
     for vendor in vendors:
         for anatomy in anatomies:
             patient += 1
             scan_id = f"scan_{vendor.lower()}_{anatomy}"
             pid = f"p{patient:03d}"
             task_name, metric, subpop, eps = _TASKS[anatomy]
+
+            # One full-dose reference per scan, shared across all dose levels and
+            # released as the r=1.00 record (recon_mean == x_ref; no error/task
+            # there). Every reduced-dose error_abs is |recon - this ref|.
+            ref = rng.normal(0.0, 1.0, _SHAPE).astype("f4")
+            scan_refs[(vendor, scan_id)] = ref
+            r100 = root / "reconstructions" / vendor / scan_id / "r100"
+            write_nifti(r100 / "recon_mean.nii.gz", ref)
+            (r100 / "scan_meta.json").write_text(json.dumps({
+                "vendor": vendor, "r": 1.0, "anatomy": anatomy, "split": "test",
+                "source_scan_id": scan_id, "patient_id": pid,
+                "role": "full_dose_reference",  # x_ref; not a credentialed dose
+            }, indent=2) + "\n", encoding="utf-8")
+
             for r in doses:
                 dd = f"r{int(round(r * 100)):03d}"
                 scan_dir = root / "reconstructions" / vendor / scan_id / dd
-                _emit_scan_records(scan_dir, rng)
+                _emit_scan_records(scan_dir, ref, rng)
                 (scan_dir / "scan_meta.json").write_text(json.dumps({
                     "vendor": vendor, "r": r, "anatomy": anatomy, "split": "test",
                     "source_scan_id": scan_id, "patient_id": pid,
@@ -183,8 +202,10 @@ def build_synthetic_corpus(
     for vendor in vendors:
         scan_id = f"scan_{vendor.lower()}_chest"
         bdir = root / "baselines" / "red_cnn" / vendor / scan_id / "r025"
-        write_nifti(bdir / "recon.nii.gz", rng.normal(0.0, 1.0, _SHAPE).astype("f4"))
-        write_nifti(bdir / "error_abs.nii.gz", np.abs(rng.normal(0.0, 0.3, _SHAPE)).astype("f4"))
+        bref = scan_refs[(vendor, scan_id)]  # same full-dose reference as the reference method
+        brecon = (bref + rng.normal(0.0, 0.4, _SHAPE)).astype("f4")
+        write_nifti(bdir / "recon.nii.gz", brecon)
+        write_nifti(bdir / "error_abs.nii.gz", np.abs(brecon - bref))
         write_nifti(bdir / "task_nodule_score.nii.gz", rng.uniform(0.0, 1.0, _SHAPE).astype("f4"))
         emit_stratum_credential(
             root,
@@ -206,6 +227,7 @@ def build_synthetic_corpus(
     cred_report = verify_corpus_credentials(root)
     pkg_report = pkg.package(root, SEED_METADATA, schema_path=SCHEMA, require_schema_valid=True)
     manifest_report = pkg.verify_manifest(root)
+    errmap_report = pkg.verify_error_maps(root)
 
     return {
         "root": str(root),
@@ -213,6 +235,8 @@ def build_synthetic_corpus(
         "n_credentials": cred_report["n_credentials"],
         "manifest_ok": manifest_report["ok"],
         "n_files": manifest_report["n_checked"],
+        "error_maps_ok": errmap_report["ok"],
+        "n_error_maps_checked": errmap_report["n_checked"],
         "counts": pkg_report["counts"],
         "record_type_counts": pkg_report["record_type_counts"],
         "schema_errors": pkg_report["schema_errors"],
@@ -226,7 +250,12 @@ def main(argv: list[str] | None = None) -> int:
     args = ap.parse_args(argv)
     report = build_synthetic_corpus(args.out_dir, seed=args.seed)
     print(json.dumps(report, indent=2))
-    ok = report["credentials_ok"] and report["manifest_ok"] and not report["schema_errors"]
+    ok = (
+        report["credentials_ok"]
+        and report["manifest_ok"]
+        and report["error_maps_ok"]
+        and not report["schema_errors"]
+    )
     return 0 if ok else 1
 
 

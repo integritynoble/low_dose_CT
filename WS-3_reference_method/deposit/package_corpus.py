@@ -44,6 +44,7 @@ __all__ = [
     "iter_leaf_files",
     "write_manifest",
     "verify_manifest",
+    "verify_error_maps",
     "fill_metadata",
     "write_metadata",
     "package",
@@ -135,6 +136,101 @@ def verify_manifest(corpus_root: Path | str) -> dict[str, Any]:
         "mismatched": sorted(mismatched),
         "missing": sorted(missing),
         "untracked": untracked,
+    }
+
+
+# --------------------------------------------------------------------------- #
+# Error-map integrity (a reuser's trust anchor)
+# --------------------------------------------------------------------------- #
+def _load_nifti_f8(path: Path):
+    """Load a NIfTI volume as float64. Lazy-imports numpy + nibabel."""
+    try:
+        import numpy as np
+        import nibabel as nib
+    except ImportError as e:  # pragma: no cover - exercised only on a bare env
+        raise PackageError(
+            "verify_error_maps needs numpy + nibabel (pip install numpy nibabel)"
+        ) from e
+    return np.asarray(nib.load(str(path)).get_fdata(), dtype="f8")
+
+
+def _error_records(corpus_root: Path) -> list[Path]:
+    """Every reduced-dose ``error_abs.nii.gz`` (reference + baseline trees), sorted.
+
+    The full-dose (``r100``) level carries no error map by construction, so it is
+    skipped. Record dirs are ``.../<vendor>/<scan>/<rXXX>`` in both trees.
+    """
+    out: list[Path] = []
+    for sub in ("reconstructions", "baselines"):
+        base = corpus_root / sub
+        if not base.is_dir():
+            continue
+        out += [p for p in base.rglob("error_abs.nii.gz") if p.parent.name != "r100"]
+    return sorted(out, key=lambda p: p.relative_to(corpus_root).as_posix())
+
+
+def verify_error_maps(
+    corpus_root: Path | str,
+    *,
+    sample: int | None = None,
+    seed: int = 0,
+    atol: float = 1e-3,
+) -> dict[str, Any]:
+    """Spot-check that each released ``error_abs`` equals ``|recon - full_dose|``.
+
+    For a random sample of ``sample`` reduced-dose records (or all of them when
+    ``sample is None``), recomputes ``|recon - x_ref|`` from the deposited
+    reconstruction and the scan's full-dose reference (the ``r100``
+    ``recon_mean.nii.gz`` for the same vendor/scan) and compares it voxelwise to
+    the released ``error_abs`` map, tolerating ``atol`` (default 1e-3 HU, to
+    absorb float32 rounding).
+
+    Returns ``{ok, n_checked, n_candidates, max_abs_dev, atol, failures,
+    unresolved}``. ``unresolved`` lists records whose reference or reconstruction
+    is not deposited (cannot be checked, not a failure); ``ok`` is true only when
+    at least one record was checked and none deviated.
+    """
+    import numpy as np  # lazy; only needed when this is actually called
+
+    corpus_root = Path(corpus_root)
+    records = _error_records(corpus_root)
+    if sample is not None and sample < len(records):
+        idx = np.random.default_rng(seed).choice(len(records), size=sample, replace=False)
+        records = [records[i] for i in sorted(int(j) for j in idx)]
+
+    failures: list[dict[str, Any]] = []
+    unresolved: list[str] = []
+    n_checked = 0
+    max_dev = 0.0
+    for err_path in records:
+        d = err_path.parent
+        vendor, scan = d.parent.parent.name, d.parent.name
+        ref_path = corpus_root / "reconstructions" / vendor / scan / "r100" / "recon_mean.nii.gz"
+        recon_path = d / "recon_mean.nii.gz"
+        if not recon_path.exists():
+            recon_path = d / "recon.nii.gz"
+        rel = err_path.relative_to(corpus_root).as_posix()
+        if not (ref_path.exists() and recon_path.exists()):
+            unresolved.append(rel)
+            continue
+        recon, ref, err = (_load_nifti_f8(p) for p in (recon_path, ref_path, err_path))
+        if not (recon.shape == ref.shape == err.shape):
+            failures.append({"record": rel, "reason": "shape mismatch"})
+            continue
+        dev = float(np.max(np.abs(err - np.abs(recon - ref))))
+        max_dev = max(max_dev, dev)
+        n_checked += 1
+        if dev > atol:
+            failures.append({"record": rel, "max_abs_dev": dev})
+
+    return {
+        "ok": n_checked > 0 and not failures,
+        "n_checked": n_checked,
+        "n_candidates": len(records),
+        "max_abs_dev": max_dev,
+        "atol": atol,
+        "failures": failures,
+        "unresolved": unresolved,
     }
 
 
@@ -306,6 +402,16 @@ def main(argv: list[str] | None = None) -> int:
     p_ver = sub.add_parser("verify", help="verify MANIFEST.sha256 against disk")
     p_ver.add_argument("corpus_root", type=Path)
 
+    p_err = sub.add_parser(
+        "verify-error-maps",
+        help="spot-check error_abs == |recon - full_dose reference| on a sample",
+    )
+    p_err.add_argument("corpus_root", type=Path)
+    p_err.add_argument("--sample", type=int, default=None,
+                       help="check this many random records (default: all)")
+    p_err.add_argument("--seed", type=int, default=0)
+    p_err.add_argument("--atol", type=float, default=1e-3)
+
     args = parser.parse_args(argv)
 
     if args.cmd == "package":
@@ -320,6 +426,13 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.cmd == "verify":
         report = verify_manifest(args.corpus_root)
+        print(json.dumps(report, indent=2))
+        return 0 if report["ok"] else 1
+
+    if args.cmd == "verify-error-maps":
+        report = verify_error_maps(
+            args.corpus_root, sample=args.sample, seed=args.seed, atol=args.atol
+        )
         print(json.dumps(report, indent=2))
         return 0 if report["ok"] else 1
 

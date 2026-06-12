@@ -54,19 +54,31 @@ def test_build_reports_all_green(built):
     _, report = built
     assert report["credentials_ok"] is True
     assert report["manifest_ok"] is True
+    assert report["error_maps_ok"] is True
     assert report["schema_errors"] == []
 
 
 def test_build_has_expected_structure(built):
     root, _ = built
-    # v1: 2 vendors x 1 anatomy (chest) x 2 doses = 4 scan-record folders
-    scan_dirs = [d for d in (root / "reconstructions").glob("*/*/r*") if d.is_dir()]
-    assert len(scan_dirs) == 4
-    # every scan folder has the 4 maps + scan_meta
-    for d in scan_dirs:
+    all_dirs = [d for d in (root / "reconstructions").glob("*/*/r*") if d.is_dir()]
+    # v1: 2 vendors x 1 anatomy (chest) x 2 reduced doses = 4 reduced-dose folders
+    reduced = [d for d in all_dirs if d.name != "r100"]
+    assert len(reduced) == 4
+    # every reduced-dose folder has the 4 maps + scan_meta
+    for d in reduced:
         for f in ["recon_mean.nii.gz", "uncertainty_sigma.nii.gz",
                   "error_abs.nii.gz", "task_nodule_score.nii.gz", "scan_meta.json"]:
             assert (d / f).exists(), f"{d}/{f} missing"
+    # each scan ships its full-dose reference (r100 = x_ref): recon_mean + meta
+    # only, no error/task/uncertainty map there.
+    refs = [d for d in all_dirs if d.name == "r100"]
+    assert len(refs) == 2
+    for d in refs:
+        assert (d / "recon_mean.nii.gz").exists()
+        assert (d / "scan_meta.json").exists()
+        for absent in ["error_abs.nii.gz", "task_nodule_score.nii.gz",
+                       "uncertainty_sigma.nii.gz"]:
+            assert not (d / absent).exists(), f"{d}/{absent} should not exist at r100"
 
 
 def test_build_credentials_are_lung_nodule_auc(built):
@@ -115,7 +127,8 @@ def test_metadata_counts_filled(built):
     assert md["counts"]["n_patients"] == 2   # one patient per (vendor, chest scan)
     assert md["counts"]["n_records_total"] > 0
     by_type = {rt["type"]: rt["count"] for rt in md["record_types"]}
-    assert by_type["reference_reconstruction"] == 4   # 2 scans x 2 doses
+    # 2 scans x (2 reduced doses + 1 full-dose reference) = 6
+    assert by_type["reference_reconstruction"] == 6
     assert by_type["baseline_reconstruction"] == 2
     assert by_type["credential"] == _cred_count(root)
 
@@ -132,6 +145,45 @@ def test_deterministic_given_seed(tmp_path: Path):
     rb = (tmp_path / "b" / "reconstructions" / "Siemens" / "scan_siemens_chest" / "r025" / "recon_mean.nii.gz").read_bytes()
     assert ra == rb
     assert a["record_type_counts"] == b["record_type_counts"]
+
+
+def test_error_maps_verify_clean(built):
+    # The released error_abs maps equal |recon - full_dose reference| on every
+    # checkable record (reference method + baseline), with nothing unresolved.
+    import package_corpus as pkg
+
+    root, _ = built
+    rep = pkg.verify_error_maps(root)
+    assert rep["ok"] is True
+    assert rep["n_checked"] == 6           # 4 reduced-dose reference + 2 baseline
+    assert rep["failures"] == []
+    assert rep["unresolved"] == []
+    assert rep["max_abs_dev"] <= rep["atol"]
+
+
+def test_error_maps_verify_detects_tampering(built, tmp_path: Path):
+    import shutil
+
+    import package_corpus as pkg
+
+    root, _ = built
+    work = tmp_path / "tampered"
+    shutil.copytree(root, work)
+    victim = work / "reconstructions" / "Siemens" / "scan_siemens_chest" / "r025" / "error_abs.nii.gz"
+    write_nifti(victim, np.full((8, 8, 2), 99.0, dtype="f4"))  # no longer |recon-ref|
+    rep = pkg.verify_error_maps(work)
+    assert rep["ok"] is False
+    assert any("scan_siemens_chest/r025/error_abs" in f["record"] for f in rep["failures"])
+
+
+def test_error_maps_sampling_is_deterministic(built):
+    import package_corpus as pkg
+
+    root, _ = built
+    a = pkg.verify_error_maps(root, sample=3, seed=11)
+    b = pkg.verify_error_maps(root, sample=3, seed=11)
+    assert a["n_checked"] == b["n_checked"] == 3
+    assert a["ok"] and b["ok"]
 
 
 def test_cli_runs_and_exits_zero(tmp_path: Path):
