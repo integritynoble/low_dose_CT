@@ -31,6 +31,7 @@ scans, and is deliberately distinct from WS-1 (which releases the raw paired CT)
 | `manuscript.tex` | **Data Descriptor** manuscript (current primary) |
 | `manuscript_method_miccai.tex` | Prior MICCAI/TMI **method** draft, preserved as a fallback should the venue strategy change |
 | `manuscript.pdf` | Compiled Data Descriptor (8 pp) |
+| `supplementary.tex` / `.pdf` | Supplementary Information (3 pp): Table S1 hyperparameters, S2 determinism + software pins + framework hash, S3 training-compute disclosure (values `\todo` until Phase-3 training) |
 | `reviewer_simulation.md` | Pre-submission dry run of *Scientific Data*'s review (editor + 2 referees); maps every gap to its closing action + a submission gate |
 | `refs.bib` | Bibliography |
 | `figures/` (later) | Reliability diagram + architecture diagram + example reconstructions |

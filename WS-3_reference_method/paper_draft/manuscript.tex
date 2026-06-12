@@ -304,7 +304,7 @@ $[-50,50]$\,HU). Optimiser AdamW~\citep{loshchilov2018adamw}, cosine LR
 with $5\%$ warmup, batch size $4$ at $512\times512$, single A100; CuDNN
 deterministic, all RNGs seed-propagated. The complete hyperparameter
 table, library version pins, and compute disclosure accompany the deposit
-(Supplementary Table~S1) so the corpus is regenerable.
+(Supplementary Tables~S1--S3) so the corpus is regenerable.
 
 %% =====================================================================
 \section{Data Records}
@@ -633,7 +633,7 @@ without re-running the bootstrap.
 from the deposited Apache-2.0 RunBundle: \texttt{docker run} on a fresh
 machine reproduces every record bit-identically within IEEE-754 tolerance
 (seeds, library pins, and CuDNN-deterministic settings in Supplementary
-Table~S1). The RunBundle is independently re-executed by the PWM
+Table~S2). The RunBundle is independently re-executed by the PWM
 challenge scoring service before posting, providing third-party
 regeneration evidence.
 
@@ -694,7 +694,7 @@ Apache~2.0 at
 and packaged as a pinned Docker RunBundle (CID \todo{IPFS CID at deposit};
 anchored by a PWM L4 cert for integrity). Pre-trained ensemble weights,
 the pinned \texttt{Dockerfile}, evaluation scripts, random seeds, and the
-training-compute disclosure (Supplementary Table~S1) permit bit-identical
+training-compute disclosure (Supplementary Table~S3) permit bit-identical
 regeneration of the corpus within floating-point tolerance on equivalent
 hardware. The forward model is the upstream
 \texttt{pwm\_core.contrib.modalities.ct\_radon}~\citep{pwmcore}; the

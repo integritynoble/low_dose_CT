@@ -1,0 +1,166 @@
+%% =====================================================================
+%% WS-3 Data Descriptor — Supplementary Information
+%%
+%% Standalone supplement to manuscript.tex. Holds the regeneration detail
+%% the main text points at: Table S1 (hyperparameters), Table S2
+%% (reproducibility: seeds, RNG streams, CuDNN flags, library pins), Table
+%% S3 (training-compute disclosure).
+%%
+%% Values mirror Methods where already fixed; \todo{} marks quantities
+%% determined only when the Phase-3 models are trained (D9+270). Filling
+%% every \todo here + the deposited RunBundle is what makes the corpus
+%% bit-reproducible.
+%%
+%% Build:  pdflatex supplementary
+%% =====================================================================
+
+\documentclass{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage[margin=1in]{geometry}
+\usepackage{booktabs}
+\usepackage{amsmath,amssymb}
+\usepackage{xcolor}
+\usepackage[colorlinks=true,linkcolor=blue,citecolor=blue,urlcolor=blue]{hyperref}
+
+\newcommand{\todo}[1]{\textcolor{red}{\textbf{[TODO: #1]}}}
+\renewcommand{\thetable}{S\arabic{table}}
+\renewcommand{\thesection}{S\arabic{section}}
+
+\title{\textbf{Supplementary Information}\\
+A Multi-Vendor Corpus of Reference Low-Dose CT Reconstructions with
+Calibrated Per-Pixel Uncertainty and Signal-Equivalence Credentials}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+
+\noindent
+This supplement records the configuration needed to regenerate the corpus
+bit-for-bit (within IEEE-754 tolerance) from the deposited Apache-2.0
+RunBundle. \textbf{Table~S1} lists the reconstruction and training
+hyperparameters; \textbf{Table~S2} lists the determinism settings and
+pinned software versions; \textbf{Table~S3} discloses training compute.
+Entries marked \todo{} are fixed when the Phase-3 models are trained and
+the corpus is deposited.
+
+%% =====================================================================
+\section{Hyperparameters}
+
+\begin{table}[h]
+  \centering
+  \small
+  \begin{tabular}{lll}
+    \toprule
+    \textbf{Group} & \textbf{Hyperparameter} & \textbf{Value} \\
+    \midrule
+    \multicolumn{3}{l}{\emph{Unrolled reconstruction}} \\
+    & Iterations $K$                       & $10$ \\
+    & Warm start                           & TV-regularized FBP (TV-FBP) \\
+    & Data-consistency step size $\tau$    & learned scalar, init $0.5/\|\mathcal{R}\|_2^2$ \\
+    & Reconstruction loss                  & mean absolute error (L1) on HU \\
+    & Forward / adjoint operator           & \texttt{pwm\_core ct\_radon} (version in Table~S2) \\
+    & Projection geometry ($n_\text{views}$, $n_\text{dets}$) & \todo{geometry} \\
+    & FBP filter                           & \todo{filter (e.g.\ Ram-Lak / Hann)} \\
+    \midrule
+    \multicolumn{3}{l}{\emph{Denoiser $f_\theta$ (weights shared across iterations)}} \\
+    & Architecture                         & U-Net, 4 encoder / 4 decoder stages \\
+    & Channels per stage                   & $(32, 64, 128, 256)$ \\
+    & Activation / normalisation           & GELU / GroupNorm \\
+    & Upsampling                           & bilinear \\
+    & Parameters per ensemble member       & $\approx 4$\,M \\
+    \midrule
+    \multicolumn{3}{l}{\emph{Optimisation}} \\
+    & Optimiser                            & AdamW \\
+    & Peak learning rate                   & \todo{lr} \\
+    & Weight decay                         & \todo{wd} \\
+    & LR schedule                          & cosine, $5\%$ linear warmup \\
+    & Training length (epochs / steps)     & \todo{epochs} \\
+    & Batch size                           & $4$ \\
+    & Input                                & full $512\times512$ axial slice (2D) \\
+    \midrule
+    \multicolumn{3}{l}{\emph{Training data}} \\
+    & Dose levels $r$                      & $\{0.10, 0.25, 0.50\}$ \\
+    & Per-minibatch dose-mix weights       & $(0.4, 0.4, 0.2)$ for $r=(0.10,0.25,0.50)$ \\
+    & Augmentation                         & flip $p{=}0.5$; rotation $[-5^\circ,5^\circ]$; \\
+    &                                      & window-level shift $[-50,50]$\,HU \\
+    & Train / val / test sizes (patients)  & \todo{N / N / N} \\
+    \midrule
+    \multicolumn{3}{l}{\emph{Ensemble}} \\
+    & Members $M$                          & $5$ \\
+    & Member seeds                         & $\{42, 43, 44, 45, 46\}$ \\
+    \bottomrule
+  \end{tabular}
+  \caption{Reconstruction, denoiser, optimisation, data, and ensemble
+  hyperparameters. Fixed values mirror the Methods; \todo{} entries are set
+  at training time.}
+  \label{tab:supp_hyperparams}
+\end{table}
+
+%% =====================================================================
+\section{Reproducibility: determinism and software pins}
+
+\begin{table}[h]
+  \centering
+  \small
+  \begin{tabular}{lll}
+    \toprule
+    \textbf{Group} & \textbf{Setting / package} & \textbf{Value} \\
+    \midrule
+    \multicolumn{3}{l}{\emph{Seeding and determinism}} \\
+    & Seeded RNG streams & Python \texttt{random}, NumPy, PyTorch (CPU + CUDA), DataLoader workers \\
+    & \texttt{cudnn.deterministic} & \texttt{True} \\
+    & \texttt{cudnn.benchmark} & \texttt{False} \\
+    & \texttt{torch.use\_deterministic\_algorithms} & \todo{True/False + any opt-outs} \\
+    & Per-member seed $\to$ weights + data order & $\{42,\dots,46\}$ (Table~S1) \\
+    \midrule
+    \multicolumn{3}{l}{\emph{Pinned software versions}} \\
+    & Python                  & \todo{3.x.y} \\
+    & PyTorch                 & \todo{x.y.z} \\
+    & CUDA / cuDNN            & \todo{x.y / x.y} \\
+    & NumPy                   & \todo{x.y.z} \\
+    & SciPy                   & \todo{x.y.z} \\
+    & \texttt{pwm\_core} (\texttt{ct\_radon}) & \todo{commit / version} \\
+    & \texttt{pwm\_dose\_equivalence}         & \texttt{0.2.2} \\
+    & \texttt{nibabel}        & \todo{x.y.z} \\
+    & Docker base image digest & \todo{sha256:...} \\
+    \midrule
+    \multicolumn{3}{l}{\emph{Reproduction tolerance}} \\
+    & Bit-identical within     & IEEE-754 FP tolerance on equivalent hardware \\
+    & Framework hash (credentials) & \texttt{sha256:b366f51c...} (\texttt{pwm\_dose\_equivalence}) \\
+    \bottomrule
+  \end{tabular}
+  \caption{Determinism settings, pinned software versions, and the
+  framework hash credentials are issued under. These plus the RunBundle
+  permit bit-reproduction of every record.}
+  \label{tab:supp_repro}
+\end{table}
+
+%% =====================================================================
+\section{Training-compute disclosure}
+
+\begin{table}[h]
+  \centering
+  \small
+  \begin{tabular}{ll}
+    \toprule
+    \textbf{Quantity} & \textbf{Value} \\
+    \midrule
+    GPU model                                   & NVIDIA A100 (single) \\
+    GPU-hours per ensemble member               & \todo{h} \\
+    Ensemble members trained                    & $5$ (reference) $+$ cross-vendor leave-one-out variants \\
+    Total training GPU-hours (all models)        & \todo{h} \\
+    Inference time per slice (5-model ensemble)  & \todo{s on one A100} \\
+    Peak GPU memory (training)                   & \todo{GB} \\
+    Estimated energy / CO\textsubscript{2}e      & \todo{kWh / kg (optional)} \\
+    \bottomrule
+  \end{tabular}
+  \caption{Training-compute disclosure for the released models.}
+  \label{tab:supp_compute}
+\end{table}
+
+\end{document}
