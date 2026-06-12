@@ -280,7 +280,8 @@ For each test scan and dose level the pipeline emits, in addition to
 $\hat{x}(y)$ and $\sigma(y)$: the \textbf{per-pixel error map}
 $e(y)_{ij} = |\hat{x}(y)_{ij} - x^{\textrm{ref}}_{ij}|$ against the
 full-dose reference, and a \textbf{lung-nodule detection score map} from a
-frozen pre-trained detector applied to $\hat{x}(y)$. (Version~1 of the
+frozen pre-trained detector applied to $\hat{x}(y)$
+(detector specified in Section~\ref{sec:detector}). (Version~1 of the
 corpus releases this single chest / lung-nodule task; additional tasks
 such as abdominal liver-lesion segmentation are deferred to a future
 release so that the released records and the task description remain in
@@ -294,6 +295,37 @@ library~\citep{ws2framework}; each credential is internally audited with
 released task-score arrays. The five baseline methods
 (Section~\ref{sec:datarecords}) are run through the identical emit path so
 their records are field-for-field comparable.
+
+\subsection{Frozen downstream-task detector}
+\label{sec:detector}
+The lung-nodule detection score maps are produced by a single
+\emph{frozen} detector held fixed across every method, dose level, and
+record, so the task layer measures the diagnostic content each
+reconstruction preserves rather than any adaptation of the detector
+itself. The detector is \textbf{nnDetection}~\citep{baumgartner2021nndetection}---a
+self-configuring 3D Retina~U-Net---run in its published configuration
+without modification; the exact release is pinned in Supplementary
+Table~S2. It is trained \emph{once} on the \textbf{LUNA16}
+benchmark~\citep{setio2017luna16}, the 888-scan
+LIDC/IDRI~\citep{lidc_idri} subset annotated for pulmonary nodules with
+$\geq 3/4$ radiologist agreement, and is never fine-tuned on PWM-LDCT
+reconstructions. The LUNA16 training patients are disjoint from the
+PWM-LDCT cohort, so the detector is an external, leakage-free evaluator
+applied identically to all methods.
+
+\paragraph{Operating-point provenance.} The credentialing operating
+point is fixed \emph{before} any PWM-LDCT reconstruction is scored: on
+the held-out LUNA16 validation fold we take the detection-score
+threshold whose free-response ROC (FROC) yields a mean of $0.1$
+false-positive detections per scan ($\textrm{FPR}=0.1$) and freeze it
+for all subsequent scoring. The released task-score maps are the raw,
+pre-threshold detector scores, so reusers may re-derive performance at
+any operating point; the AUC in \autoref{tab:task_auc} and the task
+credentials are read at this single frozen $\textrm{FPR}=0.1$ point,
+identical across all methods and doses. The frozen weights, inference
+configuration, and version pin are deposited in the RunBundle
+(Section~\ref{sec:codeavail}) so the task layer is independently
+reproducible.
 
 \subsection{Training and generation configuration}
 Models are trained on the PWM-LDCT training split with paired targets at
