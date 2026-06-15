@@ -1,0 +1,31 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pwm_ldct_recon"
+version = "0.1.0"
+description = "WS-3 reference low-dose CT reconstruction method: unrolled iterative recon + deep-ensemble UQ + Phase-3 corpus emission."
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "Apache-2.0" }
+authors = [{ name = "PWM-LDCT authors" }]
+# torch is the committed backbone (README "Architecture"); numpy/nibabel for I/O.
+# pwm_ldct_loader supplies the WS-1 data contract; the corpus_emit / deposit tools
+# (sibling dirs, imported by path in emit_corpus) turn recons into the deposit.
+dependencies = ["numpy>=1.21", "torch>=1.12", "pwm_ldct_loader>=0.5.0"]
+
+[project.optional-dependencies]
+# The frozen downstream-task detector (nnDetection / LUNA16; manuscript sec:detector).
+# Optional so train/eval run without it; emit-corpus needs a registered scorer.
+detector = ["nndet>=0.1"]
+dev = ["pytest>=7", "nibabel>=5"]
+
+[project.scripts]
+pwm-recon = "pwm_ldct_recon.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

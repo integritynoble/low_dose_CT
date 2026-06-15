@@ -114,9 +114,10 @@ Three baselines reproduced inside this folder under `baselines/`. They serve thr
 | `corpus_emit/` | Credential-emission step: turns cohort task scores into deposit-ready `credential.json` records + `all_credentials.jsonl` index, via the WS-2 library | **wired + tested** (18 tests pass on synthetic scores; real scores arrive Phase 3) |
 | `fixture/` | Synthetic end-to-end corpus generator (`make_synthetic_corpus.py`): valid NIfTI records + emitted credentials + packaged manifest/metadata, exercising emit → package → verify | **runnable + tested** (11 tests; one-command CI / reviewer demo, no Phase-3 data needed) |
 | `deposit/` | *Scientific Data* deposit kit: checklist + `dataset_metadata.json` schema/template + `package_corpus.py` (fills metadata counts + writes/verifies `MANIFEST.sha256`) | **ready + tested** (13 tests; corpus + DOI gated on Phase 3) |
+| `method/` | **The reference method** (`pwm_ldct_recon`): unrolled iterative recon + differentiable Radon + deep-ensemble UQ + the `emit_corpus` Phase-3 run that drives `corpus_emit`/`deposit`. Mirrors Methods + Supp. Table S1 cell-for-cell. | **scaffolded + tested** (16 CPU tests; `pwm-recon smoke` runs the whole Phase-3 pipeline on synthetic data; real run is GPU- + data-gated) |
 | `baselines/` | RED-CNN + transformer + diffusion + comparison harness | pending Phase 1 |
-| `v0.1/` | Phase 2 prototype | pending Phase 2 |
-| `v1/` | Phase 3 production version | pending Phase 3 |
+| `v0.1/` | Phase 2 prototype | folded into `method/` (config = single member) |
+| `v1/` | Phase 3 production version | `method/` ensemble; **training run** GPU- + data-gated |
 | `runbundle/` | PWM-format RunBundle for L4 cert | pending Phase 3 |
 | `paper_draft/` | *Scientific Data* **Data Descriptor** (`manuscript.tex`, 8 pp, compiles clean) + preserved MICCAI method draft (`manuscript_method_miccai.tex`) | reframed; validation tables gated on Phase 3 data + deposit |
 
