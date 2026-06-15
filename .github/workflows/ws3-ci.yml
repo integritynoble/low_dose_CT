@@ -102,3 +102,46 @@ jobs:
           assert got == exp, f'WS-3 credential hash {got} != WS-2 library {exp}'
           print(f'framework hash consistent: {got}')
           "
+
+  # Separate job: the reference method (method/) depends on torch (~190 MB), so it
+  # runs once on a single Python rather than across the deposit matrix above. Covers
+  # the 16 CPU tests (physics / model / train / ensemble / emit->deposit) and the
+  # `pwm-recon smoke` end-to-end (train tiny ensemble -> emit -> deposit-verify).
+  ws3-method:
+    name: method (pwm_ldct_recon) / ubuntu-latest
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install torch (CPU) + WS-2 library + deposit deps + the method package
+        # torch from the CPU wheel index (no CUDA download). The WS-2 library + nibabel +
+        # jsonschema back the emit->deposit integration test; the method package is
+        # installed --no-deps because its only non-PyPI dep (pwm_ldct_loader) is used
+        # lazily and not exercised by the test suite (which uses SyntheticPairs).
+        run: |
+          python -m pip install --upgrade pip
+          pip install torch --index-url https://download.pytorch.org/whl/cpu
+          pip install -e WS-2_framework/pwm_dose_equivalence
+          pip install numpy nibabel jsonschema pytest
+          pip install -e WS-3_reference_method/method --no-deps
+
+      - name: method test suite (16 CPU tests)
+        working-directory: WS-3_reference_method/method
+        env:
+          PYTHONPATH: src
+        run: pytest -q
+
+      - name: pwm-recon smoke (synthetic Phase-3 end-to-end)
+        # Trains a tiny ensemble, emits a corpus, and asserts it passes the credential
+        # audit + manifest checksum + the error_abs construction-check (verify_error_maps).
+        run: |
+          python -m pwm_ldct_recon smoke "${RUNNER_TEMP}/ws3_method_corpus" --size 24 --steps 3
+          cd "${RUNNER_TEMP}/ws3_method_corpus"
+          sha256sum -c MANIFEST.sha256

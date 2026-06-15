@@ -80,8 +80,9 @@ def train_member(cfg: ReconConfig, dataset: Dataset, *, device: str = "cpu",
             loss = F.l1_loss(recon, full) if cfg.recon_loss == "l1" else F.mse_loss(recon, full)
             opt.zero_grad(set_to_none=True)
             loss.backward()
+            # step+1 so the first update gets a non-zero warmup LR (not 0/warmup).
             for g in opt.param_groups:
-                g["lr"] = cfg.peak_lr * _lr_factor(step, total, cfg.warmup_frac)
+                g["lr"] = cfg.peak_lr * _lr_factor(step + 1, total, cfg.warmup_frac)
             opt.step()
             last = float(loss.detach())
             step += 1

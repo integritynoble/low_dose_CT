@@ -16,7 +16,7 @@ Conventions: images are ``[B, 1, H, W]``, sinograms ``[B, 1, n_views, n_dets]``,
 from __future__ import annotations
 
 import math
-from typing import Optional
+from typing import Optional, cast
 
 import torch
 import torch.nn.functional as F
@@ -43,6 +43,15 @@ class RadonTransform(torch.nn.Module):
         self.register_buffer("angles", angles)
         self.register_buffer("_fbp_filter", self._make_filter(self.n_dets, filter_name))
 
+    # register_buffer is typed as Tensor|Module; these cast back to Tensor for the type checker.
+    @property
+    def _ang(self) -> torch.Tensor:
+        return cast(torch.Tensor, self.angles)
+
+    @property
+    def _filt(self) -> torch.Tensor:
+        return cast(torch.Tensor, self._fbp_filter)
+
     # ------------------------------------------------------------------ #
     # rotation primitive (shared by forward + backprojection)
     # ------------------------------------------------------------------ #
@@ -54,7 +63,7 @@ class RadonTransform(torch.nn.Module):
         theta = torch.zeros(n, 2, 3, dtype=x.dtype, device=x.device)
         theta[:, 0, 0], theta[:, 0, 1] = cos, -sin
         theta[:, 1, 0], theta[:, 1, 1] = sin, cos
-        grid = F.affine_grid(theta, x.shape, align_corners=False)
+        grid = F.affine_grid(theta, list(x.shape), align_corners=False)
         return F.grid_sample(x, grid, align_corners=False, padding_mode="zeros")
 
     # ------------------------------------------------------------------ #
@@ -66,7 +75,7 @@ class RadonTransform(torch.nn.Module):
             raise ValueError(f"expected [B,1,H,W]; got {tuple(image.shape)}")
         b = image.shape[0]
         proj = []
-        for a in self.angles:
+        for a in self._ang:
             rot = self._rotate(image, a.expand(b))
             line = rot.sum(dim=-2)                      # integrate along rows -> [B,1,W]
             proj.append(line)
@@ -86,7 +95,7 @@ class RadonTransform(torch.nn.Module):
                                  mode="bilinear", align_corners=False)
         acc = torch.zeros(b, 1, self.img_size, self.img_size,
                           dtype=sino.dtype, device=sino.device)
-        for i, a in enumerate(self.angles):
+        for i, a in enumerate(self._ang):
             line = sino[:, :, i, :]                       # [B,1,W]
             smear = line.unsqueeze(-2).expand(b, 1, self.img_size, self.img_size)
             acc = acc + self._rotate(smear, -a.expand(b))
@@ -107,7 +116,7 @@ class RadonTransform(torch.nn.Module):
 
     def fbp(self, sino: torch.Tensor) -> torch.Tensor:
         """Filtered backprojection warm start (manuscript S1 'TV-FBP' before the TV stage)."""
-        f = self._fbp_filter.to(sino.device, sino.dtype)
+        f = self._filt.to(sino.device, sino.dtype)
         spec = torch.fft.fft(sino, dim=-1)
         filtered = torch.fft.ifft(spec * f, dim=-1).real
         return self.backproject(filtered)
@@ -119,7 +128,7 @@ class RadonTransform(torch.nn.Module):
     def opnorm_sq(self, n_iter: int = 8) -> float:
         """Power-iteration estimate of ``||R||_2^2`` (Table S1 tau init = 0.5/||R||_2^2)."""
         x = torch.randn(1, 1, self.img_size, self.img_size,
-                        device=self.angles.device)
+                        device=self._ang.device)
         x = x / x.norm()
         val = 1.0
         for _ in range(n_iter):
