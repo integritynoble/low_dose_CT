@@ -58,7 +58,7 @@ before acceptance; **[MINOR]** strengthening / discretionary.
 | ID | Finding | Severity | Action to close |
 |---|---|---|---|
 | S1 | **Ethics statement present** (no new PHI; derived; identifiers stripped; pseudonymous `scan_id`). Good. The governing IRB/approval is not named. | **MINOR** | Name the WS-1 governing approval / data-use agreement once finalised. |
-| S2 | **CC BY 4.0 redistribution basis asserted but unevidenced.** The draft says WS-1 terms permit redistributing derived reconstructions; an editor may request the clause. | **MAJOR** | Confirm against the actual WS-1 DUA that *derived* imagery may be released CC BY 4.0; cite the clause. If not permitted, fall back to the most open compatible licence. |
+| S2 | **CC BY 4.0 redistribution basis asserted but unevidenced.** The draft says WS-1 terms permit redistributing derived reconstructions; an editor may request the clause. | **~~MAJOR~~ ADDRESSED (per-source model, 2026-06-15)** | The unevidenced blanket CC BY 4.0 claim was **wrong**: WS-1's own deposit docs redistribute LIDC-derived pixels only (CC BY 3.0) and **exclude AAPM/Mayo pixel derivatives** ("users regenerate those locally"). Manuscript now states the per-source basis (new *Licensing and redistribution* para in Data Records; matching Usage Notes + Ethics): (i) numerical records (credentials/metadata/manifest) CC BY 4.0; (ii) LIDC-derived pixel records CC BY 3.0 (matching WS-1's `sim_lowdose`); (iii) AAPM/Mayo pixel records **not** redistributed — regenerated locally from authorised source copies via the Apache-2.0 RunBundle. Cross-vendor credentials/stats are aggregate numbers, so unaffected. **Residual (author/legal, optional):** if Mayo/AAPM grant derived-reconstruction redistribution, strata in (iii) can move to open release. |
 | S3 | **Data Citations need real identifiers** — WS-1 DOI, the corpus DOI, WS-2 framework. | **MAJOR** | Fill once DOIs exist. |
 | S4 | **Metadata format.** `dataset_metadata.json` is a custom (validated) schema; SD collects its own structured metadata at submission and prefers community standards where they exist. | **MINOR** | Keep the JSON as a deposit artifact; complete SD's submission-portal metadata separately. |
 
@@ -75,14 +75,15 @@ gated on Phase-3 data — not an editorial weakness, a sequencing fact.
 filled), the descriptor is structurally sound and the likely decision is
 **minor-to-major revision**, with the MAJOR items most likely to be raised by
 referees being: M2 (detector spec), M3 (abdomen-task consistency), M5
-(real-vs-simulated provenance), D3 (cohort composition), V2 (calibration beyond
-Spearman), and S2 (licence basis for derived data).
+(real-vs-simulated provenance), D3 (cohort composition), and V2 (calibration
+beyond Spearman). (S2, the licence basis, is now resolved via the per-source
+model — see the Q4 table.)
 
 ## Pre-submission gate (ordered)
 
 1. **Task scope — DONE (M3):** v1 is lung-nodule-only; text, metadata, and fixture are consistent. Generate data to this single-task shape.
 2. **Generate Phase-3 corpus**; specify the detector (M2) and real-vs-simulated provenance (M5).
-3. **Deposit + DOI** (E1, E3); confirm the licence basis (S2).
+3. **Deposit + DOI** (E1, E3). ~~Licence basis (S2)~~ **DONE** — per-source model applied (LIDC pixels CC BY 3.0; numerical records CC BY 4.0; AAPM/Mayo pixels regenerate-locally).
 4. **Fill** all validation/record/cohort tables + reliability figure + Supplementary S1 (V1, V2, D1, D3, M1); add the calibration metric.
 5. **Authors, ORCIDs, citations, ethics approval name** (E2, S1, S3).
 6. Run `package_corpus.py` to refresh metadata/manifest; re-audit all credentials; rebuild PDF; remove every `\todo`.
@@ -93,4 +94,4 @@ table, ~~V2~~ three-axis calibration methodology, ~~D4~~ baseline-σ sentence,
 ~~M4~~ r100 clarification, ~~D2~~ affine statement, ~~D3~~ cohort-table
 structure. What remains is **data-gated** (fill every `\todo` from Phase-3
 runs) and **process** (E1–E3 deposit/DOI/authors, M1 Supplementary S1, M2
-detector spec, S2 licence basis, S3 citations).
+detector spec, S3 citations). ~~S2 licence basis~~ resolved 2026-06-15.

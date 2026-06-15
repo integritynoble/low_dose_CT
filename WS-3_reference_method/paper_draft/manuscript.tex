@@ -18,7 +18,9 @@
 %%   - Data must be deposited in an approved repository with a DOI
 %%     (figshare / Zenodo). IPFS/blockchain CIDs are SUPPLEMENTARY, not a
 %%     substitute. Fill \datadoi{} below at deposit time.
-%%   - Data licence: CC BY 4.0 (preferred). Code licence: Apache 2.0.
+%%   - Data licence: per-source (numerical records CC BY 4.0; LIDC-derived
+%%     pixels CC BY 3.0; AAPM/Mayo pixels not redistributed -> regenerate
+%%     locally via the RunBundle). Code licence: Apache 2.0.
 %%   - A "Data Citations" list is required for every reused dataset.
 %%
 %% Status: v0.3 working draft (reframed from the prior MICCAI method
@@ -216,12 +218,13 @@ approvals, and informed-consent basis. The released NIfTI volumes carry no
 protected health information: voxel arrays only, with all DICOM
 patient-identifying header fields removed at generation, and
 \texttt{scan\_id} is the WS-1 pseudonymous identifier (never an
-institutional medical-record number). Redistribution of these derived
-reconstructions under CC~BY~4.0 is permitted by the WS-1 data-use terms;
-reusers remain bound by those terms for any attempt to re-link records to
-source acquisitions. No date-of-service, geographic, or demographic field
-finer than the anatomy/vendor labels in \texttt{scan\_meta.json} is
-released.
+institutional medical-record number). Redistribution follows the
+per-source basis of the WS-1 release, set out under
+\emph{Licensing and redistribution} (\autoref{sec:datarecords}); reusers
+remain bound by the source data-use terms, in particular for any attempt
+to re-link records to source acquisitions. No date-of-service, geographic,
+or demographic field finer than the anatomy/vendor labels in
+\texttt{scan\_meta.json} is released.
 
 \subsection{Reconstruction pipeline}
 \label{sec:method_overview}
@@ -343,12 +346,35 @@ table, library version pins, and compute disclosure accompany the deposit
 \label{sec:datarecords}
 \label{sec:data_records}
 
-All records are deposited at \datadoi{} under CC~BY~4.0, mirrored to a
+Records are deposited at \datadoi{} and mirrored to a
 content-addressed PWM RunBundle on IPFS (CID in
-Section~\ref{sec:codeavail}) for integrity verification. The deposit is a
-single archive with the directory layout below; every leaf file is
-additionally listed with its SHA-256 in \texttt{MANIFEST.sha256} at the
-archive root.
+Section~\ref{sec:codeavail}) for integrity verification; their licensing
+follows the per-source basis set out in \emph{Licensing and
+redistribution} below. The deposit is a single archive with the directory
+layout below; every leaf file is additionally listed with its SHA-256 in
+\texttt{MANIFEST.sha256} at the archive root.
+
+\paragraph{Licensing and redistribution.} The corpus inherits the
+per-source redistribution basis of the WS-1 benchmark~\citep{ws1dataset},
+which redistributes value-added derivatives only where the source licence
+permits and otherwise has reusers regenerate them locally. Accordingly:
+(i)~all \emph{numerical} records---credentials, \texttt{scan\_meta.json},
+\texttt{dataset\_metadata.json}, and the integrity manifest---are released
+under CC~BY~4.0, being aggregate statistics and metadata rather than image
+derivatives and carrying no protected health information; (ii)~\emph{pixel}
+records (reconstruction, uncertainty, error, and task-score maps) derived
+from LIDC-IDRI scans are released under CC~BY~3.0, matching the licence
+under which WS-1 already redistributes its LIDC-derived simulated low-dose
+images; and (iii)~pixel records derived from the AAPM~2016 Low-Dose CT
+Grand Challenge and Mayo LDCT-PD scans are \emph{not} redistributed---those
+source data-use agreements restrict redistribution of pixel
+derivatives---and are instead regenerated locally by reusers from their own
+authorised copies of the source data using the deposited Apache-2.0
+RunBundle (\autoref{sec:codeavail}), which reproduces them within
+floating-point tolerance. The released cross-vendor \emph{credentials} and
+fidelity statistics (\autoref{tab:cross_vendor}) are unaffected by (iii),
+as they are aggregate numbers rather than redistributed pixels. Generating
+code is Apache~2.0.
 
 \begin{table}[h]
     \centering
@@ -760,9 +786,14 @@ are not characterised. Reconstructions are single-slice 2D. Credential
 size~\citep{ws2framework}, not evidence of non-equivalence, and should not
 be read as a negative finding about a method.
 
-\paragraph{Licensing.} Data records: CC~BY~4.0. Generating code and
-RunBundle: Apache~2.0. Reuse requires citing this Data Descriptor and the
-WS-1 source dataset~\citep{ws1dataset}.
+\paragraph{Licensing.} Numerical records (credentials, metadata,
+manifest): CC~BY~4.0. LIDC-derived pixel records: CC~BY~3.0. Pixel records
+derived from the DUA-restricted AAPM~2016 and Mayo LDCT-PD scans are not
+redistributed and are regenerated locally via the RunBundle (see
+\emph{Licensing and redistribution} under Data Records,
+\autoref{sec:datarecords}). Generating code and RunBundle: Apache~2.0.
+Reuse requires citing this Data Descriptor and the WS-1 source
+dataset~\citep{ws1dataset}.
 
 %% =====================================================================
 \section{Code Availability}
