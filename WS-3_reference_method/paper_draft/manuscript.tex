@@ -561,17 +561,53 @@ evidence, not a competition.
     \label{tab:reconstruction_quality}
 \end{table}
 
-\paragraph{Cross-vendor consistency.} Because records are
-vendor-labelled, we validate that fidelity does not collapse across
-vendors. \autoref{tab:cross_vendor} reports the PSNR difference $\Delta$
-under leave-one-vendor-out generation (the held-out vendor's scans
-reconstructed by models trained without that vendor). This characterises
-the regime in which the released cross-vendor records are trustworthy for
-reuse versus extrapolative.
+\paragraph{Cross-vendor consistency: interpolation vs.\ extrapolation.}
+Because every record is vendor-labelled, reusers can study cross-vendor
+generalisation directly --- but only if the corpus states which vendors
+are \emph{interpolative} (comfortably inside the multi-vendor training
+distribution) and which are \emph{extrapolative} (at its edge). We make
+this operational with leave-one-vendor-out (LOVO) generation. The
+released reference reconstructions are produced by the deployed ensemble
+trained on \emph{all} vendors, so for the deposited corpus every vendor
+is in-distribution; \autoref{tab:cross_vendor} additionally reconstructs
+each vendor's scans with an ensemble trained \emph{without} that vendor
+and reports the fidelity drop $\Delta = \mathrm{PSNR}_{\text{in-dist}} -
+\mathrm{PSNR}_{\text{held-out}}$. $\Delta$ is the empirical distance of a
+vendor from the rest: a small $\Delta$ marks an \textbf{interpolation}
+vendor whose reconstructions a cross-vendor model is expected to
+reproduce, while a large $\Delta$ marks an \textbf{extrapolation} vendor
+whose records should anchor out-of-distribution claims and be scoped
+cautiously. Each vendor's regime is labelled in the table from its
+$\Delta$ against a deposit-fixed threshold, so a reuser can pick
+interpolative vendors for in-distribution benchmarks and extrapolative
+vendors for robustness stress-tests without re-deriving anything. The
+$\Delta$ values themselves are populated from the Phase-3 runs
+(\autoref{tab:reconstruction_quality}'s generation), so this is the
+framing under which those numbers are read, not a separate experiment.
 
-\todoTable{tab:cross_vendor}{Cross-vendor PSNR difference ($\Delta$, dB)
-under leave-one-vendor-out generation; reported so reusers know which
-vendor records are interpolation vs extrapolation}
+\begin{table}[h]
+    \centering
+    \small
+    \begin{tabular}{lcccc}
+        \toprule
+        \textbf{Held-out vendor} & \textbf{In-dist.\ PSNR} & \textbf{Held-out PSNR} & \textbf{$\Delta$ (dB)} & \textbf{Regime} \\
+        \midrule
+        \todo{vendor 1} & \todo{} & \todo{} & \todo{} & \todo{interp/extrap} \\
+        \todo{vendor 2} & \todo{} & \todo{} & \todo{} & \todo{interp/extrap} \\
+        \todo{vendor 3} & \todo{} & \todo{} & \todo{} & \todo{interp/extrap} \\
+        \bottomrule
+    \end{tabular}
+    \caption{Cross-vendor fidelity under leave-one-vendor-out generation:
+    PSNR of each vendor's scans reconstructed by the all-vendor ensemble
+    (in-distribution) versus an ensemble trained without that vendor
+    (held-out), and the drop $\Delta$. The per-vendor \textbf{Regime}
+    label (\emph{interpolation} if $\Delta$ is below the deposit-fixed
+    threshold, else \emph{extrapolation}) tells reusers which released
+    vendor records are safe for in-distribution reuse versus
+    out-of-distribution stress-tests. Populated at deposit
+    (WS-3 Phase~3, D9+270).}
+    \label{tab:cross_vendor}
+\end{table}
 
 \paragraph{Uncertainty--error agreement (central reuse validation).} The
 corpus's distinctive reuse value is the paired (uncertainty, error)
