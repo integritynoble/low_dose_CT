@@ -139,9 +139,14 @@ jobs:
         run: pytest -q
 
       - name: pwm-recon smoke (synthetic Phase-3 end-to-end)
-        # Trains a tiny ensemble, emits a corpus, and asserts it passes the credential
-        # audit + manifest checksum + the error_abs construction-check (verify_error_maps).
+        # Trains a tiny ensemble, emits a corpus (reference + FBP baseline), and asserts it
+        # passes the credential audit + manifest checksum + the error_abs construction-check.
         run: |
           python -m pwm_ldct_recon smoke "${RUNNER_TEMP}/ws3_method_corpus" --size 24 --steps 3
           cd "${RUNNER_TEMP}/ws3_method_corpus"
           sha256sum -c MANIFEST.sha256
+
+      - name: RunBundle self-test (entrypoint executes + results.json schema-valid)
+        # The PWM RunBundle entrypoint reproduces the corpus end-to-end and writes a
+        # schema-validated results.json; this is the non-Docker exercise of `docker run`.
+        run: python WS-3_reference_method/runbundle/run.py --self-test --results "${RUNNER_TEMP}/rb_results.json"

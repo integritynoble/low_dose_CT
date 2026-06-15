@@ -47,6 +47,44 @@ def test_emit_corpus_end_to_end(tmp_path):
     assert not report["schema_errors"], report
 
 
+def _baseline_scores_fn(method, vendor, anatomy, r):
+    from emit_credentials import AucScores
+
+    rng = np.random.default_rng(hash((method, vendor, round(r, 2))) % (2**32))
+    n = 60
+    return AucScores(a_pos=rng.normal(0.60, 0.18, n), a_neg=rng.normal(0.40, 0.18, n),
+                     b_pos=rng.normal(0.65, 0.18, n), b_neg=rng.normal(0.35, 0.18, n))
+
+
+def test_emit_corpus_with_baselines(tmp_path):
+    cfg, models, ds = _tiny_models()
+    root = tmp_path / "corpus"
+    fbp = ec.FBPBaseline(models[0].physics)
+    report = ec.run(root, _scans(ds), models, DeterministicStubDetector(), _scores_fn,
+                    cfg=cfg, baselines=[fbp], baseline_scores_fn=_baseline_scores_fn)
+    assert report["credentials_ok"] and report["manifest_ok"] and report["error_maps_ok"], report
+    assert report["n_baseline_methods"] == 1
+    # baseline records exist with the baseline layout: recon.nii.gz, no uncertainty/scan_meta.
+    bdir = root / "baselines" / "fbp" / "Siemens" / "scan_siemens_chest" / "r025"
+    assert (bdir / "recon.nii.gz").exists()
+    assert (bdir / "error_abs.nii.gz").exists()
+    assert (bdir / "task_nodule_score.nii.gz").exists()
+    assert not (bdir / "uncertainty_sigma.nii.gz").exists()   # single-model baseline (D4)
+    assert not (bdir / "recon_mean.nii.gz").exists()
+    # baseline credential emitted alongside the reference credential at the same stratum.
+    assert (root / "credentials" / "lung_nodule_5mm" / "r025" / "fbp__Siemens.json").exists()
+    assert (root / "credentials" / "lung_nodule_5mm" / "r025" / "pwm_ref_v1__Siemens.json").exists()
+
+
+def test_emit_corpus_baselines_require_scores_fn(tmp_path):
+    import pytest
+
+    cfg, models, ds = _tiny_models()
+    with pytest.raises(ValueError):
+        ec.run(tmp_path / "c", _scans(ds), models, DeterministicStubDetector(), _scores_fn,
+               cfg=cfg, baselines=[ec.FBPBaseline(models[0].physics)])
+
+
 def test_emit_corpus_writes_all_record_maps(tmp_path):
     cfg, models, ds = _tiny_models()
     root = tmp_path / "corpus"

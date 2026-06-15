@@ -21,7 +21,7 @@ import json
 import sys
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Callable, Dict, Iterable, List, Optional
+from typing import Callable, Dict, Iterable, List, Optional, Protocol
 
 import numpy as np
 import torch
@@ -32,6 +32,7 @@ from .detector import FrozenDetector
 from .ensemble import ensemble_infer
 from .models import UnrolledRecon
 from .niftiio import write_nifti
+from .physics import RadonTransform
 
 _WS3_ROOT = Path(__file__).resolve().parents[3]
 
@@ -92,15 +93,103 @@ def reconstruct_volume(models: List[UnrolledRecon], low_hu: np.ndarray, device: 
     return mean.astype("f4"), sigma.astype("f4")
 
 
+def _to_recon_hu(recon_norm: torch.Tensor) -> np.ndarray:
+    """[Z,1,H,W] normalised tensor -> [Z,H,W] HU array, clamped to the HU window (V4 precision)."""
+    arr = denormalize(recon_norm.squeeze(1).cpu().numpy())
+    return np.clip(arr, -1024.0, 3072.0).astype("f4")
+
+
+# --------------------------------------------------------------------------- #
+# Baseline reconstructors (single-model; no uncertainty -- manuscript D4)
+# --------------------------------------------------------------------------- #
+class BaselineReconstructor(Protocol):
+    """A single-model comparison baseline (manuscript sec:baselines): low -> recon, no UQ."""
+
+    name: str
+
+    def reconstruct(self, low_hu: np.ndarray, device: str = "cpu") -> np.ndarray:
+        """[Z,H,W] HU low-dose -> [Z,H,W] HU reconstruction."""
+        ...
+
+
+class FBPBaseline:
+    """Filtered-backprojection baseline (manuscript sec:baselines, method 'fbp')."""
+
+    name = "fbp"
+
+    def __init__(self, physics: RadonTransform):
+        self.physics = physics
+
+    @torch.no_grad()
+    def reconstruct(self, low_hu: np.ndarray, device: str = "cpu") -> np.ndarray:
+        low = torch.from_numpy(normalize(low_hu)).unsqueeze(1).to(device)
+        return _to_recon_hu(self.physics.fbp(self.physics.forward(low)))
+
+
+class ModelBaseline:
+    """A single trained model as a baseline (e.g. RED-CNN). ``mode`` selects the domain:
+
+    ``image``       the model maps the normalised low-dose *image* -> recon (RED-CNN-style);
+    ``measurement`` the model maps the measurement ``y = R(low)`` -> recon (unrolled-style).
+    """
+
+    def __init__(self, name: str, model: torch.nn.Module, mode: str = "image",
+                 physics: Optional[RadonTransform] = None):
+        self.name = name
+        self.model = model
+        self.mode = mode
+        self.physics = physics
+
+    @torch.no_grad()
+    def reconstruct(self, low_hu: np.ndarray, device: str = "cpu") -> np.ndarray:
+        self.model.eval()
+        low = torch.from_numpy(normalize(low_hu)).unsqueeze(1).to(device)
+        if self.mode == "measurement":
+            phys = self.physics or getattr(self.model, "physics", None)
+            if phys is None:
+                raise ValueError("measurement-mode baseline needs a physics operator.")
+            return _to_recon_hu(self.model(phys.forward(low)))
+        return _to_recon_hu(self.model(low))
+
+
+# baseline_scores_fn(method, vendor, anatomy, signal_ratio) -> AucScores.
+BaselineScoresFn = Callable[[str, str, str, float], object]
+
+
+def _emit_baseline_records(root: Path, scan: "ScanInput", ref_hu: np.ndarray,
+                           baseline: BaselineReconstructor, detector: FrozenDetector,
+                           device: str) -> None:
+    """Write one baseline's records for a scan: recon + error + task map (no scan_meta, no sigma)."""
+    for r, low_hu in sorted(scan.low_dose.items()):
+        dd = f"r{int(round(r * 100)):03d}"
+        bdir = root / "baselines" / baseline.name / scan.vendor / scan.scan_id / dd
+        recon = baseline.reconstruct(np.asarray(low_hu, dtype="f4"), device)
+        write_nifti(bdir / "recon.nii.gz", recon)               # 'recon', not 'recon_mean'
+        write_nifti(bdir / "error_abs.nii.gz", np.abs(recon - ref_hu).astype("f4"))
+        write_nifti(bdir / "task_nodule_score.nii.gz",
+                    np.asarray(detector.score_map(recon), dtype="f4"))
+
+
 def run(out_dir: Path | str, scans: Iterable[ScanInput], models: List[UnrolledRecon],
         detector: FrozenDetector, scores_fn: ScoresFn, *,
         cfg: EnsembleConfig = EnsembleConfig(), task: TaskSpec = TaskSpec(),
         seed_metadata: Optional[Path] = None, schema: Optional[Path] = None,
         method: str = "pwm_ref_v1", reference_method: str = "full_dose_fbp",
+        baselines: Optional[List[BaselineReconstructor]] = None,
+        baseline_scores_fn: Optional[BaselineScoresFn] = None,
         device: str = "cpu", corpus_emit_dir: Optional[Path] = None,
         deposit_dir: Optional[Path] = None) -> dict:
-    """Generate the corpus from ensemble inference and run the full deposit pipeline."""
+    """Generate the corpus from ensemble inference and run the full deposit pipeline.
+
+    Optionally also emits single-model ``baselines`` (manuscript sec:baselines) under
+    ``baselines/<method>/...``; if any are given, ``baseline_scores_fn`` is required so each
+    baseline gets matched credentials.
+    """
     emit, pkg, dp = _load_deposit_tools(corpus_emit_dir, deposit_dir)
+    baselines = baselines or []
+    if baselines and baseline_scores_fn is None:
+        raise ValueError("baseline_scores_fn is required when baselines are provided.")
+    scans = list(scans)  # materialised: reused by the reference, baseline, and credential passes
     root = Path(out_dir)
     root.mkdir(parents=True, exist_ok=True)
     seed_metadata = seed_metadata or (dp / "dataset_metadata.example.json")
@@ -134,10 +223,14 @@ def run(out_dir: Path | str, scans: Iterable[ScanInput], models: List[UnrolledRe
                 "detector": {"name": detector.name, "version": detector.version},
             }, indent=2) + "\n", encoding="utf-8")
 
-    # credentials: one per (task, dose, vendor) for the reference method. Vendors are read
-    # back from the tree just written, so `scans` may be a one-shot iterator.
+        # baseline records for this scan (single-model; no sigma, no scan_meta -- matches fixture).
+        for baseline in baselines:
+            _emit_baseline_records(root, scan, ref_hu, baseline, detector, device)
+
+    # credentials: one per (task, dose, vendor) for the reference method and each baseline.
     doses = sorted(cfg.base.doses)
-    for vendor in _vendors_from(root):
+    vendors = _vendors_from(root)
+    for vendor in vendors:
         for r in doses:
             spec = emit.StratumSpec(
                 task_name=task.task_name, metric=task.metric, signal_ratio=r,
@@ -146,6 +239,16 @@ def run(out_dir: Path | str, scans: Iterable[ScanInput], models: List[UnrolledRe
                 vendor=vendor, anatomy="chest",
             )
             emit.emit_stratum_credential(root, spec, scores_fn(vendor, "chest", r))
+            for baseline in baselines:
+                bspec = emit.StratumSpec(
+                    task_name=task.task_name, metric=task.metric, signal_ratio=r,
+                    subpopulation=task.subpopulation, epsilon=task.epsilon,
+                    method=baseline.name, reference_method=reference_method,
+                    vendor=vendor, anatomy="chest",
+                )
+                assert baseline_scores_fn is not None  # guaranteed above
+                emit.emit_stratum_credential(
+                    root, bspec, baseline_scores_fn(baseline.name, vendor, "chest", r))
 
     emit.rebuild_index(root)
     cred_report = emit.verify_corpus_credentials(root)
@@ -159,6 +262,7 @@ def run(out_dir: Path | str, scans: Iterable[ScanInput], models: List[UnrolledRe
         "manifest_ok": manifest_report["ok"],
         "error_maps_ok": errmap_report["ok"],
         "n_error_maps_checked": errmap_report["n_checked"],
+        "n_baseline_methods": len(baselines),
         "counts": pkg_report["counts"],
         "schema_errors": pkg_report["schema_errors"],
     }

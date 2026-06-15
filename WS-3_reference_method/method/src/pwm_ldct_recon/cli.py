@@ -40,44 +40,11 @@ def cmd_info(args: argparse.Namespace) -> int:
 
 
 def cmd_smoke(args: argparse.Namespace) -> int:
-    import numpy as np
+    from .demo import demo_ok, run_demo
 
-    from .config import EnsembleConfig, ReconConfig
-    from .data import SyntheticPairs, denormalize
-    from .detector import DeterministicStubDetector
-    from .ensemble import train_ensemble
-    from . import emit_corpus as ec
-
-    size = args.size
-    base = ReconConfig(n_views=24, n_dets=size, slice_size=size, iterations=2,
-                       unet_channels=(8, 16), batch_size=2, doses=(0.10, 0.25, 0.50),
-                       dose_mix_weights=(0.4, 0.4, 0.2))
-    cfg = EnsembleConfig(members=2, seeds=(42, 43), base=base)
-    ds = SyntheticPairs(n=6, size=size, seed=0)
-    models = train_ensemble(cfg, ds, max_steps=args.steps, estimate_step=False)
-
-    # two synthetic scans (HU) from the phantom set, one per "vendor".
-    rng = np.random.default_rng(0)
-    scans = []
-    for vi, vendor in enumerate(("Siemens", "GE")):
-        ref = denormalize(ds.full[vi]).astype("f4")[None]                # [1,H,W]
-        low = {r: denormalize(np.clip(ds.full[vi] + rng.normal(0, 0.05 / r, ds.full[vi].shape), 0, 1)
-                              ).astype("f4")[None] for r in base.doses}
-        scans.append(ec.ScanInput(scan_id=f"scan_{vendor.lower()}_chest", vendor=vendor,
-                                  patient_id=f"p{vi+1:03d}", full_dose=ref, low_dose=low))
-
-    def scores_fn(vendor, anatomy, r):
-        from emit_credentials import AucScores  # type: ignore  # sibling tool (path-loaded)
-
-        n = 60
-        return AucScores(a_pos=rng.normal(0.65, 0.18, n), a_neg=rng.normal(0.35, 0.18, n),
-                         b_pos=rng.normal(0.65, 0.18, n), b_neg=rng.normal(0.35, 0.18, n))
-
-    report = ec.run(args.out, scans, models, DeterministicStubDetector(), scores_fn, cfg=cfg)
+    report = run_demo(args.out, size=args.size, steps=args.steps)
     print(json.dumps(report, indent=2))
-    ok = (report["credentials_ok"] and report["manifest_ok"]
-          and report["error_maps_ok"] and not report["schema_errors"])
-    return 0 if ok else 1
+    return 0 if demo_ok(report) else 1
 
 
 def cmd_train_ensemble(args: argparse.Namespace) -> int:
