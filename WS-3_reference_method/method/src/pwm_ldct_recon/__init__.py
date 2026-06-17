@@ -8,6 +8,7 @@ Phase-3 derived-data corpus the *Scientific Data* Data Descriptor describes.
 Pipeline (what each module owns)::
 
     physics.py    parallel-beam Radon forward/adjoint (differentiable) -- the data term
+    measurement.py  measured-vs-simulated measurement (fan->parallel rebinning + provenance)
     models/       U-Net denoiser + the unrolled reconstruction loop
     data.py       (low, full, sinogram) pairs over the WS-1 pwm_ldct_loader
     train.py      train one seeded model -> checkpoint
@@ -23,12 +24,15 @@ from __future__ import annotations
 
 from .config import EnsembleConfig, ReconConfig
 from .physics import RadonTransform
+from .measurement import measurement_for, rebin_fan_to_parallel
 from .models import UNetDenoiser, UnrolledRecon
 
 __all__ = [
     "ReconConfig",
     "EnsembleConfig",
     "RadonTransform",
+    "measurement_for",
+    "rebin_fan_to_parallel",
     "UNetDenoiser",
     "UnrolledRecon",
 ]

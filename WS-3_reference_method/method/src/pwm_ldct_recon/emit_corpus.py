@@ -30,6 +30,7 @@ from .config import EnsembleConfig
 from .data import denormalize, normalize
 from .detector import FrozenDetector
 from .ensemble import ensemble_infer
+from .measurement import REAL_PAIRED, SIMULATED, measurement_for
 from .models import UnrolledRecon
 from .niftiio import write_nifti
 from .physics import RadonTransform
@@ -63,6 +64,11 @@ class ScanInput:
     anatomy: str = "chest"          # v1 is lung-nodule-only (manuscript M3)
     split: str = "test"
     low_dose_origin: Dict[float, str] = field(default_factory=dict)
+    # Optional measured low-dose projections per dose ([V,C,R]) + their acquisition geometry.
+    # When present, reconstruction uses the measured sinogram (origin real_paired); see
+    # measurement.measurement_for. Absent -> simulated measurement.
+    low_dose_proj: Optional[Dict[float, np.ndarray]] = None
+    geometry: Optional[dict] = None
 
 
 @dataclass
@@ -80,17 +86,37 @@ ScoresFn = Callable[[str, str, float], object]
 
 
 @torch.no_grad()
-def reconstruct_volume(models: List[UnrolledRecon], low_hu: np.ndarray, device: str = "cpu"):
-    """Ensemble-reconstruct a ``[Z,H,W]`` HU volume; return (recon_mean_hu, sigma_hu) in HU."""
-    low = torch.from_numpy(normalize(low_hu)).unsqueeze(1).to(device)  # [Z,1,H,W]
-    y = models[0].physics.forward(low)
+def reconstruct_volume(models: List[UnrolledRecon], low_hu: np.ndarray, device: str = "cpu",
+                       projections: Optional[np.ndarray] = None,
+                       geometry: Optional[dict] = None):
+    """Ensemble-reconstruct a ``[Z,H,W]`` HU volume; return (recon_mean_hu, sigma_hu, origin).
+
+    With ``projections`` (+ ``geometry``) the data term uses the **measured** low-dose
+    sinograms (fan->parallel rebinned per slice; origin ``real_paired``); otherwise the
+    measurement is simulated as ``op.forward(low_dose_image)`` (origin ``simulated``). A
+    per-slice fallback to simulation (e.g. helical) makes the whole volume ``simulated``.
+    """
+    op = models[0].physics
+    if projections is None:
+        low = torch.from_numpy(normalize(low_hu)).unsqueeze(1).to(device)  # [Z,1,H,W]
+        y = op.forward(low)
+        origin = SIMULATED
+    else:
+        ys, origins = [], []
+        for z in range(low_hu.shape[0]):
+            yz, oz = measurement_for(op, low_hu, projections=projections, geometry=geometry,
+                                     slice_index=z, device=device)
+            ys.append(yz)
+            origins.append(oz)
+        y = torch.cat(ys, dim=0)                                # [Z,1,V,D]
+        origin = REAL_PAIRED if all(o == REAL_PAIRED for o in origins) else SIMULATED
     res = ensemble_infer(models, y)
     mean = denormalize(res.mean.squeeze(1).cpu().numpy())
     # Clamp to the HU window: reconstructions are HU images, and bounding the range keeps
     # |recon - ref| within float32 precision so the construction-check (V4) holds at 1e-3 HU.
     mean = np.clip(mean, -1024.0, 3072.0)
     sigma = res.sigma.squeeze(1).cpu().numpy() * (3072.0 - (-1024.0))   # std -> HU units
-    return mean.astype("f4"), sigma.astype("f4")
+    return mean.astype("f4"), sigma.astype("f4"), origin
 
 
 def _to_recon_hu(recon_norm: torch.Tensor) -> np.ndarray:
@@ -209,7 +235,10 @@ def run(out_dir: Path | str, scans: Iterable[ScanInput], models: List[UnrolledRe
         for r, low_hu in sorted(scan.low_dose.items()):
             dd = f"r{int(round(r * 100)):03d}"
             sdir = rdir / dd
-            recon, sigma = reconstruct_volume(models, np.asarray(low_hu, dtype="f4"), device)
+            proj = scan.low_dose_proj.get(r) if scan.low_dose_proj else None
+            recon, sigma, origin = reconstruct_volume(
+                models, np.asarray(low_hu, dtype="f4"), device,
+                projections=proj, geometry=scan.geometry)
             error = np.abs(recon - ref_hu).astype("f4")
             task_map = np.asarray(detector.score_map(recon), dtype="f4")
             write_nifti(sdir / "recon_mean.nii.gz", recon)
@@ -219,7 +248,8 @@ def run(out_dir: Path | str, scans: Iterable[ScanInput], models: List[UnrolledRe
             (sdir / "scan_meta.json").write_text(json.dumps({
                 "vendor": scan.vendor, "r": r, "anatomy": scan.anatomy, "split": scan.split,
                 "source_scan_id": scan.scan_id, "patient_id": scan.patient_id,
-                "low_dose_origin": scan.low_dose_origin.get(r, "simulated"),
+                # provenance from the measurement actually used (authoritative).
+                "low_dose_origin": origin,
                 "detector": {"name": detector.name, "version": detector.version},
             }, indent=2) + "\n", encoding="utf-8")
 

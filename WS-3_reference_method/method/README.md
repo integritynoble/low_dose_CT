@@ -14,6 +14,7 @@ downstream tools it drives.
 | Module | Role |
 |---|---|
 | `physics.py` | Parallel-beam Radon forward / backprojection / FBP (differentiable). Self-contained drop-in for `pwm_core ct_radon` (not vendored here). The data-term gradient is taken by **autograd through `forward`**, so the adjoint is always exactly consistent. |
+| `measurement.py` | Forms the data term from **measured** low-dose projections (`get_series_projections`, fan-beam `[V,C,R]`) via fan→parallel rebinning, or **simulated** (`op.forward(low)`); records `real_paired`/`simulated` provenance. Axial supported; helical rebinning is the remaining Phase-3 step (raised + falls back). |
 | `models/unet.py` | Compact residual U-Net denoiser `f_theta` (S1: 4 stages, `(32,64,128,256)`, GroupNorm/GELU). |
 | `models/unrolled.py` | K-step unrolled loop: `x ← f_theta(x − τ·Rᵀ(Rx − y))`, learned τ, weights shared (S1). |
 | `data.py` | `PairedSlices` over the WS-1 `pwm_ldct_loader` (same contract as the WS-1 baselines) + `SyntheticPairs` for tests. |
@@ -52,8 +53,12 @@ pwm-recon train-ensemble --data-root <WS-1 tree> --out ensemble.pt    # 3.1 trai
 
 - **Parameters per member ≈ 3.1M** as realized (S1 says "≈4M"; that cell is finalised at freeze —
   widen the bottleneck if exact parity is wanted).
-- The training **measurement model** is `y = R(low_dose)` (per-slice projections are not in the
-  loader; series-level projections via `LowDoseCTDataset.get_series_projections` are the upgrade
-  path). This is a scaffold stand-in, clearly marked in `data.py`.
+- **Measurement model.** Reconstruction/emit can use the **measured** low-dose projections
+  (`measurement.py`: fan→parallel rebinning of `get_series_projections`, with `real_paired`
+  provenance) — pass them via `emit_corpus.ScanInput.low_dose_proj`. Without them it falls back
+  to the simulated `y = R(low)`. The directly-supported real geometry is **axial**; **helical**
+  acquisitions (Mayo) need single-slice rebinning first — that is the one remaining physics step
+  (raised as `HelicalRebinningRequired`, with a clean fallback). Training still uses the
+  simulated measurement (`data.PairedSlices`).
 - `torch` is a real dependency (~190 MB); the lightweight WS-3 deposit CI does **not** install it,
   so these tests run in a separate torch-enabled environment, exactly as the WS-1 baselines do.

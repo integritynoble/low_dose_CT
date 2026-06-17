@@ -5,11 +5,12 @@ harness does (same HU window, same normalisation), so the two repos train on an 
 data contract. ``SyntheticPairs`` is an in-memory stand-in with no HDF5 dependency, used by
 the CPU test suite and as a smoke-test fixture for the pipeline.
 
-Measurement model. The unrolled net reconstructs from a *sinogram*; the per-slice loader
-sample exposes images, not projections (projections are series-level). The training loop
-therefore forms the measurement as ``y = RadonTransform.forward(low_dose)`` -- the low-dose
-image's forward projection -- which is the scaffold's stand-in until real low-dose sinograms
-are wired via ``LowDoseCTDataset.get_series_projections``.
+Measurement model. The unrolled net reconstructs from a *sinogram*. ``PairedSlices`` yields
+images; the training loop forms a **simulated** measurement ``y = RadonTransform.forward(low)``
+from them. The **measured** low-dose projections (``LowDoseCTDataset.get_series_projections``,
+fan-beam ``[V, C, R]``) are wired in :mod:`pwm_ldct_recon.measurement` (fan->parallel rebinning
++ provenance) and consumed by the reconstruction/emit path; pass them through
+``emit_corpus.ScanInput.low_dose_proj`` to reconstruct from real measurements.
 """
 from __future__ import annotations
 

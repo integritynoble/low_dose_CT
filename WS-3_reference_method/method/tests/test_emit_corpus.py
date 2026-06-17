@@ -85,6 +85,28 @@ def test_emit_corpus_baselines_require_scores_fn(tmp_path):
                cfg=cfg, baselines=[ec.FBPBaseline(models[0].physics)])
 
 
+def test_emit_corpus_uses_measured_projections(tmp_path):
+    import json
+
+    cfg, models, ds = _tiny_models(size=16)
+    op = models[0].physics
+    geometry = {"source_to_isocenter_mm": 500.0, "views_per_rotation": op.n_views,
+                "fan_angle_total_rad": 0.8}
+    rng = np.random.default_rng(3)
+    scans = _scans(ds, 16)
+    for s in scans:  # attach synthetic AXIAL measured projections [V, C, R] for every dose
+        s.geometry = geometry
+        s.low_dose_proj = {r: rng.normal(size=(op.n_views, 40, s.full_dose.shape[0])).astype("f4")
+                           for r in s.low_dose}
+    root = tmp_path / "corpus"
+    report = ec.run(root, scans, models, DeterministicStubDetector(), _scores_fn, cfg=cfg)
+    assert report["error_maps_ok"] and report["manifest_ok"], report
+    # provenance recorded as real_paired (measured projections were used, not simulated).
+    meta = json.loads((root / "reconstructions" / "Siemens" / "scan_siemens_chest" / "r025"
+                       / "scan_meta.json").read_text())
+    assert meta["low_dose_origin"] == "real_paired"
+
+
 def test_emit_corpus_writes_all_record_maps(tmp_path):
     cfg, models, ds = _tiny_models()
     root = tmp_path / "corpus"
