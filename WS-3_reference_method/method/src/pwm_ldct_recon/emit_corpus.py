@@ -103,9 +103,10 @@ def reconstruct_volume(models: List[UnrolledRecon], low_hu: np.ndarray, device: 
         origin = SIMULATED
     else:
         ys, origins = [], []
-        for z in range(low_hu.shape[0]):
+        n_slices = low_hu.shape[0]
+        for z in range(n_slices):
             yz, oz = measurement_for(op, low_hu, projections=projections, geometry=geometry,
-                                     slice_index=z, device=device)
+                                     slice_index=z, n_slices=n_slices, device=device)
             ys.append(yz)
             origins.append(oz)
         y = torch.cat(ys, dim=0)                                # [Z,1,V,D]

@@ -13,12 +13,12 @@ field in ``scan_meta.json``; manuscript M5):
   **fan-to-parallel rebinning** (Kak & Slaney), so the existing parallel-beam ``RadonTransform``
   stays the matching forward model and the data term's adjoint remains exact.
 
-Scope. The directly-supported real path is **axial** (single-rotation) fan-beam, where detector
-row ``R`` selects the slice. **Helical** acquisitions (Mayo LDCT-PD, pitch > 0) require helical
-rebinning (e.g. single-slice rebinning) before the per-slice fan extraction; that is the
-remaining Phase-3 physics step, and is raised as :class:`HelicalRebinningRequired` so callers
-fall back to ``simulated`` and record the provenance honestly rather than reconstructing from a
-mismatched geometry.
+Scope. Two real geometries are supported: **axial** (single-rotation) fan-beam, where detector
+row ``R`` selects the slice (:func:`extract_slice_fan_sinogram`), and **helical** (Mayo LDCT-PD,
+pitch > 0), handled by 360-degree-LI single-slice rebinning (:func:`helical_rebin_slice`) into an
+axial fan sinogram before the shared fan->parallel step. Only geometry that is genuinely
+insufficient (missing SID / fan angles / table feed) falls back to ``simulated``, so provenance
+is recorded honestly rather than reconstructing from a mismatched forward model.
 """
 from __future__ import annotations
 
@@ -130,6 +130,73 @@ def _fan_angles_from_geometry(geometry: dict, n_channels: int) -> np.ndarray:
         "fan_angle_total_rad in geometry.")
 
 
+def _table_feed_per_rotation(geometry: dict) -> float:
+    """Table translation per rotation (mm). Explicit field, else pitch x total collimation."""
+    feed = geometry.get("table_feed_per_rotation_mm")
+    if feed:
+        return float(feed)
+    pitch = geometry.get("pitch")
+    rows = geometry.get("n_det_rows")
+    row_sp = geometry.get("detector_row_spacing_mm")
+    if pitch and rows and row_sp:
+        return float(pitch) * int(rows) * float(row_sp)
+    raise GeometryUnavailable(
+        "cannot determine table feed: need table_feed_per_rotation_mm, or "
+        "pitch + n_det_rows + detector_row_spacing_mm.")
+
+
+def helical_rebin_slice(projections: np.ndarray, geometry: dict, slice_index: int, n_slices: int
+                        ) -> Tuple[np.ndarray, np.ndarray, np.ndarray, float]:
+    """Single-slice rebinning of helical ``[V, C, R]`` into one axial fan sinogram ``[Vpr, C]``.
+
+    In a helical acquisition the source advances in ``z`` as it rotates, so each
+    (view ``v``, detector row ``r``) samples azimuth ``beta_v = 2*pi*(v mod Vpr)/Vpr`` at axial
+    position ``z(v, r) = feed_per_view*v + row_z(r)``. To synthesize the axial sinogram at a
+    target plane ``z0``, for each azimuth bin we gather every (rotation, row) sample at that
+    azimuth and **linearly interpolate** in ``z`` to ``z0`` (the classic 360-degree-LI SSR,
+    generalised to multi-row by including each row's ``z`` offset). The result is an axial fan
+    sinogram handed to :func:`rebin_fan_to_parallel` exactly like the axial case.
+
+    ``z0`` is placed by ``slice_index`` over the helically-covered ``z`` extent; ``np.interp``'s
+    edge-clamping bounds slices near the ends (where helical coverage is one-sided).
+    """
+    proj = np.asarray(projections, dtype=np.float64)
+    if proj.ndim != 3:
+        raise ValueError(f"projections must be [V, C, R]; got {proj.shape}")
+    v_n, c_n, r_n = proj.shape
+    vpr = geometry.get("views_per_rotation")
+    if not vpr:
+        raise GeometryUnavailable("helical rebinning needs views_per_rotation.")
+    vpr = int(vpr)
+    sid = geometry.get("source_to_isocenter_mm")
+    if not sid:
+        raise GeometryUnavailable("geometry lacks source_to_isocenter_mm (SID).")
+    feed_view = _table_feed_per_rotation(geometry) / vpr
+    row_sp = geometry.get("detector_row_spacing_mm")
+    row_z = ((np.arange(r_n) - (r_n - 1) / 2.0) * float(row_sp)) if row_sp else np.zeros(r_n)
+    s_v = feed_view * np.arange(v_n)                              # source z per view
+
+    all_z = s_v[:, None] + row_z[None, :]                        # [V, R]
+    z_min, z_max = float(all_z.min()), float(all_z.max())
+    z0 = z_min + (slice_index + 0.5) / max(1, n_slices) * (z_max - z_min)
+
+    a_v = np.arange(v_n) % vpr
+    fan = np.empty((vpr, c_n), dtype=np.float64)
+    for a in range(vpr):
+        vs = np.nonzero(a_v == a)[0]                              # views at this azimuth
+        zs = (s_v[vs][:, None] + row_z[None, :]).reshape(-1)      # [len(vs)*R]
+        vals = proj[vs].transpose(0, 2, 1).reshape(-1, c_n)      # [len(vs)*R, C]
+        order = np.argsort(zs)
+        zs_s, vals_s = zs[order], vals[order]
+        j = int(np.clip(np.searchsorted(zs_s, z0), 1, len(zs_s) - 1))
+        z_lo, z_hi = zs_s[j - 1], zs_s[j]
+        t = 0.0 if z_hi <= z_lo else float(np.clip((z0 - z_lo) / (z_hi - z_lo), 0.0, 1.0))
+        fan[a] = vals_s[j - 1] * (1.0 - t) + vals_s[j] * t
+    view_angles = np.linspace(0.0, 2.0 * np.pi, vpr, endpoint=False)
+    fan_angles = _fan_angles_from_geometry(geometry, c_n)
+    return fan, view_angles, fan_angles, float(sid)
+
+
 def extract_slice_fan_sinogram(projections: np.ndarray, geometry: dict, slice_index: int
                                ) -> Tuple[np.ndarray, np.ndarray, np.ndarray, float]:
     """Extract one axial slice's fan sinogram from ``[V, C, R]``.
@@ -172,16 +239,23 @@ def simulate(op, low_image: np.ndarray, device: str = "cpu") -> torch.Tensor:
 
 def measurement_for(op, low_image: np.ndarray, *, projections: Optional[np.ndarray] = None,
                     geometry: Optional[dict] = None, slice_index: int = 0,
+                    n_slices: Optional[int] = None,
                     device: str = "cpu") -> Tuple[torch.Tensor, str]:
     """Return ``(y, origin)`` for one slice: measured projections if usable, else simulated.
 
     ``y`` is shaped ``[1,1,n_views,n_dets]`` to match ``op``. ``origin`` is ``real_paired`` or
-    ``simulated`` (records to ``low_dose_origin``). Geometry/helical problems fall back to
-    ``simulated`` rather than reconstruct from a mismatched forward model.
+    ``simulated`` (records to ``low_dose_origin``). Helical scans are single-slice rebinned
+    (needs ``n_slices`` to place the target plane); only geometry that is genuinely insufficient
+    falls back to ``simulated`` rather than reconstruct from a mismatched forward model.
     """
     if projections is not None and geometry:
         try:
-            fan, betas, gammas, sid = extract_slice_fan_sinogram(projections, geometry, slice_index)
+            if _is_helical(geometry):
+                fan, betas, gammas, sid = helical_rebin_slice(
+                    projections, geometry, slice_index, n_slices or 1)
+            else:
+                fan, betas, gammas, sid = extract_slice_fan_sinogram(
+                    projections, geometry, slice_index)
             par = rebin_fan_to_parallel(fan, fan_angles=gammas, view_angles=betas, sid=sid,
                                         n_dets=op.n_dets)
             y = torch.from_numpy(par).to(device)[None, None]      # [1,1,V,D]
@@ -190,7 +264,7 @@ def measurement_for(op, low_image: np.ndarray, *, projections: Optional[np.ndarr
                     y, size=(op.n_views, op.n_dets), mode="bilinear", align_corners=False)
             return y, REAL_PAIRED
         except (HelicalRebinningRequired, GeometryUnavailable):
-            pass  # fall back to simulated below
+            pass  # geometry insufficient -> fall back to simulated below
     arr = np.asarray(low_image, dtype="f4")
     if arr.ndim == 2:
         arr = arr[None]
