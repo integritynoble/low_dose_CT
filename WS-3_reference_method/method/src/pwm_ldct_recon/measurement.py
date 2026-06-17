@@ -28,7 +28,11 @@ the consumed keys are ``scan_type``, ``pitch`` (DICOM ``SpiralPitchFactor``), ``
 the exact source/detector-distance and channel-angle semantics as needing the DICOM-CT-PD data
 dictionary (``geometry.calibration_status``), so the SID and fan-angle handling here is
 best-effort; the SSR step itself needs only ``pitch`` x ``n_det_rows`` (a unit-free z ratio) plus
-``views_per_rotation`` (a private tag that may be absent -> falls back to ``simulated``).
+``views_per_rotation``. The latter (DICOM-CT-PD private tag ``(7033,1013)``) was **verified
+present in real Mayo LDCT-PD projection data** across both vendors (GE: 984; Siemens: 1152/2304
+views/rotation) and decoded to an int by the WS-1 pipeline, so the helical path fires on real
+data; the ``simulated`` fallback remains only for series genuinely missing the tag (e.g. an image,
+not a projection, series).
 """
 from __future__ import annotations
 
