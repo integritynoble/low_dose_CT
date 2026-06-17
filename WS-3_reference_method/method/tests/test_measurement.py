@@ -9,15 +9,17 @@ from pwm_ldct_recon.measurement import (GeometryUnavailable, HelicalRebinningReq
 from pwm_ldct_recon.physics import RadonTransform
 
 
+# Geometry dicts use the real WS-1 field names (pwm_ldct_prep extract_ct_pd_geometry):
+# scan_type, pitch, n_det_rows, views_per_rotation, source_to_isocenter_mm,
+# data_collection_diameter_mm (fan angles derived from DCD + SID when no channel positions).
 def _axial_geometry():
-    return {"source_to_isocenter_mm": 500.0, "views_per_rotation": 36,
-            "fan_angle_total_rad": 0.8}
+    return {"scan_type": "AXIAL", "source_to_isocenter_mm": 500.0, "views_per_rotation": 36,
+            "data_collection_diameter_mm": 500.0}
 
 
 def _helical_geometry():
-    return {"source_to_isocenter_mm": 500.0, "views_per_rotation": 36,
-            "fan_angle_total_rad": 0.8, "pitch": 1.0, "n_det_rows": 8,
-            "detector_row_spacing_mm": 1.0}
+    return {"scan_type": "HELICAL", "pitch": 1.0, "n_det_rows": 8, "views_per_rotation": 36,
+            "source_to_isocenter_mm": 500.0, "data_collection_diameter_mm": 500.0}
 
 
 def test_rebin_shape_and_constant_preservation():
@@ -49,8 +51,8 @@ def test_extract_helical_raises():
 
 def test_extract_missing_sid_raises():
     proj = np.zeros((36, 40, 8), dtype="f4")
-    with pytest.raises(GeometryUnavailable):
-        extract_slice_fan_sinogram(proj, {"fan_angle_total_rad": 0.8}, slice_index=0)
+    with pytest.raises(GeometryUnavailable):  # axial, but no source_to_isocenter_mm
+        extract_slice_fan_sinogram(proj, {"data_collection_diameter_mm": 500.0}, slice_index=0)
 
 
 def test_measurement_for_simulated_when_no_projections():
@@ -77,8 +79,9 @@ def test_helical_ssr_recovers_target_z_plane():
     # Single-slice rebinning at z0 must then return ~z0 everywhere (it interpolates in z).
     geo = _helical_geometry()
     V, C, R = 72, 40, geo["n_det_rows"]            # 2 rotations of 36 views
-    feed_view = (geo["pitch"] * R * geo["detector_row_spacing_mm"]) / geo["views_per_rotation"]
-    row_z = (np.arange(R) - (R - 1) / 2.0) * geo["detector_row_spacing_mm"]
+    # row-collimation units (the real geometry has no absolute row spacing): feed = pitch*n_rows.
+    feed_view = (geo["pitch"] * R) / geo["views_per_rotation"]
+    row_z = np.arange(R) - (R - 1) / 2.0
     z_of = feed_view * np.arange(V)[:, None, None] + row_z[None, None, :]   # [V,1,R]
     proj = np.broadcast_to(z_of, (V, C, R)).astype("f4")
     n_slices, idx = 8, 4
@@ -103,8 +106,8 @@ def test_measurement_for_helical_insufficient_geometry_falls_back():
     op = RadonTransform(n_views=36, n_dets=64, img_size=16)
     low = np.zeros((8, 16, 16), dtype="f4")
     proj = np.zeros((72, 40, 8), dtype="f4")
-    # pitch>0 (helical) but no table-feed info (no feed field, no n_det_rows/row spacing).
-    geo = {"source_to_isocenter_mm": 500.0, "views_per_rotation": 36,
-           "fan_angle_total_rad": 0.8, "pitch": 1.0}
+    # helical but missing n_det_rows -> cannot derive the table feed -> fall back to simulated.
+    geo = {"scan_type": "HELICAL", "pitch": 1.0, "views_per_rotation": 36,
+           "source_to_isocenter_mm": 500.0, "data_collection_diameter_mm": 500.0}
     _, origin = measurement_for(op, low, projections=proj, geometry=geo, slice_index=0, n_slices=8)
     assert origin == SIMULATED

@@ -90,8 +90,9 @@ def test_emit_corpus_uses_measured_projections(tmp_path):
 
     cfg, models, ds = _tiny_models(size=16)
     op = models[0].physics
-    geometry = {"source_to_isocenter_mm": 500.0, "views_per_rotation": op.n_views,
-                "fan_angle_total_rad": 0.8}
+    # axial geometry with the real WS-1 field names (fan angles from DCD + SID).
+    geometry = {"scan_type": "AXIAL", "source_to_isocenter_mm": 500.0,
+                "views_per_rotation": op.n_views, "data_collection_diameter_mm": 500.0}
     rng = np.random.default_rng(3)
     scans = _scans(ds, 16)
     for s in scans:  # attach synthetic AXIAL measured projections [V, C, R] for every dose

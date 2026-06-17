@@ -15,10 +15,20 @@ field in ``scan_meta.json``; manuscript M5):
 
 Scope. Two real geometries are supported: **axial** (single-rotation) fan-beam, where detector
 row ``R`` selects the slice (:func:`extract_slice_fan_sinogram`), and **helical** (Mayo LDCT-PD,
-pitch > 0), handled by 360-degree-LI single-slice rebinning (:func:`helical_rebin_slice`) into an
-axial fan sinogram before the shared fan->parallel step. Only geometry that is genuinely
-insufficient (missing SID / fan angles / table feed) falls back to ``simulated``, so provenance
-is recorded honestly rather than reconstructing from a mismatched forward model.
+``scan_type == "HELICAL"`` / pitch > 0), handled by 360-degree-LI single-slice rebinning
+(:func:`helical_rebin_slice`) into an axial fan sinogram before the shared fan->parallel step.
+Only geometry that is genuinely insufficient falls back to ``simulated``, so provenance is
+recorded honestly rather than reconstructing from a mismatched forward model.
+
+Geometry fields. Confirmed against the WS-1 prep pipeline
+(``pwm_ldct_prep.adapters.base.extract_ct_pd_geometry``; ``pipelines/tests/test_projections``):
+the consumed keys are ``scan_type``, ``pitch`` (DICOM ``SpiralPitchFactor``), ``n_det_rows``,
+``n_det_channels``, ``views_per_rotation``, ``detector_channel_positions``, ``detector_shape``,
+``source_to_isocenter_mm``, ``source_to_detector_mm``, ``data_collection_diameter_mm``. WS-1 flags
+the exact source/detector-distance and channel-angle semantics as needing the DICOM-CT-PD data
+dictionary (``geometry.calibration_status``), so the SID and fan-angle handling here is
+best-effort; the SSR step itself needs only ``pitch`` x ``n_det_rows`` (a unit-free z ratio) plus
+``views_per_rotation`` (a private tag that may be absent -> falls back to ``simulated``).
 """
 from __future__ import annotations
 
@@ -106,43 +116,58 @@ def _bilinear_on_grid(F: np.ndarray, vx: np.ndarray, vy: np.ndarray,
 # Geometry parsing + per-slice fan extraction
 # --------------------------------------------------------------------------- #
 def _is_helical(geometry: dict) -> bool:
+    if str(geometry.get("scan_type", "")).strip().upper().startswith("HELICAL"):
+        return True
     pitch = geometry.get("pitch")
     return pitch is not None and float(pitch) > 0.0
 
 
 def _fan_angles_from_geometry(geometry: dict, n_channels: int) -> np.ndarray:
-    """Per-channel fan angle (radians). Prefer explicit positions; else derive from SDD + spacing."""
+    """Per-channel fan angle (radians) from the WS-1 geometry dict.
+
+    Uses the fields the WS-1 prep pipeline actually emits (confirmed against
+    ``pwm_ldct_prep.adapters.base.extract_ct_pd_geometry`` / ``pipelines/tests/test_projections``):
+    ``detector_channel_positions`` (preferred), else ``data_collection_diameter_mm`` +
+    ``source_to_isocenter_mm``. Channel-position *semantics* are flagged uncertain by WS-1's own
+    ``geometry.calibration_status`` (DICOM-CT-PD data dictionary needed), so this is best-effort:
+    radian-valued positions are used directly; mm positions are converted with the detector shape
+    (``CYLINDRICAL`` -> arc-length/SDD, else flat-panel ``arctan``).
+    """
     pos = geometry.get("detector_channel_positions")
     if pos is not None:
         pos = np.asarray(pos, dtype=np.float64)
-        if pos.size == n_channels:
-            # Heuristic: small magnitudes are already angles (rad); larger are mm on the detector.
-            if np.max(np.abs(pos)) < np.pi:
+        if pos.size == n_channels and np.isfinite(pos).all():
+            if np.max(np.abs(pos)) < np.pi:                 # already radians
                 return pos
             sdd = geometry.get("source_to_detector_mm")
-            if sdd:
-                return np.arctan(pos / float(sdd))
-    fan_total = geometry.get("fan_angle_total_rad")
-    if fan_total:
-        return np.linspace(-0.5 * float(fan_total), 0.5 * float(fan_total), n_channels)
+            if sdd:                                          # mm positions on the detector
+                if str(geometry.get("detector_shape", "")).upper().startswith("CYL"):
+                    return pos / float(sdd)                 # curved (equiangular) arc length
+                return np.arctan(pos / float(sdd))          # flat panel
+    dcd = geometry.get("data_collection_diameter_mm")
+    sid = geometry.get("source_to_isocenter_mm")
+    if dcd and sid:
+        half = float(np.arcsin(np.clip((float(dcd) / 2.0) / float(sid), -1.0, 1.0)))
+        return np.linspace(-half, half, n_channels)
     raise GeometryUnavailable(
-        "cannot derive per-channel fan angles: need detector_channel_positions or "
-        "fan_angle_total_rad in geometry.")
+        "cannot derive per-channel fan angles: need detector_channel_positions, or "
+        "data_collection_diameter_mm + source_to_isocenter_mm.")
 
 
-def _table_feed_per_rotation(geometry: dict) -> float:
-    """Table translation per rotation (mm). Explicit field, else pitch x total collimation."""
-    feed = geometry.get("table_feed_per_rotation_mm")
-    if feed:
-        return float(feed)
+def _feed_per_rotation_rows(geometry: dict) -> float:
+    """Table feed per rotation in **detector-row-collimation units** (``pitch * n_det_rows``).
+
+    WS-1's geometry provides ``pitch`` (DICOM ``SpiralPitchFactor`` = feed / total collimation)
+    and ``n_det_rows`` but not an absolute row spacing. SSR only needs the feed *relative* to the
+    row collimation (the rebinning interpolates values vs. ``z`` and is invariant to the absolute
+    ``z`` scale), so we work in units where one detector row = 1: feed/rotation = pitch x n_det_rows.
+    """
     pitch = geometry.get("pitch")
     rows = geometry.get("n_det_rows")
-    row_sp = geometry.get("detector_row_spacing_mm")
-    if pitch and rows and row_sp:
-        return float(pitch) * int(rows) * float(row_sp)
+    if pitch and rows:
+        return float(pitch) * int(rows)
     raise GeometryUnavailable(
-        "cannot determine table feed: need table_feed_per_rotation_mm, or "
-        "pitch + n_det_rows + detector_row_spacing_mm.")
+        "helical rebinning needs pitch (SpiralPitchFactor) + n_det_rows.")
 
 
 def helical_rebin_slice(projections: np.ndarray, geometry: dict, slice_index: int, n_slices: int
@@ -171,9 +196,8 @@ def helical_rebin_slice(projections: np.ndarray, geometry: dict, slice_index: in
     sid = geometry.get("source_to_isocenter_mm")
     if not sid:
         raise GeometryUnavailable("geometry lacks source_to_isocenter_mm (SID).")
-    feed_view = _table_feed_per_rotation(geometry) / vpr
-    row_sp = geometry.get("detector_row_spacing_mm")
-    row_z = ((np.arange(r_n) - (r_n - 1) / 2.0) * float(row_sp)) if row_sp else np.zeros(r_n)
+    feed_view = _feed_per_rotation_rows(geometry) / vpr          # row-collimation units
+    row_z = np.arange(r_n) - (r_n - 1) / 2.0                     # one row = 1 unit
     s_v = feed_view * np.arange(v_n)                              # source z per view
 
     all_z = s_v[:, None] + row_z[None, :]                        # [V, R]
