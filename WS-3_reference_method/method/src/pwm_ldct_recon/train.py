@@ -20,6 +20,19 @@ from .models import UNetDenoiser, UnrolledRecon
 
 
 def seed_everything(seed: int) -> None:
+    """Seed all RNG streams and pin the determinism knobs from Supplementary Table S2.
+
+    Mirrors the reproducibility contract stated in the manuscript (Table S2) and the
+    WS-3 per-baseline checklist: seeded ``random`` / NumPy / torch (CPU+CUDA) plus
+    ``cudnn.deterministic=True`` / ``cudnn.benchmark=False``. The CuDNN flags are
+    inert on CPU-only builds, so this is CI-safe.
+
+    Note: ``torch.use_deterministic_algorithms(True)`` is intentionally NOT set
+    globally -- it routes the differentiable ``grid_sample`` in the Radon warm-start
+    through ``grid_sampler_2d_backward``, which lacks the derivative that path needs
+    and aborts training. Determinism here rests on full seeding plus the CuDNN flags;
+    Table S2 records this exception.
+    """
     import random
 
     import numpy as np
@@ -29,6 +42,9 @@ def seed_everything(seed: int) -> None:
     torch.manual_seed(seed)
     if torch.cuda.is_available():  # pragma: no cover - no GPU in CI
         torch.cuda.manual_seed_all(seed)
+
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark = False
 
 
 def _lr_factor(step: int, total: int, warmup_frac: float) -> float:

@@ -115,7 +115,7 @@ the corpus is deposited.
     & Seeded RNG streams & Python \texttt{random}, NumPy, PyTorch (CPU + CUDA), DataLoader workers \\
     & \texttt{cudnn.deterministic} & \texttt{True} \\
     & \texttt{cudnn.benchmark} & \texttt{False} \\
-    & \texttt{torch.use\_deterministic\_algorithms} & \todo{True/False + any opt-outs} \\
+    & \texttt{torch.use\_deterministic\_algorithms} & \texttt{False} (global enable is incompatible with the differentiable \texttt{grid\_sample} in the Radon warm-start; determinism rests on seeding $+$ CuDNN flags) \\
     & \texttt{PYTHONHASHSEED} & \texttt{0} (set in the RunBundle image) \\
     & \texttt{OMP\_NUM\_THREADS} / \texttt{MKL\_NUM\_THREADS} & \texttt{1} / \texttt{1} (set in the RunBundle image) \\
     & Per-member seed $\to$ weights + data order & $\{42,\dots,46\}$ (Table~S1) \\
