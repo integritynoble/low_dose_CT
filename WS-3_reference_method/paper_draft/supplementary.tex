@@ -116,10 +116,12 @@ the corpus is deposited.
     & \texttt{cudnn.deterministic} & \texttt{True} \\
     & \texttt{cudnn.benchmark} & \texttt{False} \\
     & \texttt{torch.use\_deterministic\_algorithms} & \todo{True/False + any opt-outs} \\
+    & \texttt{PYTHONHASHSEED} & \texttt{0} (set in the RunBundle image) \\
+    & \texttt{OMP\_NUM\_THREADS} / \texttt{MKL\_NUM\_THREADS} & \texttt{1} / \texttt{1} (set in the RunBundle image) \\
     & Per-member seed $\to$ weights + data order & $\{42,\dots,46\}$ (Table~S1) \\
     \midrule
     \multicolumn{3}{l}{\emph{Pinned software versions}} \\
-    & Python                  & \todo{3.x.y} \\
+    & Python                  & \texttt{3.12} (RunBundle base \texttt{python:3.12-slim}; exact patch pinned by the base-image digest below) \\
     & PyTorch                 & \todo{x.y.z} \\
     & CUDA / cuDNN            & \todo{x.y / x.y} \\
     & NumPy                   & \todo{x.y.z} \\
@@ -137,7 +139,15 @@ the corpus is deposited.
   \end{tabular}
   \caption{Determinism settings, pinned software versions, and the
   framework hash credentials are issued under. These plus the RunBundle
-  permit bit-reproduction of every record.}
+  permit bit-reproduction of every record. The framework hash in full is
+  \texttt{sha256:b366f51c11a8fbdfc7b60f1f977d42a10a8bdaa55521b43de0c428afc289fb58},
+  the SHA-256 of \texttt{pwm\_dose\_equivalence}'s \texttt{FRAMEWORK\_SPEC}
+  (v0.2.2); a credential carrying any other hash was issued under an
+  incompatible framework version and is out of scope for this corpus. The
+  exact resolved versions of the floating dependencies (PyTorch, NumPy, SciPy,
+  nibabel) are captured by \texttt{pip freeze} into a lockfile deposited with
+  the RunBundle at build time, since the Dockerfile constrains but does not
+  exactly pin them.}
   \label{tab:supp_repro}
 \end{table}
 
