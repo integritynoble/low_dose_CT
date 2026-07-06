@@ -67,7 +67,12 @@
 
 \title{\textbf{A Multi-Vendor Corpus of Reference Low-Dose CT Reconstructions \\ with Calibrated Per-Pixel Uncertainty and Signal-Equivalence Credentials}}
 
-\author[1,2]{\textit{Authors to be confirmed at submission}}
+%% Author block — Scientific Data requires a named corresponding author with a
+%% registered ORCID for every author. Names/ORCIDs are the last placeholders to
+%% fill (at submission); the STRUCTURE below is submission-ready.
+\author[1,2]{\todo{First A. Author}\thanks{Corresponding author: \todo{email@utsouthwestern.edu}; ORCID \todo{0000-0000-0000-0000}. A registered ORCID for \emph{every} author is mandatory for \emph{Scientific Data}; register and list all before submission.}}
+\author[1]{\todo{Second B. Author}}
+\author[2]{\todo{Third C. Author}}
 \affil[1]{University of Texas Southwestern Medical Center, Dallas, TX, USA}
 \affil[2]{PWM Protocol Foundation}
 
@@ -214,7 +219,10 @@ error maps, task-score maps, and credentials are therefore at $r \in
 new human-subjects data: every record is a derived image or a numerical
 summary computed from the PWM-LDCT benchmark~\citep{ws1dataset}, which
 governs the underlying acquisitions, their institutional-review-board
-approvals, and informed-consent basis. The released NIfTI volumes carry no
+approvals, and informed-consent basis. The specific governing approvals ---
+\todo{name the WS-1 IRB protocol number(s) and the Mayo LDCT-PD / AAPM~2016
+data-use agreement reference} --- are stated in the WS-1 source descriptor and
+restated here at submission. The released NIfTI volumes carry no
 protected health information: voxel arrays only, with all DICOM
 patient-identifying header fields removed at generation, and
 \texttt{scan\_id} is the WS-1 pseudonymous identifier (never an
@@ -397,6 +405,14 @@ code is Apache~2.0.
     is below.}
     \label{tab:records_overview}
 \end{table}
+
+\todoFigure{fig:example_records}{Example released records for one test scan at
+$r = 0.25$, all on the identical voxel grid: (a) reference reconstruction
+$\hat{x}$ (HU); (b) per-pixel ensemble uncertainty $\sigma$ (HU); (c) per-pixel
+error $e = |\hat{x} - x^{\textrm{ref}}|$ against the full-dose reference (HU);
+(d) frozen lung-nodule task-score map (unitless, $[0,1]$). Illustrates the
+voxel-alignment guarantee and the paired $(\sigma, e)$ calibration benchmark
+that is the corpus's central reuse value. Populated at deposit (D9+270).}
 
 \paragraph{Directory layout.}
 \begin{verbatim}
@@ -829,8 +845,35 @@ Source benchmark dataset (WS-1): \citet{ws1dataset}.\\
 Signal-equivalence framework and credential schema: \citet{ws2framework}.
 
 %% =====================================================================
+%% Scientific Data mandates these declarations at the end of every submission:
+%% Acknowledgements, Author Contributions, and Competing Interests. Funding is
+%% given its own head here because WS-5 owns it; it may be folded into
+%% Acknowledgements at submission. (A Data Descriptor has no separate "Data
+%% Availability" section — the Data Records section, the repository DOI, and the
+%% Data Citations list discharge that requirement.)
 \section*{Acknowledgments}
-\todo{Fill at submission.}
+\todo{Acknowledge compute providers and the source-data custodians (Mayo Clinic
+/ AAPM Low-Dose CT Grand Challenge for controlled-access scans; TCIA/LIDC-IDRI).
+Fill at submission.}
+
+\section*{Author Contributions}
+\todo{State per the CRediT taxonomy. Template: ``A.A.\ and B.B.\ designed the
+reconstruction pipeline and generated the corpus; A.A.\ performed the technical
+validation; C.C.\ computed and audited the signal-equivalence credentials; A.A.\
+drafted the manuscript; all authors reviewed and approved the final
+manuscript.'' Every listed author must have a contribution.}
+
+\section*{Competing Interests}
+\todo{Declare all financial \emph{and} non-financial competing interests
+(\emph{Scientific Data} requires both). In particular, disclose the PWM Protocol
+Foundation affiliation and any interest arising from registering the RunBundle
+as an on-chain L4 certificate. Template if none material: ``The authors declare
+no competing interests.''}
+
+\section*{Funding}
+\todo{List funders and grant numbers (e.g.\ NIH R21, if awarded --- see WS-5), or
+state ``This work received no specific grant from any funding agency.'' May be
+merged into Acknowledgments at submission.}
 
 %% =====================================================================
 \bibliographystyle{plainnat}

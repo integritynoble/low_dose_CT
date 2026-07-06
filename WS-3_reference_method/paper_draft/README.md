@@ -33,8 +33,9 @@ scans, and is deliberately distinct from WS-1 (which releases the raw paired CT)
 | `manuscript.pdf` | Compiled Data Descriptor (8 pp) |
 | `supplementary.tex` / `.pdf` | Supplementary Information (3 pp): Table S1 hyperparameters, S2 determinism + software pins + framework hash, S3 training-compute disclosure (values `\todo` until Phase-3 training) |
 | `reviewer_simulation.md` | Pre-submission dry run of *Scientific Data*'s review (editor + 2 referees); maps every gap to its closing action + a submission gate |
+| `cover_letter.md` | **Submission cover letter** (draft template): declares the companion WS-1/WS-2 submissions, states disjointness, foregrounds repository/DOI + licensing for the editorial pre-screen (closes E4) |
 | `refs.bib` | Bibliography |
-| `figures/` (later) | Reliability diagram + architecture diagram + example reconstructions |
+| `figures/` (later) | Reliability diagram + architecture diagram + example-records triptych (`fig:example_records`) + example reconstructions |
 
 ## Build
 
@@ -45,6 +46,12 @@ pdflatex manuscript && bibtex manuscript && pdflatex manuscript && pdflatex manu
 Compiles clean under vanilla `article` (8 pp). At submission, reformat to the
 *Scientific Data* LaTeX template (the journal also accepts Word); the section
 order below is mandatory and already matches.
+
+> **Note (2026-07-06):** `manuscript.pdf` is now **stale** relative to
+> `manuscript.tex` — the author block, the new Author Contributions / Competing
+> Interests / Funding declarations, the ethics IRB slot, and the
+> `fig:example_records` placeholder were added after the last PDF build. Re-run
+> the build command above to regenerate the PDF before circulating.
 
 ## Mandatory *Scientific Data* section order (already in the draft)
 
@@ -64,6 +71,10 @@ There is **no** Discussion/Conclusion — that framing signals method-paper scop
 - Data Records section with a real directory layout, a record-type table, a naming/indexing convention (`scan_id` back-links to WS-1), and a counts/sizes table stub.
 - Technical-Validation tables/figures stubbed and wired to the eventual Phase-3 outputs, with the uncertainty↔error Spearman table called out as the load-bearing validation.
 - Usage Notes + Code Availability + Data Citations.
+- **Author block + mandatory end declarations** — submission-ready *structure* (2026-07-06): named per-author slots, corresponding-author `\thanks` (email + ORCID), and the SD-mandated **Author Contributions** (CRediT), **Competing Interests** (flags PWM/L4-cert interest), and **Funding** sections. Real names/ORCIDs/grant numbers are the only remaining fills.
+- **Ethics IRB/DUA naming slot** added to the ethics statement (value filled once WS-1 governance is final).
+- **Example-records triptych figure** placeholder (`fig:example_records`) added to Data Records.
+- **Cover letter** drafted (`cover_letter.md`), declaring the companion WS-1/WS-2 submissions (closes E4).
 
 ## What's placeholder (gated on WS-3 Phase 3, D9+270, + deposit)
 
