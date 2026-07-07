@@ -21,6 +21,46 @@ from ..physics import RadonTransform
 from .unet import UNetDenoiser
 
 
+class _DataConsistencyGrad(torch.autograd.Function):
+    r"""Differentiable data-term gradient ``g(x) = R^T(R x - y)`` via the autograd adjoint.
+
+    ``forward`` computes ``g`` with a *first-order* ``autograd.grad`` through
+    ``physics.forward`` (``create_graph=False``), so it only ever needs
+    ``grid_sample``'s first derivative (which PyTorch implements). Because ``R``
+    is linear, the Jacobian of ``g`` w.r.t.\ ``x`` is exactly the symmetric
+    operator ``R^T R``; ``backward`` therefore returns ``R^T R v`` for the
+    incoming cotangent ``v``, computed from the adjoint identity
+    ``<R w, R v> = <w, R^T R v>`` -- again only first-order autograd.
+
+    This is mathematically identical to differentiating the old
+    ``autograd.grad(..., create_graph=True)`` path, but never requires the
+    second derivative of ``grid_sample`` (``grid_sampler_2d_backward``'s
+    derivative, unimplemented in PyTorch), which aborted end-to-end training.
+    Gradient w.r.t.\ the measurement ``y`` is not propagated (``y`` is data).
+    """
+
+    @staticmethod
+    def forward(ctx, x: torch.Tensor, y: torch.Tensor, physics: RadonTransform) -> torch.Tensor:
+        ctx.physics = physics
+        with torch.enable_grad():
+            xin = x.detach().requires_grad_(True)
+            resid = physics.forward(xin) - y
+            dc = 0.5 * (resid ** 2).sum()
+            (grad,) = torch.autograd.grad(dc, xin)  # create_graph=False -> 1st order only
+        return grad.detach()
+
+    @staticmethod
+    def backward(ctx, grad_out: torch.Tensor):  # type: ignore[override]
+        physics = ctx.physics
+        with torch.enable_grad():
+            v = grad_out.detach()
+            w = torch.zeros_like(v, requires_grad=True)
+            # <R w, R v> = w^T R^T R v; d/dw = R^T R v (the exact Jacobian-vector product).
+            inner = (physics.forward(w) * physics.forward(v)).sum()
+            (jvp,) = torch.autograd.grad(inner, w)
+        return jvp, None, None  # grads w.r.t. (x, y, physics)
+
+
 class UnrolledRecon(nn.Module):
     def __init__(self, physics: RadonTransform, denoiser: Optional[UNetDenoiser] = None,
                  cfg: Optional[ReconConfig] = None, estimate_step: bool = True):
@@ -39,14 +79,14 @@ class UnrolledRecon(nn.Module):
         return torch.exp(self.log_tau)  # keep the step size positive
 
     def _dc_grad(self, x: torch.Tensor, y: torch.Tensor) -> torch.Tensor:
-        """``R^T(R x - y)`` via autograd through forward. Differentiable when training."""
-        with torch.enable_grad():
-            need_leaf = not x.requires_grad
-            xin = x.detach().requires_grad_(True) if need_leaf else x
-            resid = self.physics.forward(xin) - y
-            dc = 0.5 * (resid ** 2).sum()
-            (grad,) = torch.autograd.grad(dc, xin, create_graph=self.training and not need_leaf)
-        return grad
+        """``R^T(R x - y)`` via the autograd adjoint, differentiable end-to-end.
+
+        Delegates to :class:`_DataConsistencyGrad`, whose backward applies the exact
+        Jacobian ``R^T R`` with first-order autograd only -- equivalent to the former
+        ``create_graph=True`` path but without needing ``grid_sample``'s (unimplemented)
+        second derivative.
+        """
+        return _DataConsistencyGrad.apply(x, y, self.physics)
 
     def forward(self, y: torch.Tensor, x_init: Optional[torch.Tensor] = None) -> torch.Tensor:
         """Reconstruct from measurement ``y [B,1,V,D]``; returns image ``[B,1,H,W]``."""
