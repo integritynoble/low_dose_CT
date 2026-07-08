@@ -93,6 +93,11 @@ acceptance.
   (≈24 HU vs 18.9 HU reference on L004); the figure needs the per-anatomy runs (chest via r=0.10,
   abdomen via r=0.25) and ideally per-scanner `I0`/`σ_e` refinement.
 - [ ] **Inter-rater reliability** `tab:irr_v05` + **κ threshold** `\todo{$\kappa$ threshold}` (from §3).
+  ⚠️ **Integrity flag (found 2026-07):** the LIDC row (7,060 nodules / 623 patients / 3.64 readers /
+  81.9%) is **not reproduced from any committed artifact** and the LIDC XMLs aren't sourced yet (§3),
+  so it cannot be real validation data yet. It is also **internally inconsistent**: 7,060 / 623 = 11.3
+  per patient, not the "mean 7.75" stated in the caption. Regenerate the whole row from the sourced
+  XMLs and reconcile the mean before submission. Flagged inline with `\todo` in the manuscript.
 - [ ] **(Supplementary, optional) credentials** `tab:credentials_v05` — depends on the companion
   WS-2 framework; severable.
 - [ ] **Demographics table** — age med(IQR)/range, sex m/f(%), BMI, scan-date (×4 sources each;
