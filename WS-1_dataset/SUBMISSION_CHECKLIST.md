@@ -103,6 +103,12 @@ acceptance.
 - [ ] **Demographics table** — age med(IQR)/range, sex m/f(%), BMI, scan-date (×4 sources each;
   `\todo` ×~20) — extract from source DICOM headers.
 - [ ] **Acquisition table** — LIDC scanner models / effective mAs / pitch `\todo{varies}` (×4).
+  ⚠️ **Provenance flag (found 2026-07):** the *already-filled* cells in both tables (demographics
+  LIDC 61 yr / 140-141, Mayo 62 yr / 103-96; acquisition LIDC manufacturer 669/201/74/66, Mayo 99/100,
+  mAs medians) are **not reproduced from any committed artifact**, and the acquisition caption already
+  claims they are "extracted from the deposited `metadata.json`". The LIDC/AAPM harmonized builds
+  aren't run yet (§4). Regenerate every filled cell from a committed extraction script before
+  submission, or mark provisional. Flagged inline with `\todo` in both captions.
 - [ ] **Cohort table** — LIDC + AAPM train/val/test estimates + union totals `\todo{$\sim$…}`
   (Mayo row already real).
 - [ ] **Source maintenance-status date** `\todo{date}`; **errata triage SLA** `\todo{N}` business days.
