@@ -68,7 +68,23 @@
 
 %% =====================================================================
 \begin{abstract}
-\noindent Three public low-dose CT (LDCT) datasets --- LIDC-IDRI~\citep{lidc_idri}, the 2016 AAPM-Mayo Low-Dose CT Grand Challenge~\citep{aapm2016challenge}, and the Mayo LDCT-and-Projection-Data collection~\citep{mccollough2020mayo} --- collectively contain over 1{,}300 patient scans relevant to low-dose CT reconstruction research, yet they are distributed in incompatible formats, with heterogeneous annotation conventions, no shared content-addressed versioning, and no formal credential framework against which methods can be compared. The result is per-project re-implementation of preprocessing, unreliable cross-paper performance comparisons, and an inability to anchor benchmark numbers to a frozen reference. We present \textbf{PWM-LDCT v0.5}, a unified, content-addressed harmonization of these three public datasets. The release deposits, as new openly-licensed data records, harmonized multi-task annotations spanning all three sources --- majority-vote lung-nodule labels reused from the existing four-radiologist LIDC annotations and extended by targeted top-up annotation on the AAPM and Mayo cases that lack equivalent labels, per-scan diagnostic-quality Likert scores on the paired-dose subsets, the raw per-reader labels behind each majority vote, and physically-calibrated simulated low-dose images for the full-dose-only scans --- together with harmonized per-scan metadata and deterministic patient-level data splits. These records are made usable by a single pip-installable Python loader (\texttt{pwm\_ldct\_loader}) and three Docker preprocessing pipelines that regenerate bit-identical HDF5 shards from each source's raw distribution, and their fitness for purpose is demonstrated by baseline reproductions of four community-standard reconstruction methods. The release is identified by a SHA-256 content hash of its manifest and deposited under a PhysioNet DOI, so any subsequent paper citing the hash refers to bit-identical content; the hash is additionally mirrored to an IPFS replica and a PWM L3 specification-registry entry as optional, hosting-independent retrieval paths. PWM-LDCT v0.5 is designed as the substrate for a forthcoming community Low-Dose CT Challenge (in preparation,~\citealt{ws4leaderboard}); the descriptor's claims --- harmonization, the new annotation and simulated-low-dose records, content-addressing, the multi-source loader, and baseline reproducibility --- stand independently of that and any other companion work. Notably, the Mayo LDCT-PD paired-dose cohort spans two vendors --- approximately half GE and half Siemens scanners across both anatomies --- so v0.5 provides genuine \emph{cross-vendor} paired-dose coverage (GE and Siemens), rather than the single-vendor coverage of prior public low-dose CT releases. A planned v1.0 release extends this with prospectively-acquired, multi-site clinical data and additional clinical tasks as a separate follow-up.
+\noindent Three public low-dose CT datasets --- LIDC-IDRI, the 2016 AAPM-Mayo
+Low-Dose CT Grand Challenge, and the Mayo LDCT-and-Projection-Data collection
+--- anchor most low-dose CT reconstruction research, yet are distributed in
+incompatible formats, with heterogeneous annotation conventions and no shared
+content-addressed versioning. We present PWM-LDCT v0.5, a unified,
+content-addressed harmonization of these three sources. As new openly-licensed
+data records it deposits: harmonized multi-task annotations (majority-vote
+lung-nodule labels reused from the four-radiologist LIDC annotations and topped
+up on the AAPM and Mayo chest cases, per-scan diagnostic-quality Likert scores,
+and the raw per-reader labels); physically-calibrated simulated low-dose images
+for the full-dose-only scans; harmonized per-scan metadata; and deterministic
+patient-level splits. These are delivered through a pip-installable Python loader
+and three Docker pipelines that regenerate bit-identical HDF5 shards, and
+demonstrated by baseline reproductions of four reconstruction methods. The
+release is identified by a SHA-256 manifest hash and deposited under a PhysioNet
+DOI. The Mayo paired-dose cohort spans GE and Siemens scanners, providing genuine
+cross-vendor coverage.
 \end{abstract}
 
 %% =====================================================================
