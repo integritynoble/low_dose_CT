@@ -464,7 +464,7 @@ v0.5 is a code-and-metadata release on top of existing public data. Its limitati
 \paragraph{Reliance on each source's continued availability.} If a source's hosting institution withdraws the dataset, v0.5's manifest still records what was included but the underlying scans become unavailable. The mirrored content hash (PhysioNet DOI / IPFS / L3 registry) provides a permanent record of what v0.5 \textit{was}; it does not guarantee the scans remain downloadable.
 
 %% =====================================================================
-\section*{Data versioning and persistent identifiers}
+\subsection*{Data versioning and persistent identifiers}
 
 Each release of PWM-LDCT is uniquely identified by the SHA-256 hash of its \texttt{manifest.sha256} file, which itself hashes every released artifact (annotation files, simulated-low-dose images, harmonized metadata, splits, Dockerfiles, and schema). This content hash lets any downstream user re-build the artifacts from their own source distributions and verify offline that their local copy is bit-identical, independent of any hosting institution remaining online.
 
@@ -475,18 +475,7 @@ The scientific identifier is the content hash itself; the deposit channels above
 \paragraph{Errata, bug-reporting, and data-correction policy.} Errors discovered in a release (e.g., a missed PHI hit, a discordant annotation surviving QA, a Dockerfile reproducibility regression) are reported via GitHub issues at \url{https://github.com/integritynoble/low_dose_CT/issues} with the label \texttt{errata-v0.5}. Each report is triaged within 5 business days; verified errors are batched into a PATCH release that increments the version (e.g., \texttt{0.5.0 -> 0.5.1}), regenerates the content hash, and updates the deposited record and its mirrors. Erratum notes (what changed, why, which scans are affected) are published as Supplementary Material alongside each PATCH release, and a cumulative errata changelog is maintained at \texttt{ERRATA.md} in the repository. Subscribers to the release mailing list (sign-up at the PhysioNet listing) are notified of every PATCH release. Prior PATCH releases remain resolvable via their content hashes so that papers citing an earlier version remain reproducible; we do not retract or rewrite historical versions.
 
 %% =====================================================================
-\section*{Code Availability}
-
-\begin{itemize}
-    \item Dataset loader: \url{https://pypi.org/project/pwm_ldct_loader/} (Apache 2.0)
-    \item Preprocessing Dockerfiles: \url{https://github.com/integritynoble/low_dose_CT/tree/main/WS-1_dataset/pipelines/}
-    \item Annotation top-up artifacts: \url{https://github.com/integritynoble/low_dose_CT/tree/main/WS-1_dataset/annotations/}
-    \item Forward model used for low-dose simulation: \url{https://github.com/integritynoble/low_dose_CT/tree/main/WS-1_dataset/pipelines/pwm_ldct_prep/lowdose_sim.py} (reference implementation; defers to \texttt{pwm\_core.contrib.modalities.ct\_radon} when installed)
-    \item Deposited records + manifest: the PhysioNet release record under DOI \texttt{10.13026/\todo{prefix}-0.5.0}, archived at Zenodo (\todo{Zenodo DOI}). The manifest's SHA-256 content hash is recorded in both. It is additionally (and optionally) mirrored to IPFS CID \todo{CID} and the PWM L3 spec entry \texttt{pwm\_l3\_spec:pwm\_low\_dose\_ct\_v0\_5:0.5.0}, which resolve to the identical content.
-\end{itemize}
-
-%% =====================================================================
-\section*{Roadmap to v1.0}
+\subsection*{Planned v1.0 extension}
 
 PWM-LDCT v1.0 is a separate follow-up release that addresses the v0.5 limitations explicitly tied to the lack of new prospective acquisition. v1.0 plans to add:
 
@@ -498,7 +487,18 @@ PWM-LDCT v1.0 is a separate follow-up release that addresses the v0.5 limitation
     \item Extended leave-one-vendor-out evaluation across $\geq$ 3 vendors (v0.5 already enables GE-vs-Siemens cross-vendor splits)
 \end{itemize}
 
-v1.0 timing is gated on PI staffing at the coordinating site, IRB approval, and partner-site agreements; the target submission window is approximately 12--18 months after v0.5. The v0.5 release ships in parallel and is not blocked by v1.0's clinical-acquisition timeline.
+v1.0 timing is gated on PI staffing at the coordinating site, IRB approval, and partner-site agreements; the target submission window is approximately 12--18 months after v0.5. The v0.5 release ships in parallel and is not blocked by v1.0's clinical-acquisition timeline. This roadmap is provided for reader context; it is not part of the v0.5 descriptor's validated claims.
+
+%% =====================================================================
+\section*{Code Availability}
+
+\begin{itemize}
+    \item Dataset loader: \url{https://pypi.org/project/pwm_ldct_loader/} (Apache 2.0)
+    \item Preprocessing Dockerfiles: \url{https://github.com/integritynoble/low_dose_CT/tree/main/WS-1_dataset/pipelines/}
+    \item Annotation top-up artifacts: \url{https://github.com/integritynoble/low_dose_CT/tree/main/WS-1_dataset/annotations/}
+    \item Forward model used for low-dose simulation: \url{https://github.com/integritynoble/low_dose_CT/tree/main/WS-1_dataset/pipelines/pwm_ldct_prep/lowdose_sim.py} (reference implementation; defers to \texttt{pwm\_core.contrib.modalities.ct\_radon} when installed)
+    \item Deposited records + manifest: the PhysioNet release record under DOI \texttt{10.13026/\todo{prefix}-0.5.0}, archived at Zenodo (\todo{Zenodo DOI}). The manifest's SHA-256 content hash is recorded in both. It is additionally (and optionally) mirrored to IPFS CID \todo{CID} and the PWM L3 spec entry \texttt{pwm\_l3\_spec:pwm\_low\_dose\_ct\_v0\_5:0.5.0}, which resolve to the identical content.
+\end{itemize}
 
 %% =====================================================================
 \section*{Author contributions}
