@@ -159,10 +159,10 @@ annotations, and the open-source maintainers of PyTorch, NumPy, h5py, PyDICOM, a
 
 ## Conflicts of Interest
 
-One or more authors are affiliated with the PWM Protocol Foundation, which maintains the optional
-content-addressed registry infrastructure referenced by this project. The dataset is fully usable,
-citable, and verifiable through the PhysioNet DOI alone; the registry confers no privileged access.
-**[CONFIRM]** each author's specific financial interests at submission.
+One or more authors are affiliated with the PWM Protocol Foundation, which contributed the
+open-source registry tooling used in preprocessing. The dataset is fully usable, citable, and
+verifiable through the PhysioNet DOI and the Zenodo archive; this affiliation confers no privileged
+access. **[CONFIRM]** each author's specific financial interests at submission.
 
 ## References
 

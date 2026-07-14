@@ -222,7 +222,7 @@ A reviewer can locate any concrete numerical claim in the manuscript by consulti
 | AUC default ε = 0.05 (vs non-AUC ε = 0.02) | `proofs/sample_size.md` §5 | §7 above shows formula-derivation |
 | INDETERMINATE-dominated regime for WS-1 v0.5 cohort (n ≈ 208) at AUC = 0.92 | `proofs/estimator.md` §4a "Cohort-sizing implication" | §3 above; inspect P(`PASS`) at AUC = 0.92, n = 200 |
 | CR small-n anti-conservativeness (n < 30) | `proofs/estimator.md` §4c | §4 above; inspect `cr_results.json` |
-| Library version 0.1.0 / schema v0.2 (§Code availability) | `pyproject.toml` + V3-8 framing | `pip show pwm_dose_equivalence` |
+| Library version 0.2.2 / schema v0.2 (§Code availability) | `pyproject.toml` + V3-8 framing | `pip show pwm_dose_equivalence` |
 | `mask_family` rides inside Π (§framework / C5) | `proofs/mri_mask.md` | textual; no number to re-derive |
 | PET activity-reduction canonical (Table 1 footnote) | `proofs/pet_reduction.md` | textual |
 | Composition not derivable (§Point-evaluated by design) | `proofs/composition.md` | textual |
