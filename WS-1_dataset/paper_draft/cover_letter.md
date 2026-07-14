@@ -8,7 +8,7 @@ Paste-ready; fill **[CONFIRM]** (corresponding author, affiliation, DOIs) before
 
 To the Editors, *Scientific Data*
 
-**Re: Submission of a Data Descriptor — "PWM-LDCT v0.5: A Content-Addressed, Multi-Task
+**Re: Submission of a Data Descriptor — "PWM-LDCT 1.0: A Content-Addressed, Multi-Task
 Harmonization of Three Public Low-Dose CT Datasets for Reproducible Reconstruction Benchmarking"**
 
 Dear Editors,
@@ -43,11 +43,11 @@ to Zenodo (DOI [CONFIRM]) — under CC BY 4.0 (code Apache-2.0). The underlying 
 redistributed; users obtain them from their original repositories and regenerate bit-identical
 artifacts locally, in compliance with each source's data-use terms.
 
-**Scope, stated plainly.** This is a public-data-only v0.5 release. We are explicit throughout that
+**Scope, stated plainly.** This is a public-data-only 1.0 release. We are explicit throughout that
 the AAPM/Mayo reduced-dose data is produced by validated projection-domain noise insertion (not a
 re-acquired scan), that vendor coverage is two-vendor (GE + Siemens; not Canon/Philips), and that
 the head subjects are credentialed-access and out of scope. A prospective, multi-site, additional-
-vendor extension (v1.0) is planned as a separate descriptor.
+vendor extension is planned as a separate companion descriptor.
 
 **Declarations.** This manuscript is original, is not under consideration elsewhere, and all authors
 have approved the submission. No new data were collected; the source datasets are de-identified to
@@ -57,7 +57,7 @@ affiliation with the PWM Protocol Foundation) are disclosed in the manuscript; t
 usable and verifiable independent of any Foundation infrastructure. A completed Nature Portfolio
 Reporting Summary accompanies this submission.
 
-We believe PWM-LDCT v0.5 will be a durable, citable substrate for the LDCT reconstruction community
+We believe PWM-LDCT 1.0 will be a durable, citable substrate for the LDCT reconstruction community
 and a strong fit for *Scientific Data*. We thank you for considering it.
 
 Sincerely,

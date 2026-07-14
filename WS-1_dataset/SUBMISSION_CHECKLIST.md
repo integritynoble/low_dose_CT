@@ -1,6 +1,6 @@
-# PWM-LDCT v0.5 — consolidated submission checklist
+# PWM-LDCT 1.0 — consolidated submission checklist
 
-Every open item across the WS-1 v0.5 package (manuscript, schema, code, PhysioNet listing, Reporting
+Every open item across the WS-1 1.0 package (manuscript, schema, code, PhysioNet listing, Reporting
 Summary, cover letter), with its source file. Verify by searching the tree for `\todo{` (LaTeX) and
 `[CONFIRM]` (everything else). Grouped by what unblocks each item.
 

@@ -1,4 +1,4 @@
-# PhysioNet listing — PWM-LDCT v0.5
+# PhysioNet listing — PWM-LDCT 1.0
 
 Paste-ready content for the PhysioNet project submission (authoring system: one block per
 content section below). Values in **[CONFIRM]** are author/release decisions to finalize at
@@ -11,9 +11,9 @@ redistribute the source DICOM (obtained from NBIA / Mayo / TCIA), consistent wit
 
 | Field | Value |
 |---|---|
-| **Title** | PWM-LDCT v0.5: A Content-Addressed, Multi-Task Harmonization of Three Public Low-Dose CT Datasets |
+| **Title** | PWM-LDCT 1.0: A Content-Addressed, Multi-Task Harmonization of Three Public Low-Dose CT Datasets |
 | **Resource type** | Database (includes software: loader + preprocessing pipelines) |
-| **Version** | 0.5.0 |
+| **Version** | 1.0.0 |
 | **Access policy** | **Open** — deposited records (annotations, metadata, splits, manifest, code, LIDC-derived simulated low-dose) contain no PHI |
 | **License** | Data records: **CC BY 4.0**; code (`pwm_ldct_loader`, pipelines, baselines): **Apache-2.0**; manifest: CC0. (LIDC-derived records: CC BY 3.0, per LIDC.) |
 | **Data Use Agreement** | None (Open). Source DICOM is obtained under each source's own terms. |
@@ -34,7 +34,7 @@ redistribute the source DICOM (obtained from NBIA / Mayo / TCIA), consistent wit
 Three public low-dose CT (LDCT) datasets — LIDC-IDRI, the 2016 AAPM-Mayo Low-Dose CT Grand
 Challenge, and the Mayo LDCT-and-Projection-Data collection — together anchor most published
 deep-learning LDCT reconstruction evaluation, yet they are distributed in incompatible formats with
-heterogeneous annotations and no shared, frozen version identifier. PWM-LDCT v0.5 is a unified,
+heterogeneous annotations and no shared, frozen version identifier. PWM-LDCT 1.0 is a unified,
 content-addressed harmonization of these three sources. This project deposits the new,
 openly-licensed value-added records — harmonized multi-task annotations (majority-vote lung-nodule
 labels reused from the four-radiologist LIDC annotations and topped up on AAPM/Mayo, per-scan
@@ -43,7 +43,7 @@ low-dose images for the full-dose-only LIDC scans, harmonized per-scan metadata,
 patient-level splits — together with a pip-installable Python loader (`pwm_ldct_loader`) and three
 Docker preprocessing pipelines that regenerate bit-identical HDF5 shards from each source's raw
 distribution. The release is identified by a SHA-256 content hash of its manifest. Notably, the
-public Mayo cohort spans two vendors (~half GE, ~half Siemens), so v0.5 provides genuine
+public Mayo cohort spans two vendors (~half GE, ~half Siemens), so 1.0 provides genuine
 cross-vendor paired-dose coverage. The underlying DICOM scans are not redistributed; users obtain
 them from each source and run the pipelines locally.
 
@@ -56,7 +56,7 @@ its own format, so every method re-implements preprocessing, causing silent form
 between papers; (2) **annotation heterogeneity** — LIDC ships four-radiologist nodule XML, AAPM has
 no built-in lesion labels, Mayo has labels on a subset, with no shared tooling; (3) **benchmark
 drift** — none has a content-addressed version identifier, so a result tied to "LIDC-IDRI" in one
-paper is not guaranteed to be on the same scans as another. PWM-LDCT v0.5 closes these by adding an
+paper is not guaranteed to be on the same scans as another. PWM-LDCT 1.0 closes these by adding an
 annotation-and-infrastructure layer over the existing sources rather than collecting new scans.
 
 ## Methods
@@ -123,8 +123,8 @@ pip install pwm_ldct_loader
 # obtain the source DICOM from NBIA (LIDC), Mayo (AAPM 2016), TCIA (Mayo LDCT-PD),
 # then regenerate the harmonized HDF5 with the Docker pipelines, then:
 from pwm_ldct_loader import LowDoseCTDataset, validate
-ds = LowDoseCTDataset(root="/path/pwm_ldct_v0_5", split="train", seed=42)
-assert validate("/path/pwm_ldct_v0_5").ok
+ds = LowDoseCTDataset(root="/path/pwm_ldct_1_0", split="train", seed=42)
+assert validate("/path/pwm_ldct_1_0").ok
 ```
 
 Any locally-built copy can be verified bit-for-bit against `manifest.sha256`. Baseline reproductions
@@ -133,12 +133,12 @@ Any locally-built copy can be verified bit-for-bit against `manifest.sha256`. Ba
 
 ## Release Notes
 
-**v0.5.0** — first release. Public-data-only harmonization (LIDC + AAPM 2016 + Mayo LDCT-PD public
+**1.0.0** — first release. Public-data-only harmonization (LIDC + AAPM 2016 + Mayo LDCT-PD public
 portion). Provides cross-vendor (GE + Siemens) paired-dose coverage via the Mayo cohort, harmonized
 multi-task annotations, simulated low-dose for LIDC, content-addressed manifest, loader, pipelines,
 and a baseline harness. **Known scope:** reduced-dose is simulated/noise-inserted (no re-acquired
 paired dose); no Canon/Philips; no head subjects (GDC-restricted); annotation top-up limited to the
-chest lung-nodule task. A planned v1.0 adds prospectively-acquired, multi-site, additional-vendor
+chest lung-nodule task. A planned prospective companion release adds prospectively-acquired, multi-site, additional-vendor
 data and new tasks.
 
 ## Ethics
