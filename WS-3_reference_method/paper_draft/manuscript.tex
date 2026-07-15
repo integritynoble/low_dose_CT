@@ -118,7 +118,7 @@ methods.
 \label{sec:background}
 
 Deep-learning low-dose CT reconstruction has produced a decade of method
-papers reporting fractional-dB gains~\citep{chen2017redcnn,wang2020deeplearningreview,liu2024diffusion},
+papers reporting fractional-dB gains~\citep{chen2017redcnn,wang2020deeplearningreview,song2022scorebased},
 yet the field shares almost no \emph{derived} data. Two structural gaps
 follow. First, reconstructed volumes are seldom released: a researcher
 who wants to study how reconstruction error distributes across anatomy,
@@ -354,10 +354,10 @@ table, library version pins, and compute disclosure accompany the deposit
 \label{sec:datarecords}
 \label{sec:data_records}
 
-Records are deposited at \datadoi{} and mirrored to a
-content-addressed PWM RunBundle on IPFS (CID in
-Section~\ref{sec:codeavail}) for integrity verification; their licensing
-follows the per-source basis set out in \emph{Licensing and
+Records are deposited at \datadoi{}, with integrity verified by the
+per-file SHA-256 \texttt{MANIFEST.sha256} at the archive root (an optional
+content-addressed mirror is noted in Section~\ref{sec:codeavail}); their
+licensing follows the per-source basis set out in \emph{Licensing and
 redistribution} below. The deposit is a single archive with the directory
 layout below; every leaf file is additionally listed with its SHA-256 in
 \texttt{MANIFEST.sha256} at the archive root.
@@ -541,7 +541,7 @@ reconstructions of five baselines are included, each run through the
 identical emit path: FBP; RED-CNN~\citep{chen2017redcnn};
 WGAN-VGG~\citep{yang2018ctgan}; a transformer
 reconstruction~\citep{wang2023ctformer}; and a diffusion / score-based
-reconstruction~\citep{liu2024diffusion}. Each baseline is reproduced
+reconstruction~\citep{song2022scorebased}. Each baseline is reproduced
 within $\leq 0.5$\,dB PSNR of its published numbers before its records are
 emitted; reproduction recipes accompany the deposit. The baselines are
 single-model methods and therefore carry no \texttt{uncertainty\_sigma}
@@ -820,8 +820,10 @@ aggregation, error/task/credential emission, and the evaluation harness
 that produced every Technical Validation number---is released under
 Apache~2.0 at
 \url{https://github.com/integritynoble/low_dose_CT/tree/main/WS-3_reference_method},
-and packaged as a pinned Docker RunBundle (CID \todo{IPFS CID at deposit};
-anchored by a PWM L4 cert for integrity). Pre-trained ensemble weights,
+and packaged as a pinned Docker RunBundle; integrity is provided by the
+deposited SHA-256 \texttt{MANIFEST.sha256}, with an optional
+content-addressed mirror (IPFS CID \todo{at deposit}) as a supplementary
+check. Pre-trained ensemble weights,
 the pinned \texttt{Dockerfile}, evaluation scripts, random seeds, and the
 training-compute disclosure (Supplementary Table~S3) permit bit-identical
 regeneration of the corpus within floating-point tolerance on equivalent
@@ -866,8 +868,7 @@ manuscript.'' Every listed author must have a contribution.}
 \section*{Competing Interests}
 \todo{Declare all financial \emph{and} non-financial competing interests
 (\emph{Scientific Data} requires both). In particular, disclose the PWM Protocol
-Foundation affiliation and any interest arising from registering the RunBundle
-as an on-chain L4 certificate. Template if none material: ``The authors declare
+Foundation affiliation. Template if none material: ``The authors declare
 no competing interests.''}
 
 \section*{Funding}

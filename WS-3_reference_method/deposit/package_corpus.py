@@ -92,7 +92,9 @@ def write_manifest(corpus_root: Path | str) -> Path:
         rel = p.relative_to(corpus_root).as_posix()
         lines.append(f"{sha256_file(p)}  {rel}")
     manifest = corpus_root / MANIFEST_NAME
-    manifest.write_text("\n".join(lines) + ("\n" if lines else ""), encoding="utf-8")
+    # newline="" prevents platform CRLF translation: a sha256sum-compatible manifest
+    # must use LF, else `sha256sum -c` reads a trailing '\r' as part of each filename.
+    manifest.write_text("\n".join(lines) + ("\n" if lines else ""), encoding="utf-8", newline="")
     return manifest
 
 
