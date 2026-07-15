@@ -1,0 +1,20 @@
+{
+  "true_activity_ratio": 4.0,
+  "levels": {
+    "reference": {
+      "origin": "reference", "count_level": 1.0,
+      "spheres": {"10": {"c_hot": 3.4, "kind": "hot"}, "13": {"c_hot": 4.0, "kind": "hot"}},
+      "bg_roi_means": {"10": [1.0, 1.1, 0.9, 1.0], "13": [1.0, 1.05, 0.95, 1.0]}
+    },
+    "decayed_0p25": {
+      "origin": "decayed", "count_level": 0.25,
+      "spheres": {"10": {"c_hot": 3.1, "kind": "hot"}, "13": {"c_hot": 3.8, "kind": "hot"}},
+      "bg_roi_means": {"10": [1.0, 1.2, 0.8, 1.0], "13": [1.0, 1.05, 0.95, 1.0]}
+    },
+    "thinned_0p25_r0": {
+      "origin": "thinned", "count_level": 0.25,
+      "spheres": {"10": {"c_hot": 3.0, "kind": "hot"}, "13": {"c_hot": 3.9, "kind": "hot"}},
+      "bg_roi_means": {"10": [1.0, 1.15, 0.85, 1.0], "13": [1.0, 1.05, 0.95, 1.0]}
+    }
+  }
+}

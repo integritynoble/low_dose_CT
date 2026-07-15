@@ -1,0 +1,8 @@
+{
+  "patient_id": "lidc-0001",
+  "nodules": [
+    {"nodule_id": "n1", "diameter_mm": 8.2, "texture": 5, "location": "RUL", "ground_truth": "majority_vote", "n_contributing_readers": 4},
+    {"nodule_id": "n2", "diameter_mm": 5.1, "texture": 3, "location": "RLL", "ground_truth": "majority_vote", "n_contributing_readers": 3},
+    {"nodule_id": "n3", "diameter_mm": 12.4, "texture": 5, "location": "LUL", "ground_truth": "adjudicated", "n_contributing_readers": 4}
+  ]
+}

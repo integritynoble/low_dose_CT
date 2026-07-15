@@ -1,0 +1,19 @@
+{
+  "scan_uid": "fixture0003",
+  "patient_id": "aapm-001",
+  "series_id": "aapm-001_chest_fd",
+  "source": "aapm",
+  "anatomy": "chest",
+  "schema_version": "1.0.0",
+  "acquisition": {
+    "manufacturer": "Siemens",
+    "model": "Sensation 64",
+    "kvp": 120,
+    "exposure_mas": 380,
+    "pitch": 1.0,
+    "slice_thickness_mm": 0.75,
+    "recon_kernel": "B30f"
+  },
+  "demographics": {"age_years": null, "sex": null, "bmi": null, "scan_year": null, "indication": "oncology"},
+  "provenance": {"canonical_patient_key": "ckey-aapm-001"}
+}

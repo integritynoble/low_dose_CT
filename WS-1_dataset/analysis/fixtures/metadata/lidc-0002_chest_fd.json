@@ -1,0 +1,19 @@
+{
+  "scan_uid": "fixture0002",
+  "patient_id": "lidc-0002",
+  "series_id": "lidc-0002_chest_fd",
+  "source": "lidc",
+  "anatomy": "chest",
+  "schema_version": "1.0.0",
+  "acquisition": {
+    "manufacturer": "Siemens",
+    "model": "Sensation 64",
+    "kvp": 120,
+    "exposure_mas": 200,
+    "pitch": 0.9,
+    "slice_thickness_mm": 2.0,
+    "recon_kernel": "B30f"
+  },
+  "demographics": {"age_years": 70, "sex": "F", "bmi": null, "scan_year": 2009, "indication": "nodule eval"},
+  "provenance": {"canonical_patient_key": "ckey-lidc-0002"}
+}
