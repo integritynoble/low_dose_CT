@@ -86,7 +86,7 @@ We introduce \textbf{signal-equivalence}, a probabilistic framework that convert
 \par
 We provide a paired-bootstrap estimator with finite-sample coverage guarantees, a closed-form sample-size formula, and an open-source, pip-installable Python library (\texttt{pwm\_dose\_equivalence}) that produces credentials from any reconstruction method's image outputs. We validate the framework with three worked examples spanning CT, MRI, and PET, in each case using the same single API call. To prevent silent benchmark drift, each credential is content-addressed by the SHA-256 hash of the framework definition it was issued against, so a reader given only a credential JSON can recover the exact framework version and recompute the verdict bit-for-bit.
 \par
-Adopted as a reporting standard, signal-equivalence converts marketing claims into reviewable scientific propositions and enables both human reviewers and automated agents to verify those claims against published evidence.
+Adopted as a reporting standard, signal-equivalence converts marketing claims into reviewable scientific propositions that can be verified independently against the published evidence.
 \end{abstract}
 
 %% =====================================================================
@@ -117,7 +117,7 @@ We make four separable contributions, each independently testable and adoptable.
 
     \item \textbf{An open-source, pip-installable, type-annotated, CI-tested Python library} (\texttt{pwm\_dose\_equivalence}; Apache 2.0) with worked-example notebooks for three modalities (Section~\ref{sec:methods-library}, Section~\ref{sec:software_rigor}). Reviewers can install the library, run the notebooks, and reproduce every result in this paper.
 
-    \item \textbf{A content-addressed credential schema} that ties each published credential to the SHA-256 hash of the exact framework definition it was issued against (Section~\ref{sec:anchoring}). A reader holding only a credential JSON can recover the precise framework version, re-run the same library on the same test set, and verify the verdict bit-for-bit --- eliminating a class of benchmark-drift artifacts that has undermined longitudinal comparison in medical imaging~\citep{wang2020deeplearningreview}. Content-addressing is the methodological substance of the contribution; the choice of where to host the hash (local file, package registry, or public chain) is a deployment detail discussed in Section~\ref{sec:anchoring}.
+    \item \textbf{A content-addressed credential schema} that ties each published credential to the SHA-256 hash of the exact framework definition it was issued against (Section~\ref{sec:anchoring}). A reader holding only a credential JSON can recover the precise framework version, re-run the same library on the same test set, and verify the verdict bit-for-bit --- eliminating a class of benchmark-drift artifacts that has undermined longitudinal comparison in medical imaging~\citep{wang2020deeplearningreview}. Content-addressing is the methodological substance of the contribution; the choice of where to host the hash (a local file or a package registry) is a deployment detail discussed in Section~\ref{sec:anchoring}.
 \end{enumerate}
 
 A reader can adopt contribution 1 (the framework) without 4 (the registry); contribution 2 (the estimator) without 3 (the library); contribution 3 (the library) without 1 (by writing a different formal definition that the library compiles to). The four contributions are deliberately layered so that each subsequent one strengthens but does not depend on the previous one.
@@ -189,7 +189,7 @@ The same library reused with \texttt{modality="MRI"} or \texttt{modality="PET"} 
     \setlength{\tabcolsep}{4pt}
     \begin{tabular}{lccccc}
         \toprule
-        \textbf{Tool} & \textbf{TOST stat} & \textbf{Paired image} & \textbf{Modality-general} & \textbf{Content-addr.} & \textbf{Agent-verifiable} \\
+        \textbf{Tool} & \textbf{TOST stat} & \textbf{Paired image} & \textbf{Modality-general} & \textbf{Content-addr.} & \textbf{Machine-verifiable} \\
         \midrule
         \texttt{scipy.stats}~\citep{virtanen2020scipy}     & partial & no  & no  & no  & no \\
         \texttt{statsmodels}~\citep{seabold2010statsmodels} & yes     & no  & no  & no  & no \\
@@ -199,7 +199,7 @@ The same library reused with \texttt{modality="MRI"} or \texttt{modality="PET"} 
         \textbf{\texttt{pwm\_dose\_equivalence}}            & \textbf{yes (BCa, DeLong)} & \textbf{yes} & \textbf{yes (CT/MRI/PET)} & \textbf{yes (SHA-256)} & \textbf{yes} \\
         \bottomrule
     \end{tabular}
-    \caption{Coverage of the signal-equivalence pipeline by existing tools vs the contribution of this paper. ``TOST stat'' = test-of-equivalence statistical machinery (BCa / DeLong / percentile bootstrap). ``Paired image'' = paired-on-patient image-output handling. ``Modality-general'' = single API call across CT / MRI / PET. ``Content-addr.'' = content-addressed framework version. ``Agent-verifiable'' = machine-verifiable credential schema.}
+    \caption{Coverage of the signal-equivalence pipeline by existing tools vs the contribution of this paper. ``TOST stat'' = test-of-equivalence statistical machinery (BCa / DeLong / percentile bootstrap). ``Paired image'' = paired-on-patient image-output handling. ``Modality-general'' = single API call across CT / MRI / PET. ``Content-addr.'' = content-addressed framework version. ``Machine-verifiable'' = machine-checkable credential schema.}
     \label{tab:tool_comparison}
 \end{table}
 
@@ -517,7 +517,7 @@ The hash uniquely identifies the framework definition the credential commits to.
 
 \paragraph{Internal-consistency audit.} A reader who lacks the test-set scores (for example, a regulator without raw-DICOM access) can still check the credential's \emph{internal} consistency without re-running the bootstrap. The library exposes a one-call audit function, \texttt{pwm\_dose\_equivalence.audit\_credential}, which validates the credential JSON against the machine-readable schema (\texttt{CREDENTIAL\_JSON\_SCHEMA}), confirms the framework hash matches the installed library version, re-derives the verdict from the published $(\Delta_{\mathrm{CI},\mathrm{lo}}, \Delta_{\mathrm{CI},\mathrm{hi}}, \varepsilon)$ and checks that it matches the stored verdict, inspects the \texttt{sample\_size\_check} field for the undersized-PASS pattern, and flags BCa-as-headline credentials lacking a percentile companion. The audit returns a \texttt{CredentialAudit} dataclass distinguishing hard issues (block \texttt{ok}) from soft warnings (recorded but non-blocking). The same audit is available from the shell as the installed console entry point \texttt{pwm-audit} (with file / stdin / \texttt{--json} input modes and a 0-on-ok / 1-on-issue / 2-on-error exit-code contract), so reviewers, CI hooks, and submission-checklist scripts can verify a credential without writing any Python. Full bootstrap reproduction remains the job of the reproduction guide; the audit is the cheaper preflight check that catches tampered or schema-mismatched credentials before the bootstrap would.
 
-\paragraph{Hash-resolution backends.} Content-addressing is the methodological substance; \emph{where} the hash is resolved is a deployment choice. The library accepts any of three resolvers: (a) a local file containing the framework definition (sufficient for self-contained reproduction during peer review); (b) a package-registry resolver that retrieves the definition by hash from the PyPI release used to issue the credential; or (c) the PWM public registry, where the same hash is registered for long-term decentralized resolution. Resolvers (a) and (b) are sufficient for the methodological guarantees stated above; resolver (c) is an operational convenience for community deployments and is documented in the supplementary deployment notes rather than required for the framework to function.
+\paragraph{Hash-resolution backends.} Content-addressing is the methodological substance; \emph{where} the hash is resolved is a deployment choice. The library accepts any of three resolvers: (a) a local file containing the framework definition (sufficient for self-contained reproduction during peer review); (b) a package-registry resolver that retrieves the definition by hash from the PyPI release used to issue the credential; or (c) an optional public registry mirror. Resolvers (a) and (b) are sufficient for the methodological guarantees stated above; resolver (c) is an operational convenience for community deployments and is not required for the framework to function.
 
 %% =====================================================================
 \section{Data availability}
@@ -546,7 +546,7 @@ A Nature Methods Reporting Summary --- using the format current at submission, c
 \todo{Fill at submission per CRediT taxonomy: Conceptualization, Methodology, Software, Validation, Formal analysis, Investigation, Resources, Data curation, Writing-Original Draft, Writing-Review \& Editing, Visualization, Supervision, Project administration, Funding acquisition.}
 
 \section*{Competing interests}
-\todo{Declare at submission. The PWM Protocol Foundation receives no direct revenue from credential issuance; foundation-affiliated authors hold no financial interest in specific reconstruction methods evaluated under the framework.}
+One or more authors are affiliated with the PWM Protocol Foundation, which maintains the open-source library. The library and credential format are openly licensed (Apache~2.0) and confer no privileged access; the Foundation receives no revenue from credential issuance, and no author holds a financial interest in any reconstruction method evaluated under the framework. \todo{At submission, each author declares any financial interest in the PWM Protocol Foundation (equity, consulting, or advisory role) or states its absence.} The authors declare no other competing interests.
 
 \section*{Acknowledgments}
 \todo{Fill at submission. Acknowledge the radiologist panel for PWM-LDCT annotations, the NYU fastMRI team, the NEMA phantom acquisition site, the contributors to scipy / statsmodels / scikit-learn whose statistical primitives the library builds on, and the open-source maintainers of pytest / mypy / sphinx / readthedocs.}

@@ -55,7 +55,7 @@ def regenerate() -> str:
         "",
     ]
     for path in EXAMPLE_ORDER:
-        rel = path.relative_to(HERE)
+        rel = path.relative_to(HERE).as_posix()  # POSIX separators: platform-independent snapshot
         code, out = _run_audit(path)
         parts.append(f"=== {rel} (exit={code}) ===")
         parts.append(out.rstrip())
