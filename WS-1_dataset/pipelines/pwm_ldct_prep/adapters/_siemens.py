@@ -11,8 +11,8 @@ from typing import Dict, Iterator, Optional
 
 import numpy as np
 
-from .base import (PatientScans, Series, SourceAdapter, demographics_from, group_dicom,
-                   read_ct_volume)
+from .base import (PatientScans, Series, SourceAdapter, canonical_patient_key, demographics_from,
+                   group_dicom, read_ct_volume, read_projection_series)
 
 
 def _classify(series_desc: str):
@@ -55,12 +55,21 @@ class SiemensPairedAdapter(SourceAdapter):
             if ("fd", "image") not in series_map:
                 continue  # need a full-dose reconstruction to anchor the record
             patient_id = self.reindex(native_pid, registry)
+            ckey = canonical_patient_key(native_pid)
             fd = self._build(series_map[("fd", "image")], patient_id, "fd")
+            fd.canonical_key = ckey
             ld = self._build(series_map[("ld", "image")], patient_id, "ld") if ("ld", "image") in series_map else None
+            if ld is not None:
+                ld.canonical_key = ckey
             if self.with_sinograms:
                 self._attach_projections(fd, series_map.get(("fd", "projection")))
+                ld_proj = series_map.get(("ld", "projection"))
                 if ld is not None:
-                    self._attach_projections(ld, series_map.get(("ld", "projection")))
+                    self._attach_projections(ld, ld_proj)
+                elif ld_proj is not None:
+                    # GE: low-dose projections exist but no LD reconstructed image; keep the
+                    # low-dose projection on the fd record (-> sinogram/low_dose_real).
+                    fd.ld_sinogram, _ = read_projection_series(ld_proj[1]["files"])
             yield PatientScans(patient_id=patient_id, fd=fd, ld=ld)
 
     def _build(self, series_entry, patient_id: str, role: str) -> Series:
@@ -80,19 +89,17 @@ class SiemensPairedAdapter(SourceAdapter):
             src_uids={"series": suid, "study": str(getattr(ref, "StudyInstanceUID", ""))},
         )
 
-    def _attach_projections(self, series: Series, proj_entry) -> None:  # pragma: no cover
-        """Hook for DICOM-CT-PD projection ingestion (sinogram + geometry).
+    def _attach_projections(self, series: Series, proj_entry) -> None:
+        """Ingest the matching DICOM-CT-PD projection series into ``series.sinogram`` + ``geometry``.
 
-        TODO(projection-domain): parse the vendor DICOM-CT-PD objects into ``series.sinogram``
-        ([Z, V, D] line integrals) and ``series.geometry`` (n_views, n_det_channels, sid_mm,
-        sdd_mm, det_pitch_mm, start/increment angles, detector_shape) per
-        ../schema/dicom_to_hdf5_mapping.md §3-§4. This requires the projection data in hand and
-        validation against the vendor manual; left unimplemented in the scaffold. Reconstructed-
-        image output (which validate() requires) is unaffected.
+        Native ``[V, C, R]`` line integrals + decoded acquisition geometry (GE & Siemens share the
+        private-tag layout); see read_projection_series / ../schema/dicom_to_hdf5_mapping.md §3-§4.
+        Exact source/detector-distance and channel-angle calibration is flagged in
+        ``geometry.calibration_status`` pending the official DICOM-CT-PD data dictionary.
         """
         if proj_entry is None:
             return
-        raise NotImplementedError(
-            "projection (DICOM-CT-PD) ingestion is not yet implemented; run with "
-            "with_sinograms=False (default) to produce reconstructed-image output"
-        )
+        _, g = proj_entry
+        sino, geom = read_projection_series(g["files"])
+        series.sinogram = sino
+        series.geometry = geom

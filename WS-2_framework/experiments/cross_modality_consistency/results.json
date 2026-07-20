@@ -1,0 +1,91 @@
+{
+  "config": {
+    "n_patients": 200,
+    "r": 0.25,
+    "epsilon": 0.05,
+    "alpha": 0.05,
+    "n_bootstrap": 10000,
+    "seed": 42,
+    "bias": 0.1
+  },
+  "credentials": [
+    {
+      "modality": "CT",
+      "candidate": "equivalent",
+      "r": 0.25,
+      "epsilon": 0.05,
+      "alpha": 0.05,
+      "n_test": 200,
+      "n_bootstrap": 10000,
+      "delta_mean": -0.0066562711330346615,
+      "delta_ci_low": -0.015600063744283656,
+      "delta_ci_high": 0.002188361508078559,
+      "verdict": "PASS"
+    },
+    {
+      "modality": "CT",
+      "candidate": "biased",
+      "r": 0.25,
+      "epsilon": 0.05,
+      "alpha": 0.05,
+      "n_test": 200,
+      "n_bootstrap": 10000,
+      "delta_mean": 0.10106014288285049,
+      "delta_ci_low": 0.09238435009499338,
+      "delta_ci_high": 0.10956703466043194,
+      "verdict": "FAIL"
+    },
+    {
+      "modality": "MRI",
+      "candidate": "equivalent",
+      "r": 0.25,
+      "epsilon": 0.05,
+      "alpha": 0.05,
+      "n_test": 200,
+      "n_bootstrap": 10000,
+      "delta_mean": 0.0010272496210552812,
+      "delta_ci_low": -0.002279862286087032,
+      "delta_ci_high": 0.004403566995936354,
+      "verdict": "PASS"
+    },
+    {
+      "modality": "MRI",
+      "candidate": "biased",
+      "r": 0.25,
+      "epsilon": 0.05,
+      "alpha": 0.05,
+      "n_test": 200,
+      "n_bootstrap": 10000,
+      "delta_mean": 0.09863628385770024,
+      "delta_ci_low": 0.09539323092803956,
+      "delta_ci_high": 0.10178898054804188,
+      "verdict": "FAIL"
+    },
+    {
+      "modality": "PET",
+      "candidate": "equivalent",
+      "r": 0.25,
+      "epsilon": 0.05,
+      "alpha": 0.05,
+      "n_test": 200,
+      "n_bootstrap": 10000,
+      "delta_mean": -0.003072256662515568,
+      "delta_ci_low": -0.013460445356501318,
+      "delta_ci_high": 0.007611735796824777,
+      "verdict": "PASS"
+    },
+    {
+      "modality": "PET",
+      "candidate": "biased",
+      "r": 0.25,
+      "epsilon": 0.05,
+      "alpha": 0.05,
+      "n_test": 200,
+      "n_bootstrap": 10000,
+      "delta_mean": 0.09153247980314985,
+      "delta_ci_low": 0.081607814375914,
+      "delta_ci_high": 0.10134228723671099,
+      "verdict": "FAIL"
+    }
+  ]
+}

@@ -1,0 +1,8 @@
+# Keep the Docker build context small (the WS-3 RunBundle builds from the repo root).
+.git
+.venv
+**/__pycache__
+**/.pytest_cache
+**/*.egg-info
+**/*.pyc
+**/*.pdf

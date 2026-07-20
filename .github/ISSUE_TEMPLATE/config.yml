@@ -1,0 +1,14 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Credential reading guide
+    url: https://github.com/integritynoble/low_dose_CT/blob/main/WS-2_framework/paper_draft/credential_reading_guide.md
+    about: "Before filing a `[audit]` issue, check whether the audit's behaviour matches the reading guide's §3 (verdict semantics) or §7 (red flags)."
+  - name: Reproduction guide
+    url: https://github.com/integritynoble/low_dose_CT/blob/main/WS-2_framework/paper_draft/reproduction_guide.md
+    about: "If you can't reproduce a manuscript claim, the reproduction guide's per-claim anchor table (§10) lists the exact command to re-derive each number."
+  - name: Security disclosure (private channel)
+    url: https://github.com/integritynoble/low_dose_CT/blob/main/SECURITY.md
+    about: "Suspected credential-forgery vulnerabilities go through the private security channel, NOT a public issue."
+  - name: Contribution policy
+    url: https://github.com/integritynoble/low_dose_CT/blob/main/WS-2_framework/pwm_dose_equivalence/CONTRIBUTING.md
+    about: "Before opening a feature-request issue against the library, the CONTRIBUTING.md sign-off tiers tell you what level of review your change will need."

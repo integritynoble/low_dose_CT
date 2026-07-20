@@ -1,12 +1,14 @@
 # WS-3 — Reference Reconstruction Method (Track 9 sub-track 9c)
 
+[![WS-3 CI](https://github.com/integritynoble/low_dose_CT/actions/workflows/ws3-ci.yml/badge.svg?branch=heyang)](https://github.com/integritynoble/low_dose_CT/actions/workflows/ws3-ci.yml)
+
 An **improvable, open-source low-dose CT reconstruction method** scoring top-25% on the (initially empty) leaderboard, with rigorous uncertainty quantification, cross-vendor generalization, and a verified L4 cert on PWM mainnet.
 
 ---
 
 ## Goals
 
-1. **Publish a peer-reviewed paper** at **MICCAI** (primary) or ***IEEE TMI*** (fallback) describing the unrolled-iterative reconstruction architecture, UQ, and cross-vendor evaluation.
+1. **Publish a peer-reviewed paper** at ***Nature Scientific Data*** (primary) as a **Data Descriptor** for the released derived-data corpus — reference reconstructions + per-pixel uncertainty maps + paired error maps + downstream-task score maps + signal-equivalence credentials over the WS-1 benchmark (the reconstruction pipeline is demoted to data provenance). The prior MICCAI / *IEEE TMI* **method**-paper framing is preserved at [`paper_draft/manuscript_method_miccai.tex`](paper_draft/manuscript_method_miccai.tex) as a fallback. See [`paper_draft/README.md`](paper_draft/README.md) for the reframe rationale and submission-readiness gates.
 2. **Register L4 cert on PWMRegistry** — the first L4 cert against the WS-1 L3 benchmark. Future community submissions reproduce this pattern; cleanliness here scales.
 3. **Open-source the code under Apache 2.0** with a reproducible RunBundle on IPFS — `docker run` reproduces published numbers bit-identically (within FP tolerance).
 
@@ -69,7 +71,7 @@ Three baselines reproduced inside this folder under `baselines/`. They serve thr
 | # | Task | Output |
 |---|---|---|
 | 4.1 | Draft manuscript (Methods, Architecture, UQ, Cross-vendor, Credentials, Comparison) | Draft v1 |
-| 4.2 | Submit to MICCAI (or *IEEE TMI*); respond to reviewer comments | Acceptance letter |
+| 4.2 | Deposit the corpus (figshare/Zenodo DOI); submit Data Descriptor to *Scientific Data*; respond to reviewer comments | Acceptance letter |
 | 4.3 | Publish RunBundle to IPFS with stable CID | CID recorded in L4 cert |
 | 4.4 | Author and register L4 cert on PWMRegistry | L4 hash on chain |
 | 4.5 | Validate Track 7 agent-query loop returns this cert as the SOTA pointer | Agent demo proven |
@@ -86,14 +88,15 @@ Three baselines reproduced inside this folder under `baselines/`. They serve thr
 | D9 + 180 | v1 single-model ablation done; deep-ensemble training started | pending |
 | D9 + 270 | v1 deep ensemble + UQ calibration validated; cross-vendor results | pending |
 | D9 + 365 | RunBundle packaged; 5-tuple credentials computed; manuscript drafted | pending |
-| D9 + 540 | **Paper submitted to MICCAI / *IEEE TMI*; L4 cert on chain; agent-query loop validated** | pending |
+| D9 + 540 | **Corpus deposited + Data Descriptor submitted to *Scientific Data*; L4 cert on chain; agent-query loop validated** | pending |
 | D9 + 730 | Paper accepted; method is one of the seed leaderboard entries when WS-4 launches | pending |
 
 ---
 
 ## Done when
 
-- [ ] Paper accepted at MICCAI or *IEEE TMI*
+- [ ] Data Descriptor accepted at *Nature Scientific Data* (fallback: MICCAI / *IEEE TMI* via the preserved method draft)
+- [ ] Derived-data corpus deposited (figshare/Zenodo DOI, CC BY 4.0) and distinct from the WS-1 raw-scan release
 - [ ] Code open-sourced under Apache 2.0
 - [ ] L4 cert against WS-1 benchmark on PWM mainnet
 - [ ] RunBundle reproducible from IPFS (verified by external party)
@@ -108,11 +111,29 @@ Three baselines reproduced inside this folder under `baselines/`. They serve thr
 
 | Path | Purpose | Status |
 |---|---|---|
-| `baselines/` | RED-CNN + transformer + diffusion + comparison harness | pending Phase 1 |
-| `v0.1/` | Phase 2 prototype | pending Phase 2 |
-| `v1/` | Phase 3 production version | pending Phase 3 |
+| `corpus_emit/` | Credential-emission step: turns cohort task scores into deposit-ready `credential.json` records + `all_credentials.jsonl` index, via the WS-2 library | **wired + tested** (18 tests pass on synthetic scores; real scores arrive Phase 3) |
+| `fixture/` | Synthetic end-to-end corpus generator (`make_synthetic_corpus.py`): valid NIfTI records + emitted credentials + packaged manifest/metadata, exercising emit → package → verify | **runnable + tested** (11 tests; one-command CI / reviewer demo, no Phase-3 data needed) |
+| `deposit/` | *Scientific Data* deposit kit: checklist + `dataset_metadata.json` schema/template + `package_corpus.py` (fills metadata counts + writes/verifies `MANIFEST.sha256`) | **ready + tested** (13 tests; corpus + DOI gated on Phase 3) |
+| `method/` | **The reference method** (`pwm_ldct_recon`): unrolled iterative recon + differentiable Radon + deep-ensemble UQ + single-model **baseline emission** (`FBPBaseline`/`ModelBaseline`) + the `emit_corpus` Phase-3 run that drives `corpus_emit`/`deposit`. Mirrors Methods + Supp. Table S1 cell-for-cell. | **scaffolded + tested** (19 CPU tests; `pwm-recon smoke` runs the whole Phase-3 pipeline incl. a baseline on synthetic data; real run is GPU- + data-gated) |
+| `runbundle/` | PWM RunBundle for L4 cert + local regeneration: pinned `Dockerfile` + `run.py` (`--self-test` / `--emit`) + `results.schema.json`. `docker run` reproduces the corpus + validation numbers. | **scaffolded + CI-exercised** (self-test runs in `ws3-method`; real `--emit` GPU- + data-gated) |
+| `baselines/` | RED-CNN + transformer + diffusion + comparison harness | record emission wired in `method/` (`baselines/<method>/...`); training the 5 baselines is Phase 1, GPU-gated |
+| `v0.1/` | Phase 2 prototype | folded into `method/` (config = single member) |
+| `v1/` | Phase 3 production version | `method/` ensemble; **training run** GPU- + data-gated |
 | `runbundle/` | PWM-format RunBundle for L4 cert | pending Phase 3 |
-| `paper_draft/` | MICCAI / *IEEE TMI* manuscript | pending Phase 4 |
+| `paper_draft/` | *Scientific Data* **Data Descriptor** (`manuscript.tex`, 8 pp, compiles clean) + preserved MICCAI method draft (`manuscript_method_miccai.tex`) | reframed; validation tables gated on Phase 3 data + deposit |
+
+---
+
+## Continuous integration
+
+[`../.github/workflows/ws3-ci.yml`](../.github/workflows/ws3-ci.yml) runs on every
+push to `main` / `heyang` (and PRs to `main`) that touches WS-3 or the WS-2
+library, on Python 3.10 / 3.11 / 3.12. It installs the WS-2 library, runs all
+three suites (`corpus_emit` 18 + `deposit` 13 + `fixture` 11 tests), builds the
+synthetic corpus end-to-end and confirms its `MANIFEST.sha256` with
+`sha256sum -c`, and asserts a cross-workstream invariant: a WS-3-emitted
+credential carries the same `FRAMEWORK_SPEC` hash the installed WS-2 library
+reports (catches issuance against a stale framework version).
 
 ---
 

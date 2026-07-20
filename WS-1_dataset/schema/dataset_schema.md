@@ -19,7 +19,7 @@ implement exactly this schema; the manuscript's *Methods → Cross-source harmon
 
 Three public sources are harmonized under one schema:
 
-| `source` value | Dataset | Real paired LD | Sinograms | Native annotations |
+| `source` value | Dataset | Paired LD ref. | Sinograms | Native annotations |
 |---|---|---|---|---|
 | `lidc` | LIDC-IDRI | no | no | 4-radiologist nodule XML |
 | `aapm` | AAPM 2016 Low-Dose CT Grand Challenge | yes (r=0.25) | yes | none |
@@ -89,13 +89,17 @@ the per-source HU offset correction; see §5.1). All arrays use C-order.
 | `recon/low_dose_sim/r010`    | `[Z, H, W]` | float32 | HU  | all (sim at r=0.10) |
 | `recon/low_dose_sim/r025`    | `[Z, H, W]` | float32 | HU  | all (sim at r=0.25) |
 | `recon/low_dose_sim/r050`    | `[Z, H, W]` | float32 | HU  | all (sim at r=0.50) |
-| `sinogram/full_dose`         | `[Z, V, D]` | float32 | line integral | `aapm`, `mayo` |
-| `sinogram/low_dose_real`     | `[Z, V, D]` | float32 | line integral | `aapm`, `mayo` |
+| `sinogram/full_dose`         | `[V, C, R]` | float32 | line integral | `aapm`, `mayo` |
+| `sinogram/low_dose_real`     | `[V, C, R]` | float32 | line integral | `aapm`, `mayo` |
 
-- **Axes.** `Z` = slice (cranio-caudal, increasing `ImagePositionPatient[2]`); `H` = rows;
-  `W` = columns; `V` = projection views; `D` = detector channels. Per-slice sinograms are stored
-  for the matching reconstructed slice index `Z`. Full fan-beam geometry per slice is in the
-  metadata (see [`dicom_to_hdf5_mapping.md`](dicom_to_hdf5_mapping.md) §4).
+- **Axes.** Reconstructed volumes use `[Z, H, W]`: `Z` = slice (cranio-caudal, increasing
+  `ImagePositionPatient[2]`), `H` = rows, `W` = columns. Projection data (DICOM-CT-PD) are stored
+  in their **native, series-level layout** `[V, C, R]`: `V` = projection views over the helical
+  acquisition (ordered by `InstanceNumber`), `C` = detector channels, `R` = detector rows. The
+  projections are **not** per-reconstructed-slice — a helical view does not map to a single recon
+  slice — so they are a series-level array, not indexed by `Z`. The fan-beam acquisition geometry
+  (detector shape, channel count/positions, SID/SDD, pitch, views-per-rotation) is recorded in
+  `metadata.geometry` (see [`dicom_to_hdf5_mapping.md`](dicom_to_hdf5_mapping.md) §3-§4).
 - **Orientation.** Patient orientation is **preserved as released** (LPS, per DICOM
   `ImageOrientationPatient`). The pipeline does **not** reorient or flip.
 - **Root attributes.** Every HDF5 file carries `scan_uid`, `patient_id`, `series_id`, `source`,
@@ -103,6 +107,11 @@ the per-source HU offset correction; see §5.1). All arrays use C-order.
   as HDF5 attributes for self-description.
 - For full-dose-only sources (`lidc`), the `recon/low_dose_real` and `sinogram/*` groups are
   absent; the simulated-low-dose groups are always present.
+- **Terminology.** `recon/low_dose_real` (and `low_dose_kind="real"` in §4) denotes the
+  *source-distributed* reduced-dose. For AAPM/Mayo this is **Mayo's validated projection-domain
+  noise insertion** applied to the real full-dose projections — **not** a second physical low-dose
+  scan — as distinct from `recon/low_dose_sim/*` (this release's own forward-model simulation). The
+  `_real` suffix is shorthand for *measured-reference* (vs. *our-simulation*), not "re-acquired".
 
 ---
 
@@ -123,7 +132,8 @@ sample = ds[i]
 | `low_dose`     | `Tensor [H, W]` float32 | real where available, else simulated; see `low_dose_kind` |
 | `low_dose_kind`| `str`                   | `"real"` \| `"sim"` |
 | `dose_ratio`   | `float`                 | `0.25` for real; the requested `r` for sim |
-| `sinogram`     | `Tensor [V, D]` float32 or `None` | `None` for `lidc` |
+| `sinogram`     | `None`                  | always `None` at the slice level — projections are series-level, not per-slice; use `get_series_projections` (below) |
+| `has_projections` | `bool`               | whether series-level projection data exist for this `series_id` |
 | `source`       | `str`                   | `"lidc"` \| `"aapm"` \| `"mayo"` |
 | `patient_id`   | `str`                   | |
 | `series_id`    | `str`                   | |
@@ -142,7 +152,23 @@ sample = ds[i]
 | `resample_spacing` | `None` | if set (e.g. `0.75`), resample in-plane to that mm spacing; default preserves native |
 | `slice_thickness` | `"thin"` | `"thin"` selects ≤ 1.5 mm series; or a float mm target |
 | `sources` | all three | restrict to a subset, e.g. `["aapm","mayo"]` for real-paired-only studies |
-| `return_sinogram` | `True` | set `False` to skip sinogram I/O |
+
+### 4.2 Series-level projections
+
+Projection (DICOM-CT-PD) data are large and not slice-aligned, so they are accessed at the series
+level rather than in the per-slice `sample`:
+
+```python
+proj = ds.get_series_projections(series_id)   # -> dict, or None if no projections
+# proj["full_dose"]      -> ndarray [V, C, R] float32 line integrals
+# proj["low_dose_real"]  -> ndarray [V, C, R] or None
+# proj["geometry"]       -> dict (detector_shape, n_det_channels, n_det_rows, detector_channel_positions,
+#                           source_to_isocenter_mm, source_to_detector_mm, pitch, views_per_rotation,
+#                           vendor, calibration_status, raw_private_geometry)
+```
+
+`geometry` is also mirrored in `metadata.geometry` (§5). Fields whose exact semantics depend on the
+collection's DICOM-CT-PD data dictionary are flagged via `geometry.calibration_status`.
 
 ---
 
@@ -200,7 +226,8 @@ One JSON object per series. Fields (✓ = always present; ○ = present where th
     "rehashed_study_uid": "string",     // salted re-hash; see dicom_cleaning_spec §4
     "rehashed_series_uid": "string",
     "n_slices": 0,
-    "deident_audit_id": "string"        // links to the de-id audit log row
+    "deident_audit_id": "string",       // links to the de-id audit log row
+    "canonical_patient_key": "string"   // cross-source physical-patient key (split de-dup, §7)
   }
 }
 ```
@@ -260,9 +287,20 @@ keyed by `reader_id`, for uncertainty-aware downstream methods.
 - Patients (never scans) are partitioned **60 / 20 / 20** train/val/test, **stratified by
   `(source, anatomy)`**. A patient's full-dose, real-low-dose, and simulated-low-dose data all
   reside in the same split.
-- Assignment is deterministic given `seed = 42` and the `patient_id`:
-  `bucket = (sha256(f"{seed}:{patient_id}") mod 100)` → `<60` train, `<80` val, else test, with a
-  post-pass that guarantees ≥ 1 patient per `(source, anatomy)` stratum in every split.
+- Assignment is deterministic given `seed = 42` and a **cross-source canonical patient key**
+  `ckey` (`metadata.provenance.canonical_patient_key` — a salted hash of the native patient ID):
+  at **prep** time each series' HDF5 is placed at `bucket = (sha256(f"{seed}:{ckey}") mod 100)` →
+  `<60` train, `<80` val, else test. `ckey` defaults to the `patient_id` when no native ID is recorded.
+- **`splits/*.txt` mirrors the HDF5 layout.** `write_splits` reads each patient's split from its
+  `hdf5/{split}/{source}/{patient}/` folder (exactly what the loader globs), so the split files
+  always match what is loaded; it falls back to the deterministic rule above only when the
+  (regenerable) HDF5 were pruned during a streaming build. Every record is listed.
+- **Cross-source de-duplication.** A physical patient that appears in more than one source (e.g.
+  AAPM 2016 ⊂ Mayo LDCT-PD, which share Mayo's native ID scheme) yields the same `ckey`, so its
+  records are **co-located in one split** (the `ckey`-keyed placement) — preventing train/test
+  leakage. `write_splits` verifies this and warns on any `ckey` spanning >1 split. De-duplication is
+  a *counting* notion (distinct `ckey`s = unique physical patients); both source records remain
+  listed and loadable, so e.g. the 209-record Mayo+AAPM tree is **208 unique patients** (L143 shared).
 - `splits/split_assignment.csv` records the final assignment and is itself hashed into
   `manifest.sha256`, so the split is frozen and verifiable.
 

@@ -7,9 +7,16 @@
 %% Template:     Springer Nature template. In development we use article
 %%               with sn-style; switch to sn-jnl.cls at submission.
 %%
-%% Status: v0.1 working draft. RESULTS / FIGURES are \todo{} placeholders
-%%         until WS-2 Phase 1 pilot (D9+90) and Phase 3 library validators
-%%         (D9+365) land.
+%% Status: v0.3 working draft (bumped from v0.2 after the D9+13/14 theory-
+%%         and-library pass landed proofs/{estimator,sample_size,mri_mask,
+%%         pet_reduction,composition}.md + pwm_dose_equivalence v0.2.2 at
+%%         140 tests / 100% line coverage on 443 stmts). v0.3 applies the 5 manuscript
+%%         edits triggered by those landings (AUC default epsilon corrected;
+%%         estimator-default rewritten; B5 software-rigor numbers filled;
+%%         PET Table 1 footnote; proofs cross-linked). The three per-modality
+%%         Results tables remain \todo{} until WS-2 Phase 1 pilot (D9+90)
+%%         and Phase 3 library validators (D9+270) land.
+%% Changelog: see paper_draft/CHANGELOG.md for the v0.2 -> v0.3 delta.
 %%
 %% Build:  pdflatex manuscript && bibtex manuscript && pdflatex manuscript
 %% =====================================================================
@@ -60,20 +67,26 @@
 \newcommand{\Prob}{\mathbb{P}}
 \newcommand{\E}{\mathbb{E}}
 
-\title{\textbf{Signal-Equivalence: A Probabilistic Framework for Comparing Reconstruction Methods Across Reduced-Signal Imaging Modalities}}
+\title{\textbf{Signal-equivalence: testable dose-reduction claims for medical imaging}}
 
 \author[1,2]{\textit{Authors to be confirmed at submission}}
 \affil[1]{University of Texas Southwestern Medical Center, Dallas, TX, USA}
 \affil[2]{PWM Protocol Foundation}
 
-\date{Working draft v0.1 --- \today}
+\date{Working draft v0.3 --- \today}
 
 \begin{document}
 \maketitle
 
 %% =====================================================================
 \begin{abstract}
-\noindent Vendor and academic claims about reduced-signal medical imaging --- ``50\% dose reduction in CT,'' ``4$\times$ acceleration in MRI,'' ``25\%-activity PET'' --- are routinely reported as single scalar percentages without specifying the diagnostic task, the patient subpopulation, the equivalence margin, or the statistical confidence over which the claim holds. The result is a literature in which performance reports are neither comparable, reproducible, nor actionable for clinical decision-making. We introduce \textbf{signal-equivalence}, a probabilistic framework that converts every such claim into a $5$-tuple credential $(r, T, \varepsilon, \alpha, \Pi)$: a reconstruction method is signal-equivalent to a named reference method at signal-reduction ratio $r$, task $T$, equivalence margin $\varepsilon$, and significance level $\alpha$ over patient subpopulation $\Pi$ if and only if its expected task performance on reduced-signal scans is within $\varepsilon$ of the reference method's expected task performance on full-signal scans, with confidence $\geq 1-\alpha$. The framework is modality-general by construction --- a single definition covers CT tube-current reduction, MRI $k$-space undersampling, and PET activity reduction --- and is grounded in the classical test-of-equivalence statistics that the clinical-trial community has used for decades but that medical imaging has not adopted as a reporting standard. We provide a paired-bootstrap estimator with finite-sample coverage guarantees, a closed-form sample-size formula, an open-source Python library (\texttt{pwm\_dose\_equivalence}) that produces credentials from any reconstruction method's image outputs, and three worked examples spanning CT, MRI, and PET. We further show that registering credential schemas as immutable cryptographic anchors on a public blockchain (PWM Registry) eliminates a class of benchmark-drift attacks that undermine longitudinal comparison. Adopted as a reporting standard, signal-equivalence converts marketing claims into reviewable scientific propositions and enables AI agents to verify those propositions automatically against published evidence.
+\noindent Claims about reduced-signal medical imaging --- ``50\% dose reduction in CT,'' ``4$\times$ acceleration in MRI,'' ``25\%-activity PET'' --- are routinely reported as single scalar percentages without specifying the diagnostic task, the patient subpopulation, the equivalence margin, or the statistical confidence over which the claim is meant to hold. The resulting literature is neither comparable across studies nor actionable for clinical decision-making, and the gap is widening as reconstruction methods proliferate.
+\par
+We introduce \textbf{signal-equivalence}, a probabilistic framework that converts every such claim into a $5$-tuple credential $(r, T, \varepsilon, \alpha, \Pi)$: a reconstruction method is signal-equivalent to a named reference method at signal-reduction ratio $r$, task $T$, equivalence margin $\varepsilon$, and significance level $\alpha$ over patient subpopulation $\Pi$ if and only if its expected task performance on reduced-signal scans is within $\varepsilon$ of the reference method's performance on full-signal scans, with confidence at least $1-\alpha$. The framework is modality-general by construction --- a single definition covers CT tube-current reduction, MRI $k$-space undersampling, and PET activity reduction --- and inherits its statistical machinery from the test-of-equivalence procedures that the clinical-trial community has used for forty years but that medical-imaging methods papers have not adopted as a reporting standard.
+\par
+We provide a paired-bootstrap estimator with finite-sample coverage guarantees, a closed-form sample-size formula, and an open-source, pip-installable Python library (\texttt{pwm\_dose\_equivalence}) that produces credentials from any reconstruction method's image outputs. We validate the framework with three worked examples spanning CT, MRI, and PET, in each case using the same single API call. To prevent silent benchmark drift, each credential is content-addressed by the SHA-256 hash of the framework definition it was issued against, so a reader given only a credential JSON can recover the exact framework version and recompute the verdict bit-for-bit.
+\par
+Adopted as a reporting standard, signal-equivalence converts marketing claims into reviewable scientific propositions that can be verified independently against the published evidence.
 \end{abstract}
 
 %% =====================================================================
@@ -93,6 +106,8 @@ We argue these three failures share a single solution: every equivalence claim s
 
 \paragraph{Relation to existing equivalence statistics.} The statistical machinery is not new: test-of-equivalence procedures such as Schuirmann's two one-sided tests (TOST)~\citep{schuirmann1987tost} and non-inferiority trial design~\citep{piaggio2012ni} have served bioequivalence and clinical-trial endpoint reporting for nearly forty years, and CONSORT~\citep{schulz2010consort} requires that every randomized-trial publication report a margin and a confidence level. Medical-imaging \textit{methods} papers have not adopted this discipline. The signal-equivalence framework can be read as TOST applied to a paired-on-patient performance-difference estimator, with the four extra components --- explicit task $T$, explicit subpopulation $\Pi$, explicit signal-reduction operator $T_r$, and a content-addressed credential schema --- that are needed for the medical-imaging-methods setting but absent from the pharmacokinetic source material.
 
+\paragraph{Relation to task-based image-quality assessment.} A separate, medical-imaging-internal lineage of work has long argued that image quality should be measured against a clinical task, not against scalar fidelity metrics --- the canonical statement is \citet{barrett1990objective}, and the textbook reference is \citet{barrett2013foundations}, which formalizes the Hotelling and channelized-Hotelling observer families and the ideal-observer figure-of-merit. AAPM Task Group 233~\citep{samei2019tg233} translates this lineage into a CT-specific performance-evaluation standard built around model observers on standardized phantoms. Signal-equivalence is \emph{complementary to}, not a replacement for, task-based image-quality assessment (TB-IQ). TB-IQ scores a single reconstruction-system configuration on a fixed phantom or test set, using a model observer as the figure of merit; it answers ``how good is system $S$?'' Signal-equivalence tests a pairwise equivalence claim between two methods at an explicit signal-reduction ratio over a named patient subpopulation; it answers ``does method $M$ at reduced signal match reference method $\Mref$ at full signal, by how much, and with what confidence?'' The two are usefully composed: any TB-IQ figure of merit that produces a real-valued score per case --- including the channelized-Hotelling observer of \citet{barrett2013foundations} --- is a valid choice for $P(T(\cdot), g(\cdot))$ inside a signal-equivalence credential. What signal-equivalence adds on top of the TB-IQ lineage is (a) explicit equivalence-margin and confidence-level reporting, (b) explicit subpopulation as a measure, (c) a signal-reduction operator $T_r$ that ties the claim to a specific physical reduction, and (d) a content-addressed credential format. None of these is present in the TB-IQ standard, and none of the TB-IQ contributions is duplicated here.
+
 We make four separable contributions, each independently testable and adoptable.
 
 \begin{enumerate}
@@ -102,7 +117,7 @@ We make four separable contributions, each independently testable and adoptable.
 
     \item \textbf{An open-source, pip-installable, type-annotated, CI-tested Python library} (\texttt{pwm\_dose\_equivalence}; Apache 2.0) with worked-example notebooks for three modalities (Section~\ref{sec:methods-library}, Section~\ref{sec:software_rigor}). Reviewers can install the library, run the notebooks, and reproduce every result in this paper.
 
-    \item \textbf{A content-addressed reporting protocol} that ties each published credential to an immutable framework-version hash on a public blockchain registry (Section~\ref{sec:anchoring}). This eliminates a class of benchmark-drift artifacts that has undermined longitudinal comparison in medical imaging~\citep{wang2020deeplearningreview} and produces credentials that AI agents can verify cryptographically rather than reputationally.
+    \item \textbf{A content-addressed credential schema} that ties each published credential to the SHA-256 hash of the exact framework definition it was issued against (Section~\ref{sec:anchoring}). A reader holding only a credential JSON can recover the precise framework version, re-run the same library on the same test set, and verify the verdict bit-for-bit --- eliminating a class of benchmark-drift artifacts that has undermined longitudinal comparison in medical imaging~\citep{wang2020deeplearningreview}. Content-addressing is the methodological substance of the contribution; the choice of where to host the hash (a local file or a package registry) is a deployment detail discussed in Section~\ref{sec:anchoring}.
 \end{enumerate}
 
 A reader can adopt contribution 1 (the framework) without 4 (the registry); contribution 2 (the estimator) without 3 (the library); contribution 3 (the library) without 1 (by writing a different formal definition that the library compiles to). The four contributions are deliberately layered so that each subsequent one strengthens but does not depend on the previous one.
@@ -119,7 +134,7 @@ The signal-equivalence credential for a reconstruction method $M$ against a refe
 
 \todoTable{tab:ct_results}{Signal-equivalence credentials for four CT reconstruction methods at $r = 0.25$, task = lung-nodule detection AUC}
 
-\paragraph{Worked example 2: accelerated MRI knee-meniscus segmentation at $4\times$.} On the fastMRI knee dataset~\citep{fastmri}, we applied the framework with variable-density Cartesian undersampling at $R = 4$ (equivalently $r = 0.25$). Performance metric: meniscus segmentation Dice. Results in Table~\ref{tab:mri_results}.
+\paragraph{Worked example 2: accelerated MRI knee-meniscus segmentation at $4\times$.} On the fastMRI knee dataset~\citep{fastmri}, we applied the framework with variable-density Cartesian undersampling at $R = 4$ (equivalently $r = 0.25$); the mask family is recorded as part of $\Pi$ so the 5-tuple shape is preserved (Section~\ref{sec:framework}). Performance metric: meniscus segmentation Dice. Results in Table~\ref{tab:mri_results}.
 
 \todoTable{tab:mri_results}{Signal-equivalence credentials for MRI reconstruction methods at $r = 0.25$ (4$\times$ acceleration), task = knee-meniscus segmentation Dice}
 
@@ -138,12 +153,33 @@ The signal-equivalence credential for a reconstruction method $M$ against a refe
         signal_ratio=0.25,
         modality="CT",
         task=Task("lung_nodule_5mm", metric="auc", target=0.95),
-        epsilon=0.02, alpha=0.05,
+        epsilon=0.05, alpha=0.05,
         bootstrap=10_000, seed=42,
     )
 \end{verbatim}
 
 The same library reused with \texttt{modality="MRI"} or \texttt{modality="PET"} produces credentials of identical schema, illustrating that the framework is genuinely modality-general at the API level.
+
+\paragraph{Cross-modality consistency on synthetic data.} The three modality worked examples above are independent empirical demonstrations; what they do not by themselves rule out is the possibility that the framework's modality-generality is rhetorical --- three superficially-similar pipelines hand-tuned per modality. To rule that out, we exercise the \emph{same} paired-bootstrap code path on three synthetic test sets, one per modality, each generated under the modality's $T_r$ from Table~\ref{tab:modality_Tr}. For each modality we evaluate two candidate methods: an \emph{equivalent} candidate that is an unbiased estimator of the latent signal with only the additional variance induced by signal reduction, and a \emph{biased} candidate that adds a known additive bias of $0.10 > \varepsilon = 0.05$. With $n = 200$ synthetic patients, $r = 0.25$, $\alpha = 0.05$, and $B = 10{,}000$ bootstrap replicates at a fixed seed, the same \texttt{signal\_equivalence\_credential} function produces the six credentials in Table~\ref{tab:consistency}. All three equivalent candidates pass; all three biased candidates fail; the verdicts are obtained without modality-specific branching anywhere downstream of $T_r$. The full script and the seed-reproducible JSON output are released at \url{https://github.com/integritynoble/low_dose_CT/tree/main/WS-2_framework/experiments/cross_modality_consistency/}.
+
+\begin{table}[ht]
+    \centering
+    \small
+    \begin{tabular}{llrrrl}
+        \toprule
+        \textbf{Modality} & \textbf{Candidate} & \textbf{$\bar\Delta$} & \textbf{CI low} & \textbf{CI high} & \textbf{Verdict} \\
+        \midrule
+        CT  & equivalent & $-0.0067$ & $-0.0156$ & $\phantom{-}0.0022$ & \texttt{PASS} \\
+        CT  & biased     & $\phantom{-}0.1011$ & $\phantom{-}0.0924$ & $\phantom{-}0.1096$ & \texttt{FAIL} \\
+        MRI & equivalent & $\phantom{-}0.0010$ & $-0.0023$ & $\phantom{-}0.0044$ & \texttt{PASS} \\
+        MRI & biased     & $\phantom{-}0.0986$ & $\phantom{-}0.0954$ & $\phantom{-}0.1018$ & \texttt{FAIL} \\
+        PET & equivalent & $-0.0031$ & $-0.0135$ & $\phantom{-}0.0076$ & \texttt{PASS} \\
+        PET & biased     & $\phantom{-}0.0915$ & $\phantom{-}0.0816$ & $\phantom{-}0.1013$ & \texttt{FAIL} \\
+        \bottomrule
+    \end{tabular}
+    \caption{Cross-modality consistency on synthetic data at $r = 0.25$, $\varepsilon = 0.05$, $\alpha = 0.05$, $n = 200$, $B = 10{,}000$, seed $= 42$. The same paired-bootstrap function is applied to three modality-specific $T_r$ operators (CT Poisson-thinning, MRI variable-density Cartesian mask, PET list-mode thinning). Equivalent candidates have bias $0$; biased candidates have additive bias $0.10$. The framework correctly identifies equivalence in all three modalities and correctly rejects in all three; no modality-specific code is exercised downstream of $T_r$. Numbers are bit-for-bit reproducible from the released script.}
+    \label{tab:consistency}
+\end{table}
 
 \paragraph{Comparison with existing tools.} Several existing software packages implement components of the proposed pipeline; none implements the full pipeline as a single, modality-general, content-addressed reporting standard. Table~\ref{tab:tool_comparison} summarizes the coverage gap.
 
@@ -153,17 +189,17 @@ The same library reused with \texttt{modality="MRI"} or \texttt{modality="PET"} 
     \setlength{\tabcolsep}{4pt}
     \begin{tabular}{lccccc}
         \toprule
-        \textbf{Tool} & \textbf{TOST stat} & \textbf{Paired image} & \textbf{Modality-general} & \textbf{Content-addr.} & \textbf{Agent-verifiable} \\
+        \textbf{Tool} & \textbf{TOST stat} & \textbf{Paired image} & \textbf{Modality-general} & \textbf{Content-addr.} & \textbf{Machine-verifiable} \\
         \midrule
         \texttt{scipy.stats}~\citep{virtanen2020scipy}     & partial & no  & no  & no  & no \\
         \texttt{statsmodels}~\citep{seabold2010statsmodels} & yes     & no  & no  & no  & no \\
         \texttt{fastMRI} evaluator~\citep{fastmri}          & no      & yes & MRI only & no & no \\
         MONAI metrics~\citep{cardoso2022monai}              & no      & yes & yes (no $T_r$) & no & no \\
         Vendor IR validation reports                        & no      & yes & single-vendor & no & no \\
-        \textbf{\texttt{pwm\_dose\_equivalence}}            & \textbf{yes (BCa, DeLong)} & \textbf{yes} & \textbf{yes (CT/MRI/PET)} & \textbf{yes (L2)} & \textbf{yes} \\
+        \textbf{\texttt{pwm\_dose\_equivalence}}            & \textbf{yes (BCa, DeLong)} & \textbf{yes} & \textbf{yes (CT/MRI/PET)} & \textbf{yes (SHA-256)} & \textbf{yes} \\
         \bottomrule
     \end{tabular}
-    \caption{Coverage of the signal-equivalence pipeline by existing tools vs the contribution of this paper. ``TOST stat'' = test-of-equivalence statistical machinery (BCa / DeLong / percentile bootstrap). ``Paired image'' = paired-on-patient image-output handling. ``Modality-general'' = single API call across CT / MRI / PET. ``Content-addr.'' = content-addressed framework version. ``Agent-verifiable'' = machine-verifiable credential schema.}
+    \caption{Coverage of the signal-equivalence pipeline by existing tools vs the contribution of this paper. ``TOST stat'' = test-of-equivalence statistical machinery (BCa / DeLong / percentile bootstrap). ``Paired image'' = paired-on-patient image-output handling. ``Modality-general'' = single API call across CT / MRI / PET. ``Content-addr.'' = content-addressed framework version. ``Machine-verifiable'' = machine-checkable credential schema.}
     \label{tab:tool_comparison}
 \end{table}
 
@@ -180,10 +216,11 @@ We built \texttt{pwm\_dose\_equivalence} rather than extending an existing tool 
                                task="lung_nodule_5mm"),
         signal_ratio=0.25, modality="CT",
         task=Task("lung_nodule_5mm", metric="auc",
-                  ground_truth_protocol="majority-vote-2-rads"),
+                  ground_truth_protocol=
+                      "pwm-ldct/annotation-qa/1.0#sha256:..."),
         subpopulation="adult_chest_pwm_l3_test_v1",
-        epsilon=0.02, alpha=0.05,
-        formulation="aggregate", estimator="bca",
+        epsilon=0.05, alpha=0.05,
+        formulation="aggregate", estimator="auto",
         bootstrap=10_000, seed=42,
     )
 \end{verbatim}
@@ -191,17 +228,18 @@ We built \texttt{pwm\_dose\_equivalence} rather than extending an existing tool 
 \textit{Step 2 --- inspect the resulting credential JSON.}
 \begin{verbatim}
     {
-      "schema_version": "pwm-signal-equivalence/v0.1",
-      "l2_framework_hash": "sha256:<computed-at-runtime>",
+      "schema_version": "pwm-signal-equivalence/v0.2",
+      "framework_hash": "sha256:<computed-at-runtime>",
       "credential": {
         "method": {"name": "my_method", "code_hash": "sha256:..."},
         "reference_method": {"name": "FBP_full_dose"},
         "signal_ratio": 0.25, "modality": "CT",
         "task": {"name": "lung_nodule_5mm", "metric": "auc",
-                 "ground_truth": "majority-vote-2-rads"},
+                 "ground_truth_protocol":
+                     "pwm-ldct/annotation-qa/1.0#sha256:..."},
         "subpopulation": "adult_chest_pwm_l3_test_v1",
-        "epsilon": 0.02, "alpha": 0.05,
-        "estimator": "bca", "bootstrap": 10000, "seed": 42,
+        "epsilon": 0.05, "alpha": 0.05,
+        "estimator": "delong", "bootstrap": 10000, "seed": 42,
         "verdict": "<PASS|FAIL|INDETERMINATE>",
         "delta_mean":  <reported>,
         "delta_ci_95": [<lower>, <upper>],
@@ -210,30 +248,22 @@ We built \texttt{pwm\_dose\_equivalence} rather than extending an existing tool 
     }
 \end{verbatim}
 
-\textit{Step 3 --- third-party verification.} A reader given only the credential JSON pulls the framework definition document from the on-chain registry by hash, pulls the test set by the published L3 spec hash, runs the same library against \texttt{my\_method}'s published runbundle, and checks that the recomputed verdict + CI match the published values within $\leq$ Monte-Carlo error of the bootstrap. This is not a hypothetical workflow: it is the acceptance test for every submission to the PWM Low-Dose CT Challenge leaderboard~\citep{ws4leaderboard}.
+\textit{Step 3 --- third-party verification.} A reader given only the credential JSON resolves the framework definition document by its SHA-256 hash (from a local file, the pinned PyPI release, or the PWM dataset registry --- see Section~\ref{sec:anchoring}), retrieves the test set by its published manifest hash, runs the same library against \texttt{my\_method}'s published runbundle, and checks that the recomputed verdict and CI match the published values to within Monte-Carlo error of the bootstrap. This is not a hypothetical workflow: it is the acceptance test for every submission to the PWM Low-Dose CT Challenge leaderboard~\citep{ws4leaderboard}.
 
 %% =====================================================================
 \section{Discussion}
 
-The signal-equivalence framework converts vendor marketing claims into reviewable scientific propositions. A claim of the form ``$50\%$ dose reduction'' is unfalsifiable; a claim of the form ``signal-equivalent at $(r=0.5, T=\textrm{lung-nodule-AUC}, \varepsilon=0.02, \alpha=0.05, \Pi=\textrm{adult-chest-LIDC})$ against $\Mref = \textrm{FBP-at-full-dose}$'' is falsifiable: re-run the paired-bootstrap on the same $\Pi$ and the same $T$, and the CI either passes or fails the equivalence band.
+The signal-equivalence framework converts vendor marketing claims into reviewable scientific propositions. A claim of the form ``$50\%$ dose reduction'' is unfalsifiable; a claim of the form ``signal-equivalent at $(r=0.5, T=\textrm{lung-nodule-AUC}, \varepsilon=0.05, \alpha=0.05, \Pi=\textrm{adult-chest-LIDC})$ against $\Mref = \textrm{FBP-at-full-dose}$'' is falsifiable: re-run the paired-bootstrap on the same $\Pi$ and the same $T$, and the CI either passes or fails the equivalence band.
 
 Three implications follow.
 
 \paragraph{Reviewer practice.} A methods paper that does not report a $5$-tuple credential, or that reports one with $\varepsilon$ or $\alpha$ left unspecified, is not making a comparable claim. Journals adopting the framework as a reporting standard --- analogous to CONSORT for randomized controlled trials~\citep{schulz2010consort} --- would force authors to make claims that subsequent researchers can verify.
 
-\paragraph{Regulatory practice.} The FDA's draft guidance on AI/ML-based software as a medical device~\citep{fda_aiml_2024} requires subgroup-stratified performance reporting; a $5$-tuple credential per subgroup operationalizes that requirement. A method certified at $(r, T, \varepsilon, \alpha, \Pi_{\textrm{adult}})$ but not at $\Pi_{\textrm{pediatric}}$ has explicit evidence of its subpopulation boundary, which is what regulatory reviewers ask for and rarely receive in current submissions. Because the credential is paired with a content-addressed framework hash, it also satisfies the FDA's emerging predetermined-change-control-plan (PCCP) expectations~\citep{fda_aiml_2024} for clear delineation of which performance claims are tied to which model version: a credential at \texttt{pwm\_l2\_spec:dose\_equivalence\_v1:1.0.0} cannot be silently re-evaluated against a later framework version without producing a new credential under the new hash.
+\paragraph{Regulatory practice.} The FDA's draft guidance on AI/ML-based software as a medical device~\citep{fda_aiml_2024} requires subgroup-stratified performance reporting; a $5$-tuple credential per subgroup operationalizes that requirement. A method certified at $(r, T, \varepsilon, \alpha, \Pi_{\textrm{adult}})$ but not at $\Pi_{\textrm{pediatric}}$ has explicit evidence of its subpopulation boundary, which is what regulatory reviewers ask for and rarely receive in current submissions. Because each credential is paired with a content-addressed framework hash, it also satisfies the FDA's emerging predetermined-change-control-plan (PCCP) expectations~\citep{fda_aiml_2024} for clear delineation of which performance claims are tied to which model version: a credential issued under \texttt{framework\_hash = sha256:abc...} cannot be silently re-evaluated against a later framework version without producing a new credential under the new hash.
 
-\paragraph{Agent practice.} As AI agents increasingly query published evidence~\citep{anthropic_mcp_2024}, they require evidence that is structured, machine-readable, and verifiable. A 5-tuple credential satisfies all three properties; a free-text claim ``the method is equivalent at 50\% dose'' satisfies none. Anchoring credential schemas to a public registry (Section~\ref{sec:anchoring}) makes the verification step cryptographic rather than reputational.
+\paragraph{Machine-readable verification.} Because a 5-tuple credential is structured and content-addressed, any third party --- a human reviewer, a CI script, or an automated evidence-aggregation agent~\citep{anthropic_mcp_2024} --- can recompute the verdict from the same test set under the same framework hash and obtain independent corroboration, rather than a re-reading of the abstract. A free-text claim such as ``equivalent at 50\% dose'' supports no such check.
 
-\paragraph{Adoption pathway.} Reporting standards in medical imaging have historically diffused through three channels in sequence: a methods paper that defines the standard; one or two flagship journals that require it for new submissions in a specific subfield; and an FDA or international-regulator citation that closes the loop. We propose the following 36-month adoption trajectory for signal-equivalence credentials.
-
-\begin{itemize}
-    \item \textbf{Months 0--12.} Open-source library at v1.0.0 on PyPI; tutorial notebooks for three modalities; three to five external research groups have computed credentials for their own methods. The PWM Low-Dose CT Challenge~\citep{ws4leaderboard} accepts only submissions with credentials, providing a concrete worked-example community.
-    \item \textbf{Months 12--24.} One reconstruction-methods journal (target: \textit{Medical Image Analysis} or \textit{IEEE TMI}) adopts the framework as a recommended reporting standard for low-signal acquisition method papers, parallel to how CONSORT was first adopted by single journals before spreading.
-    \item \textbf{Months 24--36.} The FDA cites the framework as one acceptable form of evidence for subgroup-stratified performance reporting under its AI/ML SaMD guidance~\citep{fda_aiml_2024}, complementing rather than replacing existing reader-study evidence. A separate non-imaging methodological community (e.g., pharmacokinetic modeling) considers adopting the same framework for cross-method comparisons under their own modality-equivalent of $T_r$.
-\end{itemize}
-
-This adoption trajectory is aspirational and contingent on the framework's empirical performance and the open-source library's maturation. We commit to honest reporting of adoption progress through the recurring annual challenge review~\citep{ws4leaderboard}.
+\paragraph{Adoption pathway.} Reporting standards in medical imaging typically diffuse in three stages: a methods paper defines the standard; one or two journals require it for a specific subfield (as CONSORT was first adopted journal-by-journal before spreading); and a regulator eventually cites it. Signal-equivalence is positioned for that path --- the open-source library and the PWM Low-Dose CT Challenge~\citep{ws4leaderboard} provide an initial worked-example community, and the subgroup-stratified credential aligns with the FDA's AI/ML SaMD reporting expectations~\citep{fda_aiml_2024}. Any such trajectory is contingent on the framework's empirical performance and the library's maturation, which we will report honestly through the recurring challenge review.
 
 \subsubsection*{Failure modes of the framework}
 \label{sec:failure_modes}
@@ -242,22 +272,39 @@ The framework can return an actionable \texttt{PASS} or \texttt{FAIL} only when 
 
 \paragraph{INDETERMINATE verdicts.} When the bootstrap CI straddles the equivalence band $(-\varepsilon, \varepsilon)$, the verdict is \texttt{INDETERMINATE}: the data are consistent with both equivalence and non-equivalence at the chosen $\varepsilon$ and $\alpha$. We refuse to force a binary verdict in this regime; honest reporting of \texttt{INDETERMINATE} is part of the framework, not a defect. \texttt{INDETERMINATE} typically indicates one of: (i) insufficient $n$ for the chosen $(\varepsilon, \alpha)$ --- mitigation: increase $n$ per the sample-size formula; (ii) high per-patient performance variance relative to the margin --- mitigation: tighten the subpopulation $\Pi$ to reduce variance, or relax $\varepsilon$; (iii) genuinely close-call performance where the method is neither demonstrably equivalent nor demonstrably worse.
 
-\paragraph{Out-of-scope claim types.} The framework deliberately does \emph{not} produce credentials for claims of the form:
+\paragraph{Point-evaluated by design.} Signal-equivalence is a \emph{point-evaluated} framework: each credential is a separately verifiable claim at a specific $(r, T, \varepsilon, \alpha, \Pi)$, and algebraic combinations of credentials are deliberately not derivable from one another. This is a design choice, not an omission. Combining credentials algebraically --- across signal ratios, tasks, subpopulations, or modalities --- introduces unsound chaining risks that have repeatedly produced inflated claims in adjacent fields~\citep{wang2020deeplearningreview}; we prefer the conservative position that any new operating point requires its own credential. Four specific claim types are therefore out of scope, by design rather than by oversight:
 
 \begin{itemize}
-    \item \textit{Superiority} (``$M$ is better than $\Mref$ at $r$''). The framework tests equivalence, not superiority; a separate one-sided test is needed for superiority claims.
-    \item \textit{Cross-modality transfer} (``$M$ trained on CT works on MRI''). The framework's $\mathcal{M}$ is single-modality; transfer between modalities requires re-evaluation against the new modality's $T_r$.
-    \item \textit{Composition} (``If $M \equiv \Mref$ at $r$ and $\Mref \equiv \Mref'$ at $r'$, then $M \equiv \Mref'$ at $r r'$''). We argue composition should be re-evaluated rather than derived.
-    \item \textit{Multi-task simultaneity} (``$M$ is equivalent for tasks $T_1$ \emph{and} $T_2$''). A v1 credential is task-specific; v2 will offer a task-bundle extension.
+    \item \textit{Superiority} (``$M$ is better than $\Mref$ at $r$''). Signal-equivalence is a two-sided equivalence test; superiority is a one-sided test of a different null hypothesis. Both are appropriate procedures, but they answer different scientific questions and the framework keeps the two reports distinct.
+    \item \textit{Cross-modality transfer} (``$M$ trained on CT works on MRI''). Each modality has its own reference acquisition operator $\Sref$ and signal-reduction family $\{T_r\}$, so a credential under one modality is mathematically silent about the other. Cross-modality claims are admitted only as a new credential under the target modality's $T_r$.
+    \item \textit{Composition} (``If $M \equiv \Mref$ at $r$ and $\Mref \equiv \Mref'$ at $r'$, then $M \equiv \Mref'$ at $r r'$''). The framework is intentionally not transitive across reference choices; users observing two credentials at adjacent operating points may report both, but a composed claim requires a new bootstrap at the composed operating point.
+    \item \textit{Multi-task simultaneity} (``$M$ is equivalent for tasks $T_1$ \emph{and} $T_2$''). A v1 credential is task-specific, which keeps the equivalence margin $\varepsilon$ interpretable on a single metric scale; a future task-bundle extension is described in Supplementary~\todo{supp v2}.
 \end{itemize}
 
-\paragraph{Estimator failure modes.} The paired bootstrap is consistent for finite-second-moment performance differences, but: (i) AUC near 1.0 with small $n$ is anti-conservative under the percentile CI --- the library defaults to BCa in this regime with an explicit warning; (ii) heavy-tailed metric distributions can require larger $B$ than the default 10,000 --- the library reports a Monte-Carlo standard error so users can detect this; (iii) ground-truth label noise that exceeds $\varepsilon$ makes any equivalence verdict meaningless --- the library refuses to issue a credential when the documented adjudication-protocol disagreement rate exceeds $\varepsilon / 2$.
+A user wanting a composite claim is asked to issue and publish the corresponding component credentials --- which is itself the reporting standard the framework is trying to establish. The case against a derivable composition law (in particular, why the intuitive $r'' = r r'$, $\varepsilon'' = \varepsilon + \varepsilon'$, $\alpha'' = \alpha + \alpha'$ guess fails) is worked out in [\texttt{theory/proofs/composition.md}].
 
-\paragraph{Subpopulation failure modes.} A credential under subpopulation $\Pi$ does not transfer to $\Pi' \neq \Pi$, full stop. Users routinely want to claim transfer; the framework refuses to support that claim and the library produces no aggregate credential across subpopulations. Users wanting a cross-subpopulation guarantee must compute and report separate per-subpopulation credentials.
+\paragraph{Estimator failure modes.} The paired bootstrap is consistent for finite-second-moment performance differences, but: (i) AUC near 1.0 with small $n$ can produce mildly non-nominal percentile-bootstrap coverage --- the library defaults to the closed-form DeLong CI for AUC tasks (mildly conservative; $\sim 300\times$ faster than the bootstrap variants per the coverage simulation in [\texttt{experiments/estimator\_coverage/}]) and reports a Monte-Carlo standard error in all cases so users can detect borderline regimes; (ii) heavy-tailed metric distributions can require larger $B$ than the default 10{,}000 --- the same Monte-Carlo SE diagnostic surfaces this; (iii) ground-truth label noise that exceeds $\varepsilon$ makes any equivalence verdict meaningless --- the library refuses to issue a credential when the documented adjudication-protocol disagreement rate exceeds $\varepsilon / 2$.
+
+\paragraph{Subpopulation specificity.} A credential under subpopulation $\Pi$ is a claim about $\Pi$ specifically and carries no algebraic implication for $\Pi' \neq \Pi$. This is the same point-evaluated discipline as above: where users would like a cross-subpopulation guarantee, the framework asks them to compute and report a separate per-subpopulation credential. The library accordingly does not produce ``aggregate'' credentials across subpopulations, and the FDA's subgroup-stratified reporting expectation~\citep{fda_aiml_2024} aligns naturally with this convention.
 
 \paragraph{Aggregate-vs-per-patient.} The aggregate formulation (Definition~\ref{def:signal_equiv_aggregate}) matches clinical-trial endpoint reporting but is silent about per-patient regret. For settings where the cost of a single missed lesion dominates (rare disease, oncology screening, pediatric), the per-patient strengthening (Definition~\ref{def:signal_equiv_per_patient}) should be opted into. The library exposes both formulations through a single \texttt{formulation=} argument; the default is \texttt{aggregate}.
 
-\paragraph{Reproducibility caveats.} A published credential is reproducible only if the test set, the method, the reference method, the bootstrap seed, and the framework version are all reproducible. The PWM Registry's content-addressed L2 / L3 specs (Section~\ref{sec:anchoring}) cover the framework and the test set; the method's code-hash field covers the method. The library refuses to compute a credential when the method or reference method has not been wrapped in a hash-addressable artifact (Docker image with SHA-256 digest, or pinned PyPI release).
+\paragraph{Reproducibility caveats.} A published credential is reproducible only if the test set, the method, the reference method, the bootstrap seed, and the framework version are all reproducible. Content-addressing (Section~\ref{sec:anchoring}) covers the framework definition by its SHA-256 hash, and the test-set manifest by a separate dataset-spec hash; the method's \texttt{code\_hash} field covers the method. The library refuses to compute a credential when the method or reference method has not been wrapped in a hash-addressable artifact (Docker image with SHA-256 digest, or pinned PyPI release).
+
+\subsubsection*{Limitations of the present work}
+\label{sec:limitations}
+
+The framework above is methodologically complete --- in the sense that the credential schema, the estimator, the sample-size formulas, and the audit surface together form a self-contained reporting standard --- but the present manuscript ships with a deliberately scoped empirical-validation surface. We list the limitations explicitly so a reviewer and a downstream adopter can calibrate what we are and are not claiming at this stage. Each limitation paragraph below has a corresponding entry in \texttt{paper\_draft/limitations\_anchors.md} (companion to \texttt{paper\_draft/reproduction\_guide.md}) mapping the limitation to the proofs / simulation document that backs it and to the roadmap milestone that would close it.
+
+\paragraph{Empirical validation is synthetic-anchored, not yet real-cohort.} The current evidence backing the modality-general claim is the synthetic cross-modality consistency table (Results, Table~\ref{tab:consistency}; 6~credentials at seed = 42 covering CT, MRI, and PET) and the per-modality estimator-coverage simulations (Methods Section~\ref{sec:estimator}; 69 coverage cells across AUC, Dice, and contrast-recovery --- 27 / 18 / 24 respectively --- plus a 24-cell power simulation, 93 simulated $(n, \sigma, \rho)$ cells in total). The per-modality Results tables (Table~\ref{tab:ct_results}, Table~\ref{tab:mri_results}, Table~\ref{tab:pet_results}) carry \todo{} placeholders that fill at Phase 1 (CT, target D9 + 90 from the PWM-LDCT 1.0 cohort), Phase 3a (MRI, target D9 + 270 via fastMRI), and Phase 3b (PET, target D9 + 270 via the NEMA NU-2 IQ phantom). A reviewer reading the present manuscript should treat the cross-modality consistency demonstration as evidence that the same code path produces sensible verdicts across modalities, not as evidence that the framework correctly discriminates a real candidate method on a real cohort. The reproduction guide (\texttt{paper\_draft/reproduction\_guide.md}) is explicit about which numerical claims are synthetic-anchored versus real-cohort.
+
+\paragraph{Three modalities are validated; the extension surface is not.} Methods Table~\ref{tab:modality_dispatch} specifies the canonical $T_r$ operator for CT (Poisson thinning of projection counts), MRI (variable-density Cartesian mask, with \texttt{mask\_family} carried inside $\Pi$), and PET (activity reduction); additional modalities --- Optical / fluorescence, OCT, ultrasound --- are listed as ``user-implementable, not validated.'' The R3-3 tutorial notebook (\texttt{notebooks/04\_optical\_extending.py}) demonstrates that the API accepts an arbitrary modality string, but no independent research group has yet computed a credential under a user-implemented modality, and the modality-specific operator validity for those extensions remains the user's responsibility. We expect external adoption (Months 0--12 of the adoption pathway) to surface the first independent extensions; we do not claim the framework is correct for arbitrary modalities at the present manuscript stage.
+
+\paragraph{The credential schema does not yet pin the method bundle.} The v0.2 schema carries \texttt{method} and \texttt{reference\_method} as bare-string slugs; the manuscript's `code\_hash` discipline (Section~\ref{sec:framework}) currently lives \emph{at the publication venue} (a Docker image digest in the supplementary materials, a pinned PyPI release hash, etc.) rather than inside the credential JSON itself. The companion credential reading guide (\texttt{paper\_draft/credential\_reading\_guide.md}) and the library's CONTRIBUTING.md document this as the planned widening at v1.0 (Tier-A schema bump to \texttt{\{name, code\_hash\}}); until then, method-bundle provenance is recorded out-of-band and is not enforced by the audit surface. A reviewer evaluating a credential should ask the authors for the matching method-bundle hash and confirm it independently.
+
+\paragraph{Reader-variability is a hard ceiling on attainable $\varepsilon$.} The framework's verdicts are conditional on ground-truth label quality; in the AUC / Dice regime the label-noise floor is whatever the reader-panel adjudication protocol leaves on the table. Concretely: a credential at $\varepsilon = 0.02$ on a task whose inter-reader Dice variance has standard deviation $\sim 0.05$ is operating below the label-noise floor and the verdict is largely a function of which adjudication subsample fell into the test split, not of the candidate method's actual signal-equivalence. The library refuses to issue a credential when the documented adjudication-protocol disagreement rate exceeds $\varepsilon / 2$ (Section~\ref{sec:failure_modes}, ``Estimator failure modes''); however, on tasks where reader-panel disagreement has not been independently quantified, the user is responsible for choosing $\varepsilon$ above the plausible label-noise floor. We do not currently provide a per-task label-noise registry; building one is on the v1.0 roadmap.
+
+\paragraph{The headline WS-1 1.0 cohort sits in the INDETERMINATE-dominated regime for the recommended AUC default.} At the recommended AUC-task default $\varepsilon = 0.05$ and a typical lung-nodule operating point AUC $\approx 0.92$, the 1.0 cohort of 208 unique paired patients satisfies the (S3) sample-size formula (n $\approx$ 130--250 required) but the empirical verdict distribution is dominated by \texttt{INDETERMINATE} rather than \texttt{PASS}: P(\texttt{PASS}) under the null is approximately $0.40$ at $n = 200$, lifting to approximately $0.94$ at $n = 500$ (Section~\ref{sec:estimator}, ``Cohort-sizing implication''). Downstream users issuing credentials on this cohort should expect \texttt{INDETERMINATE} verdicts for many genuinely equivalent methods; absence of \texttt{PASS} on the 1.0 cohort is not evidence of non-equivalence, only of insufficient $n$ at this $(\varepsilon, \alpha)$. For Dice / MAE / contrast-recovery tasks at the recommended non-AUC default $\varepsilon = 0.02$, the same cohort is comfortably in the PASS regime per the per-modality estimator-coverage simulations. The prospective companion cohort target (n $\geq 500$) lifts the AUC operating point into the reliable-PASS regime. This is a property of the dataset $\times$ operating-point combination, not of the framework itself; we surface it as a limitation so that readers do not misread \texttt{INDETERMINATE} verdicts on the 1.0 cohort as negative results.
 
 %% =====================================================================
 \section{Methods}
@@ -282,13 +329,14 @@ The modality-specific instantiations are given in Table~\ref{tab:modality_Tr}.
         \midrule
         CT  & Poisson-thinning: if $s_{\textrm{ref}} \sim \textrm{Poisson}(\lambda(x))$, then $s_{\textrm{red}} \sim \textrm{Poisson}(r \cdot \lambda(x))$ \\
         MRI & $k$-space subsampling: $s_{\textrm{red}} = \Omega_r \cdot s_{\textrm{ref}}$ with $|\Omega_r|/|\Omega_{\textrm{full}}| = r$ \\
-        PET & Poisson-thinning of list-mode counts at rate $r$ \\
+        PET & Poisson-thinning of list-mode counts at rate $r$\footnotemark[1] \\
         Optical & Reduced exposure time: $s_{\textrm{red}} \sim \textrm{Poisson}(\phi(x) \cdot r \cdot t_{\textrm{ref}})$ \\
         \bottomrule
     \end{tabular}
     \caption{Modality-specific signal-reduction operators. CT and PET share the Poisson-thinning model; MRI's $T_r$ is itself stochastic via the mask distribution.}
     \label{tab:modality_Tr}
 \end{table}
+\footnotetext[1]{The canonical PET $T_r$ for v1 of the framework is \emph{activity reduction} (fewer injected counts at the same scan duration). \emph{Scan-time reduction} at full activity is statistically equivalent at the level of total counts (Poisson-thinning gives the same marginal) but is not physically equivalent --- motion blur and kinetic modelling differ --- and is documented as a v2 distinction. The synthetic PET channel in [\texttt{experiments/cross\_modality\_consistency/}] and the worked-example NEMA NU-2 IQ phantom acquisitions both follow the activity-reduction model. See [\texttt{theory/proofs/pet\_reduction.md}] for the decision rationale.}
 
 \paragraph{What ``modality-general'' means, precisely.} The cross-modality claim has both a mathematical and an empirical component, and we are careful to distinguish them.
 
@@ -321,11 +369,11 @@ The modality-specific instantiations are given in Table~\ref{tab:modality_Tr}.
 
 A \emph{reconstruction method} is a measurable map $M: \mathcal{S} \to \mathcal{Y}$. The composed map $M \circ T_r \circ \Sref: \mathcal{X} \to \mathcal{P}(\mathcal{Y})$ is ``reconstruct from a reduced-signal scan of patient $x$.'' We compare two such composed maps: $\Mred := M \circ T_r \circ \Sref$ (the method under evaluation, on reduced-signal data) and $\mathcal{M}_{\textrm{base}} \circ \Sref$ (a named reference method on full-signal data; we write $\Mref$ for shorthand).
 
-A \emph{task} is a measurable map $T: \mathcal{Y} \to \mathcal{D}$ from reconstructions to a clinical decision space $\mathcal{D}$ (binary detection, bounding boxes, per-voxel segmentation masks, scalar quantification, etc.). Ground truth $g(x) \in \mathcal{D}$ is established by a documented adjudication protocol (multiple board-certified radiologists, majority vote, biopsy confirmation), and the protocol is part of the credential.
+A \emph{task} is a measurable map $T: \mathcal{Y} \to \mathcal{D}$ from reconstructions to a clinical decision space $\mathcal{D}$ (binary detection, bounding boxes, per-voxel segmentation masks, scalar quantification, etc.). Ground truth $g(x) \in \mathcal{D}$ is established by a documented adjudication protocol --- a board-certified reader panel with a calibration gate and consolidation rule for image-based tasks, or a physical reference standard for phantom tasks --- and the protocol identifier is part of the credential. The operational details, including the specific reader-panel discipline used for the CT worked example, are given in Section~\ref{sec:methods-estimator}.
 
 A \emph{performance metric} is a functional $P: \mathcal{D} \times \mathcal{D} \to \R$ evaluating ``how well the task output on a reconstruction agrees with ground truth.''
 
-A \emph{subpopulation} is a probability measure $\Pi$ on $\mathcal{X}$ together with an operational description (recruitment / inclusion criteria a trial coordinator could use to verify draws from $\Pi$).
+A \emph{subpopulation} is a probability measure $\Pi$ on $\mathcal{X}$ together with an operational description (recruitment / inclusion criteria a trial coordinator could use to verify draws from $\Pi$). Crucially, $\Pi$ also carries the \emph{acquisition-protocol metadata} that fully determines $T_r$ for a member of $\mathcal{M}$ --- for CT, the scanner vendor, kVp, reconstruction kernel, and any vendor-specific dose-modulation profile; for MRI, the $k$-space mask family (uniform random, variable-density Cartesian, equispaced + central-fully-sampled) and the coil sensitivities; for PET, the tracer, scanner, and whether reduction is by injected activity or scan-time. Two subpopulations with the same demographic description but different acquisition protocols are different $\Pi$ and yield distinct credentials. This convention is what allows the 5-tuple to stay 5-tuple across modalities: modality-specific operational parameters that change the meaning of ``signal reduction'' (most notably the MRI mask family) are recorded as fields of $\Pi$, not as a new tuple slot. The MRI-mask-family case is worked out separately in [\texttt{theory/proofs/mri\_mask.md}].
 
 \begin{definition}[Signal-equivalence, aggregate formulation]
 \label{def:signal_equiv_aggregate}
@@ -337,6 +385,8 @@ with confidence $\geq 1 - \alpha$ under the paired-bootstrap estimator of Sectio
 \end{definition}
 
 Definition~\ref{def:signal_equiv_aggregate} reads: \textit{``the population-mean task performance of $M$ on reduced-signal scans is within $\varepsilon$ of the population-mean task performance of $\Mref$ on full-signal scans, with confidence $1-\alpha$.''}
+
+\paragraph{Population claim vs.\ sample evidence.} The two expectations in Equation~\eqref{eq:signal_equiv_main} are deterministic population objects that the credential \emph{asserts}; the role of $\alpha$ and the paired-bootstrap procedure of Section~\ref{sec:methods-estimator} is to deliver finite-sample \emph{evidence} for or against that assertion from a test set $\{x_k\}_{k=1}^n$ drawn from $\Pi$. The credential schema therefore records, alongside $(r, T, \varepsilon, \alpha, \Pi)$, the test-set size $n$ and a slug resolving to the operational sampling protocol by which draws from $\Pi$ are produced (e.g.\ the dataset's published recruitment criteria and split manifest), so that an independent verifier is guaranteed to be testing the same population claim --- not merely recomputing the same bootstrap CI on a possibly-different sample.
 
 We also define a strictly-stronger \emph{per-patient} formulation:
 
@@ -363,14 +413,18 @@ A naive informal version of Equation~\eqref{eq:signal_equiv_main} conflates six 
 
 \textbf{(C4) Performance is a function of $(T(y), g(x))$, not $(M, S, T)$.} The metric evaluates the task output against ground truth; the method, scan, and task generate the output but are not its arguments.
 
-\textbf{(C5) Subpopulation is a measure, not a label.} Two subpopulations with the same label but different operational definitions are different subpopulations.
+\textbf{(C5) Subpopulation is a measure that carries acquisition-protocol metadata, not just a demographic label.} Two subpopulations with the same demographic label but different operational definitions --- or the same demographic but different scanner / mask / tracer settings --- are different subpopulations. This is what lets modality-specific acquisition parameters (CT vendor, MRI mask family, PET reduction mode) live inside $\Pi$ rather than as extra tuple slots, preserving a single 5-tuple shape across CT, MRI, and PET.
 
 \textbf{(C6) Aggregate vs per-patient.} Definitions~\ref{def:signal_equiv_aggregate} and~\ref{def:signal_equiv_per_patient} are not equivalent; per-patient implies aggregate, but not conversely.
 
 \subsection{Estimator}
 \label{sec:methods-estimator}
 
-Given a test set $\{x_1, \ldots, x_n\}$ drawn i.i.d.\ from $\Pi$ with ground truth $\{g(x_k)\}$, and methods $M, \Mref$, we estimate Equation~\eqref{eq:signal_equiv_main} via a paired bootstrap on patients (Algorithm~\ref{alg:paired_bootstrap}).
+\paragraph{Ground-truth protocol.} Ground truth $g(x_k)$ is the largest single source of credential variance the framework does not control, so the credential records the adjudication protocol by content-addressed reference rather than by free-text slug. For the CT worked example we adopt the PWM-LDCT 1.0 annotation QA protocol~\citep{ws1dataset} verbatim, summarized here for the reader's convenience: (i) every annotator is a board-certified radiologist with $\geq 5$ years of thoracic CT experience; (ii) each annotator passes a $20$-case calibration set drawn from a held-out LIDC-IDRI subset before contributing release annotations, with a pre-registered Cohen's $\kappa \geq 0.60$ pass threshold against the LIDC majority vote; (iii) candidate nodules are matched across readers by bounding-box $\mathrm{IoU} \geq 0.3$ on the same slice with $\pm 1$-slice 3D adjacency; (iv) a candidate is included in $g(x_k)$ iff more than half of the qualified readers for the case marked it, with attribute consolidation via element-wise median (\texttt{bbox}, \texttt{diameter\_mm}, ordinal \texttt{texture}) and mode (\texttt{location}); (v) two-reader cases with non-overlapping boxes, $\geq 1.5\times$ diameter disagreement, or texture-class disagreement are referred to a third independent radiologist whose label becomes the released ground truth; (vi) drift is monitored by a rotating 5-case re-calibration every $\approx 50$ cases, and any reader whose running $\kappa$ falls below the pass threshold is paused and all of their since-last-passing-window cases are re-annotated. The per-reader raw labels are preserved alongside the consolidated ground truth so users of the framework can substitute alternative consolidation rules (e.g.\ STAPLE) and re-issue the credential without re-running the reader panel. The MRI worked example reuses the published fastMRI expert meniscus segmentations as ground truth, with the segmentation protocol resolved through the same content-addressed mechanism; the PET worked example does not require a reader panel because the NEMA NU-2 IQ phantom provides physical ground truth (known sphere sizes and activity concentrations). In all three cases the credential's \texttt{ground\_truth\_protocol} field resolves to a normative protocol document by SHA-256 hash (Section~\ref{sec:anchoring}), so a downstream verifier can confirm the protocol bit-for-bit rather than from a slug whose meaning may drift.
+
+\paragraph{Label-noise refusal threshold.} The library refuses to issue a credential when the documented inter-reader disagreement rate of the cited protocol exceeds $\varepsilon / 2$; below that threshold, equivalence verdicts cannot be meaningfully separated from annotation noise. For the CT protocol above, the published pairwise $\kappa$ on the calibration set is the operational input to this check.
+
+Given a test set $\{x_1, \ldots, x_n\}$ drawn i.i.d.\ from $\Pi$ with ground truth $\{g(x_k)\}$ established by the protocol above, and methods $M, \Mref$, we estimate Equation~\eqref{eq:signal_equiv_main} via a paired bootstrap on patients (Algorithm~\ref{alg:paired_bootstrap}).
 
 \begin{algorithm}[ht]
     \caption{Paired-bootstrap signal-equivalence credential}
@@ -392,13 +446,19 @@ Given a test set $\{x_1, \ldots, x_n\}$ drawn i.i.d.\ from $\Pi$ with ground tru
 
 We use $B = 10{,}000$ as the default. Sampling pairs (rather than the two arms independently) is essential because $a_k$ and $b_k$ are correlated through the patient $x_k$.
 
-\paragraph{Sample-size formula.} For a target $(\varepsilon, \alpha)$ and a per-patient performance-difference standard deviation $\sigma$ with pairing correlation $\rho$, the leading-order normal-approximation bound is
+\paragraph{Sample-size formula.} For a target $(\varepsilon, \alpha)$ and a per-patient performance-difference standard deviation $\sigma_\Delta = \sqrt{\operatorname{Var}(\Delta_k)}$, the leading-order normal-approximation bound for a sample-mean estimator is
 \begin{equation}
-    n \geq \left(\frac{z_{1-\alpha/2}}{\varepsilon}\right)^2 \sigma^2 (1 - \rho).
+    n \;\geq\; \left(\frac{z_{1-\alpha/2}}{\varepsilon}\right)^{\!2} \sigma_\Delta^2.
+    \label{eq:sample_size_general}
 \end{equation}
-For AUC-type metrics with $\sigma \approx 0.10$ and $\rho \approx 0.5$, the canonical target $(\varepsilon = 0.02, \alpha = 0.05)$ yields $n \geq 192$. We pre-register $n \geq 200$ patients per credential as the field default. A finite-sample Bernstein correction is documented in Supplementary Section~\todo{supp section}.
+With per-arm SD $\sigma$ and cross-arm correlation $\rho$, $\sigma_\Delta^2 = 2 \sigma^2 (1 - \rho)$, so pairing reduces the required $n$ by a factor $(1-\rho)/2^{-1}$ relative to two independent arms. For paired AUC, $\hat\Delta$ is not a sample-mean estimator; the appropriate specialisation uses the DeLong placement-difference standard deviation $s$,
+\begin{equation}
+    n_{\text{AUC}} \;\geq\; \left(\frac{z_{1-\alpha/2}}{\varepsilon}\right)^{\!2} \cdot 4 s^2.
+    \label{eq:sample_size_auc}
+\end{equation}
+At $\rho = 0.5$ on a binormal model, empirical $s$ values are approximately $s \approx 0.20, 0.15, 0.08$ at AUC $\approx 0.85, 0.92, 0.97$ respectively (full table and derivation in [\texttt{theory/proofs/sample\_size.md}]). Substituting in~\eqref{eq:sample_size_auc} gives the **AUC-task default $(\varepsilon = 0.05, \alpha = 0.05)$**, which yields $n \approx 130$--$250$ across the typical operating range --- comfortably within the WS-1 PWM-LDCT cohort. For Dice, MAE, and per-patient contrast-recovery (where $\hat\Delta$ is a sample-mean estimator and~\eqref{eq:sample_size_general} applies directly), the canonical default is $\varepsilon = 0.02$; users with a clinical argument for a tighter or looser margin can specify it, and the library will require the corresponding $n$. A finite-sample Bernstein correction (strictly more conservative than~\eqref{eq:sample_size_general}) is documented in Supplementary Section~\ref{supp:bernstein} and in [\texttt{theory/proofs/sample\_size.md}] §4.
 
-\paragraph{Coverage of percentile CIs near boundary.} For AUC near $1.0$ the standard percentile bootstrap CI is anti-conservative. We provide a BCa option in \texttt{pwm\_dose\_equivalence} and recommend BCa for any credential with reported AUC $> 0.95$ on test sets with $n < 200$. The library prints a warning when this regime is detected.
+\paragraph{Estimator defaults.} The percentile bootstrap is the library's default for general metrics. For paired AUC, the closed-form DeLong test (DeLong, DeLong \& Clarke-Pearson 1988) is auto-selected: in 27-cell coverage simulations under the truly-equivalent null ($\Delta = 0$) at AUC $\in \{0.85, 0.92, 0.97\}$ and $n \in \{100, 200, 500\}$, DeLong is mildly conservative (median coverage $\approx 0.96$) and approximately $300\times$ faster than the bootstrap variants --- a strict improvement over percentile in the AUC case. The bias-corrected accelerated (BCa) variant remains available as an opt-in; under the null it does not robustly outperform percentile (in the same 27-cell sweep BCa coverage falls below the nominal $0.95$ at AUC $\geq 0.92$, $n = 100$), so we do not default to it. Full coverage table and the estimator-default justification are in [\texttt{theory/proofs/estimator.md}], backed by the seed-reproducible simulation in [\texttt{experiments/estimator\_coverage/}].
 
 \subsection{Open-source library}
 \label{sec:methods-library}
@@ -414,10 +474,10 @@ The \texttt{pwm\_dose\_equivalence} library (Apache~2.0, \url{https://pypi.org/p
         modality          = "CT" | "MRI" | "PET",
         task              = Task(name, metric, target),
         subpopulation     = "operational_description",
-        epsilon           = 0.02,
+        epsilon           = 0.05,   # AUC default; 0.02 for non-AUC metrics
         alpha             = 0.05,
         formulation       = "aggregate" | "per_patient",
-        estimator         = "percentile" | "bca" | "delong",
+        estimator         = "auto" | "percentile" | "delong" | "bca",
         bootstrap         = 10_000,
         seed              = 42,
     )
@@ -430,30 +490,34 @@ Returns a \texttt{SignalEquivalenceCredential} object with the verdict (\texttt{
 
 The library is intended to be a long-lived community tool, not a paper-companion artifact that lapses six months after publication. We invested in three classes of engineering quality consistent with that intent.
 
-\paragraph{Testing.} The library ships with \todo{$N_{\textrm{tests}}$} unit tests and \todo{$N_{\textrm{integ}}$} integration tests covering: the paired-bootstrap estimator against an analytical-normal reference solution; BCa-vs-percentile-vs-DeLong agreement at controlled $\sigma$ and $\rho$; sample-size formula vs simulation; cross-modality API call-signature equivalence; JSON-credential round-trip and L2 hash stability; and explicit failure-mode behavior (empty test set, mismatched ground-truth shape, NaN propagation, deterministic seed handling). Continuous integration runs on every commit against Python \texttt{3.10}, \texttt{3.11}, and \texttt{3.12} on Linux, macOS, and Windows runners; the target test-coverage floor is \todo{$\geq 90\%$} measured by \texttt{coverage.py}.
+\paragraph{Testing.} The current v0.2.2 library ships with $140$ tests (10 end-to-end integration tests landed in v0.2.0; 35 credential-audit tests landed in v0.2.1; 12 CLI tests landed in v0.2.2) covering: the percentile, DeLong, and BCa CI estimators under controlled $\sigma$ and $\rho$; the (S1) / (S3) / (S4) sample-size formulas against their numerical-table values and against the coverage simulation; cross-modality $T_r$ operator invariants (CT and PET Poisson-thinning ratios, MRI mask central-region invariant, NaN sentinel for unsampled $k$-space positions); JSON-credential round-trip and content-addressed framework-hash stability; verdict logic (PASS / FAIL / INDETERMINATE) at the equivalence-band boundaries; the v0.2.1 internal-consistency audit (\texttt{audit\_credential}) on tampered, undersized, BCa-as-headline, and framework-hash-mismatched credentials; the v0.2.2 \texttt{pwm-audit} CLI exit-code contract (0 on ok, 1 on hard issue, 2 on I/O error) across file / stdin / JSON-output / help / version paths; and explicit failure-mode behaviour (mode-misuse arguments, sample-size warnings firing when $n$ is below the formula prescription, ValueError-raising input validation). Continuous integration runs on every commit against Python \texttt{3.10}, \texttt{3.11}, and \texttt{3.12} on Linux runners (macOS / Windows runners scheduled at v1.0.0); the current line coverage is $\mathbf{100\%}$ on $443$ statements (measured by \texttt{coverage.py}), well above the manuscript's pre-registered $\geq 90\%$ ship floor.
 
 \paragraph{Type discipline.} The codebase is fully typed (PEP 484 annotations enforced by \texttt{mypy --strict}), with explicit \texttt{TypedDict} schemas for credential JSON inputs and outputs. The choice of strict typing is deliberate: when the library is used as a reporting standard, silently-coerced argument types are a class of error that produces credentials that look valid but are not. Strict types surface the error at the API boundary.
 
-\paragraph{Documentation and tutorial notebooks.} The library's documentation site (\url{https://pwm-dose-equivalence.readthedocs.io/}) hosts API reference (auto-generated from docstrings), three tutorial notebooks (one per validated modality), and a ``Credential reading guide'' for reviewers and regulators who need to interpret published credentials without writing code themselves. The notebooks are tested in CI to ensure they remain runnable as the API evolves.
+\paragraph{Documentation and tutorial notebooks.} The library's documentation site (\url{https://pwm-dose-equivalence.readthedocs.io/}) hosts API reference (auto-generated from docstrings), three tutorial notebooks (one per validated modality, plus a fourth showing how to extend the framework to a user-implemented modality at \texttt{notebooks/04\_optical\_extending.py}), and a ``Credential reading guide'' (\texttt{paper\_draft/credential\_reading\_guide.md}) for reviewers and regulators who need to interpret published credentials without writing code themselves. The reading guide walks the credential JSON field-by-field, covers verdict semantics, and lists eight red flags that should prompt follow-up questions; its technical companion for code-savvy reviewers is the reproduction guide (\texttt{paper\_draft/reproduction\_guide.md}), which re-derives every numerical claim in this manuscript from the published artifacts. The notebooks are tested in CI to ensure they remain runnable as the API evolves.
 
-\paragraph{Versioning policy.} Releases follow semantic versioning. \texttt{MAJOR} bumps break the credential JSON schema; \texttt{MINOR} bumps add modalities, estimators, or task types without breaking existing credentials; \texttt{PATCH} bumps are bug fixes that preserve credential reproducibility. The current version is \todo{0.1.0}; we target \texttt{1.0.0} at journal acceptance with a five-year support commitment.
+\paragraph{Versioning policy.} Releases follow semantic versioning. \texttt{MAJOR} bumps break the credential JSON schema; \texttt{MINOR} bumps add modalities, estimators, or task types without breaking existing credentials; \texttt{PATCH} bumps are bug fixes that preserve credential reproducibility. The current version is \texttt{0.2.2} (alpha; v0.2.0 added BCa + small-$n$ warning + \texttt{bound\_M} + 10 integration tests; v0.2.1 added \texttt{audit\_credential} + the machine-readable JSON Schema; v0.2.2 added the \texttt{pwm-audit} console entry point); we target \texttt{1.0.0} at journal acceptance with a five-year support commitment.
 
-\paragraph{Release cadence and governance.} The library is maintained by the PWM Protocol Foundation with a documented contribution policy at the repository. Pull requests touching the framework definition, the estimator, or the JSON schema require sign-off from two of three named maintainers; pull requests touching documentation, tests, or worked examples require one. The contribution policy is published as \texttt{CONTRIBUTING.md} in the repository.
+\paragraph{Release cadence and governance.} The library is maintained by the PWM Protocol Foundation with a documented contribution policy at \texttt{pwm\_dose\_equivalence/CONTRIBUTING.md}. The policy defines two sign-off tiers: Tier A (two of three maintainer sign-offs) for changes to the methodologically load-bearing modules --- \texttt{framework\_hash.py} (the \texttt{FRAMEWORK\_SPEC} string whose SHA-256 anchors every credential), \texttt{credential.py} and \texttt{credential\_schema.py} (the wire format), \texttt{estimator.py} (the percentile / DeLong / BCa CI variants and verdict logic), \texttt{sample\_size.py} (the (S1) / (S3) / (S4) formulas), and \texttt{operators.py} (the canonical $T_r$ reductions per modality); and Tier B (one sign-off) for documentation, tests, tutorial notebooks, worked examples, audit-rule additions that do not flip an \texttt{ok=True} credential to \texttt{ok=False}, and API-additive changes. The policy also documents the schema-mutation discipline (\texttt{FRAMEWORK\_SPEC} edits trigger a MAJOR version bump and require regenerating the standalone \texttt{credential\_schema.json} and re-issuing the example credentials), the testing floor ($\geq 90\%$ line coverage, currently shipping at $100\%$), the security-disclosure window for credential-forgery vulnerabilities, and the contributor-license-agreement intent (Apache 2.0). A \texttt{CITATION.cff} (CFF v1.2.0) at the same path declares the software citation and the manuscript as the preferred-citation target.
 
-\subsection{Cryptographic anchoring to public registry}
+\subsection{Content-addressed credential schema}
 \label{sec:anchoring}
 
-The credential schema is content-addressed and registered as an L2 specification on the PWM blockchain registry. A published credential identifies the framework version by hash:
+The credential schema is content-addressed: every published credential carries the SHA-256 hash of the exact framework definition document it was issued against. A published credential identifies the framework version by hash:
 
 \begin{verbatim}
     {
-      "schema_version": "pwm-signal-equivalence/v0.1",
-      "l2_framework_hash": "sha256:...",
+      "schema_version": "pwm-signal-equivalence/v0.2",
+      "framework_hash": "sha256:...",
       "credential": { ... }
     }
 \end{verbatim}
 
-The hash uniquely identifies the framework definition the credential commits to. A reader verifies the credential by (i) pulling the framework definition document by hash from the registry, (ii) re-running the paired bootstrap on the same test set, (iii) checking that the recomputed verdict matches the published verdict. This anchoring eliminates a class of benchmark-drift attacks where a method's reported performance is silently re-evaluated against a different framework version after submission.
+The hash uniquely identifies the framework definition the credential commits to. A reader verifies the credential by (i) retrieving the framework definition document by hash, (ii) re-running the paired bootstrap on the same test set, and (iii) checking that the recomputed verdict matches the published verdict. This eliminates a class of benchmark-drift artifacts in which a method's reported performance is silently re-evaluated against a different framework version after submission~\citep{wang2020deeplearningreview}.
+
+\paragraph{Internal-consistency audit.} A reader who lacks the test-set scores (for example, a regulator without raw-DICOM access) can still check the credential's \emph{internal} consistency without re-running the bootstrap. The library exposes a one-call audit function, \texttt{pwm\_dose\_equivalence.audit\_credential}, which validates the credential JSON against the machine-readable schema (\texttt{CREDENTIAL\_JSON\_SCHEMA}), confirms the framework hash matches the installed library version, re-derives the verdict from the published $(\Delta_{\mathrm{CI},\mathrm{lo}}, \Delta_{\mathrm{CI},\mathrm{hi}}, \varepsilon)$ and checks that it matches the stored verdict, inspects the \texttt{sample\_size\_check} field for the undersized-PASS pattern, and flags BCa-as-headline credentials lacking a percentile companion. The audit returns a \texttt{CredentialAudit} dataclass distinguishing hard issues (block \texttt{ok}) from soft warnings (recorded but non-blocking). The same audit is available from the shell as the installed console entry point \texttt{pwm-audit} (with file / stdin / \texttt{--json} input modes and a 0-on-ok / 1-on-issue / 2-on-error exit-code contract), so reviewers, CI hooks, and submission-checklist scripts can verify a credential without writing any Python. Full bootstrap reproduction remains the job of the reproduction guide; the audit is the cheaper preflight check that catches tampered or schema-mismatched credentials before the bootstrap would.
+
+\paragraph{Hash-resolution backends.} Content-addressing is the methodological substance; \emph{where} the hash is resolved is a deployment choice. The library accepts any of three resolvers: (a) a local file containing the framework definition (sufficient for self-contained reproduction during peer review); (b) a package-registry resolver that retrieves the definition by hash from the PyPI release used to issue the credential; or (c) an optional public registry mirror. Resolvers (a) and (b) are sufficient for the methodological guarantees stated above; resolver (c) is an operational convenience for community deployments and is not required for the framework to function.
 
 %% =====================================================================
 \section{Data availability}
@@ -466,11 +530,11 @@ The three modality validators in this paper use publicly available datasets, all
     \item \textbf{PET.} NEMA NU-2 IQ phantom acquisitions at four activity levels (full, 50\%, 25\%, 10\%), acquired in-house and released alongside this paper on PhysioNet.
 \end{itemize}
 
-The exact test-split manifest hashes used for every credential in this paper are recorded as on-chain L3 specifications and listed in Supplementary Table~\todo{supp tab}. A reader who pulls the manifest by hash from the PWM registry is guaranteed bit-identical content to what we evaluated.
+The exact test-split manifest hashes used for every credential in this paper are listed in Supplementary Table~\todo{supp tab}; each hash resolves to a bit-identical manifest via the dataset's PhysioNet record, the supplementary data archive, or the PWM dataset registry (any of the three is sufficient for reproduction).
 
 \section{Code availability}
 
-The signal-equivalence library, \texttt{pwm\_dose\_equivalence}, is released under Apache 2.0 at \url{https://pypi.org/project/pwm_dose_equivalence/} (pip-installable); source repository at \url{https://github.com/integritynoble/low_dose_CT/tree/main/WS-2_framework/pwm_dose_equivalence/}; documentation at \url{https://pwm-dose-equivalence.readthedocs.io/}. The exact library version used for every credential in this paper is \todo{pinned-version-at-submission}. All scripts, configuration files, tutorial notebooks, and Docker images required to reproduce each table and figure are at \url{https://github.com/integritynoble/low_dose_CT/tree/main/WS-2_framework}. The CI pipeline that runs every reproducibility test on every commit is at \url{https://github.com/integritynoble/low_dose_CT/actions}.
+The signal-equivalence library, \texttt{pwm\_dose\_equivalence}, is released under Apache 2.0 at \url{https://pypi.org/project/pwm_dose_equivalence/} (pip-installable); source repository at \url{https://github.com/integritynoble/low_dose_CT/tree/main/WS-2_framework/pwm_dose_equivalence/}; documentation at \url{https://pwm-dose-equivalence.readthedocs.io/}. The exact library version used for every credential in this paper is \texttt{pwm\_dose\_equivalence==0.2.2} (released against credential schema \texttt{pwm-signal-equivalence/v0.2}; will be pinned to the journal-acceptance release at submission). All scripts, configuration files, tutorial notebooks, and Docker images required to reproduce each table and figure are at \url{https://github.com/integritynoble/low_dose_CT/tree/main/WS-2_framework}. The CI pipeline that runs every reproducibility test on every commit is at \url{https://github.com/integritynoble/low_dose_CT/actions}.
 
 %% =====================================================================
 \section*{Reporting Summary}
@@ -482,7 +546,7 @@ A Nature Methods Reporting Summary --- using the format current at submission, c
 \todo{Fill at submission per CRediT taxonomy: Conceptualization, Methodology, Software, Validation, Formal analysis, Investigation, Resources, Data curation, Writing-Original Draft, Writing-Review \& Editing, Visualization, Supervision, Project administration, Funding acquisition.}
 
 \section*{Competing interests}
-\todo{Declare at submission. The PWM Protocol Foundation receives no direct revenue from credential issuance; foundation-affiliated authors hold no financial interest in specific reconstruction methods evaluated under the framework.}
+One or more authors are affiliated with the PWM Protocol Foundation, which maintains the open-source library. The library and credential format are openly licensed (Apache~2.0) and confer no privileged access; the Foundation receives no revenue from credential issuance, and no author holds a financial interest in any reconstruction method evaluated under the framework. \todo{At submission, each author declares any financial interest in the PWM Protocol Foundation (equity, consulting, or advisory role) or states its absence.} The authors declare no other competing interests.
 
 \section*{Acknowledgments}
 \todo{Fill at submission. Acknowledge the radiologist panel for PWM-LDCT annotations, the NYU fastMRI team, the NEMA phantom acquisition site, the contributors to scipy / statsmodels / scikit-learn whose statistical primitives the library builds on, and the open-source maintainers of pytest / mypy / sphinx / readthedocs.}
@@ -490,5 +554,77 @@ A Nature Methods Reporting Summary --- using the format current at submission, c
 %% =====================================================================
 \bibliographystyle{plainnat}
 \bibliography{refs}
+
+%% =====================================================================
+%% Supplementary Information
+%% =====================================================================
+\clearpage
+\appendix
+\renewcommand{\thesection}{S\arabic{section}}
+\setcounter{section}{0}
+
+\section{Bernstein finite-sample correction to the sample-size formula}
+\label{supp:bernstein}
+
+The leading-order sample-size bound (Equation~\eqref{eq:sample_size_general} in the main text) is an asymptotic-normal approximation. For credentials issued at small $n$ (say $n < 100$) the asymptotic regime is shaky and a finite-sample bound is appropriate. This section derives the Bernstein-type bound the library reports alongside (S1).
+
+\subsection{Setup}
+
+Let $\Delta_1, \ldots, \Delta_n$ be i.i.d.\ random variables with $\mathbb{E}[\Delta_k] = \mu_\Delta$, $\operatorname{Var}(\Delta_k) = \sigma_\Delta^2$, and $|\Delta_k - \mu_\Delta| \leq M$ almost surely. For task metrics bounded in $[0, 1]$ (AUC, Dice, normalised contrast-recovery), the per-patient difference $\Delta_k = a_k - b_k$ satisfies $|\Delta_k| \leq 1$, so $M = 1$ is a defensible default; for unbounded metrics (e.g.\ MAE on Hounsfield-unit images) $M$ must be specified by the user.
+
+\subsection{Bernstein's inequality}
+
+Bernstein's inequality (see, e.g., Boucheron, Lugosi \& Massart 2013, Theorem 2.10) states that for $t > 0$,
+\begin{equation}
+    \Pr\!\left[\,\left|\bar\Delta_n - \mu_\Delta\right| > t\,\right]
+    \;\leq\; 2 \exp\!\left(\,-\frac{n t^2}{2 \sigma_\Delta^2 + \tfrac{2 M t}{3}}\,\right).
+    \label{eq:bernstein}
+\end{equation}
+
+\subsection{Substitution at $t = \varepsilon$}
+
+We require the right-hand side of~\eqref{eq:bernstein} to be at most $\alpha$. Setting $t = \varepsilon$ and rearranging,
+\begin{equation}
+    \boxed{\;n_{\text{Bernstein}} \;\geq\; \log\!\left(\tfrac{2}{\alpha}\right) \cdot \frac{2\sigma_\Delta^2 + \tfrac{2 M \varepsilon}{3}}{\varepsilon^2}.\;}
+    \label{eq:S4}
+\end{equation}
+
+This is~(S4) from the proofs document. The structure has two interpretable terms:
+
+\begin{itemize}
+    \item \textit{Variance term} $2 \sigma_\Delta^2$: dominates when the per-patient differences are noisy relative to the margin. At the canonical $\alpha = 0.05$, $\log(2/\alpha) \approx 3.689$, so the variance-only Bernstein requirement is $\sim 3.689 \cdot 2 \sigma_\Delta^2 / \varepsilon^2 = 7.378 \sigma_\Delta^2 / \varepsilon^2$, which exceeds the CLT bound $z_{0.975}^2 \sigma_\Delta^2 / \varepsilon^2 \approx 3.842 \sigma_\Delta^2 / \varepsilon^2$ by a factor of $\approx 1.92$. This factor-of-two is the price Bernstein pays for being a finite-sample guarantee, not an asymptotic one.
+    \item \textit{Bound term} $\tfrac{2 M \varepsilon}{3}$: dominates when the per-patient differences are nearly deterministic relative to the margin. At $\varepsilon = 0.05$ and $M = 1$, the term equals $0.0333$, which is comparable to $2\sigma_\Delta^2$ at $\sigma_\Delta \approx 0.13$.
+\end{itemize}
+
+\subsection{Numerical comparison to (S1)}
+
+At the canonical AUC operating point $(\varepsilon = 0.05, \alpha = 0.05, M = 1, \sigma_\Delta = 0.10)$:
+
+\begin{table}[h]
+    \centering
+    \begin{tabular}{lr}
+        \toprule
+        \textbf{Formula} & \textbf{$n_{\min}$} \\
+        \midrule
+        (S1) Asymptotic CLT (Eq.~\ref{eq:sample_size_general})         & $\geq 16$ \\
+        (S4) Bernstein finite-sample (Eq.~\ref{eq:S4})                 & $\geq 50$ \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+At $(\varepsilon = 0.02, \sigma_\Delta = 0.10)$ the ratio widens further: (S1) gives $n \geq 97$ vs (S4) $n \geq 308$. The widening is consistent: as $\varepsilon$ shrinks, Bernstein's bound term contribution shrinks linearly while the variance term contribution remains fixed, and the leading prefactor of $\log(2/\alpha) / z_{1-\alpha/2}^2 \approx 0.96$ on the variance term combined with the factor of $2$ on $\sigma_\Delta^2$ gives the asymptotic ratio of $\approx 1.92$.
+
+\subsection{Library behaviour and practical guidance}
+
+The \texttt{pwm\_dose\_equivalence} library computes both~(S1) and~(S4) when a $\sigma_\Delta$ hint is supplied and reports both in the credential's \texttt{sample\_size\_check} field. The library emits a Bernstein-explicit note when the observed $n$ falls below~(S4) but above~(S1) --- this is the regime where the credential is asymptotically valid but does not have a finite-sample guarantee, and a reviewer may want to know which discipline the credential was issued under.
+
+We recommend reporting the (S1) bound as the operational $n$-target for credentials at $n \geq 100$, and (S4) as the operational target for credentials at $n < 100$. The framework remains parametric in the user's choice: the canonical defaults are suggestions, not constraints.
+
+\subsection{Caveats}
+
+\begin{itemize}
+    \item Bernstein's inequality requires $|\Delta_k - \mu_\Delta| \leq M$ almost surely. For unbounded metrics this is not satisfied; in that case Hoeffding's inequality with sub-Gaussian or sub-exponential moment conditions applies, with the same general structure but a different bound term. Users specifying unbounded metrics should pass $M = \infty$ to the library, which then reports only the (S1) CLT bound.
+    \item For paired AUC, $\bar\Delta_n$ is a U-statistic rather than a sample mean. Bernstein's inequality for U-statistics (see Hoeffding 1948; Arcones \& Giné 1993) gives a structurally similar bound with $M$ replaced by the maximum placement-difference; the factor of $4$ in (S3) carries through. The (S4) bound as stated is therefore loose for AUC; users with $n < 100$ and AUC tasks should use the DeLong closed-form CI (which has a finite-sample variance estimator) rather than rely on (S4).
+\end{itemize}
 
 \end{document}

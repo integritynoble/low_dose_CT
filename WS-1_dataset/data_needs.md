@@ -17,7 +17,7 @@ Last revised: 2026-05-21.
 
 **Why a v0.5 release is publishable on its own.** Even using only public data, v0.5 is the first release to (a) anchor the dataset version to a public-registry content hash so leaderboard submissions are cryptographically tied to a specific frozen benchmark, (b) provide a single unified Python loader / preprocessing pipeline across the three public sources (each currently requires its own re-implementation), (c) provide majority-vote multi-task annotations across all three sources rather than each having its own per-task annotation convention, and (d) ship paired baseline reproductions + 5-tuple credentials per the signal-equivalence framework~\citep{ws2framework}. The v0.5 paper's value is the harmonization layer + the on-chain anchoring + the credential format, not the underlying scans.
 
-**What v0.5 explicitly cannot claim.** No real multi-vendor paired-dose acquisitions; cross-vendor generalization analyses in v0.5 are restricted to comparing methods trained on LIDC-derived simulated low-dose against the AAPM 2016 real paired-dose subset, which is single-vendor Siemens. The multi-vendor real-paired claim is v1.0 territory; the v0.5 paper must be honest about this and explicitly position the prospective extension as a follow-up.
+**Vendor coverage — corrected 2026-05-26.** The public Mayo LDCT-PD cohort is **two-vendor — ~99 GE and ~101 Siemens patients across both anatomies** (verified from TCIA metadata + a GE projection file). So v0.5 **does** provide real cross-vendor (GE vs Siemens) paired-dose coverage; the earlier "Siemens-only" framing was a factual error and has been corrected throughout the manuscript. What v0.5 still cannot claim: Canon/Philips coverage, prospective/multi-site acquisition, and ≥500-patient scale — those remain v1.0's distinguishing contributions (now re-scoped to prospective + multi-site + additional vendors + new tasks, not "multi-vendor" per se).
 
 **Manuscript implication.** The current [`paper_draft/manuscript.tex`](paper_draft/manuscript.tex) is written for v1.0. Before submitting v0.5, the abstract, Background & Summary, Methods (Cohort recruitment), Data Records (cohort tables), and Limitations sections need a focused rewrite to scope claims to public-data-only. The framework holds; the numbers shift.
 
@@ -31,7 +31,7 @@ These are downloadable now (with free academic registration) and unblock Phase 1
 |---|---|---|---|
 | **LIDC-IDRI 50-pt subset** (~10 GB) | Phase 1 pipeline test + lung-nodule task | Free, NBIA registration | Already documented in [`../data_acquisition/lidc_idri_download.md`](../data_acquisition/lidc_idri_download.md) — start the download |
 | **LIDC-IDRI full 1,018 patients** (~125 GB) | Larger-cohort downstream-task analysis | Free, NBIA | Phase 2 stretch |
-| **AAPM 2016 Low-Dose CT Grand Challenge** (~40 GB) | Real paired-dose comparator; the *only* prior public real-paired dataset | Mayo Clinic email request, **1–2 wk lead time** | Send the email template at [`../data_acquisition/aapm_2016_request.md`](../data_acquisition/aapm_2016_request.md) today — biggest critical-path unblock |
+| **AAPM 2016 Low-Dose CT Grand Challenge** (~175 GB: ~19 GB image + ~156 GB DICOM-CT-PD projections) | Noise-insertion low-dose comparator (Mayo projection-domain noise insertion, not re-acquired); the *only* prior public dataset with such a paired low-dose reference | Box shared link (obtained 2026-05-28); staged at `gs://low-dose-ct/aapm_2016_grand_challenge/` | **Done** — downloaded & verified (52 zips, 174.7 GB). Paired FD+QD exists only for the 10 training patients; testing is QD-only (FD withheld). |
 | **Mayo LDCT-and-Projection-Data** (LIDC-scale) | Cited in manuscript Table 1 (dataset-comparison) | TCIA, free with registration | Download alongside LIDC |
 
 ---
@@ -124,12 +124,12 @@ After v0.5 ships, v1.0's critical path is the previously-documented one: **Track
 | Majority-vote multi-task annotations | ✅ (reusing LIDC + topping up AAPM/Mayo) | ✅ (full panel campaign) |
 | Reproducibility contract (Docker, SHA-256 manifest) | ✅ | ✅ |
 | 5-tuple credential framework integration | ✅ | ✅ |
-| Multi-vendor coverage | ❌ (Siemens only via AAPM 2016) | ✅ (≥ 2 vendors prospectively) |
-| Real paired-dose acquisitions at ≥ 500-patient scale | ❌ (limited to AAPM 2016's 10 patients) | ✅ |
-| Cross-vendor evaluation API | ❌ (single vendor in public data) | ✅ |
+| Multi-vendor coverage | ✅ (GE + Siemens via public Mayo LDCT-PD) | ✅ (adds Canon / Philips, prospective) |
+| Real paired-dose acquisitions at ≥ 500-patient scale | ❌ (208 unique: AAPM 10 + Mayo 199, less 1 shared patient L143) | ✅ |
+| Cross-vendor evaluation API | ◑ (GE↔Siemens leave-one-vendor-out in v0.5) | ✅ (≥ 3 vendors) |
 | Pediatric subset | ❌ (deferred to companion dataset) | ❌ (also deferred) |
 
-**The honest v0.5 → v1.0 positioning for *Nature Scientific Data***: v0.5 is the harmonization-layer + on-chain-anchoring contribution; v1.0 is the multi-vendor real-paired-acquisition contribution. Reviewers should see them as two complementary papers, not as competing claims.
+**The honest v0.5 → v1.0 positioning for *Nature Scientific Data***: v0.5 is the harmonization-layer + content-addressing contribution **plus genuine two-vendor (GE + Siemens) paired low-dose coverage** (Mayo projection-domain noise-insertion reference, not re-acquired); v1.0 is the prospective, multi-site, additional-vendor (Canon/Philips), larger-scale, new-clinical-task contribution. Reviewers should see them as two complementary papers, not as competing claims.
 
 ---
 

@@ -1,36 +1,37 @@
 %% =====================================================================
-%% WS-3 Reference Method Paper — MICCAI 2027 submission
+%% WS-3 Data Descriptor — Nature Scientific Data submission
 %%
-%% Target venue: MICCAI 2027 (Lecture Notes in Computer Science, llncs.cls)
-%% Fallback:     IEEE Transactions on Medical Imaging
-%% Format:       LNCS, 8 pages main + up to 4 pages supplementary
-%% Template:     Springer LNCS. Class file llncs.cls available from
-%%               https://www.springer.com/gp/computer-science/lncs
-%%               (we use a vanilla \documentclass{article} in development;
-%%               replace with \documentclass[runningheads]{llncs} at submission).
+%% Target venue: Scientific Data (Nature Portfolio) — DATA DESCRIPTOR
+%% Object of review: a deposited, reusable DERIVED-DATA corpus, NOT an
+%%   algorithm. The reconstruction method is demoted to "how the data
+%%   were generated" (Methods); the contribution is the data records +
+%%   their technical validation + reuse potential.
 %%
-%% ANONYMIZATION FOR DOUBLE-BLIND SUBMISSION:
-%% MICCAI is double-blind. Before submitting, replace:
-%%   - \author{} block contents      -> "Anonymous Author(s)"
-%%   - \affil{} block contents       -> "Anonymous Affiliation"
-%%   - "PWM Protocol Foundation"     -> "Foundation X"
-%%   - "PWM Low-Dose CT Challenge"   -> "the public benchmark"
-%%   - "pwm_dose_equivalence", "ct_radon", any "pwm_" identifiers
-%%     -> use neutral aliases like "dose_equivalence_lib", "ct_radon_lib"
-%%   - URLs containing "integritynoble" -> https://anonymized
-%%   - Acknowledgments section       -> empty or "Anonymized"
-%%   - Citations to ws1dataset, ws2framework, ws4leaderboard
-%%     (companion papers) -> [N] Anonymous, "Title", in submission
-%% After camera-ready acceptance, restore the original identifying text.
+%% Scientific Data mandates a fixed section order:
+%%   Background & Summary / Methods / Data Records / Technical Validation
+%%   / Usage Notes / Code Availability   (NO Discussion / Conclusion).
 %%
-%% Status: v0.2 working draft. RESULTS tables / figures are \todo{}
-%%         placeholders until WS-3 Phase 3 (v1 with ensembles + cross-vendor)
-%%         lands at D9+270.
+%% Distinct from WS-1 (raw paired CT scans): this corpus is the
+%%   reconstruction + uncertainty + credential LAYER built on top of WS-1.
 %%
-%% Build:  pdflatex manuscript && bibtex manuscript && pdflatex manuscript
+%% SUBMISSION REQUIREMENTS (Scientific Data house rules):
+%%   - Data must be deposited in an approved repository with a DOI
+%%     (figshare / Zenodo). IPFS/blockchain CIDs are SUPPLEMENTARY, not a
+%%     substitute. Fill \datadoi{} below at deposit time.
+%%   - Data licence: per-source (numerical records CC BY 4.0; LIDC-derived
+%%     pixels CC BY 3.0; AAPM/Mayo pixels not redistributed -> regenerate
+%%     locally via the RunBundle). Code licence: Apache 2.0.
+%%   - A "Data Citations" list is required for every reused dataset.
+%%
+%% Status: v0.3 working draft (reframed from the prior MICCAI method
+%%   draft, preserved at manuscript_method_miccai.tex). RESULTS/validation
+%%   tables are \todo{} until WS-3 Phase 3 (v1 ensemble + cross-vendor)
+%%   lands at D9+270 and the corpus is deposited.
+%%
+%% Build:  pdflatex manuscript && bibtex manuscript && pdflatex manuscript && pdflatex manuscript
 %% =====================================================================
 
-\documentclass{article}  % swap for `\documentclass[runningheads]{llncs}` at submission
+\documentclass{article}
 
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
@@ -51,95 +52,210 @@
 
 \newcommand{\todo}[1]{\textcolor{red}{\textbf{[TODO: #1]}}}
 \newcommand{\R}{\mathbb{R}}
+% Placeholder for the repository DOI; replace at deposit time.
+\newcommand{\datadoi}{\todo{figshare/Zenodo DOI on deposit}}
 \newcommand{\todoTable}[2]{%
   \begin{table}[ht]\centering%
     \fbox{\parbox{0.85\linewidth}{\centering\todo{TABLE: #2}}}%
-    \caption{#2 (placeholder; populate when data lands).}\label{#1}%
+    \caption{#2 (placeholder; populate when the corpus is deposited).}\label{#1}%
   \end{table}}
 \newcommand{\todoFigure}[2]{%
   \begin{figure}[ht]\centering%
     \fbox{\parbox{0.85\linewidth}{\centering\todo{FIGURE: #2}}}%
-    \caption{#2 (placeholder; populate when data lands).}\label{#1}%
+    \caption{#2 (placeholder; populate when the corpus is deposited).}\label{#1}%
   \end{figure}}
 
-% Stub the LNCS-only \keywords macro so the draft compiles under `article`.
-% The real llncs.cls supplies this; remove the next line at submission.
-\providecommand{\keywords}[1]{\par\noindent\textbf{Keywords:} #1\par}
+\title{\textbf{A Multi-Vendor Corpus of Reference Low-Dose CT Reconstructions \\ with Calibrated Per-Pixel Uncertainty and Signal-Equivalence Credentials}}
 
-\title{\textbf{Unrolled Iterative Reconstruction with Calibrated Uncertainty for Low-Dose CT: \\ A Reference Method for the PWM Benchmark}}
-
-\author[1,2]{\textit{Authors to be confirmed at submission}}
+%% Author block — Scientific Data requires a named corresponding author with a
+%% registered ORCID for every author. Names/ORCIDs are the last placeholders to
+%% fill (at submission); the STRUCTURE below is submission-ready.
+\author[1,2]{\todo{First A. Author}\thanks{Corresponding author: \todo{email@utsouthwestern.edu}; ORCID \todo{0000-0000-0000-0000}. A registered ORCID for \emph{every} author is mandatory for \emph{Scientific Data}; register and list all before submission.}}
+\author[1]{\todo{Second B. Author}}
+\author[2]{\todo{Third C. Author}}
 \affil[1]{University of Texas Southwestern Medical Center, Dallas, TX, USA}
 \affil[2]{PWM Protocol Foundation}
 
-\date{Working draft v0.1 --- \today}
+\date{Working draft v0.3 (Data Descriptor) --- \today}
 
 \begin{document}
 \maketitle
 
 %% =====================================================================
 \begin{abstract}
-We present an open-source reference reconstruction method for low-dose CT designed as a \textbf{credible, improvable, and permissively-licensed} community baseline rather than a single-dataset state-of-the-art point. The method is an unrolled iterative reconstruction with $10$ data-consistency steps interleaved with a weight-shared U-Net denoiser; uncertainty is quantified via a five-model deep ensemble; the forward model is the open \texttt{ct\_radon} implementation maintained as part of the PWM modality engine, so any user replicating the architecture inherits a Radon transform validated against PWM's 172-modality test suite. We evaluate on the multi-vendor PWM-LDCT benchmark across four dose levels (10\%, 25\%, 50\%, 100\%) and report five complementary axes that are rarely co-located in published methods: reconstruction quality (PSNR / SSIM / LPIPS), downstream task performance (lung-nodule detection AUC), cross-vendor generalization (leave-one-vendor-out), per-pixel uncertainty calibration (Spearman $\rho$ of predicted variance vs observed error), and signal-equivalence credentials per the framework of \citet{ws2framework}. The method ships under Apache~2.0 with a content-addressed Docker RunBundle on IPFS and a verified L4 cert on the PWM blockchain registry. Its architecture is \emph{decomposably improvable}: each of the four components (denoiser, forward model, iteration schedule, UQ method) can be swapped independently, inviting follow-on contributions to compete on individual axes rather than re-derive the full stack.
+\noindent
+Low-dose CT reconstruction research is rich in methods but poor in
+\emph{shared, reusable derived data}: published methods release a model
+or a number, rarely the per-case reconstructed volumes, the per-pixel
+uncertainty that a clinical user would triage on, or a machine-checkable
+certificate of diagnostic equivalence. We describe a deposited corpus
+that supplies exactly this layer on top of the multi-vendor PWM-LDCT
+benchmark~\citep{ws1dataset}. For every test scan, at four dose levels
+($10\%$, $25\%$, $50\%$, $100\%$) and across multiple CT vendors, the
+corpus provides: (i) a \textbf{reference reconstruction} produced by an
+open, fully specified unrolled-iterative pipeline; (ii) a
+\textbf{per-pixel uncertainty map} from a five-model deep ensemble; (iii)
+the \textbf{paired per-pixel error map} against the full-dose reference,
+enabling calibration studies without re-running any model; (iv)
+\textbf{downstream-task output maps} (lung-nodule detection scores); (v)
+machine-readable \textbf{signal-equivalence credentials} computed under
+the framework of \citet{ws2framework}; and (vi) the matched
+reconstructions of five baseline methods for comparison. Every record is
+content-addressed, released under CC~BY~4.0, and accompanied by an
+Apache-2.0 generating pipeline packaged as a pinned Docker RunBundle so
+the corpus is regenerable bit-for-bit within floating-point tolerance.
+Technical validation reports reconstruction fidelity, cross-vendor
+consistency, and---centrally for reuse---the agreement between the
+released uncertainty maps and the released error maps (Spearman $\rho$).
+The corpus is intended for reuse in uncertainty-calibration research,
+cross-vendor robustness studies, downstream-task evaluation under dose
+reduction, and as a stable comparison baseline for new reconstruction
+methods.
 \end{abstract}
 
-\keywords{Low-dose CT \and Unrolled iterative reconstruction \and Uncertainty quantification \and Cross-vendor generalization \and Reproducible benchmark.}
+%% =====================================================================
+\section{Background \& Summary}
+\label{sec:background}
+
+Deep-learning low-dose CT reconstruction has produced a decade of method
+papers reporting fractional-dB gains~\citep{chen2017redcnn,wang2020deeplearningreview,song2022scorebased},
+yet the field shares almost no \emph{derived} data. Two structural gaps
+follow. First, reconstructed volumes are seldom released: a researcher
+who wants to study how reconstruction error distributes across anatomy,
+dose, or vendor must retrain each method from scratch. Second, the two
+quantities most relevant to clinical deployment---\emph{per-pixel
+uncertainty} and a \emph{certificate of task-level equivalence}---are
+almost never published as data a third party can inspect. A deployer
+choosing a reconstruction for a new scanner, or a calibration researcher
+studying whether predicted variance tracks true error, has nothing
+reusable to build on.
+
+The raw substrate for closing these gaps now exists: the PWM-LDCT
+benchmark~\citep{ws1dataset} provides multi-vendor paired (full-dose,
+low-dose) CT, extending the field's two single-vendor real-paired
+resources, AAPM-2016~\citep{aapm2016challenge} and Mayo
+LDCT-PD~\citep{mccollough2020mayo}, both Siemens-only. What has been
+missing is the \emph{derived layer}: a uniformly produced set of
+reconstructions, uncertainty maps, error maps, task outputs, and
+equivalence credentials over that substrate.
+
+This Data Descriptor releases that layer. We generate every record with a
+single, fully specified open pipeline---an unrolled iterative
+reconstruction with a weight-shared denoiser and a five-model deep
+ensemble for uncertainty (Methods)---and deposit the outputs as a
+content-addressed corpus. We emphasise that the pipeline is a
+\emph{means of generating reproducible data}, not the object of this
+paper; its architecture is reported in full only so the data are
+reproducible and the uncertainty maps are interpretable.
+
+\paragraph{Relationship to the PWM-LDCT benchmark (WS-1).} This corpus is
+deliberately disjoint from the underlying benchmark dataset. WS-1
+releases the \emph{raw paired CT scans}; the present corpus releases the
+\emph{reconstruction, uncertainty, error, task-output, and credential
+records derived from them}. The two are intended to be cited together:
+WS-1 as the input data, this corpus as the reference derived data.
+
+\paragraph{Reuse value.} The corpus enables, without any model retraining:
+(1) \textbf{uncertainty-calibration research}---the paired
+(uncertainty map, error map) records are a ready-made benchmark for
+calibration metrics and recalibration methods; (2) \textbf{cross-vendor
+robustness studies}---reconstructions and errors are vendor-labelled,
+supporting leave-one-vendor-out analyses; (3) \textbf{downstream-task
+evaluation under dose reduction}---released task-score maps let others
+study how dose affects detection without re-deriving reconstructions; (4)
+\textbf{credential-based comparison}---the machine-readable
+signal-equivalence credentials are a stable target that new methods can
+report against under a content-addressed framework hash; and (5) a
+\textbf{stable comparison baseline}---five matched baseline
+reconstructions accompany the reference so new methods compare against
+identical inputs.
+
+\paragraph{Summary of what is released.} \autoref{tab:records_overview}
+summarises the record types; \autoref{sec:datarecords} gives the full
+file-level manifest. All records, for all scans, at all dose levels and
+vendors, are deposited together under a single repository DOI
+(\datadoi).
 
 %% =====================================================================
-\section{Introduction}
-\label{sec:intro}
-
-Despite years of method papers reporting fractional-dB PSNR gains over previous best~\citep{chen2017redcnn,wang2020deeplearningreview,liu2024diffusion}, the low-dose CT field has no single reference baseline. The obstacle is structural: published methods optimize for performance on the dataset used during development (typically AAPM-2016~\citep{aapm2016challenge} on Siemens hardware) and rarely report \textbf{(i)} cross-vendor generalization, \textbf{(ii)} per-pixel uncertainty calibration, \textbf{(iii)} downstream task performance, or \textbf{(iv)} open-source code with permissive licensing. A deployer picking a method for a different vendor, or one needing per-case diagnostic confidence, has no clear choice.
-
-We present an open-source reference method explicitly designed for these four properties, positioned as the seed entry of a permanent benchmark leaderboard~\citep{ws4leaderboard}.
-
-\paragraph{Position vs vendor IR.} Vendor-deployed iterative reconstruction (Siemens \textit{Admire}, GE \textit{Veo}, Canon \textit{AIDR3D}) is FDA-cleared but closed: weights, training data, and inference code are vendor-proprietary; cross-vendor evaluation is therefore not possible. Open methods such as RED-CNN~\citep{chen2017redcnn} are reproducible but lack UQ and cross-vendor scope. We aim to combine the architectural class of vendor IR with the reproducibility of academic methods.
-
-\paragraph{Architecture rationale.} We use unrolled iterative reconstruction~\citep{adler2018learned,mardani2018neural} for three reasons. \textbf{(1) Physical prior:} embedding the (exact) Radon operator in the iteration loop guarantees data consistency that end-to-end networks must learn from data. \textbf{(2) Decomposable improvability:} a follow-up can independently swap the denoiser, forward model, iteration schedule, or UQ method --- each yielding a publishable contribution that improves on this baseline without invalidating it. Pure transformer or pure diffusion architectures do not offer this decomposability~\citep{liu2024diffusion}. \textbf{(3) Regulatory transferability:} iterative methods with explicit data-consistency loops have FDA-cleared precedent in vendor IR; an architecturally analogous open method is more transferable to regulated deployment than a pure neural approach.
-
-\paragraph{Why ``credible and improvable'' beats ``state-of-the-art''.} A reference method that wins by 0.3~dB on a single vendor is too fragile to anchor a community benchmark: the next year's method on a slightly different dataset displaces it, and the cumulative leaderboard has no stable origin. We instead target a competitive, mid-range performer with four desirable properties present, designed for follow-on improvement on independent axes. This is the same logic that made BERT-base a productive baseline relative to a hypothetical singularly-tuned competitor; the open question of which axis to improve next is itself a contribution to the field.
-
-\paragraph{Contributions.}
-\begin{enumerate}
-    \item An open-source unrolled iterative architecture with weight-shared U-Net denoiser, TV warm start, and five-model deep ensemble UQ, sized to fit in $< 24$~GB GPU memory (Section~\ref{sec:method}).
-    \item Cross-vendor generalization evaluation: leave-one-vendor-out on the PWM-LDCT benchmark~\citep{ws1dataset} (Section~\ref{sec:experiments}).
-    \item Per-pixel uncertainty calibration: Spearman correlation between predicted variance and observed reconstruction error (Section~\ref{sec:results}).
-    \item Five-tuple signal-equivalence credentials per~\citet{ws2framework} at 25\% and 10\% dose (Section~\ref{sec:credentials}).
-    \item Release under Apache~2.0 with a reproducible Docker RunBundle on IPFS and a corresponding L4 cert on PWM mainnet.
-\end{enumerate}
-
-%% =====================================================================
-\section{Related work}
-\label{sec:related_work}
-
-\paragraph{Deep learning for low-dose CT.} The 2017 introduction of RED-CNN~\citep{chen2017redcnn} established encoder-decoder CNNs as a competitive low-dose denoising baseline. WGAN-VGG~\citep{yang2018ctgan} and subsequent perceptual-loss methods improved visual quality at similar PSNR. CTformer~\citep{wang2023ctformer} brought transformer self-attention to the task and reported $\sim 0.5$~dB PSNR gains. Diffusion- and score-based methods~\citep{liu2024diffusion} achieve state-of-the-art PSNR on AAPM-2016 at the cost of substantial inference latency. \citet{wang2020deeplearningreview} survey the field. Common to all is single-vendor evaluation on AAPM-2016 or LIDC-IDRI; cross-vendor generalization is not reported.
-
-\paragraph{Unrolled iterative reconstruction.} Learned primal-dual schemes~\citep{adler2018learned} and learned proximal gradient methods~\citep{mardani2018neural} embed a learned denoiser inside a classical iterative loop. Weight sharing across iterations reduces parameter count and is a known implicit regularizer~\citep{adler2018learned}. The architectural choice is interpretable, decomposable, and architecturally analogous to FDA-cleared vendor iterative reconstruction --- properties we explicitly exploit (Section~\ref{sec:method_overview}).
-
-\paragraph{Uncertainty and cross-domain generalization.} Monte-Carlo dropout~\citep{gal2016dropout} is cheap but poorly calibrated under distribution shift~\citep{ovadia2019uncertainty}; deep ensembles~\citep{lakshminarayanan2017deep} consistently outperform dropout on calibration and have been extended to medical segmentation~\citep{mehrtash2020confidence} and CT reconstruction~\citep{barbano2022uncertainty}. For distribution shift, domain-adversarial training~\citep{ganin2016domain}, BN adaptation~\citep{li2017revisiting}, and test-time training~\citep{sun2020ttt} target the general problem; cross-scanner medical-image segmentation has been studied~\citep{karani2018lifelong}, but cross-vendor evaluation for CT reconstruction is largely absent from the literature --- the gap this paper fills.
-
-\paragraph{Benchmarks and reproducibility.} AAPM-2016~\citep{aapm2016challenge} and Mayo LDCT-PD~\citep{mccollough2020mayo} are the field's two real-paired-low-dose CT datasets; both are Siemens-only. The PWM-LDCT benchmark~\citep{ws1dataset} extends to multiple vendors. The signal-equivalence framework~\citep{ws2framework} provides the credential format we report against.
-
-%% =====================================================================
-\section{Method}
+\section{Methods}
 \label{sec:method}
 
-\subsection{Architecture overview}
+This section specifies how each released record was generated. It is
+included to make the corpus reproducible and the uncertainty maps
+interpretable; it is not a methodological contribution of this Data
+Descriptor.
+
+\subsection{Input data and provenance}
+Inputs are the PWM-LDCT~\citep{ws1dataset} scans at signal ratios $r \in
+\{0.10, 0.25, 0.50\}$, patient-level split into train/validation/test,
+vendor-labelled. Reference (target) images are the patient's full-dose
+reconstruction. No scan crosses the train/test boundary at the patient
+level; all released records are for the held-out test split.
+
+\paragraph{Low-dose provenance (real-paired vs simulated).} Each
+(vendor, dose) stratum is one of two kinds, recorded per record in
+\texttt{scan\_meta.json} (\texttt{low\_dose\_origin} $\in$
+\{\texttt{real\_paired}, \texttt{simulated}\}): \emph{real-paired}
+acquisitions are genuine repeat low-dose scans from the source
+benchmark~\citep{ws1dataset}; \emph{simulated} low-dose is generated from
+the full-dose projections by Poisson photon-count reduction in the
+\texttt{ct\_radon} forward model~\citep{pwmcore} at the stated $r$. Reusers
+must not treat the two as interchangeable: simulated strata characterise
+algorithmic behaviour under an idealised noise model, real-paired strata
+characterise behaviour under true acquisition physics. The per-stratum
+breakdown is reported in \autoref{tab:cohort} and carried in every
+record's metadata.
+
+\paragraph{The $r = 1.00$ level.} Full dose is the reference, not a
+credentialed dose level. Where an $r = 1.00$ reconstruction is released it
+is the reference image $x^{\textrm{ref}}$ itself; no error map is emitted
+at $r = 1.00$ (the error against the reference is identically zero) and no
+credential is defined there (signal-equivalence credentials compare a
+\emph{reduced}-dose method against the full-dose reference). All released
+error maps, task-score maps, and credentials are therefore at $r \in
+\{0.10, 0.25, 0.50\}$.
+
+\paragraph{Ethics and human-subjects provenance.} This corpus contains no
+new human-subjects data: every record is a derived image or a numerical
+summary computed from the PWM-LDCT benchmark~\citep{ws1dataset}, which
+governs the underlying acquisitions, their institutional-review-board
+approvals, and informed-consent basis. The specific governing approvals ---
+\todo{name the WS-1 IRB protocol number(s) and the Mayo LDCT-PD / AAPM~2016
+data-use agreement reference} --- are stated in the WS-1 source descriptor and
+restated here at submission. The released NIfTI volumes carry no
+protected health information: voxel arrays only, with all DICOM
+patient-identifying header fields removed at generation, and
+\texttt{scan\_id} is the WS-1 pseudonymous identifier (never an
+institutional medical-record number). Redistribution follows the
+per-source basis of the WS-1 release, set out under
+\emph{Licensing and redistribution} (\autoref{sec:datarecords}); reusers
+remain bound by the source data-use terms, in particular for any attempt
+to re-link records to source acquisitions. No date-of-service, geographic,
+or demographic field finer than the anatomy/vendor labels in
+\texttt{scan\_meta.json} is released.
+
+\subsection{Reconstruction pipeline}
 \label{sec:method_overview}
+Reconstructions are produced by an unrolled iterative
+scheme~\citep{adler2018learned,mardani2018neural}. Let $\mathcal{R}:
+\R^{H \times W} \to \R^{n_{\textrm{views}} \times n_{\textrm{dets}}}$ be
+the Radon forward operator and $\mathcal{R}^\dagger$ its filtered
+back-projection adjoint, both taken from the open
+\texttt{pwm\_core.contrib.modalities.ct\_radon}
+implementation~\citep{pwmcore} validated against the PWM modality test
+suite; we do not re-implement them, so any user regenerating the corpus
+inherits the identical, version-pinned forward model.
 
-The pipeline is summarized in Figure~\ref{fig:architecture}.
-
-\todoFigure{fig:architecture}{Architecture diagram. The rendered figure should show: (left) input low-dose sinogram $y$; (center) the unrolled iteration loop with $K = 10$ blocks, each block alternating a data-consistency step ($x^{(k+1/2)} = x^{(k)} - \tau\, \mathcal{R}^\dagger(\mathcal{R} x^{(k)} - y)$) and a learned weight-shared U-Net denoiser $f_\theta$; (right) the deep-ensemble head producing per-pixel mean $\hat{x}(y)$ and per-pixel standard deviation $\sigma(y)$ from $M = 5$ independently-trained instances. A side annotation should highlight that the forward operator $\mathcal{R}$ is the upstream PWM \texttt{ct\_radon} module, that $\tau$ is a learned scalar shared across iterations, and that the denoiser weights $\theta$ are shared across all $K$ iterations within one ensemble member.}
-
-\subsection{Forward model}
-
-Let $\mathcal{R}: \R^{H \times W} \to \R^{n_{\textrm{views}} \times n_{\textrm{dets}}}$ denote the Radon forward operator and $\mathcal{R}^\dagger$ its filtered back-projection adjoint. Both are implemented in \texttt{pwm\_core.contrib.modalities.ct\_radon}~\citep{pwmcore}, the validated forward-model implementation used across PWM's 172-modality engine. We do not re-implement; using the upstream implementation guarantees that bug-fixes propagate uniformly and that any user of our reference method inherits a Radon transform validated against the full PWM modality test suite.
-
-\subsection{Unrolled iteration}
-
-Given a low-dose sinogram $y \in \R^{n_{\textrm{views}} \times n_{\textrm{dets}}}$, we estimate the reconstruction $\hat{x} \in \R^{H \times W}$ via $K$ iterations of a data-consistency step interleaved with a learned denoiser $f_\theta$:
+Given a low-dose sinogram $y$, the reconstruction $\hat{x}$ is computed by
+$K=10$ data-consistency / denoising iterations
+(Algorithm~\ref{alg:unrolled}). The denoiser $f_\theta$ is a U-Net
+($\approx 4$\,M parameters, four encoder / four decoder stages with
+$(32,64,128,256)$ channels, GELU, GroupNorm) whose weights are shared
+across iterations; the step size $\tau$ is a learned scalar initialised at
+$0.5/\|\mathcal{R}\|_2^2$.
 
 \begin{algorithm}[h]
-    \caption{Unrolled iterative reconstruction}
+    \caption{Unrolled iterative reconstruction (per ensemble member)}
     \label{alg:unrolled}
     \begin{algorithmic}[1]
         \State $x^{(0)} \gets \textrm{TV-FBP}(y)$ \Comment{TV-regularized warm start}
@@ -151,70 +267,318 @@ Given a low-dose sinogram $y \in \R^{n_{\textrm{views}} \times n_{\textrm{dets}}
     \end{algorithmic}
 \end{algorithm}
 
-We use $K = 10$ iterations; ablation results for $K \in \{5, 10, 15, 20\}$ are in Section~\ref{sec:results}~Table~\ref{tab:K_ablation}. The denoiser $f_\theta$ is a U-Net with $\approx 4$~M parameters whose weights are shared across iterations; this both reduces memory and acts as an implicit regularizer (the same $f_\theta$ must denoise at all iteration depths, preventing iteration-specific overfitting).
-
-\todoTable{tab:K_ablation}{Iteration-count ablation: PSNR / SSIM on PWM-LDCT test split for $K \in \{5, 10, 15, 20\}$}
-
-The step size $\tau$ is a learned scalar, initialized at $0.5 / \|\mathcal{R}\|^2$ (the conventional Landweber-stable value). End-to-end optimization with mean absolute error loss on Hounsfield-unit values:
-
-\begin{equation}
-    \mathcal{L}(\theta, \tau) = \frac{1}{N}\sum_{i=1}^N \left\| \hat{x}_i(\theta, \tau; y_i) - x_i^{\textrm{ref}} \right\|_1
-\end{equation}
-
-where $x_i^{\textrm{ref}}$ is the patient's full-dose reconstruction (the reference image).
-
 \subsection{Uncertainty quantification}
 \label{sec:uq}
-
-We use a five-model deep ensemble~\citep{lakshminarayanan2017deep}: five independently-initialized and independently-trained instances of the same architecture, differing only in random seed for weight initialization and data ordering. At inference time, given a low-dose sinogram $y$, each ensemble member produces a reconstruction $\hat{x}_m(y)$ for $m = 1, \ldots, 5$. The point estimate is the mean and the per-pixel uncertainty is the standard deviation:
-
+Each released reconstruction is the mean of a five-model deep
+ensemble~\citep{lakshminarayanan2017deep}: five instances of the
+architecture above, identical except for the random seed governing weight
+initialisation and data ordering (seeds $\{42,43,44,45,46\}$). For a
+low-dose input $y$, member $m$ produces $\hat{x}_m(y)$; the released point
+estimate and per-pixel uncertainty are
 \begin{equation}
-    \hat{x}(y) = \frac{1}{5}\sum_{m=1}^{5} \hat{x}_m(y), \qquad \sigma(y)_{ij} = \sqrt{\frac{1}{5}\sum_{m=1}^{5}\left(\hat{x}_m(y)_{ij} - \hat{x}(y)_{ij}\right)^2}.
+    \hat{x}(y) = \frac{1}{5}\sum_{m=1}^{5} \hat{x}_m(y), \qquad
+    \sigma(y)_{ij} = \sqrt{\frac{1}{5}\sum_{m=1}^{5}\left(\hat{x}_m(y)_{ij} - \hat{x}(y)_{ij}\right)^2}.
 \end{equation}
+Deep ensembles are chosen over MC dropout because they calibrate better
+under distribution shift~\citep{ovadia2019uncertainty,gal2016dropout} and
+have bounded ($5\times$) inference cost. The released $\sigma(y)$ map is
+the quantity intended for case-level triage; its \emph{validity} as a
+triage signal is established in Technical Validation by comparison with
+the released error map.
 
-We choose deep ensembles over Monte-Carlo dropout because (i) ensembles consistently outperform dropout on calibration in regression benchmarks~\citep{ovadia2019uncertainty}, (ii) inference cost is bounded ($5\times$ a single model rather than $T$-stochastic), and (iii) the inference cost can be amortized across many predictions on the same GPU.
+\subsection{Derived per-record quantities}
+For each test scan and dose level the pipeline emits, in addition to
+$\hat{x}(y)$ and $\sigma(y)$: the \textbf{per-pixel error map}
+$e(y)_{ij} = |\hat{x}(y)_{ij} - x^{\textrm{ref}}_{ij}|$ against the
+full-dose reference, and a \textbf{lung-nodule detection score map} from a
+frozen pre-trained detector applied to $\hat{x}(y)$
+(detector specified in Section~\ref{sec:detector}). (Version~1 of the
+corpus releases this single chest / lung-nodule task; additional tasks
+such as abdominal liver-lesion segmentation are deferred to a future
+release so that the released records and the task description remain in
+exact correspondence.) In addition, at the \emph{cohort} level---one record per $(\textrm{task}, r,
+\textrm{subpopulation}, \textrm{method})$ stratum rather than per
+scan---the pipeline emits a \textbf{signal-equivalence credential}
+(5-tuple $(r, T, \varepsilon, \alpha, \Pi)$ with verdict and confidence
+interval) computed with the \texttt{pwm\_dose\_equivalence}
+library~\citep{ws2framework}; each credential is internally audited with
+\texttt{pwm-audit} before it is written, and is regenerable from the
+released task-score arrays. The five baseline methods
+(Section~\ref{sec:datarecords}) are run through the identical emit path so
+their records are field-for-field comparable.
 
-\paragraph{What the uncertainty is \emph{for}.} A clinically actionable UQ map distinguishes patient cases for which the reconstruction is reliable (low $\sigma(y)$ everywhere in the diagnostic region) from cases for which the reconstruction is uncertain enough to warrant either a higher-dose retake, a second-reader review, or a deferred diagnosis. A well-calibrated reference method therefore reports not only per-pixel variance but its \emph{agreement with per-pixel error} on a held-out test set (Section~\ref{sec:results}). A high Spearman correlation gives radiologists evidence that the variance map is informative; a low correlation flags that the ensemble disagreement does not track the actual reconstruction quality and the UQ should not be used for triage. The PWM-LDCT benchmark's paired full-dose ground truth makes this evaluation possible at scale.
+\subsection{Frozen downstream-task detector}
+\label{sec:detector}
+The lung-nodule detection score maps are produced by a single
+\emph{frozen} detector held fixed across every method, dose level, and
+record, so the task layer measures the diagnostic content each
+reconstruction preserves rather than any adaptation of the detector
+itself. The detector is \textbf{nnDetection}~\citep{baumgartner2021nndetection}---a
+self-configuring 3D Retina~U-Net---run in its published configuration
+without modification; the exact release is pinned in Supplementary
+Table~S2. It is trained \emph{once} on the \textbf{LUNA16}
+benchmark~\citep{setio2017luna16}, the 888-scan
+LIDC/IDRI~\citep{lidc_idri} subset annotated for pulmonary nodules with
+$\geq 3/4$ radiologist agreement, and is never fine-tuned on PWM-LDCT
+reconstructions. The LUNA16 training patients are disjoint from the
+PWM-LDCT cohort, so the detector is an external, leakage-free evaluator
+applied identically to all methods.
 
-\subsection{Training data and augmentation}
+\paragraph{Operating-point provenance.} The credentialing operating
+point is fixed \emph{before} any PWM-LDCT reconstruction is scored: on
+the held-out LUNA16 validation fold we take the detection-score
+threshold whose free-response ROC (FROC) yields a mean of $0.1$
+false-positive detections per scan ($\textrm{FPR}=0.1$) and freeze it
+for all subsequent scoring. The released task-score maps are the raw,
+pre-threshold detector scores, so reusers may re-derive performance at
+any operating point; the AUC in \autoref{tab:task_auc} and the task
+credentials are read at this single frozen $\textrm{FPR}=0.1$ point,
+identical across all methods and doses. The frozen weights, inference
+configuration, and version pin are deposited in the RunBundle
+(Section~\ref{sec:codeavail}) so the task layer is independently
+reproducible.
 
-Training data: full PWM-LDCT~\citep{ws1dataset} training split with paired (full-dose, low-dose) reconstructions at $r \in \{0.10, 0.25, 0.50\}$. We mix all three dose levels in each minibatch with weights $(0.4, 0.4, 0.2)$, biased toward the most clinically relevant levels.
-
-Augmentation: random flip ($p=0.5$), random rotation in $[-5^\circ, 5^\circ]$, random window-level shift in $[-50, 50]$~HU. No augmentation that violates physical consistency (no random noise injection on top of the already-noisy low-dose, no patch shuffling).
-
-\subsection{Implementation details}
-\label{sec:implementation}
-
-The U-Net denoiser has four encoder / four decoder stages with $(32, 64, 128, 256)$ channels (GELU, GroupNorm, bilinear upsampling), $\approx 4$~M parameters per ensemble member. The data-consistency step uses a single learned scalar $\tau$ initialized at $0.5 / \|\mathcal{R}\|_2^2$. Optimizer is AdamW~\citep{loshchilov2018adamw}, cosine LR schedule with $5\%$ warmup; training uses batch size $4$ ($512 \times 512$ full slices) on a single A100. Ensemble seeds $\{42,43,44,45,46\}$; CuDNN deterministic; all RNGs seed-propagated. Full hyperparameter table, training compute disclosure, and ablation hypothesis statements are in Supplementary Tables~S1--S2.
-
-% Full hyperparameter table moved to Supplementary Material (Table S1) to stay within MICCAI 8-page limit.
+\subsection{Training and generation configuration}
+Models are trained on the PWM-LDCT training split with paired targets at
+$r \in \{0.10,0.25,0.50\}$ mixed per minibatch with weights $(0.4,0.4,0.2)$;
+augmentation is physical-consistency-preserving only (random flip
+$p{=}0.5$; rotation $[-5^\circ,5^\circ]$; window-level shift
+$[-50,50]$\,HU). Optimiser AdamW~\citep{loshchilov2018adamw}, cosine LR
+with $5\%$ warmup, batch size $4$ at $512\times512$, single A100; CuDNN
+deterministic, all RNGs seed-propagated. The complete hyperparameter
+table, library version pins, and compute disclosure accompany the deposit
+(Supplementary Tables~S1--S3) so the corpus is regenerable.
 
 %% =====================================================================
-\section{Experiments}
-\label{sec:experiments}
+\section{Data Records}
+\label{sec:datarecords}
+\label{sec:data_records}
 
-\paragraph{Datasets.} Training: PWM-LDCT~\citep{ws1dataset} training split (\todo{N} patients, \todo{N} scans). Evaluation: PWM-LDCT test split (\todo{N} patients), AAPM-2016~\citep{aapm2016challenge} held-out scans (\todo{N} patients), and LIDC-IDRI~\citep{lidc_idri} sub-sample (\todo{N} patients) for downstream task validation.
+Records are deposited at \datadoi{}, with integrity verified by the
+per-file SHA-256 \texttt{MANIFEST.sha256} at the archive root (an optional
+content-addressed mirror is noted in Section~\ref{sec:codeavail}); their
+licensing follows the per-source basis set out in \emph{Licensing and
+redistribution} below. The deposit is a single archive with the directory
+layout below; every leaf file is additionally listed with its SHA-256 in
+\texttt{MANIFEST.sha256} at the archive root.
 
-\paragraph{Baselines.} Three baseline reconstruction methods, reproduced within $\leq 0.5$~dB PSNR of their published numbers:
-\begin{itemize}
-    \item RED-CNN~\citep{chen2017redcnn}: foundational encoder-decoder CNN, 2017.
-    \item A transformer-based reconstruction (\todo{select: CTformer / TransCT / Restormer-LDCT}).
-    \item A diffusion / score-based reconstruction (\todo{select: 2024 score-LDCT}).
-\end{itemize}
+\paragraph{Licensing and redistribution.} The corpus inherits the
+per-source redistribution basis of the WS-1 benchmark~\citep{ws1dataset},
+which redistributes value-added derivatives only where the source licence
+permits and otherwise has reusers regenerate them locally. Accordingly:
+(i)~all \emph{numerical} records---credentials, \texttt{scan\_meta.json},
+\texttt{dataset\_metadata.json}, and the integrity manifest---are released
+under CC~BY~4.0, being aggregate statistics and metadata rather than image
+derivatives and carrying no protected health information; (ii)~\emph{pixel}
+records (reconstruction, uncertainty, error, and task-score maps) derived
+from LIDC-IDRI scans are released under CC~BY~3.0, matching the licence
+under which WS-1 already redistributes its LIDC-derived simulated low-dose
+images; and (iii)~pixel records derived from the AAPM~2016 Low-Dose CT
+Grand Challenge and Mayo LDCT-PD scans are \emph{not} redistributed---those
+source data-use agreements restrict redistribution of pixel
+derivatives---and are instead regenerated locally by reusers from their own
+authorised copies of the source data using the deposited Apache-2.0
+RunBundle (\autoref{sec:codeavail}), which reproduces them within
+floating-point tolerance. The released cross-vendor \emph{credentials} and
+fidelity statistics (\autoref{tab:cross_vendor}) are unaffected by (iii),
+as they are aggregate numbers rather than redistributed pixels. Generating
+code is Apache~2.0.
 
-\paragraph{Cross-vendor splits.} We construct three leave-one-vendor-out splits: train-on-\{GE, Canon\}/test-on-Siemens; train-on-\{Siemens, Canon\}/test-on-GE; train-on-\{Siemens, GE\}/test-on-Canon. Each cross-vendor experiment uses the full training set with the held-out vendor's patients removed (patient-level, not slice-level).
+\begin{table}[h]
+    \centering
+    \small
+    \begin{tabular}{p{0.26\linewidth}p{0.12\linewidth}p{0.50\linewidth}}
+        \toprule
+        \textbf{Record type} & \textbf{Format} & \textbf{Per-record content} \\
+        \midrule
+        Reference reconstruction & NIfTI (\texttt{.nii.gz}) & Ensemble-mean reconstruction $\hat{x}(y)$, HU, $512\times512\times Z$ \\
+        Uncertainty map & NIfTI & Per-pixel ensemble std.\ dev.\ $\sigma(y)$, same grid \\
+        Error map & NIfTI & Per-pixel $|{\hat{x}-x^{\textrm{ref}}}|$ vs full dose, same grid \\
+        Task-score map & NIfTI & Frozen lung-nodule detector score map on $\hat{x}(y)$ \\
+        Credential & JSON & 5-tuple signal-equivalence credential~\citep{ws2framework} + verdict + CI + framework hash \\
+        Baseline reconstructions & NIfTI & Same fields, for 5 baseline methods (Sec.~\ref{sec:baselines}) \\
+        Per-scan metadata & JSON & Vendor, dose ratio $r$, anatomy, split, source-scan ID (links to WS-1) \\
+        \bottomrule
+    \end{tabular}
+    \caption{Overview of released record types. Counts and total size per
+    type are in \autoref{tab:records_counts}; the full directory manifest
+    is below.}
+    \label{tab:records_overview}
+\end{table}
 
-\paragraph{Metrics.} (i) PSNR, SSIM, LPIPS~\citep{zhang2018lpips} on the test reconstructions; (ii) lung-nodule detection AUC at fixed FPR = 0.1, using a pre-trained nodule detector frozen across reconstruction methods; (iii) per-pixel uncertainty calibration --- Spearman correlation of $\sigma(y)_{ij}$ against $|\hat{x}(y)_{ij} - x_i^{\textrm{ref}}|_{ij}$ on held-out test; (iv) inference latency (seconds per slice on a single NVIDIA A100), peak GPU memory; (v) 5-tuple signal-equivalence credentials per the framework of \citet{ws2framework} at $r \in \{0.10, 0.25\}$ for lung-nodule detection, $\varepsilon = 0.02$, $\alpha = 0.05$, subpopulation $\Pi = $ adult-chest test split.
+\todoFigure{fig:example_records}{Example released records for one test scan at
+$r = 0.25$, all on the identical voxel grid: (a) reference reconstruction
+$\hat{x}$ (HU); (b) per-pixel ensemble uncertainty $\sigma$ (HU); (c) per-pixel
+error $e = |\hat{x} - x^{\textrm{ref}}|$ against the full-dose reference (HU);
+(d) frozen lung-nodule task-score map (unitless, $[0,1]$). Illustrates the
+voxel-alignment guarantee and the paired $(\sigma, e)$ calibration benchmark
+that is the corpus's central reuse value. Populated at deposit (D9+270).}
 
-\paragraph{Ablations.} Five ablations isolate each design choice: iteration count $K \in \{5, 10, 15, 20\}$; ensemble size $M \in \{1, 3, 5, 10\}$; weight-shared vs per-iteration denoiser; TV-FBP vs FBP vs learned warm-start; mixed-dose training vs $r = 0.25$-only training. Hypotheses and detailed results in Supplementary Table~S2.
+\paragraph{Directory layout.}
+\begin{verbatim}
+pwm-ldct-recon-corpus/
+  MANIFEST.sha256                 # SHA-256 of every leaf file
+  dataset_metadata.json           # ISA-style top-level metadata, DOI, licence
+  reconstructions/
+    <vendor>/<scan_id>/r<dd>/      # dd in {010,025,050,100}
+      recon_mean.nii.gz           # reference reconstruction (this method)
+      uncertainty_sigma.nii.gz    # per-pixel ensemble std dev
+      error_abs.nii.gz            # |recon - full_dose_ref|
+      task_nodule_score.nii.gz    # frozen-detector score map
+      scan_meta.json              # vendor, r, anatomy, split, WS-1 source id
+  baselines/
+    <method>/<vendor>/<scan_id>/r<dd>/  # method in {fbp,redcnn,wgan_vgg,
+      recon.nii.gz                      #            transformer,diffusion}
+      error_abs.nii.gz
+      task_nodule_score.nii.gz
+  credentials/                    # cohort-level: one credential per
+    <task>/r<dd>/<method>__<vendor>.json  #   (task x dose x method x vendor)
+    all_credentials.jsonl         # flat queryable index of every credential
+  checksums_and_versions.json     # library version pins for regeneration
+\end{verbatim}
 
-\paragraph{Statistical reporting.} All metrics reported with 95\% bootstrap CIs ($B = 1000$) over test-set patients; cross-vendor PSNR drops compared with paired bootstrap tests at $\alpha = 0.05$; Holm-Bonferroni correction for multi-split tests.
+\paragraph{Naming and indexing.} \texttt{scan\_id} is the WS-1 source
+identifier, so any record back-links to its raw input. \texttt{r<dd>}
+encodes the dose ratio. The flat \texttt{all\_credentials.jsonl} index
+lets a reuser query credentials (by vendor, dose, task, verdict) without
+walking the tree.
+
+\paragraph{File-format conventions.} All image records are single-file
+gzip-compressed NIfTI-1 (\texttt{.nii.gz}), \texttt{float32}, with an
+\texttt{sform} set to a scaled identity and voxel spacing carried in the
+header \texttt{pixdim}. The affine is an orientation-normalised scaled
+identity by design (patient-position and origin fields from the source
+DICOM are not propagated, as part of de-identification); records are
+therefore in a canonical voxel frame, not the original scanner frame, and
+should not be re-registered to source-patient coordinates. Reconstruction,
+reference, and error volumes are in
+Hounsfield units (HU); uncertainty maps are in HU (the ensemble standard
+deviation of the reconstruction); task-score maps are unitless detector
+scores in $[0, 1]$. All maps for one record share an identical voxel grid,
+so $\hat{x}$, $\sigma$, and $e$ are voxel-aligned and can be stacked
+without resampling. JSON records are UTF-8; credentials validate against
+the machine-readable schema bundled with the deposit
+(\texttt{credential\_schema.json}) and the WS-2 library~\citep{ws2framework}.
+
+\paragraph{Data dictionary.} Each \texttt{scan\_meta.json} carries the
+fields in \autoref{tab:scan_meta_fields}; each \texttt{credential.json} is
+the WS-2 5-tuple wire format (top-level \texttt{schema\_version},
+\texttt{framework\_hash}, and a \texttt{credential} object holding
+\texttt{signal\_ratio}, \texttt{task}, \texttt{epsilon}, \texttt{alpha},
+\texttt{subpopulation}, \texttt{estimator}, \texttt{n\_test},
+\texttt{delta\_mean}, \texttt{delta\_ci\_low}, \texttt{delta\_ci\_high},
+\texttt{verdict}, and a \texttt{sample\_size\_check} block), specified
+field-by-field in the companion credential reading guide and the bundled
+JSON Schema.
+
+\begin{table}[h]
+    \centering
+    \small
+    \begin{tabular}{lll}
+        \toprule
+        \textbf{Field} & \textbf{Type} & \textbf{Meaning} \\
+        \midrule
+        \texttt{scan\_id}        & string & WS-1 pseudonymous source identifier (back-link) \\
+        \texttt{vendor}          & string & CT manufacturer (e.g.\ Siemens / GE / Canon) \\
+        \texttt{r}               & float  & signal ratio $\in (0, 1]$ (dose level) \\
+        \texttt{anatomy}         & string & body region (\texttt{chest} in the v1 lung-nodule corpus) \\
+        \texttt{split}           & string & always \texttt{test} for released records \\
+        \texttt{source\_scan\_id}& string & WS-1 series this record was reconstructed from \\
+        \texttt{low\_dose\_origin}& string & \texttt{real\_paired} or \texttt{simulated} (see Methods) \\
+        \bottomrule
+    \end{tabular}
+    \caption{\texttt{scan\_meta.json} fields. No field finer than
+    anatomy/vendor is released (see Ethics and human-subjects provenance).}
+    \label{tab:scan_meta_fields}
+\end{table}
+
+\begin{table}[h]
+    \centering
+    \small
+    \begin{tabular}{lcccc}
+        \toprule
+        \textbf{Vendor} & \textbf{Patients} & \textbf{Scans} & \textbf{Real-paired strata} & \textbf{Simulated strata} \\
+        \midrule
+        \todo{vendor 1} & \todo{N} & \todo{N} & \todo{N} & \todo{N} \\
+        \todo{vendor 2} & \todo{N} & \todo{N} & \todo{N} & \todo{N} \\
+        \midrule
+        \textbf{Total}  & \todo{N} & \todo{N} & \todo{N} & \todo{N} \\
+        \bottomrule
+    \end{tabular}
+    \caption{Cohort composition by vendor: distinct patients and scans, and
+    how many (vendor, dose) strata are real-paired vs simulated low-dose.
+    Populated at deposit (\texttt{package\_corpus.py} derives the patient /
+    scan counts from \texttt{scan\_meta.json}).}
+    \label{tab:cohort}
+\end{table}
+
+\begin{table}[h]
+    \centering
+    \small
+    \begin{tabular}{lccc}
+        \toprule
+        \textbf{Record type} & \textbf{Count} & \textbf{Format} & \textbf{Total size} \\
+        \midrule
+        Reference reconstructions & \todo{N} & NIfTI & \todo{GB} \\
+        Uncertainty maps          & \todo{N} & NIfTI & \todo{GB} \\
+        Error maps                & \todo{N} & NIfTI & \todo{GB} \\
+        Task-score maps           & \todo{N} & NIfTI & \todo{GB} \\
+        Credentials               & \todo{N} & JSON  & \todo{MB} \\
+        Baseline reconstructions  & \todo{N} & NIfTI & \todo{GB} \\
+        \midrule
+        \textbf{Total}            & \todo{N} & --- & \todo{GB} \\
+        \bottomrule
+    \end{tabular}
+    \caption{Record counts and sizes. Populated when the corpus is
+    generated and deposited (WS-3 Phase 3, D9+270).}
+    \label{tab:records_counts}
+\end{table}
+
+\subsection{Baseline reconstructions included for comparison}
+\label{sec:baselines}
+To make the corpus a self-contained comparison resource, the matched
+reconstructions of five baselines are included, each run through the
+identical emit path: FBP; RED-CNN~\citep{chen2017redcnn};
+WGAN-VGG~\citep{yang2018ctgan}; a transformer
+reconstruction~\citep{wang2023ctformer}; and a diffusion / score-based
+reconstruction~\citep{song2022scorebased}. Each baseline is reproduced
+within $\leq 0.5$\,dB PSNR of its published numbers before its records are
+emitted; reproduction recipes accompany the deposit. The baselines are
+single-model methods and therefore carry no \texttt{uncertainty\_sigma}
+record (ensemble disagreement is defined only for the deep-ensemble
+reference method); their record set is reconstruction, error map,
+task-score map, and credential.
 
 %% =====================================================================
-\section{Results}
-\label{sec:results}
+\section{Technical Validation}
+\label{sec:validation}
 
-\paragraph{Reconstruction quality.} Table~\ref{tab:reconstruction_quality} \todo{populate} reports PSNR, SSIM, and LPIPS for each method at each dose level on the PWM-LDCT test split. The reference method achieves PSNR within $\todo{X}$~dB of the diffusion-based baseline at $r = 0.25$, while consuming $\todo{Y}\times$ less inference time and using $\todo{Z}\times$ less GPU memory.
+Validation establishes that the released records are fit for reuse. It is
+organised around the three properties a reuser depends on: that the
+reconstructions are faithful, that they are consistent across vendors, and
+that the released uncertainty maps actually track the released error
+maps.
+
+\paragraph{Record integrity (construction check).} As a reuse trust
+anchor we verify that every released \texttt{error\_abs} map equals its
+defining quantity $|\hat{x}(y)-x^{\textrm{ref}}|$ by reconstruction
+rather than by assertion. The deposited tool
+\texttt{package\_corpus.py\ verify-error-maps} draws a random sample of
+records, reloads the reconstruction together with the scan's full-dose
+reference (the released $r=1.00$ \texttt{recon\_mean}), recomputes
+$|\hat{x}-x^{\textrm{ref}}|$, and confirms it matches the released
+\texttt{error\_abs} voxelwise within float32 tolerance
+($\leq 10^{-3}$\,HU). The synthetic end-to-end fixture runs this check in
+continuous integration on every commit, and a reuser can re-run it on the
+deposit with a single command, so the error layer is independently
+checkable, not merely trusted.
+
+\paragraph{Reconstruction fidelity.} \autoref{tab:reconstruction_quality}
+reports PSNR, SSIM, and LPIPS~\citep{zhang2018lpips} of every released
+reconstruction against its full-dose reference, per dose level, for the
+reference method and the five baselines. These quantify how close each
+released volume is to ground truth; they are descriptive data-quality
+evidence, not a competition.
 
 \begin{table}[h]
     \centering
@@ -227,31 +591,146 @@ The U-Net denoiser has four encoder / four decoder stages with $(32, 64, 128, 25
         \midrule
         FBP                & \todo{} & \todo{} & \todo{} & \todo{} & \todo{} & \todo{} \\
         RED-CNN            & \todo{} & \todo{} & \todo{} & \todo{} & \todo{} & \todo{} \\
+        WGAN-VGG           & \todo{} & \todo{} & \todo{} & \todo{} & \todo{} & \todo{} \\
         Transformer        & \todo{} & \todo{} & \todo{} & \todo{} & \todo{} & \todo{} \\
         Diffusion          & \todo{} & \todo{} & \todo{} & \todo{} & \todo{} & \todo{} \\
-        \textbf{PWM ref}   & \todo{} & \todo{} & \todo{} & \todo{} & \todo{} & \todo{} \\
+        \textbf{Reference} & \todo{} & \todo{} & \todo{} & \todo{} & \todo{} & \todo{} \\
         \bottomrule
     \end{tabular}
-    \caption{Reconstruction quality on the PWM-LDCT test split. Values to fill at D9+270 after WS-3 Phase 3 (v1 deep ensemble) lands.}
+    \caption{Reconstruction fidelity of the released records against the
+    full-dose reference, with $95\%$ bootstrap CIs ($B{=}1000$) over test
+    patients. Populated at deposit (D9+270).}
     \label{tab:reconstruction_quality}
 \end{table}
 
-\paragraph{Cross-vendor generalization.} Table~\ref{tab:cross_vendor} reports the PSNR drop $\Delta$ when each method is trained without one vendor and evaluated on that held-out vendor's test scans. The reference method's $\Delta$ should be $\leq 2$~dB; baselines are not designed for cross-vendor generalization and we expect $\Delta \approx 3$--$5$~dB.
+\paragraph{Cross-vendor consistency: interpolation vs.\ extrapolation.}
+Because every record is vendor-labelled, reusers can study cross-vendor
+generalisation directly --- but only if the corpus states which vendors
+are \emph{interpolative} (comfortably inside the multi-vendor training
+distribution) and which are \emph{extrapolative} (at its edge). We make
+this operational with leave-one-vendor-out (LOVO) generation. The
+released reference reconstructions are produced by the deployed ensemble
+trained on \emph{all} vendors, so for the deposited corpus every vendor
+is in-distribution; \autoref{tab:cross_vendor} additionally reconstructs
+each vendor's scans with an ensemble trained \emph{without} that vendor
+and reports the fidelity drop $\Delta = \mathrm{PSNR}_{\text{in-dist}} -
+\mathrm{PSNR}_{\text{held-out}}$. $\Delta$ is the empirical distance of a
+vendor from the rest: a small $\Delta$ marks an \textbf{interpolation}
+vendor whose reconstructions a cross-vendor model is expected to
+reproduce, while a large $\Delta$ marks an \textbf{extrapolation} vendor
+whose records should anchor out-of-distribution claims and be scoped
+cautiously. Each vendor's regime is labelled in the table from its
+$\Delta$ against a deposit-fixed threshold, so a reuser can pick
+interpolative vendors for in-distribution benchmarks and extrapolative
+vendors for robustness stress-tests without re-deriving anything. The
+$\Delta$ values themselves are populated from the Phase-3 runs
+(\autoref{tab:reconstruction_quality}'s generation), so this is the
+framing under which those numbers are read, not a separate experiment.
 
-\todoTable{tab:cross_vendor}{Cross-vendor PSNR drop ($\Delta$, dB) under leave-one-vendor-out training; lower is better}
+\begin{table}[h]
+    \centering
+    \small
+    \begin{tabular}{lcccc}
+        \toprule
+        \textbf{Held-out vendor} & \textbf{In-dist.\ PSNR} & \textbf{Held-out PSNR} & \textbf{$\Delta$ (dB)} & \textbf{Regime} \\
+        \midrule
+        \todo{vendor 1} & \todo{} & \todo{} & \todo{} & \todo{interp/extrap} \\
+        \todo{vendor 2} & \todo{} & \todo{} & \todo{} & \todo{interp/extrap} \\
+        \todo{vendor 3} & \todo{} & \todo{} & \todo{} & \todo{interp/extrap} \\
+        \bottomrule
+    \end{tabular}
+    \caption{Cross-vendor fidelity under leave-one-vendor-out generation:
+    PSNR of each vendor's scans reconstructed by the all-vendor ensemble
+    (in-distribution) versus an ensemble trained without that vendor
+    (held-out), and the drop $\Delta$. The per-vendor \textbf{Regime}
+    label (\emph{interpolation} if $\Delta$ is below the deposit-fixed
+    threshold, else \emph{extrapolation}) tells reusers which released
+    vendor records are safe for in-distribution reuse versus
+    out-of-distribution stress-tests. Populated at deposit
+    (WS-3 Phase~3, D9+270).}
+    \label{tab:cross_vendor}
+\end{table}
 
-\paragraph{Uncertainty calibration.} The deep ensemble's per-pixel standard deviation correlates with per-pixel error at Spearman $\rho = $ \todo{populate}. A reliability diagram is provided as Figure~\ref{fig:reliability}.
+\paragraph{Uncertainty--error agreement (central reuse validation).} The
+corpus's distinctive reuse value is the paired (uncertainty, error)
+records, so we validate it along three complementary axes rather than one.
+\textbf{(i) Rank tracking:} the Spearman correlation between $\sigma(y)$
+and $e(y)$, per pixel and aggregated per case
+(\autoref{tab:uq_calibration}) --- does larger predicted uncertainty
+co-occur with larger error? \textbf{(ii) Calibration magnitude:} a
+reliability diagram of predicted $\sigma$ against observed RMS error per
+$\sigma$-bin (\autoref{fig:reliability}), summarised by an
+expected-calibration-error (ECE), the mean absolute gap between the two ---
+rank correlation can be high while the variance is systematically mis-scaled,
+which ECE catches. \textbf{(iii) Interval coverage:} the empirical fraction
+of voxels whose true error falls within $\pm k\,\sigma$ for $k \in
+\{1, 2, 3\}$ (\autoref{tab:uq_coverage}); a well-calibrated Gaussian-like
+variance yields $\approx 68/95/99.7\%$. Reporting all three lets a reuser
+distinguish a uncertainty map that merely \emph{ranks} error from one that
+is \emph{quantitatively} calibrated for interval-based triage; where they
+disagree, the corpus documents which property holds so the variance is not
+over-trusted. This is the single most important validation for the corpus's
+stated calibration-research reuse.
 
-\todoFigure{fig:reliability}{Reliability diagram: predicted per-pixel standard deviation (ensemble) vs observed per-pixel reconstruction error on held-out test}
+\begin{table}[h]
+    \centering
+    \small
+    \begin{tabular}{lccc}
+        \toprule
+        \textbf{Dose} & \textbf{Spearman $\rho$ (per-pixel)} & \textbf{Spearman $\rho$ (per-case mean)} & \textbf{$95\%$ CI} \\
+        \midrule
+        $r = 0.10$ & \todo{} & \todo{} & \todo{} \\
+        $r = 0.25$ & \todo{} & \todo{} & \todo{} \\
+        $r = 0.50$ & \todo{} & \todo{} & \todo{} \\
+        \bottomrule
+    \end{tabular}
+    \caption{Agreement between released uncertainty maps and released
+    error maps. Populated at deposit (D9+270).}
+    \label{tab:uq_calibration}
+\end{table}
 
-\paragraph{Downstream task performance.} Lung-nodule detection AUC against a frozen detector is reported in Table~\ref{tab:task_auc}. The downstream-task results may diverge from pixel-wise results: a method with higher PSNR may produce lower task AUC if it over-smooths small lesions~\citep{kim2019smoothing}. Showing both is the point.
+\todoFigure{fig:reliability}{Reliability diagram: released per-pixel
+ensemble standard deviation vs observed per-pixel reconstruction error
+(RMS per $\sigma$-bin) on the held-out test split, annotated with the
+expected-calibration-error (ECE).}
 
-\todoTable{tab:task_auc}{Lung-nodule detection AUC at fixed FPR = 0.1, per method, per dose level, using a frozen pre-trained detector}
+\begin{table}[h]
+    \centering
+    \small
+    \begin{tabular}{lcccc}
+        \toprule
+        \textbf{Dose} & \textbf{ECE} & \textbf{$\pm1\sigma$ cov.} & \textbf{$\pm2\sigma$ cov.} & \textbf{$\pm3\sigma$ cov.} \\
+        \midrule
+        $r = 0.10$ & \todo{} & \todo{} & \todo{} & \todo{} \\
+        $r = 0.25$ & \todo{} & \todo{} & \todo{} & \todo{} \\
+        $r = 0.50$ & \todo{} & \todo{} & \todo{} & \todo{} \\
+        \bottomrule
+    \end{tabular}
+    \caption{Calibration magnitude (expected-calibration-error) and
+    empirical $\pm k\,\sigma$ interval coverage of the released uncertainty
+    maps; well-calibrated variance yields coverage $\approx 68/95/99.7\%$.
+    Populated at deposit (D9+270).}
+    \label{tab:uq_coverage}
+\end{table}
 
-\subsection{Signal-equivalence credentials}
-\label{sec:credentials}
+\paragraph{Downstream-task validity.} \autoref{tab:task_auc} reports
+lung-nodule detection AUC (fixed FPR $=0.1$) computed from the released
+task-score maps with a frozen detector held constant across all methods.
+This validates that the released reconstructions preserve diagnostically
+relevant structure, and documents the known divergence between pixel
+fidelity and task performance~\citep{kim2019smoothing} so reusers
+interpret both layers correctly.
 
-Per the framework of \citet{ws2framework}, we report 5-tuple credentials for the reference method:
+\todoTable{tab:task_auc}{Lung-nodule detection AUC (frozen detector, fixed
+FPR $=0.1$) computed from the released task-score maps, per method, per
+dose level}
+
+\paragraph{Credential validation.} Each released credential is internally
+audited with the \texttt{pwm-audit} tool~\citep{ws2framework}
+(schema validity, verdict-vs-CI self-consistency, framework-hash
+recognition); \autoref{tab:credentials} summarises the verdicts. The
+audit is bundled in the deposit so a reuser can re-verify every credential
+without re-running the bootstrap.
 
 \begin{table}[h]
     \centering
@@ -260,37 +739,142 @@ Per the framework of \citet{ws2framework}, we report 5-tuple credentials for the
         \toprule
         $r$ & Task & $\varepsilon$ & $\alpha$ & Subpopulation & Verdict & CI \\
         \midrule
-        0.25 & Lung nodule AUC & 0.02 & 0.05 & adult-chest test split  & \todo{} & \todo{} \\
-        0.10 & Lung nodule AUC & 0.05 & 0.05 & adult-chest test split  & \todo{} & \todo{} \\
-        0.25 & Liver lesion Dice & 0.03 & 0.05 & adult-abdomen test split & \todo{} & \todo{} \\
+        0.25 & Lung nodule AUC   & 0.05 & 0.05 & adult-chest test split   & \todo{} & \todo{} \\
+        0.10 & Lung nodule AUC   & 0.05 & 0.05 & adult-chest test split   & \todo{} & \todo{} \\
         \bottomrule
     \end{tabular}
-    \caption{Signal-equivalence credentials computed per \citet{ws2framework} against full-dose FBP as the reference. Verdicts: \texttt{PASS} / \texttt{FAIL} / \texttt{INDETERMINATE}.}
+    \caption{Signal-equivalence credentials~\citep{ws2framework} for the
+    reference reconstruction against full-dose, audited with
+    \texttt{pwm-audit}. Verdicts: \texttt{PASS} / \texttt{FAIL} /
+    \texttt{INDETERMINATE}. Note: the WS-1 test cohort sits in the
+    \texttt{INDETERMINATE}-dominated regime for the AUC default; absence
+    of \texttt{PASS} reflects cohort size, not non-equivalence
+    (see~\citealp{ws2framework}).}
     \label{tab:credentials}
 \end{table}
 
-These credentials are the canonical artifact that future methods will report against. Reporting only PSNR/SSIM/LPIPS is insufficient; reporting only verdicts loses the CI; reporting both is the standard we propose.
+\paragraph{Reproducibility of generation.} The full corpus regenerates
+from the deposited Apache-2.0 RunBundle: \texttt{docker run} on a fresh
+machine reproduces every record bit-identically within IEEE-754 tolerance
+(seeds, library pins, and CuDNN-deterministic settings in Supplementary
+Table~S2). The RunBundle is independently re-executed by the PWM
+challenge scoring service before posting, providing third-party
+regeneration evidence.
 
 %% =====================================================================
-\section{Discussion}
-\label{sec:discussion}
+\section{Usage Notes}
+\label{sec:usage}
 
-\paragraph{What this method is and is not.} The PWM reference reconstruction is not state-of-the-art on the single-vendor AAPM-2016 benchmark, and we do not claim it is. It is the first open-source reconstruction method that ships with calibrated per-pixel UQ, validated cross-vendor generalization, and an Apache-2.0-licensed RunBundle anchored to a content-addressed benchmark hash. Each of these four properties has been studied in isolation~\citep{lakshminarayanan2017deep,karani2018lifelong,chen2017redcnn}; their combination in a single deployable artifact has not.
+\paragraph{Loading.} All image records are NIfTI and load with any
+standard reader (\texttt{nibabel}, ITK); credentials are JSON validated
+against the published schema~\citep{ws2framework}. The
+\texttt{all\_credentials.jsonl} index supports tabular queries by vendor,
+dose, task, and verdict. Each record's \texttt{scan\_meta.json} links back
+to its WS-1 raw source~\citep{ws1dataset}. A minimal read of one record's
+voxel-aligned reconstruction, uncertainty, and error maps:
 
-\paragraph{When to use it and how.} The method is appropriate when the deployment target is a different vendor or scanner than the training data, when per-case diagnostic confidence is required for triage, when regulatory review requires open-source weights, or when subsequent improvements should be evaluated against a stable reference. It is \emph{not} appropriate when single-vendor single-task PSNR is the only success criterion. The per-pixel UQ is intended for case-level triage (high $\bar{\sigma}$ over the diagnostic region $\Rightarrow$ flag for retake or second-reader review), not for pixel-level CIs on individual structures; we recommend pairing it with the signal-equivalence credential~\citep{ws2framework} so the variance flags individual cases while the credential certifies the cohort.
+\begin{verbatim}
+import nibabel as nib, json
+base = "reconstructions/Siemens/<scan_id>/r025/"
+recon = nib.load(base + "recon_mean.nii.gz").get_fdata()        # HU
+sigma = nib.load(base + "uncertainty_sigma.nii.gz").get_fdata() # HU, same grid
+error = nib.load(base + "error_abs.nii.gz").get_fdata()         # |recon - full_dose|
+meta  = json.load(open(base + "scan_meta.json"))                # vendor, r, anatomy, ...
+# the (sigma, error) pair is the ready-made calibration benchmark
+\end{verbatim}
 
-\paragraph{Limitations.} (1) Vendor coverage in the released training set is \todo{N} of the four major CT manufacturers; cross-vendor results to vendors not in training are extrapolation, not measurement. (2) Training-dose mix $r \in \{0.10, 0.25, 0.50\}$ does not include $r < 0.10$; performance at very-low-dose ($r \lesssim 0.05$) is not characterized. (3) The UQ ensemble disagreement can be non-informative when all members fail in correlated ways (e.g., on out-of-distribution anatomical regions); the reliability diagram should be inspected before using the variance for case triage. (4) The method is single-slice 2D; 3D-aware reconstruction may achieve better axial consistency but at substantially higher compute cost. (5) The TV warm start is non-learned; replacing it with a learned warm-start network is a candidate future improvement we deliberately defer to follow-on work.
+\paragraph{Intended reuses.} (1) Uncertainty-calibration research: treat
+the paired (\texttt{uncertainty\_sigma}, \texttt{error\_abs}) maps as a
+ready calibration benchmark. (2) Cross-vendor robustness: use vendor
+labels and the leave-one-vendor-out validation to scope claims. (3)
+Dose-dependent downstream-task studies: use the released task-score maps
+without re-deriving reconstructions. (4) Method comparison: benchmark a
+new reconstruction against the matched baseline records on identical
+inputs and report a credential against the same framework hash.
+
+\paragraph{Cautions for reuse.} The released uncertainty is ensemble
+disagreement; it can be non-informative where all members fail in
+correlated ways (out-of-distribution anatomy)---inspect the reliability
+diagram before triaging on $\sigma$. Cross-vendor records for vendors not
+in training are extrapolation, not measurement. Dose ratios below $0.10$
+are not characterised. Reconstructions are single-slice 2D. Credential
+\texttt{INDETERMINATE} verdicts on this cohort reflect sample
+size~\citep{ws2framework}, not evidence of non-equivalence, and should not
+be read as a negative finding about a method.
+
+\paragraph{Licensing.} Numerical records (credentials, metadata,
+manifest): CC~BY~4.0. LIDC-derived pixel records: CC~BY~3.0. Pixel records
+derived from the DUA-restricted AAPM~2016 and Mayo LDCT-PD scans are not
+redistributed and are regenerated locally via the RunBundle (see
+\emph{Licensing and redistribution} under Data Records,
+\autoref{sec:datarecords}). Generating code and RunBundle: Apache~2.0.
+Reuse requires citing this Data Descriptor and the WS-1 source
+dataset~\citep{ws1dataset}.
 
 %% =====================================================================
-\section{Conclusion and reproducibility}
+\section{Code Availability}
+\label{sec:codeavail}
 
-We have presented an open-source reference reconstruction method for low-dose CT, designed not to maximize PSNR but to be \emph{credible, improvable, and permissively licensed}: cross-vendor evaluated, deep-ensemble UQ-calibrated, signal-equivalence-credentialed per~\citep{ws2framework}, and Apache-2.0 licensed. The method is the seed entry of the permanent PWM Low-Dose CT Challenge leaderboard~\citep{ws4leaderboard}; an L4 cert anchoring the RunBundle CID is registered on the PWM blockchain mainnet. We invite the community to compete by improving any of the four independent axes (denoiser, forward model, iteration schedule, UQ method) without re-deriving the full stack.
-
-\paragraph{Reproducibility commitment.} All code (Apache 2.0), pre-trained ensemble weights, pinned Dockerfile, evaluation scripts, and a content-addressed PWM RunBundle are released at \url{https://github.com/integritynoble/low_dose_CT/tree/main/WS-3_reference_method}. The exact library versions, random seeds (Supplementary Table~S1), and training-compute disclosure permit bit-identical reproduction within IEEE 754 FP tolerance on equivalent hardware. The RunBundle is independently verified by the PWM Low-Dose CT Challenge scoring service before being posted to the leaderboard, providing third-party reproducibility evidence beyond our own claim.
+The complete generating pipeline---training, inference, ensemble
+aggregation, error/task/credential emission, and the evaluation harness
+that produced every Technical Validation number---is released under
+Apache~2.0 at
+\url{https://github.com/integritynoble/low_dose_CT/tree/main/WS-3_reference_method},
+and packaged as a pinned Docker RunBundle; integrity is provided by the
+deposited SHA-256 \texttt{MANIFEST.sha256}, with an optional
+content-addressed mirror (IPFS CID \todo{at deposit}) as a supplementary
+check. Pre-trained ensemble weights,
+the pinned \texttt{Dockerfile}, evaluation scripts, random seeds, and the
+training-compute disclosure (Supplementary Table~S3) permit bit-identical
+regeneration of the corpus within floating-point tolerance on equivalent
+hardware. The forward model is the upstream
+\texttt{pwm\_core.contrib.modalities.ct\_radon}~\citep{pwmcore}; the
+credentialing library is \texttt{pwm\_dose\_equivalence}~\citep{ws2framework}.
+The credential-emission and corpus-packaging steps (record layout,
+\texttt{pwm-audit}ed credential issuance, machine-readable metadata, and the
+SHA-256 integrity manifest) are unit-tested, and a runnable synthetic fixture
+reproduces the full record-generation $\rightarrow$ credential $\rightarrow$
+metadata $\rightarrow$ manifest pipeline end-to-end on miniature data, so a
+reviewer can exercise the corpus structure and audit chain in one command
+without the full dataset.
 
 %% =====================================================================
+\section*{Data Citations}
+\addcontentsline{toc}{section}{Data Citations}
+\noindent
+The deposited corpus: \datadoi{} (CC~BY~4.0).\\
+Source benchmark dataset (WS-1): \citet{ws1dataset}.\\
+Signal-equivalence framework and credential schema: \citet{ws2framework}.
+
+%% =====================================================================
+%% Scientific Data mandates these declarations at the end of every submission:
+%% Acknowledgements, Author Contributions, and Competing Interests. Funding is
+%% given its own head here because WS-5 owns it; it may be folded into
+%% Acknowledgements at submission. (A Data Descriptor has no separate "Data
+%% Availability" section — the Data Records section, the repository DOI, and the
+%% Data Citations list discharge that requirement.)
 \section*{Acknowledgments}
-\todo{Fill at submission.}
+\todo{Acknowledge compute providers and the source-data custodians (Mayo Clinic
+/ AAPM Low-Dose CT Grand Challenge for controlled-access scans; TCIA/LIDC-IDRI).
+Fill at submission.}
+
+\section*{Author Contributions}
+\todo{State per the CRediT taxonomy. Template: ``A.A.\ and B.B.\ designed the
+reconstruction pipeline and generated the corpus; A.A.\ performed the technical
+validation; C.C.\ computed and audited the signal-equivalence credentials; A.A.\
+drafted the manuscript; all authors reviewed and approved the final
+manuscript.'' Every listed author must have a contribution.}
+
+\section*{Competing Interests}
+\todo{Declare all financial \emph{and} non-financial competing interests
+(\emph{Scientific Data} requires both). In particular, disclose the PWM Protocol
+Foundation affiliation. Template if none material: ``The authors declare
+no competing interests.''}
+
+\section*{Funding}
+\todo{List funders and grant numbers (e.g.\ NIH R21, if awarded --- see WS-5), or
+state ``This work received no specific grant from any funding agency.'' May be
+merged into Acknowledgments at submission.}
 
 %% =====================================================================
 \bibliographystyle{plainnat}

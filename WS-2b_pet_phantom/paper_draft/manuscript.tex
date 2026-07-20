@@ -1,0 +1,514 @@
+%% =====================================================================
+%% PWM-PET-IQ 1.0 Dataset Paper --- Nature Scientific Data submission
+%%
+%% Target venue: Nature Scientific Data (Data Descriptor format)
+%%
+%% Strategy: This descriptor is the DATA-DESCRIPTOR sibling of the WS-2
+%% signal-equivalence framework paper. Where WS-2 (Nature Methods target)
+%% contributes a *method*, this paper contributes a *dataset*: paired
+%% full- and reduced-count NEMA NU-2 IQ phantom PET acquisitions for
+%% reduced-activity reconstruction benchmarking. The pwm_dose_equivalence
+%% framework appears here only as a Usage-Notes consumer of the dataset,
+%% not as the headline object (Scientific Data does not publish methods).
+%%
+%% Status: 1.0 SKELETON. Every \todo{} is an acquisition- or deposit-gated
+%%         blank; the dataset itself must be acquired and deposited before
+%%         submission. NO measurement in this draft is asserted from a
+%%         committed artifact yet --- see SUBMISSION_CHECKLIST.md, which
+%%         maps each \todo{} to the acquisition/analysis/deposit step that
+%%         fills it.
+%%
+%% Build:  pdflatex manuscript && bibtex manuscript && pdflatex manuscript
+%% =====================================================================
+
+\documentclass[twoside,11pt]{article}
+
+%% --- Packages ---------------------------------------------------------
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage[margin=1in]{geometry}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{multirow}
+\usepackage{amsmath,amssymb}
+\usepackage{siunitx}
+\usepackage{xcolor}
+\usepackage[colorlinks=true,linkcolor=blue,citecolor=blue,urlcolor=blue]{hyperref}
+\usepackage{xurl}
+\usepackage[round]{natbib}
+\usepackage{authblk}
+\usepackage{lineno}
+\linenumbers
+
+%% --- TODO macros ------------------------------------------------------
+\newcommand{\todo}[1]{\textcolor{red}{\textbf{[TODO: #1]}}}
+\newcommand{\todoTable}[2]{%
+  \begin{table}[ht]\centering%
+    \fbox{\parbox{0.85\linewidth}{\centering\todo{TABLE: #2}}}%
+    \caption{#2 (placeholder; populate when data lands).}\label{#1}%
+  \end{table}}
+\newcommand{\todoFigure}[2]{%
+  \begin{figure}[ht]\centering%
+    \fbox{\parbox{0.85\linewidth}{\centering\todo{FIGURE: #2}}}%
+    \caption{#2 (placeholder; populate when data lands).}\label{#1}%
+  \end{figure}}
+
+%% --- Title block ------------------------------------------------------
+\title{\textbf{PWM-PET-IQ 1.0: Paired Full- and Reduced-Count NEMA NU-2 Image-Quality Phantom PET Acquisitions for Reduced-Activity Reconstruction Benchmarking}}
+
+\author[1,2]{\textit{Authors to be confirmed at submission}}
+\affil[1]{University of Texas Southwestern Medical Center, Dallas, TX, USA}
+\affil[2]{PWM Protocol Foundation}
+
+\date{Release 1.0 --- \today}
+
+\begin{document}
+\maketitle
+
+%% =====================================================================
+\begin{abstract}
+\noindent Reduced-activity (``low-count'') PET reconstruction methods are
+proliferating, but they are benchmarked on heterogeneous, often
+patient-specific data with no physically-known ground truth and no shared
+reduced-count reference, so their reported gains are not comparable across
+studies. We present \textbf{PWM-PET-IQ 1.0}, a phantom PET dataset designed
+specifically as a shared, ground-truth-anchored substrate for reduced-activity
+reconstruction benchmarking. The dataset comprises list-mode PET acquisitions
+of the NEMA NU-2 image-quality phantom (six fillable spheres of known diameter
+plus a low-density lung insert) at a sphere-to-background ratio of
+\todo{SBR, e.g. 4:1}, together with (i) genuinely reduced-activity acquisitions
+of the identical phantom fill obtained across radiotracer decay at
+\todo{K} nominal count levels ($r \in \{1.0, 0.50, 0.25, 0.10\}$ of the
+full-count reference) and (ii) \todo{N} controlled reduced-count realizations
+per level produced by seeded list-mode Poisson thinning of the full-count
+acquisition, so that both physically-decayed and statistically-thinned
+reduced-count data are available for the same phantom geometry. All series are
+reconstructed under a single fixed protocol and released as list-mode (where
+license permits), sinograms, and reconstructed volumes with harmonized
+per-series metadata. Because the phantom's true activity concentrations and
+sphere sizes are known by construction, every image-quality endpoint
+(contrast-recovery coefficient per sphere, background variability, contrast-to-noise,
+and the discrepancy between decayed and thinned reduced-count data) is validated
+against physical ground truth rather than against a reader panel. The release is
+identified by a SHA-256 content manifest and deposited under a PhysioNet DOI with
+a mirrored Zenodo archive. As a phantom acquisition it contains no protected
+health information. A pip-installable loader and the companion
+\texttt{pwm\_dose\_equivalence} tool consume the dataset directly (Usage Notes).
+\end{abstract}
+
+%% =====================================================================
+\section*{Background \& Summary}
+
+Reducing the injected radiotracer activity in positron-emission tomography lowers
+patient radiation exposure and enables faster or cheaper imaging, at the cost of
+higher image noise and reduced lesion detectability. A large and growing body of
+reconstruction and denoising methods --- iterative, model-based, and
+deep-learning --- targets this reduced-activity regime~\citep{lowcountpet,reader2021artificial}.
+Yet these methods are difficult to compare across papers for three reasons that a
+phantom dataset is uniquely positioned to remove.
+
+\begin{enumerate}
+    \item \textbf{No physical ground truth.} On patient data, the ``true'' lesion
+    contrast is unknown, so reduced-activity image quality can only be scored
+    against a full-dose \emph{reconstruction}, not against truth. A method that
+    reproduces the full-dose reconstruction's own errors scores well. The NEMA
+    NU-2 image-quality phantom has spheres of \emph{known} diameter and a fill of
+    \emph{known} activity concentration, so contrast recovery is measured against
+    physical truth.
+    \item \textbf{No shared reduced-count reference.} Each group generates its own
+    low-count data --- by injecting less activity, by shortening the frame, or by
+    thinning list-mode counts --- and these are not interchangeable. There is no
+    public released dataset that provides \emph{both} a genuinely reduced-activity
+    acquisition and a controlled statistically-thinned realization of the same
+    phantom, so the community cannot even agree on what ``25\% activity'' data
+    should look like.
+    \item \textbf{No count-matched noise realizations.} Robust evaluation of a
+    denoiser requires multiple independent noise realizations at each count level;
+    single-acquisition phantom releases provide one realization per level and
+    cannot support variance estimation.
+\end{enumerate}
+
+\textbf{PWM-PET-IQ 1.0} is built to close these three gaps. Its
+\emph{new, openly-licensed data records} are (a) a high-count reference list-mode
+acquisition of the NEMA NU-2 IQ phantom; (b) genuinely reduced-activity
+acquisitions of the identical phantom fill acquired across radiotracer decay at
+\todo{K} nominal levels; (c) \todo{N} seeded list-mode-Poisson-thinned reduced-count
+realizations per level, giving controlled, reproducible noise replicates; (d)
+single-protocol reconstructions of every series; and (e) harmonized per-series
+metadata, a physically-known ground-truth table, deterministic content addressing,
+and a loader. Because both physically-decayed and statistically-thinned
+reduced-count data are present for the same geometry, the dataset also lets users
+\emph{measure} the discrepancy between the list-mode-thinning model (the
+count-reduction model assumed by most low-count PET simulators and by the
+companion signal-equivalence framework~\citep{ws2framework}) and true
+reduced-activity acquisition --- a quantity that is asserted rather than measured
+in most of the low-count PET literature. Table~\ref{tab:series_overview} summarizes
+the release.
+
+\begin{table}[ht]
+    \centering
+    \small
+    \setlength{\tabcolsep}{4pt}
+    \begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}X c c c >{\raggedright\arraybackslash}X@{}}
+        \toprule
+        \textbf{Series class} & \textbf{Count level(s) $r$} & \textbf{Realizations} & \textbf{Origin} & \textbf{Purpose} \\
+        \midrule
+        Full-count reference       & 1.0                     & 1              & Physical acquisition & Reference / ground-truth-anchored recon \\
+        Decayed reduced-activity   & \todo{levels}           & 1 per level    & Physical acquisition (across decay) & True reduced-activity reference \\
+        Thinned reduced-count      & \todo{levels}           & \todo{N} per level & List-mode Poisson thinning (seeded) & Controlled noise replicates \\
+        \midrule
+        \textbf{1.0 total series}  & ---                     & \textbf{\todo{total}} & --- & --- \\
+        \bottomrule
+    \end{tabularx}
+    \caption{Composition of PWM-PET-IQ 1.0. The full-count reference and the
+    decayed reduced-activity series are physical acquisitions of the identical
+    phantom fill; the thinned reduced-count series are seeded list-mode
+    Poisson-thinned realizations of the full-count reference at matched nominal
+    count levels. Exact count levels, realization counts, and totals are filled
+    from the deposited acquisition log at submission (SUBMISSION\_CHECKLIST \S1--\S2).}
+    \label{tab:series_overview}
+\end{table}
+
+The dataset is a phantom acquisition, so it carries no protected health
+information and requires no patient consent --- a clean fit for open release. The
+companion signal-equivalence framework~\citep{ws2framework} and the PWM-LDCT CT
+dataset~\citep{ws1dataset} are separate releases; this descriptor is
+self-contained and can be obtained, used, and validated without either.
+
+%% =====================================================================
+\section*{Methods}
+
+\subsection*{Ethics and data sharing}
+
+PWM-PET-IQ 1.0 is a physical phantom acquisition. No human or animal subjects are
+involved, no protected health information is generated, and no institutional
+review-board approval or informed consent is required; the acquisition site's
+radiation-safety authorization for phantom filling is on file
+(\todo{radiation-safety authorization no.}). The dataset is released under
+\todo{license, e.g. CC BY 4.0} with no redistribution restriction.
+
+\subsection*{Phantom}
+
+We used the NEMA NU-2 image-quality (IQ) body phantom~\citep{nema_nu2}, comprising
+a body-cavity background compartment, a centrally-mounted low-density cylindrical
+lung insert, and six fillable spheres of internal diameter 10, 13, 17, 22, 28, and
+37\,mm. The four smallest spheres (10--22\,mm) are conventionally treated as
+``hot'' (filled above background) and the two largest (28, 37\,mm) as either hot or
+cold depending on protocol; the hot/cold assignment used here is
+\todo{hot/cold sphere assignment}. Sphere and background fill activity
+concentrations were prepared to a sphere-to-background ratio of \todo{SBR, e.g. 4:1},
+with background activity concentration \todo{background conc. (kBq/mL)} at reference
+start time. Fill activities were assayed in a dose calibrator
+(\todo{dose-calibrator model}) cross-calibrated to the PET scanner within
+\todo{cross-calibration window}.
+
+\subsection*{Radiotracer and activity levels}
+
+The phantom was filled with \todo{radiotracer, e.g. $^{18}$F-FDG}
+(half-life \todo{$T_{1/2}$}). The full-count reference acquisition began at a total
+phantom activity of \todo{reference activity (MBq)}. Genuinely reduced-activity
+series were obtained by re-acquiring the \emph{identical} phantom fill at later
+timepoints as the tracer decayed, targeting nominal count fractions
+$r \in \{1.0, 0.50, 0.25, 0.10\}$ relative to the reference; the decay timepoints,
+elapsed times, and decay-corrected activities are recorded per series in
+\texttt{metadata.json} and summarized in Table~\ref{tab:acq_params}. Acquiring
+across decay holds phantom geometry, positioning, and fill exactly constant while
+varying only the count level, which is the property that makes the decayed series a
+valid physical reference for the thinned series.
+
+\subsection*{Acquisition}
+
+All series were acquired on \todo{scanner model} in list-mode with
+\todo{TOF/PSF capabilities} enabled. The full-count reference was acquired for
+\todo{reference frame duration} at a single bed position centred on the spheres;
+each decayed reduced-activity series was acquired for \todo{decayed frame duration}
+at the identical bed position. Acquisition geometry (bed position, phantom
+orientation, axial FOV) was held fixed across all physical series and is recorded
+in \texttt{metadata.json}.
+
+\subsection*{Reduced-count realization by list-mode thinning}
+
+For each target count fraction $r$, we generated \todo{N} independent reduced-count
+realizations from the full-count reference list-mode stream by binomial (Poisson)
+thinning: each recorded coincidence event is retained independently with
+probability $r$, using a counter-based deterministic RNG seeded by
+$(\texttt{series\_id}, r, \texttt{realization\_index})$ so that every realization is
+bit-reproducible from the released full-count list-mode and the published seed
+recipe. Thinning at rate $r$ reproduces the count statistics of an acquisition at
+$r\times$ the injected activity (same scan duration) at the level of the marginal
+coincidence-count distribution; it does \emph{not} reproduce activity-dependent
+detector effects (dead-time, randoms fraction, pile-up), which differ between a
+thinned stream and a truly lower-activity acquisition. The magnitude of that
+discrepancy is exactly what the paired decayed-vs-thinned comparison in Technical
+Validation quantifies, rather than assuming it away.
+
+\subsection*{Reconstruction}
+
+Every series --- reference, decayed, and thinned --- was reconstructed under a
+single fixed protocol to eliminate reconstruction as a confound:
+\todo{algorithm, e.g. OSEM}~\citep{hudson1994osem} with \todo{iterations}
+iterations $\times$ \todo{subsets} subsets, \todo{matrix size} matrix,
+\todo{voxel size (mm)} voxels, \todo{PSF on/off} resolution modelling,
+\todo{TOF on/off} time-of-flight, and a \todo{post-filter (mm FWHM)} Gaussian
+post-filter, with all standard corrections (attenuation from the
+\todo{attenuation source, e.g. CT}, scatter, randoms, normalization, decay, and
+dead-time) applied. Reconstruction settings are recorded verbatim in
+\texttt{metadata.json} and pinned in the released reconstruction container
+(Data Records). An additional filtered-back-projection reconstruction is provided
+per series as an analytic reference where the scanner toolchain permits
+(\todo{FBP availability}).
+
+\subsection*{Ground-truth table}
+
+Because the phantom is physical, ground truth is known by construction rather than
+adjudicated. The released \texttt{ground\_truth.json} records, per sphere, the
+nominal internal diameter, the measured fill activity concentration (decay-corrected
+to each series' start time), and the resulting true sphere-to-background contrast;
+for the background and lung-insert compartments it records the true concentration
+and the geometry of the standard 12-region background ROI set specified by NEMA
+NU-2~\citep{nema_nu2}. All Technical-Validation endpoints are computed against this
+table.
+
+\subsection*{De-identification and provenance}
+
+Phantom acquisitions contain no PHI; nonetheless every released DICOM object is
+passed through the same tag-whitelisting pipeline used for the CT
+release~\citep{ws1dataset} to strip operator names, institution strings, and free-text
+fields, and the strip log is deposited as Supplementary Material. Each released
+artifact is recorded in a SHA-256 content manifest (Data Records).
+
+%% =====================================================================
+\section*{Data Records}
+
+PWM-PET-IQ 1.0 is deposited under a PhysioNet DOI (\todo{PhysioNet URL}) and
+mirrored to Zenodo (\todo{Zenodo DOI}); the identical content is addressed by the
+SHA-256 manifest \texttt{manifest.sha256}. Unlike the CT release, the phantom scans
+carry no DUA restriction, so \emph{all} pixel and list-mode records are deposited in
+full (subject only to the list-mode-format license note below). The release layout is
+given in Table~\ref{tab:data_records}.
+
+\begin{table}[ht]
+    \centering
+    \small
+    \setlength{\tabcolsep}{4pt}
+    \begin{tabular}{@{}p{4.6cm}p{6.2cm}p{2.2cm}@{}}
+        \toprule
+        \textbf{Path} & \textbf{Contents} & \textbf{Format} \\
+        \midrule
+        \texttt{listmode/reference/}          & Full-count reference list-mode stream & \todo{vendor list-mode / .l} \\
+        \texttt{listmode/decayed/}            & Decayed reduced-activity list-mode, per level & \todo{vendor list-mode} \\
+        \texttt{sinograms/}                   & Corrected sinograms per series (reference, decayed, thinned) & \todo{format, e.g. .s / HDF5} \\
+        \texttt{recon/\{reference,decayed,thinned\}/} & Reconstructed volumes per series and realization & DICOM + NIfTI \\
+        \texttt{metadata/metadata.json}       & Per-series acquisition + reconstruction parameters, count levels, seeds & JSON \\
+        \texttt{ground\_truth.json}           & Sphere diameters, fill concentrations, true contrasts, NEMA ROI geometry & JSON \\
+        \texttt{thinning/seed\_recipe.json}   & Deterministic seed recipe regenerating every thinned realization & JSON \\
+        \texttt{manifest.sha256}              & SHA-256 of every released artifact (the content address) & text \\
+        \bottomrule
+    \end{tabular}
+    \caption{PWM-PET-IQ 1.0 release contents. Reconstructed volumes are provided in
+    both DICOM (for clinical-toolchain compatibility) and NIfTI (for analysis).
+    List-mode streams are released where the scanner vendor's list-mode format
+    license permits redistribution; where it does not, the thinning
+    \texttt{seed\_recipe.json} plus the deposited sinograms still allow every thinned
+    realization to be regenerated (\todo{confirm list-mode redistribution license}).}
+    \label{tab:data_records}
+\end{table}
+
+Per-series acquisition and reconstruction parameters are summarized in
+Table~\ref{tab:acq_params}; exact per-series values are in \texttt{metadata.json}.
+
+\begin{table}[ht]
+    \centering
+    \small
+    \setlength{\tabcolsep}{4pt}
+    \begin{tabular}{lcccc}
+        \toprule
+        \textbf{Parameter} & \textbf{Reference} & \textbf{Decayed} & \textbf{Thinned} & \textbf{Source} \\
+        \midrule
+        Count level $r$                & 1.0            & \todo{levels}  & \todo{levels}  & derived \\
+        True total counts (prompts)    & \todo{counts}  & \todo{counts}  & \todo{counts}  & list-mode \\
+        Realizations                   & 1              & 1 per level    & \todo{N} per level & --- \\
+        Frame duration (s)             & \todo{}        & \todo{}        & n/a (thinned)  & \texttt{metadata.json} \\
+        Decay-corrected activity (MBq) & \todo{}        & \todo{}        & n/a            & dose calibrator \\
+        Randoms fraction (\%)          & \todo{}        & \todo{}        & \todo{}        & scanner \\
+        \bottomrule
+    \end{tabular}
+    \caption{Per-series-class acquisition parameters, extracted from the deposited
+    \texttt{metadata.json}. Every cell is \emph{provisional} until the acquisition and
+    the committed extraction script land (SUBMISSION\_CHECKLIST \S2--\S3); no value is
+    asserted from a committed artifact in this skeleton.
+    \todo{Regenerate all cells from \texttt{metadata.json} via the committed extraction
+    script once acquisition completes.}}
+    \label{tab:acq_params}
+\end{table}
+
+Representative reconstructed slices across the count levels are shown in
+Figure~\ref{fig:examples}.
+
+\todoFigure{fig:examples}{\textbf{Representative PWM-PET-IQ slices.} Axial slice
+through the sphere plane of the NEMA NU-2 IQ phantom at each count level (full,
+decayed-$0.50$, decayed-$0.25$, decayed-$0.10$, and one matched thinned realization
+per level), all rendered at identical windowing, showing the count-dependent noise
+increase against the fixed known geometry. Populate from the reconstructed volumes at
+submission.}
+
+%% =====================================================================
+\section*{Technical Validation}
+
+All endpoints below are computed against the physical ground-truth table
+(\texttt{ground\_truth.json}); none requires a reader panel. Every number is emitted
+by a committed analysis script over the deposited records, and no endpoint is asserted
+in this skeleton.
+
+\subsection*{Contrast recovery vs count level}
+For each sphere and each count level we compute the NEMA NU-2 contrast-recovery
+coefficient (CRC)~\citep{nema_nu2} against the known true contrast, on the reference,
+decayed, and thinned series. This is the primary image-quality endpoint and
+establishes how contrast recovery degrades with decreasing counts for a fixed
+reconstruction.
+
+\todoTable{tab:crc}{Contrast-recovery coefficient per sphere (10--37\,mm) at each
+count level, for the reference, decayed, and thinned series, against physical ground
+truth. Primary image-quality endpoint.}
+
+\subsection*{Background variability and contrast-to-noise}
+Per NEMA NU-2, we compute background variability from the 12-region ROI set and the
+per-sphere contrast-to-noise ratio at each count level, on decayed and thinned series,
+so users can read the noise--count tradeoff directly.
+
+\todoFigure{fig:cnr_vs_count}{Background variability and per-sphere contrast-to-noise
+ratio as a function of count level $r$, for decayed (physical) and thinned (list-mode)
+series. Quantifies the noise--count tradeoff at fixed reconstruction.}
+
+\subsection*{Decayed-vs-thinned agreement (the key validation)}
+Because the decayed and thinned series share phantom geometry exactly, we can measure
+how faithfully list-mode Poisson thinning reproduces a genuinely reduced-activity
+acquisition. At each matched count level we report the per-voxel and per-ROI agreement
+(bias and limits of agreement) between the decayed reference and the thinned
+realizations, and the difference in randoms fraction and noise texture. This
+quantifies --- rather than assumes --- the validity of the thinning model that
+underlies most low-count PET simulators and the PET signal-reduction operator of the
+companion framework~\citep{ws2framework}.
+
+\todoFigure{fig:decayed_vs_thinned}{Per-level agreement between physically-decayed and
+list-mode-thinned reduced-count data (Bland--Altman on sphere CRC and background
+variability; randoms-fraction and noise-texture deltas). The central validation
+figure: it measures the thinning-model error.}
+
+\subsection*{Realization reproducibility}
+For the thinned series we confirm that the released seed recipe regenerates every
+realization bit-for-bit from the reference list-mode (or sinogram) plus the published
+seeds, and we report the across-realization variance at each count level as the
+noise-replicate budget available to downstream denoiser evaluation.
+
+\todoTable{tab:reproducibility}{Across-realization mean and variance of sphere CRC and
+background variability at each thinned count level, and confirmation of bit-for-bit
+seed regeneration. Establishes the noise-replicate budget.}
+
+%% =====================================================================
+\section*{Usage Notes}
+
+\subsection*{Loading the data}
+
+Reconstructed volumes are released as both DICOM and NIfTI and can be read with any
+standard toolchain; the harmonized per-series metadata and ground-truth table are
+plain JSON. A thin loader exposes series, count level, realization index, and the
+ground-truth contrasts under one interface:
+
+\begin{verbatim}
+    from pwm_pet_iq import PetIqDataset
+    ds = PetIqDataset(root="/path/to/pwm_pet_iq_1_0/")
+    s  = ds.series(kind="thinned", r=0.25, realization=0)
+    # s.volume        -> ndarray [Z, Y, X] (recon)
+    # s.count_level   -> 0.25
+    # s.ground_truth  -> per-sphere true diameter / concentration / contrast
+    # s.metadata      -> acquisition + reconstruction parameters
+\end{verbatim}
+
+\subsection*{Analyses uniquely enabled by 1.0}
+
+\begin{enumerate}
+    \item \textbf{Ground-truth-anchored low-count reconstruction benchmarking.}
+    Score a reduced-activity reconstruction method against \emph{physical} sphere
+    contrast, not against a full-dose reconstruction of unknown error.
+    \item \textbf{Decayed-vs-thinned model validation.} Test whether a method
+    developed on list-mode-thinned data transfers to genuinely reduced-activity data
+    of the same geometry --- a check no single-origin phantom release supports.
+    \item \textbf{Noise-replicate denoiser evaluation.} Use the multiple seeded
+    thinned realizations per level to estimate the variance of a denoiser's output,
+    not just a point estimate.
+\end{enumerate}
+
+\subsection*{Consuming the dataset with the signal-equivalence framework}
+
+The companion \texttt{pwm\_dose\_equivalence} tool~\citep{ws2framework} reads this
+dataset directly: with the phantom's known contrasts as ground truth and the
+contrast-recovery coefficient as the task metric, a single call issues a
+reduced-activity signal-equivalence credential for any reconstruction method against
+the full-count reference. This is an \emph{optional} consumer of the dataset; the
+dataset stands alone and its Technical Validation does not depend on the framework.
+
+\subsection*{Limitations}
+
+\paragraph{Phantom, not patient.} The NEMA NU-2 IQ phantom captures contrast recovery
+and background noise for spherical lesions on a uniform background; it does not
+reproduce patient anatomy, respiratory motion, or heterogeneous tracer uptake.
+Conclusions about clinical low-count performance must be confirmed on patient data.
+
+\paragraph{Single scanner / single tracer in 1.0.} The 1.0 release is acquired on one
+scanner with one tracer at one sphere-to-background ratio (\todo{SBR}). Multi-scanner,
+multi-tracer, and multi-SBR extensions are deferred to a future release and are out of
+1.0 scope.
+
+\paragraph{Thinning omits activity-dependent detector physics.} List-mode thinning
+matches coincidence-count statistics but not dead-time, pile-up, or the
+activity-dependent randoms fraction; the decayed series are provided precisely so that
+this gap is measured (Technical Validation) rather than hidden.
+
+\paragraph{Reliance on continued hosting.} The SHA-256 manifest records what 1.0
+\emph{is} independent of any host, but does not guarantee the deposited files remain
+downloadable if a repository withdraws them; the PhysioNet DOI and Zenodo mirror are
+provided to reduce this risk.
+
+%% =====================================================================
+\subsection*{Data versioning and persistent identifiers}
+
+Each release is identified by the SHA-256 hash of \texttt{manifest.sha256}, which
+hashes every deposited artifact. Releases follow \texttt{MAJOR.MINOR.PATCH} semantics:
+MAJOR breaks the metadata/ground-truth schema, MINOR adds scanners/tracers/SBR points,
+and PATCH corrects errors. The primary citation handle is the PhysioNet DOI; the Zenodo
+record mirrors the same content hash.
+
+%% =====================================================================
+\section*{Code Availability}
+
+\begin{itemize}
+    \item Loader: \url{https://pypi.org/project/pwm_pet_iq/} (\todo{license}) --- \todo{publish to PyPI}
+    \item List-mode thinning + reconstruction container:
+    \url{https://github.com/integritynoble/low_dose_CT/tree/main/WS-2b_pet_phantom/pipelines/} --- \todo{add pipelines}
+    \item Analysis scripts regenerating every Technical-Validation table/figure:
+    \url{https://github.com/integritynoble/low_dose_CT/tree/main/WS-2b_pet_phantom/analysis/} --- \todo{add analysis scripts}
+    \item Deposited records + manifest: PhysioNet DOI \todo{DOI}, mirrored at Zenodo \todo{Zenodo DOI}.
+\end{itemize}
+
+%% =====================================================================
+\section*{Author contributions}
+\todo{Fill at submission per CRediT taxonomy.}
+
+\section*{Competing interests}
+\todo{Declare at submission. Note PWM Protocol Foundation affiliation and state absence
+of financial interest in any reconstruction method benchmarked on this dataset.}
+
+\section*{Acknowledgments}
+\todo{Fill at submission. Acknowledge the PET physics / radiochemistry staff who
+prepared and acquired the phantom, and the open-source maintainers of the
+reconstruction and analysis toolchain.}
+
+%% =====================================================================
+\bibliographystyle{plainnat}
+\bibliography{refs}
+
+\end{document}

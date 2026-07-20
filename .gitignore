@@ -25,3 +25,10 @@ Thumbs.db
 # Local scratch (user's writing notes / Word docs)
 prompt/
 prompt_*/
+
+# local dev virtualenv (not committed)
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+*.egg-info/

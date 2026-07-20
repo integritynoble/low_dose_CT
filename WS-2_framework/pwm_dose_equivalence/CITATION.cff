@@ -1,0 +1,51 @@
+cff-version: 1.2.0
+message: "If you use pwm_dose_equivalence in published research, please cite both the software and the framework paper."
+title: "pwm_dose_equivalence: Reference implementation of the signal-equivalence framework for medical-imaging dose-reduction claims"
+abstract: >-
+  pwm_dose_equivalence is the reference implementation of the
+  signal-equivalence framework: a formal, modality-general replacement for
+  vendor-style claims like "50 % dose reduction" with a testable 5-tuple
+  credential (signal_ratio, task, epsilon, alpha, subpopulation). The
+  library exposes a single modality-agnostic API
+  (signal_equivalence_credential) that produces a content-addressed
+  credential JSON for CT / MRI / PET / user-implemented modalities, plus
+  an audit_credential function and pwm-audit CLI for non-coder
+  verification of published credentials.
+type: software
+version: "0.2.2"
+date-released: "2026-06-08"
+license: Apache-2.0
+repository-code: "https://github.com/integritynoble/low_dose_CT"
+url: "https://github.com/integritynoble/low_dose_CT/tree/main/WS-2_framework/pwm_dose_equivalence"
+keywords:
+  - medical imaging
+  - low-dose CT
+  - MRI
+  - PET
+  - equivalence testing
+  - dose reduction
+  - signal equivalence
+  - paired bootstrap
+  - DeLong test
+  - content-addressed
+authors:
+  - name: "PWM Protocol Foundation"
+    affiliation: "PWM Protocol Foundation"
+    website: "https://github.com/integritynoble/low_dose_CT"
+preferred-citation:
+  type: article
+  title: "Signal-equivalence: testable dose-reduction claims for medical imaging"
+  authors:
+    - name: "PWM Protocol Foundation"
+      affiliation: "PWM Protocol Foundation"
+  year: 2026
+  journal: "Nature Methods"
+  notes: >-
+    Manuscript in preparation (v0.3 working draft, 24 pp incl. 3-pp
+    Supplementary S1). Author list and DOI will be added at journal
+    acceptance. See paper_draft/manuscript.tex in the repository for the
+    current draft.
+identifiers:
+  - description: "Framework specification hash (sha256 of FRAMEWORK_SPEC at this version)"
+    type: other
+    value: "sha256:b366f51c11a8fbdfc7b60f1f977d42a10a8bdaa55521b43de0c428afc289fb58"

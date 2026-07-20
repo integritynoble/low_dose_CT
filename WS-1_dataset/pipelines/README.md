@@ -8,12 +8,33 @@ Dockerfile bakes one source.
 | Image | Source | Build |
 |---|---|---|
 | `pwm-ldct-prep-lidc:v0.5`  | LIDC-IDRI (image-only + simulated LD) | `docker build -f pipelines/Dockerfile.lidc_idri .` |
-| `pwm-ldct-prep-aapm:v0.5`  | AAPM 2016 (real paired + projections) | `docker build -f pipelines/Dockerfile.aapm_2016 .` |
-| `pwm-ldct-prep-mayo:v0.5`  | Mayo LDCT-PD (real paired + projections) | `docker build -f pipelines/Dockerfile.mayo_ldct_pd .` |
+| `pwm-ldct-prep-aapm:v0.5`  | AAPM 2016 (paired noise-insertion LD + projections) | `docker build -f pipelines/Dockerfile.aapm_2016 .` |
+| `pwm-ldct-prep-mayo:v0.5`  | Mayo LDCT-PD (paired noise-insertion LD + projections) | `docker build -f pipelines/Dockerfile.mayo_ldct_pd .` |
 
 > **Build context is `WS-1_dataset/`** (the parent), so the sibling `pwm_ldct_loader` package —
 > the source of truth for the schema constants `pwm_ldct_prep` imports — is in scope. The schema
 > specs are in [`../schema/`](../schema/).
+
+## AAPM 2016 — stage first ("unzip step")
+
+The AAPM/Box distribution at `gs://low-dose-ct/aapm_2016_grand_challenge/` ships Siemens `.IMA`
+files in per-(recon | patient) **zips**, with `PatientID='Anonymous'` and no `SeriesDescription` —
+patient (`L###`), dose (full/quarter), domain (image/projection) and recon (thickness/kernel) live
+only in the path. Run `stage` (host-side, where `gsutil` is configured) to pull + extract the zips
+into a local tree the AAPM adapter reads by path:
+
+```bash
+cd WS-1_dataset
+# extract all (or a subset) of the AAPM zips from GCS into a local DICOM tree
+python -m pwm_ldct_prep stage --work-dir /raw/aapm \
+    [--patients L067,L096] [--domains image,projection]
+# then prep that tree like any other source
+python -m pwm_ldct_prep prep --source aapm --input /raw/aapm --output /out --seed 42 [--with-sinograms]
+```
+
+Only the 10 *training* patients have a full-dose recon to anchor a paired record (testing is
+quarter-dose only — FD was withheld), so prep yields the "AAPM 10". Staging streams one zip at a
+time and deletes it after extraction (no disk bloat); see `stage.py`.
 
 ## Workflow
 
@@ -49,17 +70,35 @@ patients (pipeline-test mode); `--no-sim` skips low-dose simulation.
   are whitelist-derived, so PHI cannot propagate (asserted in tests).
 - Harmonization + `metadata.json` (`harmonize.py`); HDF5 / splits / manifest writers
   (`writers.py`); deterministic split placement.
-- Low-dose simulation adapter (`lowdose_sim.py`): uses `pwm_core.contrib.modalities.ct_radon`
-  when available, else a clearly-flagged non-production fallback.
+- Low-dose simulation (`lowdose_sim.py`): a physically-grounded **projection-domain** forward
+  model (manuscript Eq. 1 — forward Radon → Poisson photon-counting + electronic noise → log →
+  reconstruct-and-insert the noise), reusing the validated `recon_sanity` Radon/FBP. Prefers
+  `pwm_core.contrib.modalities.ct_radon` when installed. Calibration (`I0`, `σ_e`) is recorded in
+  metadata and should be tuned per scanner; the CPU reference model is slow on full volumes.
 
-**Pending (require the projection data + iteration):**
-- **DICOM-CT-PD projection ingestion** (sinogram + geometry) for AAPM/Mayo — the
-  `_attach_projections` hook in `adapters/_siemens.py` raises `NotImplementedError`; default runs
-  are reconstructed-image-only (which `validate()` accepts). See
-  [`../schema/dicom_to_hdf5_mapping.md`](../schema/dicom_to_hdf5_mapping.md) §3–§4 for the target.
-- **LIDC nodule XML → harmonized annotations** conversion (the QA loop lives in
-  [`../schema/annotation_qa_protocol.md`](../schema/annotation_qa_protocol.md)).
-- Wiring `pwm_core` as the production low-dose forward model.
+- **DICOM-CT-PD projection ingestion** (GE & Siemens): `read_projection_series` +
+  `extract_ct_pd_geometry` produce native `[V, C, R]` line integrals + decoded geometry; enable
+  with `--with-sinograms`. Validated on real GE + Siemens samples. Exact source/detector-distance
+  and channel-angle calibration is flagged in `geometry.calibration_status` pending the official
+  DICOM-CT-PD data dictionary ([`../schema/dicom_to_hdf5_mapping.md`](../schema/dicom_to_hdf5_mapping.md) §3–§4).
+- **LIDC nodule XML → harmonized annotations** (`lidc_annotations.py`): namespace-agnostic parse →
+  per-reader per-slice boxes + texture → majority-vote consolidation
+  ([`../schema/annotation_qa_protocol.md`](../schema/annotation_qa_protocol.md) §7). NOTE: the LIDC
+  XMLs are **not** part of an image-only API pull — they are sourced separately (NBIA Data
+  Retriever download / TCIA's LIDC-XML set) and the converter activates when an `*.xml` sits
+  alongside a patient's DICOMs.
+
+- **Reconstruction-sanity harness** (`recon_sanity.py`): numpy parallel-beam Radon + FBP +
+  agreement metric (max_abs / rmse / frac_within_tol / pearson) + a phantom self-consistency
+  round-trip (validated). CLI: `recon-sanity --output <tree>`. NOTE: the per-series check on real
+  *helical* DICOM-CT-PD data is **approximate and uncalibrated** (crude parallel rebinning) and
+  returns a status flag saying so — a faithful fan/helical round-trip needs the data-dictionary
+  geometry.
+
+**Still pending:**
+- Per-scanner calibration of the low-dose-sim `I0`/`σ_e` (and optional swap to `pwm_core` /
+  calibrated fan-beam geometry) for production-grade noise magnitude.
+- Real-data runs (need AAPM Mayo-access + the LIDC annotation XML set).
 
 ## Tests
 

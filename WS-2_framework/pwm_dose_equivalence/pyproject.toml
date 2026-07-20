@@ -1,0 +1,70 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pwm_dose_equivalence"
+version = "0.2.2"
+description = "Reference implementation of the signal-equivalence framework for medical-imaging dose-reduction claims (CT / MRI / PET)."
+readme = "README.md"
+license = { text = "Apache-2.0" }
+requires-python = ">=3.10"
+authors = [
+    { name = "PWM Protocol Foundation" }
+]
+keywords = ["medical imaging", "low-dose CT", "MRI", "PET", "equivalence testing", "TOST", "bootstrap"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Medical Science Apps.",
+]
+dependencies = [
+    "numpy>=1.24",
+    "scipy>=1.10",
+]
+
+[project.optional-dependencies]
+test = ["pytest>=7", "pytest-cov>=4"]
+lint = ["ruff>=0.5", "mypy>=1.8"]
+
+[project.scripts]
+pwm-audit = "pwm_dose_equivalence.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/integritynoble/low_dose_CT/tree/main/WS-2_framework"
+Repository = "https://github.com/integritynoble/low_dose_CT"
+Issues = "https://github.com/integritynoble/low_dose_CT/issues"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q --strict-markers"
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+# Backs the CONTRIBUTING.md "PEP 8 with ruff defaults" claim. Default ruff
+# rules (E, F) cover pycodestyle errors + pyflakes; we add `I` (isort) and
+# `UP` (pyupgrade) because they catch common style drift in a typed
+# scientific-Python package without adding maintenance noise.
+select = ["E", "F", "I", "UP"]
+
+[tool.mypy]
+# Backs the CONTRIBUTING.md "mypy --strict should pass on the src/ tree"
+# claim. scipy does not publish type stubs as of 2026; until it does we
+# allow imports from the scipy.* namespace to be untyped without erroring.
+strict = true
+python_version = "3.10"
+files = ["src/pwm_dose_equivalence"]
+
+[[tool.mypy.overrides]]
+module = "scipy.*"
+ignore_missing_imports = true

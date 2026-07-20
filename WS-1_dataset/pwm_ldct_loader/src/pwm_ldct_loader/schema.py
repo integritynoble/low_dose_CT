@@ -32,7 +32,7 @@ SPLIT_FRACTIONS = {"train": 0.60, "val": 0.20, "test": 0.20}
 
 # --- Loader sample contract (dataset_schema.md §4) -------------------------------------
 SAMPLE_KEYS = (
-    "full_dose", "low_dose", "low_dose_kind", "dose_ratio", "sinogram",
+    "full_dose", "low_dose", "low_dose_kind", "dose_ratio", "sinogram", "has_projections",
     "source", "patient_id", "series_id", "slice_index", "annotations", "metadata",
 )
 

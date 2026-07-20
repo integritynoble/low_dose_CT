@@ -4,6 +4,14 @@
 **Send to:** `aapm-grand-challenge@mayo.edu` (verify on https://www.aapm.org/grandchallenge/lowdosect/ before sending — the contact address has been stable but may rotate).
 **Cc:** PI / UTSW supervisor.
 
+> **Verify first — you may already have this data.** The 2016 AAPM-Mayo challenge images are a
+> subset of the now-public **LDCT-and-Projection-Data** collection on TCIA, which is already
+> downloaded to `gs://low-dose-ct/ldct_and_projection_data` (199 public patients). Before sending,
+> check whether the 10 challenge cases (abdomen, the original quarter-dose challenge set) are present
+> there by PatientID — if so, a separate Mayo request is unnecessary and AAPM 2016 can be sourced
+> from the same public TCIA collection. Send this email only if the specific challenge release is
+> needed beyond what TCIA provides.
+
 ---
 
 ## Email template
@@ -14,52 +22,55 @@ Subject: Data access request — 2016 NIH-AAPM-Mayo Clinic Low Dose CT Grand Cha
 Dear AAPM Grand Challenge Data Sharing Committee,
 
 I am writing to request access to the 2016 NIH-AAPM-Mayo Clinic Low Dose
-CT Grand Challenge dataset (the 10-patient public release, including the
-real quarter-dose paired acquisitions).
+CT Grand Challenge dataset (the 10-patient public release: full-dose
+acquisitions with the matched quarter-dose data produced by Mayo's
+validated projection-domain noise-insertion method).
 
-I am a researcher at the University of Texas Southwestern Medical Center
-working on a multi-vendor, paired-dose low-dose CT benchmark dataset
-(PWM-LDCT) and an associated open-source reference reconstruction method.
-The AAPM 2016 dataset is foundational to our project as the only existing
-public dataset with *real* (not just simulated) paired low-dose CT
-acquisitions; we will use it as an evaluation cohort alongside the
-multi-vendor data we are acquiring at UTSW under an IRB-approved protocol.
+I am a researcher at the University of Texas Southwestern Medical Center.
+We are preparing an open Data Descriptor (target: Scientific Data) for
+PWM-LDCT v0.5, a content-addressed harmonization of three public low-dose
+CT datasets — LIDC-IDRI, this AAPM 2016 Grand Challenge release, and the
+Mayo LDCT-and-Projection-Data collection — under a single schema, with a
+unified loader, reproducible preprocessing pipelines, and harmonized
+multi-task annotations. AAPM 2016 is one of the three source datasets in
+that harmonization and is the community's reference paired full-dose /
+reduced-dose set.
 
-We commit to:
-  - Using the data exclusively for the research purposes described above
-  - Not redistributing the data; downstream users of our work will be
-    directed to request access from Mayo through this same channel
-  - Citing the AAPM 2016 Grand Challenge in any publication that uses
-    the dataset
+Importantly, our release does NOT redistribute any DICOM. We deposit only
+derived, openly-licensed records (harmonized annotations, per-scan
+metadata, data splits, and a content-hash manifest) plus open-source code;
+users obtain the AAPM 2016 scans from Mayo through this same channel and
+regenerate the harmonized files locally. We commit to:
+  - Using the data only for the research purpose described above
+  - Not redistributing the DICOM; directing all downstream users to
+    request access from Mayo
+  - Citing the AAPM 2016 Grand Challenge (and McCollough et al., Med Phys
+    2017) in any publication that uses the dataset
   - Reporting any reproducibility, quality, or de-identification issues
-    we discover during use
+    we encounter
 
-The intended publications are:
-  1. A multi-vendor benchmark dataset paper (target: Nature Scientific Data)
-  2. A signal-equivalence framework paper (target: Nature Methods)
-  3. A reference reconstruction method paper (target: MICCAI 2027 / IEEE TMI)
-  4. A recurring annual "State of the Field" review (target: npj Digital Medicine)
-
-The first publication will release a complementary multi-vendor dataset
-under PhysioNet credentialed access; the AAPM 2016 dataset will be
-referenced as an external comparison cohort and never redistributed.
+For clarity on scope: PWM-LDCT v0.5 uses public data only; no new clinical
+acquisition is involved, so no UTSW IRB applies to its use of the AAPM 2016
+data (which we will use under Mayo's existing institutional release as a
+public dataset). Companion methodological work (an evaluation framework and
+an open reference reconstruction method) builds on the same harmonized
+substrate.
 
 I would appreciate any information on:
-  - The current data sharing agreement template
+  - The current data-sharing agreement template
   - The download mechanism (link, FTP, or other)
-  - Any institutional / IRB confirmations Mayo requires before granting
-    access
+  - Any institutional confirmations Mayo requires before granting access
 
-Thank you for maintaining this dataset and for the impact it has had on
-the low-dose CT research community. Please let me know what additional
-information would help expedite the request.
+Thank you for maintaining this dataset and for its impact on the low-dose
+CT community. Please let me know what additional information would help
+expedite the request.
 
 Sincerely,
 
-[Your name]
-[UTSW title / lab affiliation]
-[UTSW email address]
-[UTSW phone if applicable]
+[CONFIRM: Your name]
+[CONFIRM: UTSW title / lab affiliation]
+[CONFIRM: UTSW email address]
+[CONFIRM: UTSW phone, optional]
 ```
 
 ## What to expect

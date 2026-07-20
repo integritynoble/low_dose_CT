@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pwm.health/schemas/ws3-runbundle-results-0.1.json",
+  "title": "WS-3 RunBundle results",
+  "description": "Structured output of the WS-3 RunBundle entrypoint (run.py): what was reproduced and whether the deposit checks and validation passed.",
+  "type": "object",
+  "required": ["bundle", "method_version", "mode", "ok", "corpus", "validation"],
+  "additionalProperties": true,
+  "properties": {
+    "bundle": {"const": "pwm-ldct-recon-runbundle"},
+    "method_version": {"type": "string"},
+    "mode": {"type": "string", "description": "self-test (synthetic) or real reproduction"},
+    "ok": {"type": "boolean", "description": "true iff every deposit check passed"},
+    "results_schema_ok": {"type": "boolean"},
+    "corpus": {
+      "type": "object",
+      "required": ["manifest_ok", "error_maps_ok"],
+      "properties": {
+        "n_credentials": {"type": "integer", "minimum": 0},
+        "n_baseline_methods": {"type": "integer", "minimum": 0},
+        "manifest_ok": {"type": "boolean"},
+        "error_maps_ok": {"type": "boolean"},
+        "n_error_maps_checked": {"type": "integer", "minimum": 0}
+      }
+    },
+    "counts": {"type": "object"},
+    "validation": {
+      "type": "object",
+      "required": ["psnr_db", "ssim", "uq_spearman"],
+      "properties": {
+        "psnr_db": {"type": "number"},
+        "ssim": {"type": "number"},
+        "uq_spearman": {"type": "number", "minimum": -1.0, "maximum": 1.0}
+      }
+    },
+    "notes": {"type": "string"}
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "scan_uid": "fixture0001",
+  "patient_id": "lidc-0001",
+  "series_id": "lidc-0001_chest_fd",
+  "source": "lidc",
+  "anatomy": "chest",
+  "schema_version": "1.0.0",
+  "acquisition": {
+    "manufacturer": "GE",
+    "model": "LightSpeed VCT",
+    "kvp": 120,
+    "exposure_mas": 230,
+    "pitch": 1.0,
+    "slice_thickness_mm": 1.25,
+    "recon_kernel": "STANDARD"
+  },
+  "demographics": {"age_years": 60, "sex": "M", "bmi": null, "scan_year": 2008, "indication": "lung-cancer screening"},
+  "provenance": {"canonical_patient_key": "ckey-lidc-0001"}
+}

@@ -7,10 +7,13 @@ converted by a separate step (see ../schema/annotation_qa_protocol.md); not wire
 """
 from __future__ import annotations
 
+import glob
+import os
 from typing import Dict, Iterator, Optional
 
-from .base import (PatientScans, Series, SourceAdapter, demographics_from, group_dicom,
-                   read_ct_volume)
+from .. import lidc_annotations as la
+from .base import (PatientScans, Series, SourceAdapter, canonical_patient_key, demographics_from,
+                   group_dicom, read_ct_volume)
 
 
 class LidcIdriAdapter(SourceAdapter):
@@ -47,5 +50,26 @@ class LidcIdriAdapter(SourceAdapter):
                 slice_positions=positions,
                 demographics=demographics_from(ref),
                 src_uids={"series": suid, "study": str(getattr(ref, "StudyInstanceUID", ""))},
+                canonical_key=canonical_patient_key(native_pid),
             )
-            yield PatientScans(patient_id=patient_id, fd=fd, ld=None)
+            annotations = self._load_annotations(g["files"], positions, acq["pixel_spacing_mm"])
+            yield PatientScans(patient_id=patient_id, fd=fd, ld=None, annotations=annotations)
+
+    @staticmethod
+    def _load_annotations(files, positions, pixel_spacing):
+        """Find a LIDC reading XML alongside the series DICOMs and convert it, or return None."""
+        seen = set()
+        xmls = []
+        for f in files:
+            d = os.path.dirname(f)
+            if d in seen:
+                continue
+            seen.add(d)
+            xmls.extend(glob.glob(os.path.join(d, "*.xml")))
+        if not xmls:
+            return None
+        from pwm_ldct_loader.annotations import consolidate_readers
+        parsed = la.parse_lidc_xml(sorted(xmls)[0])
+        per_reader = la.to_harmonized(parsed, positions, pixel_spacing)
+        majority = consolidate_readers(per_reader)
+        return {"per_reader": per_reader, "majority": majority}

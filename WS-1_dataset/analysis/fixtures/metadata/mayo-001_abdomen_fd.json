@@ -1,0 +1,19 @@
+{
+  "scan_uid": "fixture0004",
+  "patient_id": "mayo-001",
+  "series_id": "mayo-001_abdomen_fd",
+  "source": "mayo",
+  "anatomy": "abdomen",
+  "schema_version": "1.0.0",
+  "acquisition": {
+    "manufacturer": "GE",
+    "model": "Discovery CT750 HD",
+    "kvp": 100,
+    "exposure_mas": 49,
+    "pitch": 1.0,
+    "slice_thickness_mm": 1.0,
+    "recon_kernel": "STANDARD"
+  },
+  "demographics": {"age_years": 62, "sex": "M", "bmi": null, "scan_year": 2016, "indication": "oncology"},
+  "provenance": {"canonical_patient_key": "ckey-mayo-001"}
+}

@@ -12,11 +12,12 @@ import pytest
 
 from pwm_ldct_loader.schema import H5_FULL, H5_LD_REAL, H5_SINO_FULL, SCHEMA_VERSION, h5_ld_sim
 
-Z, H, W, V, D = 2, 8, 8, 6, 10
+Z, H, W = 2, 8, 8
+NV, NC, NR = 5, 12, 4   # projection views, detector channels, detector rows
 
 
-def _meta(series_id, patient_id, source, anatomy="chest"):
-    return {
+def _meta(series_id, patient_id, source, anatomy="chest", geometry=None):
+    m = {
         "scan_uid": hashlib.sha256((series_id + SCHEMA_VERSION).encode()).hexdigest()[:16],
         "patient_id": patient_id,
         "series_id": series_id,
@@ -39,6 +40,9 @@ def _meta(series_id, patient_id, source, anatomy="chest"):
         "demographics": {"age_years": None, "sex": None},
         "provenance": {"source_sop_class_uid": "1.2.840.10008.5.1.4.1.1.2", "n_slices": Z},
     }
+    if geometry is not None:
+        m["geometry"] = geometry
+    return m
 
 
 @pytest.fixture(scope="session")
@@ -49,7 +53,10 @@ def fixture_root(tmp_path_factory):
     def write_series(source, patient, series, with_real, with_sino):
         d = root / "hdf5" / "train" / source / patient
         d.mkdir(parents=True, exist_ok=True)
-        m = _meta(series, patient, source)
+        geom = ({"vendor": "SIEMENS", "detector_shape": "CYLINDRICAL", "scan_type": "HELICAL",
+                 "beam_geometry": "FANBEAM", "n_views": NV, "n_det_channels": NC, "n_det_rows": NR,
+                 "calibration_status": "test fixture"} if with_sino else None)
+        m = _meta(series, patient, source, geometry=geom)
         with h5py.File(d / f"{series}.h5", "w") as f:
             f[H5_FULL] = rng.standard_normal((Z, H, W)).astype("float32")
             for r in (0.10, 0.25, 0.50):
@@ -57,7 +64,7 @@ def fixture_root(tmp_path_factory):
             if with_real:
                 f[H5_LD_REAL] = rng.standard_normal((Z, H, W)).astype("float32")
             if with_sino:
-                f[H5_SINO_FULL] = rng.standard_normal((Z, V, D)).astype("float32")
+                f[H5_SINO_FULL] = rng.standard_normal((NV, NC, NR)).astype("float32")
             f.attrs["scan_uid"] = m["scan_uid"]
             f.attrs["series_id"] = series
             f.attrs["patient_id"] = patient

@@ -1,0 +1,34 @@
+{
+  "schema_version": "pwm-signal-equivalence/v0.2",
+  "framework_hash": "sha256:b366f51c11a8fbdfc7b60f1f977d42a10a8bdaa55521b43de0c428afc289fb58",
+  "credential": {
+    "method": "example_candidate",
+    "reference_method": "FBP_full_dose",
+    "signal_ratio": 0.25,
+    "modality": "CT",
+    "task": {
+      "name": "lung_nodule_5mm",
+      "metric": "auc",
+      "target": null,
+      "ground_truth_protocol": "pwm-ldct/annotation-qa/v0.5#sha256:..."
+    },
+    "subpopulation": "adult_chest_pwm_l3_test_v1",
+    "epsilon": 0.05,
+    "alpha": 0.05,
+    "estimator": "delong",
+    "n_test": 500,
+    "n_bootstrap": 0,
+    "seed": 42,
+    "delta_mean": 0.0,
+    "delta_ci_low": -0.01,
+    "delta_ci_high": 0.01,
+    "verdict": "PASS",
+    "sample_size_check": {
+      "rule": "S3-auc-clt",
+      "placement_sd_hint": 0.15,
+      "n_required": 99999,
+      "n_actual": 500,
+      "ok": false
+    }
+  }
+}

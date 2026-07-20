@@ -1,5 +1,8 @@
 # PWM Low-Dose CT Grand Challenge
 
+[![CI](https://github.com/integritynoble/low_dose_CT/actions/workflows/ci.yml/badge.svg?branch=heyang)](https://github.com/integritynoble/low_dose_CT/actions/workflows/ci.yml)
+[![WS-3 CI](https://github.com/integritynoble/low_dose_CT/actions/workflows/ws3-ci.yml/badge.svg?branch=heyang)](https://github.com/integritynoble/low_dose_CT/actions/workflows/ws3-ci.yml)
+
 **Implementation home** for the canonical, open, vendor-agnostic **benchmark + theoretical framework + reference algorithm + permanent competition** for low-dose CT reconstruction.
 
 **Five-year goal:**

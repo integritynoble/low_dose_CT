@@ -1,0 +1,268 @@
+{
+  "config": {
+    "auc_targets": [
+      0.85,
+      0.92,
+      0.97
+    ],
+    "n_per_class_values": [
+      50,
+      100,
+      250
+    ],
+    "ci_variants": [
+      "percentile",
+      "bca",
+      "delong"
+    ],
+    "n_trials": 200,
+    "n_bootstrap": 2000,
+    "alpha": 0.05,
+    "seed": 42
+  },
+  "results": [
+    {
+      "auc_target": 0.85,
+      "n_per_class": 50,
+      "n_total": 100,
+      "ci_variant": "percentile",
+      "n_trials": 200,
+      "coverage": 0.94,
+      "mean_half_width": 0.07958124999999998
+    },
+    {
+      "auc_target": 0.85,
+      "n_per_class": 50,
+      "n_total": 100,
+      "ci_variant": "bca",
+      "n_trials": 200,
+      "coverage": 0.925,
+      "mean_half_width": 0.07951234909466391
+    },
+    {
+      "auc_target": 0.85,
+      "n_per_class": 50,
+      "n_total": 100,
+      "ci_variant": "delong",
+      "n_trials": 200,
+      "coverage": 0.965,
+      "mean_half_width": 0.07832660050258959
+    },
+    {
+      "auc_target": 0.85,
+      "n_per_class": 100,
+      "n_total": 200,
+      "ci_variant": "percentile",
+      "n_trials": 200,
+      "coverage": 0.935,
+      "mean_half_width": 0.05552649999999998
+    },
+    {
+      "auc_target": 0.85,
+      "n_per_class": 100,
+      "n_total": 200,
+      "ci_variant": "bca",
+      "n_trials": 200,
+      "coverage": 0.915,
+      "mean_half_width": 0.05597615451335165
+    },
+    {
+      "auc_target": 0.85,
+      "n_per_class": 100,
+      "n_total": 200,
+      "ci_variant": "delong",
+      "n_trials": 200,
+      "coverage": 0.965,
+      "mean_half_width": 0.055169637022140616
+    },
+    {
+      "auc_target": 0.85,
+      "n_per_class": 250,
+      "n_total": 500,
+      "ci_variant": "percentile",
+      "n_trials": 200,
+      "coverage": 0.945,
+      "mean_half_width": 0.03503562299999999
+    },
+    {
+      "auc_target": 0.85,
+      "n_per_class": 250,
+      "n_total": 500,
+      "ci_variant": "bca",
+      "n_trials": 200,
+      "coverage": 0.95,
+      "mean_half_width": 0.034787245600646756
+    },
+    {
+      "auc_target": 0.85,
+      "n_per_class": 250,
+      "n_total": 500,
+      "ci_variant": "delong",
+      "n_trials": 200,
+      "coverage": 0.96,
+      "mean_half_width": 0.034693584975024866
+    },
+    {
+      "auc_target": 0.92,
+      "n_per_class": 50,
+      "n_total": 100,
+      "ci_variant": "percentile",
+      "n_trials": 200,
+      "coverage": 0.915,
+      "mean_half_width": 0.05797457499999999
+    },
+    {
+      "auc_target": 0.92,
+      "n_per_class": 50,
+      "n_total": 100,
+      "ci_variant": "bca",
+      "n_trials": 200,
+      "coverage": 0.905,
+      "mean_half_width": 0.05762651932386443
+    },
+    {
+      "auc_target": 0.92,
+      "n_per_class": 50,
+      "n_total": 100,
+      "ci_variant": "delong",
+      "n_trials": 200,
+      "coverage": 0.93,
+      "mean_half_width": 0.057207649456000424
+    },
+    {
+      "auc_target": 0.92,
+      "n_per_class": 100,
+      "n_total": 200,
+      "ci_variant": "percentile",
+      "n_trials": 200,
+      "coverage": 0.94,
+      "mean_half_width": 0.04013196874999998
+    },
+    {
+      "auc_target": 0.92,
+      "n_per_class": 100,
+      "n_total": 200,
+      "ci_variant": "bca",
+      "n_trials": 200,
+      "coverage": 0.935,
+      "mean_half_width": 0.03978678068340471
+    },
+    {
+      "auc_target": 0.92,
+      "n_per_class": 100,
+      "n_total": 200,
+      "ci_variant": "delong",
+      "n_trials": 200,
+      "coverage": 0.975,
+      "mean_half_width": 0.04036942162499711
+    },
+    {
+      "auc_target": 0.92,
+      "n_per_class": 250,
+      "n_total": 500,
+      "ci_variant": "percentile",
+      "n_trials": 200,
+      "coverage": 0.925,
+      "mean_half_width": 0.025388363999999993
+    },
+    {
+      "auc_target": 0.92,
+      "n_per_class": 250,
+      "n_total": 500,
+      "ci_variant": "bca",
+      "n_trials": 200,
+      "coverage": 0.93,
+      "mean_half_width": 0.025070125019480714
+    },
+    {
+      "auc_target": 0.92,
+      "n_per_class": 250,
+      "n_total": 500,
+      "ci_variant": "delong",
+      "n_trials": 200,
+      "coverage": 0.94,
+      "mean_half_width": 0.025413935075945252
+    },
+    {
+      "auc_target": 0.97,
+      "n_per_class": 50,
+      "n_total": 100,
+      "ci_variant": "percentile",
+      "n_trials": 200,
+      "coverage": 0.935,
+      "mean_half_width": 0.03323217499999998
+    },
+    {
+      "auc_target": 0.97,
+      "n_per_class": 50,
+      "n_total": 100,
+      "ci_variant": "bca",
+      "n_trials": 200,
+      "coverage": 0.9,
+      "mean_half_width": 0.03455997350558533
+    },
+    {
+      "auc_target": 0.97,
+      "n_per_class": 50,
+      "n_total": 100,
+      "ci_variant": "delong",
+      "n_trials": 200,
+      "coverage": 0.97,
+      "mean_half_width": 0.032690552343226466
+    },
+    {
+      "auc_target": 0.97,
+      "n_per_class": 100,
+      "n_total": 200,
+      "ci_variant": "percentile",
+      "n_trials": 200,
+      "coverage": 0.95,
+      "mean_half_width": 0.022677487499999996
+    },
+    {
+      "auc_target": 0.97,
+      "n_per_class": 100,
+      "n_total": 200,
+      "ci_variant": "bca",
+      "n_trials": 200,
+      "coverage": 0.925,
+      "mean_half_width": 0.02339633509901137
+    },
+    {
+      "auc_target": 0.97,
+      "n_per_class": 100,
+      "n_total": 200,
+      "ci_variant": "delong",
+      "n_trials": 200,
+      "coverage": 0.965,
+      "mean_half_width": 0.022893157026250322
+    },
+    {
+      "auc_target": 0.97,
+      "n_per_class": 250,
+      "n_total": 500,
+      "ci_variant": "percentile",
+      "n_trials": 200,
+      "coverage": 0.975,
+      "mean_half_width": 0.014335016999999995
+    },
+    {
+      "auc_target": 0.97,
+      "n_per_class": 250,
+      "n_total": 500,
+      "ci_variant": "bca",
+      "n_trials": 200,
+      "coverage": 0.935,
+      "mean_half_width": 0.014297495687286992
+    },
+    {
+      "auc_target": 0.97,
+      "n_per_class": 250,
+      "n_total": 500,
+      "ci_variant": "delong",
+      "n_trials": 200,
+      "coverage": 0.975,
+      "mean_half_width": 0.014415308830980505
+    }
+  ]
+}

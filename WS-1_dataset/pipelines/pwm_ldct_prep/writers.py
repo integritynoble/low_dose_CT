@@ -5,13 +5,14 @@ import glob
 import hashlib
 import json
 import os
+import sys
 from typing import Dict, List, Optional
 
 import h5py
 import numpy as np
 
-from pwm_ldct_loader.schema import (H5_FULL, H5_LD_REAL, H5_SINO_FULL, PIXEL_DTYPE,
-                                    SCHEMA_VERSION, h5_ld_sim)
+from pwm_ldct_loader.schema import (H5_FULL, H5_LD_REAL, H5_SINO_FULL, H5_SINO_LD_REAL,
+                                    PIXEL_DTYPE, SCHEMA_VERSION, h5_ld_sim)
 
 from .harmonize import apply_hu_offset
 
@@ -56,6 +57,11 @@ def write_series_hdf5(out_root: str, fd, sims: Dict[float, np.ndarray], split: s
             _ds(f, H5_LD_REAL, apply_hu_offset(real_ld.volume_hu, real_ld.source))
         if fd.sinogram is not None:
             _ds(f, H5_SINO_FULL, fd.sinogram)
+        ld_sino = getattr(real_ld, "sinogram", None) if real_ld is not None else None
+        if ld_sino is None:
+            ld_sino = getattr(fd, "ld_sinogram", None)   # GE: LD projection without an LD recon
+        if ld_sino is not None:
+            _ds(f, H5_SINO_LD_REAL, ld_sino)
         f.attrs["scan_uid"] = _scan_uid(fd.series_id)
         f.attrs["patient_id"] = fd.patient_id
         f.attrs["series_id"] = fd.series_id
@@ -66,19 +72,76 @@ def write_series_hdf5(out_root: str, fd, sims: Dict[float, np.ndarray], split: s
     return path
 
 
+def write_annotations(out_root: str, patient_id: str, series_id: str, source: str,
+                      annotations: Optional[Dict]) -> None:
+    """Write majority-vote + raw-per-reader annotation files (annotation_qa_protocol.md §7)."""
+    if not annotations:
+        return
+    base = os.path.join(out_root, "annotations")
+    mv_dirname = "lidc_majority_vote" if source == "lidc" else f"topup_{source}"
+    mv_dir = os.path.join(base, mv_dirname)
+    os.makedirs(mv_dir, exist_ok=True)
+    nodules = annotations.get("majority", [])
+    for n in nodules:
+        n.setdefault("ground_truth", "majority_vote")
+    with open(os.path.join(mv_dir, f"{patient_id}.json"), "w") as f:
+        json.dump({"patient_id": patient_id, "series_id": series_id, "source": source,
+                   "nodules": nodules}, f, indent=2)
+    raw_dir = os.path.join(base, "raw_per_reader", patient_id)
+    os.makedirs(raw_dir, exist_ok=True)
+    for rid, items in annotations.get("per_reader", {}).items():
+        safe = "".join(c if c.isalnum() or c in "-_" else "_" for c in str(rid))
+        with open(os.path.join(raw_dir, f"{safe}.json"), "w") as f:
+            json.dump({"patient_id": patient_id, "series_id": series_id, "reader_id": rid,
+                       "nodules": items}, f, indent=2)
+
+
 def append_audit(out_root: str, row: Dict) -> None:
     with open(os.path.join(out_root, "deident_audit.jsonl"), "a") as f:
         f.write(json.dumps(row) + "\n")
 
 
+def folder_splits(out_root: str) -> Dict[str, str]:
+    """patient_id -> split, read from the HDF5 layout ``hdf5/{split}/{source}/{patient}/*.h5``.
+
+    This is what the loader actually globs, so it is authoritative. Empty when the (regenerable)
+    HDF5 shards were pruned during a streaming build — callers then fall back to ``assign_split``.
+    """
+    fs: Dict[str, str] = {}
+    for h5 in glob.glob(os.path.join(out_root, "hdf5", "*", "*", "*", "*.h5")):
+        parts = os.path.relpath(h5, os.path.join(out_root, "hdf5")).split(os.sep)
+        if len(parts) >= 4:
+            fs[parts[2]] = parts[0]   # {split}/{source}/{patient}/{series}.h5
+    return fs
+
+
 def write_splits(out_root: str) -> Dict[str, List[str]]:
-    """Derive splits/*.txt from the placement of HDF5 files in hdf5/{split}/..."""
+    """Derive splits/*.txt to mirror the loadable tree (dataset_schema.md §7).
+
+    Each patient's split is read from its **HDF5 folder** (``hdf5/{split}/.../{patient}/`` — exactly
+    what ``LowDoseCTDataset`` globs), so splits.txt always matches what the loader loads. When the
+    HDF5 were pruned during a streaming build, it falls back to the deterministic
+    ``assign_split(canonical_key, seed)`` (the same rule ``prep`` used to place them). Every record
+    is listed (no representative-only de-dup, which would under-list relative to the folder glob).
+
+    Cross-source duplicates (same canonical patient key, e.g. AAPM 2016 ⊂ Mayo LDCT-PD) are
+    co-located in one split at prep time (``assign_split`` keys on the canonical key); this function
+    VERIFIES that and prints a leakage warning for any canonical key whose records span >1 split.
+    """
+    from pwm_ldct_loader.splits import assign_split
+    fsplit = folder_splits(out_root)
     placement: Dict[str, str] = {}
-    for path in glob.glob(os.path.join(out_root, "hdf5", "*", "*", "*", "*.h5")):
-        rel = os.path.relpath(path, os.path.join(out_root, "hdf5"))
-        split = rel.split(os.sep)[0]
-        with h5py.File(path, "r") as f:
-            placement[f.attrs["patient_id"]] = split
+    ckey_splits: Dict[str, set] = {}
+    for mp in glob.glob(os.path.join(out_root, "metadata", "*.json")):
+        with open(mp) as f:
+            meta = json.load(f)
+        pid = meta.get("patient_id")
+        if not pid:
+            continue
+        ckey = meta.get("provenance", {}).get("canonical_patient_key") or pid
+        split = fsplit.get(pid) or assign_split(ckey, int(meta.get("lowdose_sim", {}).get("seed", 42)))
+        placement[pid] = split
+        ckey_splits.setdefault(ckey, set()).add(split)
     out: Dict[str, List[str]] = {"train": [], "val": [], "test": []}
     for pid, split in placement.items():
         out.setdefault(split, []).append(pid)
@@ -87,6 +150,10 @@ def write_splits(out_root: str) -> Dict[str, List[str]]:
     for name in ("train", "val", "test"):
         with open(os.path.join(sd, f"{name}.txt"), "w") as f:
             f.write("\n".join(sorted(out.get(name, []))) + ("\n" if out.get(name) else ""))
+    leaks = {k: sorted(v) for k, v in ckey_splits.items() if len(v) > 1}
+    for k, ss in leaks.items():
+        print(f"WARNING write_splits: canonical patient {k} spans splits {ss} "
+              f"(train/test leakage — fix placement at prep)", file=sys.stderr)
     return out
 
 

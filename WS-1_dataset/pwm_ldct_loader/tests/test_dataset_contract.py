@@ -27,18 +27,32 @@ def test_shapes_and_types(fixture_root):
         assert isinstance(s["metadata"], dict)
 
 
-def test_real_vs_sim_and_sinogram_presence(fixture_root):
+def test_real_vs_sim_and_projection_presence(fixture_root):
     ds = LowDoseCTDataset(root=fixture_root, split="train", backend="numpy")
     by_source = {}
     for i in range(len(ds)):
         s = ds[i]
         by_source.setdefault(s["source"], []).append(s)
-    # LIDC: simulated low-dose, no sinogram
-    assert all(s["low_dose_kind"] == "sim" and s["sinogram"] is None for s in by_source["lidc"])
-    # AAPM: real low-dose preferred, sinogram present with [V, D] shape
-    assert all(s["low_dose_kind"] == "real" and s["sinogram"] is not None for s in by_source["aapm"])
-    assert by_source["aapm"][0]["sinogram"].shape == (6, 10)
+    # sinogram is always None at the slice level; projections are series-level
+    assert all(s["sinogram"] is None for vs in by_source.values() for s in vs)
+    # LIDC: simulated low-dose, no projections
+    assert all(s["low_dose_kind"] == "sim" and not s["has_projections"] for s in by_source["lidc"])
+    # AAPM: real low-dose preferred, projections present
+    assert all(s["low_dose_kind"] == "real" and s["has_projections"] for s in by_source["aapm"])
     assert by_source["aapm"][0]["dose_ratio"] == 0.25
+
+
+def test_series_level_projections(fixture_root):
+    ds = LowDoseCTDataset(root=fixture_root, split="train", backend="numpy")
+    sid = next(ds[i]["series_id"] for i in range(len(ds)) if ds[i]["source"] == "aapm")
+    proj = ds.get_series_projections(sid)
+    assert proj is not None
+    assert proj["full_dose"].shape == (5, 12, 4)         # native [V, C, R]
+    assert proj["geometry"]["vendor"] == "SIEMENS"
+    assert proj["geometry"]["n_det_channels"] == 12
+    # LIDC series have no projections
+    lsid = next(ds[i]["series_id"] for i in range(len(ds)) if ds[i]["source"] == "lidc")
+    assert ds.get_series_projections(lsid) is None
 
 
 def test_sources_filter(fixture_root):

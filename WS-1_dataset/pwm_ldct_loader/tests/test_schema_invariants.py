@@ -21,6 +21,6 @@ def test_sim_path_formatting():
 
 def test_sample_keys_are_the_contract():
     assert set(schema.SAMPLE_KEYS) == {
-        "full_dose", "low_dose", "low_dose_kind", "dose_ratio", "sinogram",
+        "full_dose", "low_dose", "low_dose_kind", "dose_ratio", "sinogram", "has_projections",
         "source", "patient_id", "series_id", "slice_index", "annotations", "metadata",
     }
