@@ -1,3 +1,14 @@
+---
+AIGC:
+    Label: "1"
+    ContentProducer: 001191440300708461136T1XGW3
+    ProduceID: 3492397679226d6505949fd36ce12be5_388def2c9d4011f184de525400f8a581
+    ReservedCode1: 1AbLU4HwtFtvFOIiCZ+9n45XP8cQTrGKeAwCILozmhGrWaUWpr8TXIeg+w2RcUZwRLWQ8hbTV7Jy66EDAeF/yEHODyzLDQcbVRBf09hD96ZlSMMAlmHHNVljsQshnlR3qkbFEbZHeRfUdEqEa1n+/810FUI4wJcJFhI1AFAwopk6DmqN22H85mAH39c=
+    ContentPropagator: 001191440300708461136T1XGW3
+    PropagateID: 3492397679226d6505949fd36ce12be5_388def2c9d4011f184de525400f8a581
+    ReservedCode2: 1AbLU4HwtFtvFOIiCZ+9n45XP8cQTrGKeAwCILozmhGrWaUWpr8TXIeg+w2RcUZwRLWQ8hbTV7Jy66EDAeF/yEHODyzLDQcbVRBf09hD96ZlSMMAlmHHNVljsQshnlR3qkbFEbZHeRfUdEqEa1n+/810FUI4wJcJFhI1AFAwopk6DmqN22H85mAH39c=
+---
+
 # WS-4 — Permanent Leaderboard + Annual Review (Track 9 sub-track 9d)
 
 A **self-sustaining citation-standard competition** launched at RSNA or ISBI, producing one peer-reviewed *State of the Field* review paper per year that compounds into a recurring publication record.
@@ -123,7 +134,7 @@ The clinical framing of dose-equivalence ("at what dose ratio can we still confi
 
 | Path | Purpose | Status |
 |---|---|---|
-| `scoring/` | Containerized scoring service; S1-S4 verification pipeline | pending Phase 1 |
+| `scoring/` | Containerized scoring service; S1-S4 verification pipeline | **P0 done**: paired §4 gate + permanent blur seed; **P1 done**: held-out no-write-path gate (`heldout.py`), spread-by-vendor/dose (`spread` CLI; extended to frequency-domain BandER, R5 closed via own-data proxy 2026-08-22); **P2 done (synthetic)**: observer channels + sensitivity report; **P3 done**: Rung 1-6 registry (`data/rung_registry.json`, `RUNG_REGISTRY.md`). See `scoring/README.md`; sandbox + web pending Phase 1 |
 | `web/` | Public leaderboard at lowdosect.pwm.platformai.org | pending Phase 1 |
 | `submission_contract/` | Specification of what a RunBundle must contain | pending Phase 1 |
 | `launch_event/` | RSNA / ISBI 2028 prep — slot logistics, sponsor outreach, prize fund | pending Phase 2 |
@@ -151,3 +162,4 @@ The clinical framing of dose-equivalence ("at what dose ratio can we still confi
 - [`../WS-3_reference_method/`](../WS-3_reference_method/) — provides one of the seed entries
 - [`../pwm_integration/l3_spec.md`](../pwm_integration/l3_spec.md) — submission contract format
 - [`../pwm_integration/l2_spec.md`](../pwm_integration/l2_spec.md) — credential requirement for submissions
+*（内容由AI生成，仅供参考）*

@@ -1,0 +1,809 @@
+{
+  "schema": "aapm-r3-roi-detectability/v1",
+  "updated_at": "2026-08-22T19:36:01",
+  "corpus": "AAPM 2016 LDCT grand challenge, held-out test (4 patients), 1mm B30, FD vs QD real pairing",
+  "tree": "D:\\ZHY\\low_dose_CT-heyang\\WS-1_dataset\\pipelines\\_runtime\\aapm_tree_v1",
+  "task": {
+    "task": "SKE-Gaussian20HU-s2px",
+    "signal_sigma_px": 2.0,
+    "peak_contrast_hu": 20.0,
+    "roi_size_px": 32,
+    "location_known": true,
+    "noise_roi_hu_band": [
+      10.0,
+      120.0
+    ],
+    "n_trials": 64
+  },
+  "protocol": {
+    "roi": "find_tissue_roi per slice: soft-tissue HU band [10,120] + low Sobel gradient + low internal std, deterministic seed 42, 32x32 px (task_spec.json)",
+    "freq": "detectability-freq-v1: 1px Gaussian high-pass residual; roi BandER = HF energy retention inside ROI patch; full-image BandER for v2 comparison; roi tm_auc = FD HF template-match AUC",
+    "transparency": "CNR (Rose>=3) / CHO (DOG-4) / NPWE insertion protocol reported in parallel (v2-comparable, first-slice ROI reuse)"
+  },
+  "models": [
+    "red_cnn",
+    "ctformer",
+    "learn",
+    "blur"
+  ],
+  "split_assignment": {
+    "test": [
+      "aapm-0003",
+      "aapm-0005",
+      "aapm-0006",
+      "aapm-0009"
+    ]
+  },
+  "per_patient": {
+    "aapm-0003": {
+      "patient_id": "aapm-0003",
+      "split": "test",
+      "n_slices": 636,
+      "models": {
+        "red_cnn": {
+          "fidelity": {
+            "psnr": 40.12226593705129,
+            "ssim": 0.9179296063364677,
+            "n_slices": 636
+          },
+          "detectability": {
+            "cnr_mean": 0.08943337103788429,
+            "cnr_median": 0.09303778389691406,
+            "cho_auc_mean": 1.0,
+            "npwe_mean": 223882.40039289618,
+            "n_slices": 48
+          },
+          "freq_roi": {
+            "n_roi": 48,
+            "roi_band_energy_ratio": 3.491718131890041,
+            "band_energy_ratio_full": 1.5860457894654492,
+            "roi_tm_auc": 0.9895833333333334,
+            "roi_hu_mean_mean": 60.768330891927086,
+            "roi_hu_std_mean": 89.97828849156697,
+            "roi_grad_mean_mean": 237.91456031799316
+          }
+        },
+        "ctformer": {
+          "fidelity": {
+            "psnr": 38.64673814913105,
+            "ssim": 0.8954603797609701,
+            "n_slices": 636
+          },
+          "detectability": {
+            "cnr_mean": 0.07763153731900245,
+            "cnr_median": 0.08318288201266581,
+            "cho_auc_mean": 1.0,
+            "npwe_mean": 222903.76901319544,
+            "n_slices": 48
+          },
+          "freq_roi": {
+            "n_roi": 48,
+            "roi_band_energy_ratio": 5.115730074604183,
+            "band_energy_ratio_full": 2.1121724140326985,
+            "roi_tm_auc": 0.9895833333333334,
+            "roi_hu_mean_mean": 60.768330891927086,
+            "roi_hu_std_mean": 89.97828849156697,
+            "roi_grad_mean_mean": 237.91456031799316
+          }
+        },
+        "learn": {
+          "fidelity": {
+            "psnr": 40.20810057204305,
+            "ssim": 0.9201695714731636,
+            "n_slices": 636
+          },
+          "detectability": {
+            "cnr_mean": 0.0898068251752074,
+            "cnr_median": 0.09305159100112896,
+            "cho_auc_mean": 1.0,
+            "npwe_mean": 222503.7361540935,
+            "n_slices": 48
+          },
+          "freq_roi": {
+            "n_roi": 48,
+            "roi_band_energy_ratio": 3.4790327546814717,
+            "band_energy_ratio_full": 1.5835460358731408,
+            "roi_tm_auc": 0.9895833333333334,
+            "roi_hu_mean_mean": 60.768330891927086,
+            "roi_hu_std_mean": 89.97828849156697,
+            "roi_grad_mean_mean": 237.91456031799316
+          }
+        },
+        "blur": {
+          "fidelity": {
+            "psnr": 40.69181606782119,
+            "ssim": 0.9539103886616305,
+            "n_slices": 636
+          },
+          "detectability": {
+            "cnr_mean": 0.16635528129564123,
+            "cnr_median": 0.17632240396776028,
+            "cho_auc_mean": 1.0,
+            "npwe_mean": 220805.2656145872,
+            "n_slices": 48
+          },
+          "freq_roi": {
+            "n_roi": 48,
+            "roi_band_energy_ratio": 0.35234389748095163,
+            "band_energy_ratio_full": 0.3940226345637714,
+            "roi_tm_auc": 0.9895833333333334,
+            "roi_hu_mean_mean": 60.768330891927086,
+            "roi_hu_std_mean": 89.97828849156697,
+            "roi_grad_mean_mean": 237.91456031799316
+          }
+        }
+      }
+    },
+    "aapm-0005": {
+      "patient_id": "aapm-0005",
+      "split": "test",
+      "n_slices": 1200,
+      "models": {
+        "red_cnn": {
+          "fidelity": {
+            "psnr": 41.40814117385516,
+            "ssim": 0.9360807513197263,
+            "n_slices": 1200
+          },
+          "detectability": {
+            "cnr_mean": 0.10618769151301873,
+            "cnr_median": 0.1108376117439788,
+            "cho_auc_mean": 1.0,
+            "npwe_mean": 223766.06391239562,
+            "n_slices": 48
+          },
+          "freq_roi": {
+            "n_roi": 48,
+            "roi_band_energy_ratio": 3.4326210830809996,
+            "band_energy_ratio_full": 1.5164023634427022,
+            "roi_tm_auc": 0.9895833333333334,
+            "roi_hu_mean_mean": 54.313720703125,
+            "roi_hu_std_mean": 75.50352327028911,
+            "roi_grad_mean_mean": 203.23335218429565
+          }
+        },
+        "ctformer": {
+          "fidelity": {
+            "psnr": 39.90773027348196,
+            "ssim": 0.9181403397520383,
+            "n_slices": 1200
+          },
+          "detectability": {
+            "cnr_mean": 0.08950603229931793,
+            "cnr_median": 0.09323189740941903,
+            "cho_auc_mean": 1.0,
+            "npwe_mean": 223186.87099479465,
+            "n_slices": 48
+          },
+          "freq_roi": {
+            "n_roi": 48,
+            "roi_band_energy_ratio": 5.971265657146607,
+            "band_energy_ratio_full": 2.2495601451145304,
+            "roi_tm_auc": 0.9895833333333334,
+            "roi_hu_mean_mean": 54.313720703125,
+            "roi_hu_std_mean": 75.50352327028911,
+            "roi_grad_mean_mean": 203.23335218429565
+          }
+        },
+        "learn": {
+          "fidelity": {
+            "psnr": 41.97921962639536,
+            "ssim": 0.9378665670752525,
+            "n_slices": 1200
+          },
+          "detectability": {
+            "cnr_mean": 0.10615907711062644,
+            "cnr_median": 0.11033438268005319,
+            "cho_auc_mean": 1.0,
+            "npwe_mean": 222379.9202789718,
+            "n_slices": 48
+          },
+          "freq_roi": {
+            "n_roi": 48,
+            "roi_band_energy_ratio": 3.4078719435016716,
+            "band_energy_ratio_full": 1.5055463825215387,
+            "roi_tm_auc": 0.9895833333333334,
+            "roi_hu_mean_mean": 54.313720703125,
+            "roi_hu_std_mean": 75.50352327028911,
+            "roi_grad_mean_mean": 203.23335218429565
+          }
+        },
+        "blur": {
+          "fidelity": {
+            "psnr": 42.09247397668904,
+            "ssim": 0.9690505385398864,
+            "n_slices": 1200
+          },
+          "detectability": {
+            "cnr_mean": 0.15733472600483864,
+            "cnr_median": 0.1407838011598257,
+            "cho_auc_mean": 1.0,
+            "npwe_mean": 220803.96533910962,
+            "n_slices": 48
+          },
+          "freq_roi": {
+            "n_roi": 48,
+            "roi_band_energy_ratio": 0.4565335548228148,
+            "band_energy_ratio_full": 0.4390770350348359,
+            "roi_tm_auc": 0.9895833333333334,
+            "roi_hu_mean_mean": 54.313720703125,
+            "roi_hu_std_mean": 75.50352327028911,
+            "roi_grad_mean_mean": 203.23335218429565
+          }
+        }
+      }
+    },
+    "aapm-0006": {
+      "patient_id": "aapm-0006",
+      "split": "test",
+      "n_slices": 1050,
+      "models": {
+        "red_cnn": {
+          "fidelity": {
+            "psnr": 42.40550891266322,
+            "ssim": 0.9531524546941121,
+            "n_slices": 1050
+          },
+          "detectability": {
+            "cnr_mean": 0.12649405210923298,
+            "cnr_median": 0.12483182681469816,
+            "cho_auc_mean": 1.0,
+            "npwe_mean": 224051.98397743455,
+            "n_slices": 48
+          },
+          "freq_roi": {
+            "n_roi": 48,
+            "roi_band_energy_ratio": 4.059031339312554,
+            "band_energy_ratio_full": 1.4214469396452183,
+            "roi_tm_auc": 0.9895833333333334,
+            "roi_hu_mean_mean": 54.72393798828125,
+            "roi_hu_std_mean": 29.02970600128174,
+            "roi_grad_mean_mean": 122.86569722493489
+          }
+        },
+        "ctformer": {
+          "fidelity": {
+            "psnr": 40.52296098691548,
+            "ssim": 0.9275067444074722,
+            "n_slices": 1050
+          },
+          "detectability": {
+            "cnr_mean": 0.10147516907442881,
+            "cnr_median": 0.10337294355621296,
+            "cho_auc_mean": 1.0,
+            "npwe_mean": 223212.2167430859,
+            "n_slices": 48
+          },
+          "freq_roi": {
+            "n_roi": 48,
+            "roi_band_energy_ratio": 8.667820479592264,
+            "band_energy_ratio_full": 2.304363140592777,
+            "roi_tm_auc": 0.9895833333333334,
+            "roi_hu_mean_mean": 54.72393798828125,
+            "roi_hu_std_mean": 29.02970600128174,
+            "roi_grad_mean_mean": 122.86569722493489
+          }
+        },
+        "learn": {
+          "fidelity": {
+            "psnr": 43.2727577384703,
+            "ssim": 0.9542742823419117,
+            "n_slices": 1050
+          },
+          "detectability": {
+            "cnr_mean": 0.12636033898586083,
+            "cnr_median": 0.12420350393048876,
+            "cho_auc_mean": 1.0,
+            "npwe_mean": 222427.3459964837,
+            "n_slices": 48
+          },
+          "freq_roi": {
+            "n_roi": 48,
+            "roi_band_energy_ratio": 4.012791904087241,
+            "band_energy_ratio_full": 1.4070215162642405,
+            "roi_tm_auc": 0.9895833333333334,
+            "roi_hu_mean_mean": 54.72393798828125,
+            "roi_hu_std_mean": 29.02970600128174,
+            "roi_grad_mean_mean": 122.86569722493489
+          }
+        },
+        "blur": {
+          "fidelity": {
+            "psnr": 42.45635981206828,
+            "ssim": 0.9769047117233276,
+            "n_slices": 1050
+          },
+          "detectability": {
+            "cnr_mean": 0.20529817357439803,
+            "cnr_median": 0.19075550579733552,
+            "cho_auc_mean": 1.0,
+            "npwe_mean": 220804.27753107026,
+            "n_slices": 48
+          },
+          "freq_roi": {
+            "n_roi": 48,
+            "roi_band_energy_ratio": 0.5230291151735803,
+            "band_energy_ratio_full": 0.492199728479157,
+            "roi_tm_auc": 0.9895833333333334,
+            "roi_hu_mean_mean": 54.72393798828125,
+            "roi_hu_std_mean": 29.02970600128174,
+            "roi_grad_mean_mean": 122.86569722493489
+          }
+        }
+      }
+    },
+    "aapm-0009": {
+      "patient_id": "aapm-0009",
+      "split": "test",
+      "n_slices": 1220,
+      "models": {
+        "red_cnn": {
+          "fidelity": {
+            "psnr": 40.863815124403054,
+            "ssim": 0.928741854429245,
+            "n_slices": 1220
+          },
+          "detectability": {
+            "cnr_mean": 0.09245494581294539,
+            "cnr_median": 0.08737985460563212,
+            "cho_auc_mean": 1.0,
+            "npwe_mean": 223958.67228596203,
+            "n_slices": 48
+          },
+          "freq_roi": {
+            "n_roi": 48,
+            "roi_band_energy_ratio": 4.521345189158644,
+            "band_energy_ratio_full": 1.5718032341873498,
+            "roi_tm_auc": 0.9895833333333334,
+            "roi_hu_mean_mean": 56.513081868489586,
+            "roi_hu_std_mean": 32.873899817466736,
+            "roi_grad_mean_mean": 152.00617520014444
+          }
+        },
+        "ctformer": {
+          "fidelity": {
+            "psnr": 39.26280761953942,
+            "ssim": 0.9067537552020589,
+            "n_slices": 1220
+          },
+          "detectability": {
+            "cnr_mean": 0.0766783264356551,
+            "cnr_median": 0.07752060525532886,
+            "cho_auc_mean": 1.0,
+            "npwe_mean": 222330.44798261346,
+            "n_slices": 48
+          },
+          "freq_roi": {
+            "n_roi": 48,
+            "roi_band_energy_ratio": 7.185885370280407,
+            "band_energy_ratio_full": 2.120961922597706,
+            "roi_tm_auc": 0.9895833333333334,
+            "roi_hu_mean_mean": 56.513081868489586,
+            "roi_hu_std_mean": 32.873899817466736,
+            "roi_grad_mean_mean": 152.00617520014444
+          }
+        },
+        "learn": {
+          "fidelity": {
+            "psnr": 40.994073653132126,
+            "ssim": 0.9309409257818441,
+            "n_slices": 1220
+          },
+          "detectability": {
+            "cnr_mean": 0.0920852016655321,
+            "cnr_median": 0.0871790638741592,
+            "cho_auc_mean": 1.0,
+            "npwe_mean": 223207.76950001475,
+            "n_slices": 48
+          },
+          "freq_roi": {
+            "n_roi": 48,
+            "roi_band_energy_ratio": 4.51595422794909,
+            "band_energy_ratio_full": 1.5597313035660736,
+            "roi_tm_auc": 0.9895833333333334,
+            "roi_hu_mean_mean": 56.513081868489586,
+            "roi_hu_std_mean": 32.873899817466736,
+            "roi_grad_mean_mean": 152.00617520014444
+          }
+        },
+        "blur": {
+          "fidelity": {
+            "psnr": 41.26740989954124,
+            "ssim": 0.9614216973547076,
+            "n_slices": 1220
+          },
+          "detectability": {
+            "cnr_mean": 0.1535542220378309,
+            "cnr_median": 0.10708928327879846,
+            "cho_auc_mean": 1.0,
+            "npwe_mean": 220804.7437906313,
+            "n_slices": 48
+          },
+          "freq_roi": {
+            "n_roi": 48,
+            "roi_band_energy_ratio": 0.39426222906059505,
+            "band_energy_ratio_full": 0.3945938403823351,
+            "roi_tm_auc": 0.9895833333333334,
+            "roi_hu_mean_mean": 56.513081868489586,
+            "roi_hu_std_mean": 32.873899817466736,
+            "roi_grad_mean_mean": 152.00617520014444
+          }
+        }
+      }
+    }
+  },
+  "by_split": {
+    "red_cnn": {
+      "fidelity": {
+        "psnr": {
+          "mean": 41.19993278699318,
+          "min": 40.12226593705129,
+          "max": 42.40550891266322,
+          "std": 0.8323318823813589,
+          "n": 4
+        },
+        "ssim": {
+          "mean": 0.9339761666948878,
+          "min": 0.9179296063364677,
+          "max": 0.9531524546941121,
+          "std": 0.012816487643880645,
+          "n": 4
+        }
+      },
+      "detectability": {
+        "cnr_mean": {
+          "mean": 0.10364251511827034,
+          "min": 0.08943337103788429,
+          "max": 0.12649405210923298,
+          "std": 0.01462644991264402,
+          "n": 4
+        },
+        "cho_auc_mean": {
+          "mean": 1.0,
+          "min": 1.0,
+          "max": 1.0,
+          "std": 0.0,
+          "n": 4
+        },
+        "npwe_mean": {
+          "mean": 223914.7801421721,
+          "min": 223766.06391239562,
+          "max": 224051.98397743455,
+          "std": 104.78117419090957,
+          "n": 4
+        }
+      },
+      "freq_roi": {
+        "roi_band_energy_ratio": {
+          "mean": 3.87617893586056,
+          "min": 3.4326210830809996,
+          "max": 4.521345189158644,
+          "std": 0.4455974007988965,
+          "n": 4
+        },
+        "band_energy_ratio_full": {
+          "mean": 1.5239245816851799,
+          "min": 1.4214469396452183,
+          "max": 1.5860457894654492,
+          "std": 0.06463292641305378,
+          "n": 4
+        },
+        "roi_tm_auc": {
+          "mean": 0.9895833333333334,
+          "min": 0.9895833333333334,
+          "max": 0.9895833333333334,
+          "std": 0.0,
+          "n": 4
+        },
+        "n_roi": {
+          "mean": 48.0,
+          "min": 48.0,
+          "max": 48.0,
+          "std": 0.0,
+          "n": 4
+        },
+        "roi_hu_mean_mean": {
+          "mean": 56.579767862955734,
+          "min": 54.313720703125,
+          "max": 60.768330891927086,
+          "std": 2.5557573008716443,
+          "n": 4
+        },
+        "roi_hu_std_mean": {
+          "mean": 56.84635439515114,
+          "min": 29.02970600128174,
+          "max": 89.97828849156697,
+          "std": 26.43037794731641,
+          "n": 4
+        },
+        "roi_grad_mean_mean": {
+          "mean": 179.00494623184204,
+          "min": 122.86569722493489,
+          "max": 237.91456031799316,
+          "std": 44.54746682769319,
+          "n": 4
+        }
+      },
+      "n_patients": 4
+    },
+    "ctformer": {
+      "fidelity": {
+        "psnr": {
+          "mean": 39.58505925726698,
+          "min": 38.64673814913105,
+          "max": 40.52296098691548,
+          "std": 0.7014393878259152,
+          "n": 4
+        },
+        "ssim": {
+          "mean": 0.9119653047806349,
+          "min": 0.8954603797609701,
+          "max": 0.9275067444074722,
+          "std": 0.012033704765027624,
+          "n": 4
+        }
+      },
+      "detectability": {
+        "cnr_mean": {
+          "mean": 0.08632276628210107,
+          "min": 0.0766783264356551,
+          "max": 0.10147516907442881,
+          "std": 0.010102984382820113,
+          "n": 4
+        },
+        "cho_auc_mean": {
+          "mean": 1.0,
+          "min": 1.0,
+          "max": 1.0,
+          "std": 0.0,
+          "n": 4
+        },
+        "npwe_mean": {
+          "mean": 222908.32618342235,
+          "min": 222330.44798261346,
+          "max": 223212.2167430859,
+          "std": 354.9298053720113,
+          "n": 4
+        }
+      },
+      "freq_roi": {
+        "roi_band_energy_ratio": {
+          "mean": 6.735175395405865,
+          "min": 5.115730074604183,
+          "max": 8.667820479592264,
+          "std": 1.3364521819125301,
+          "n": 4
+        },
+        "band_energy_ratio_full": {
+          "mean": 2.196764405584428,
+          "min": 2.1121724140326985,
+          "max": 2.304363140592777,
+          "std": 0.08256315665835373,
+          "n": 4
+        },
+        "roi_tm_auc": {
+          "mean": 0.9895833333333334,
+          "min": 0.9895833333333334,
+          "max": 0.9895833333333334,
+          "std": 0.0,
+          "n": 4
+        },
+        "n_roi": {
+          "mean": 48.0,
+          "min": 48.0,
+          "max": 48.0,
+          "std": 0.0,
+          "n": 4
+        },
+        "roi_hu_mean_mean": {
+          "mean": 56.579767862955734,
+          "min": 54.313720703125,
+          "max": 60.768330891927086,
+          "std": 2.5557573008716443,
+          "n": 4
+        },
+        "roi_hu_std_mean": {
+          "mean": 56.84635439515114,
+          "min": 29.02970600128174,
+          "max": 89.97828849156697,
+          "std": 26.43037794731641,
+          "n": 4
+        },
+        "roi_grad_mean_mean": {
+          "mean": 179.00494623184204,
+          "min": 122.86569722493489,
+          "max": 237.91456031799316,
+          "std": 44.54746682769319,
+          "n": 4
+        }
+      },
+      "n_patients": 4
+    },
+    "learn": {
+      "fidelity": {
+        "psnr": {
+          "mean": 41.613537897510206,
+          "min": 40.20810057204305,
+          "max": 43.2727577384703,
+          "std": 1.1451772388319679,
+          "n": 4
+        },
+        "ssim": {
+          "mean": 0.935812836668043,
+          "min": 0.9201695714731636,
+          "max": 0.9542742823419117,
+          "std": 0.01238436561349724,
+          "n": 4
+        }
+      },
+      "detectability": {
+        "cnr_mean": {
+          "mean": 0.10360286073430668,
+          "min": 0.0898068251752074,
+          "max": 0.12636033898586083,
+          "std": 0.014555275041243489,
+          "n": 4
+        },
+        "cho_auc_mean": {
+          "mean": 1.0,
+          "min": 1.0,
+          "max": 1.0,
+          "std": 0.0,
+          "n": 4
+        },
+        "npwe_mean": {
+          "mean": 222629.69298239093,
+          "min": 222379.9202789718,
+          "max": 223207.76950001475,
+          "std": 336.66314355074235,
+          "n": 4
+        }
+      },
+      "freq_roi": {
+        "roi_band_energy_ratio": {
+          "mean": 3.8539127075548683,
+          "min": 3.4078719435016716,
+          "max": 4.51595422794909,
+          "std": 0.44805940345008494,
+          "n": 4
+        },
+        "band_energy_ratio_full": {
+          "mean": 1.5139613095562485,
+          "min": 1.4070215162642405,
+          "max": 1.5835460358731408,
+          "std": 0.06790408101615306,
+          "n": 4
+        },
+        "roi_tm_auc": {
+          "mean": 0.9895833333333334,
+          "min": 0.9895833333333334,
+          "max": 0.9895833333333334,
+          "std": 0.0,
+          "n": 4
+        },
+        "n_roi": {
+          "mean": 48.0,
+          "min": 48.0,
+          "max": 48.0,
+          "std": 0.0,
+          "n": 4
+        },
+        "roi_hu_mean_mean": {
+          "mean": 56.579767862955734,
+          "min": 54.313720703125,
+          "max": 60.768330891927086,
+          "std": 2.5557573008716443,
+          "n": 4
+        },
+        "roi_hu_std_mean": {
+          "mean": 56.84635439515114,
+          "min": 29.02970600128174,
+          "max": 89.97828849156697,
+          "std": 26.43037794731641,
+          "n": 4
+        },
+        "roi_grad_mean_mean": {
+          "mean": 179.00494623184204,
+          "min": 122.86569722493489,
+          "max": 237.91456031799316,
+          "std": 44.54746682769319,
+          "n": 4
+        }
+      },
+      "n_patients": 4
+    },
+    "blur": {
+      "fidelity": {
+        "psnr": {
+          "mean": 41.62701493902994,
+          "min": 40.69181606782119,
+          "max": 42.45635981206828,
+          "std": 0.6907202305038737,
+          "n": 4
+        },
+        "ssim": {
+          "mean": 0.9653218340698881,
+          "min": 0.9539103886616305,
+          "max": 0.9769047117233276,
+          "std": 0.008565898149958891,
+          "n": 4
+        }
+      },
+      "detectability": {
+        "cnr_mean": {
+          "mean": 0.17063560072817718,
+          "min": 0.1535542220378309,
+          "max": 0.20529817357439803,
+          "std": 0.020545692110105918,
+          "n": 4
+        },
+        "cho_auc_mean": {
+          "mean": 1.0,
+          "min": 1.0,
+          "max": 1.0,
+          "std": 0.0,
+          "n": 4
+        },
+        "npwe_mean": {
+          "mean": 220804.5630688496,
+          "min": 220803.96533910962,
+          "max": 220805.2656145872,
+          "std": 0.4911831484514667,
+          "n": 4
+        }
+      },
+      "freq_roi": {
+        "roi_band_energy_ratio": {
+          "mean": 0.4315421991344855,
+          "min": 0.35234389748095163,
+          "max": 0.5230291151735803,
+          "std": 0.06453020769182308,
+          "n": 4
+        },
+        "band_energy_ratio_full": {
+          "mean": 0.42997330961502483,
+          "min": 0.3940226345637714,
+          "max": 0.492199728479157,
+          "std": 0.0403086929241119,
+          "n": 4
+        },
+        "roi_tm_auc": {
+          "mean": 0.9895833333333334,
+          "min": 0.9895833333333334,
+          "max": 0.9895833333333334,
+          "std": 0.0,
+          "n": 4
+        },
+        "n_roi": {
+          "mean": 48.0,
+          "min": 48.0,
+          "max": 48.0,
+          "std": 0.0,
+          "n": 4
+        },
+        "roi_hu_mean_mean": {
+          "mean": 56.579767862955734,
+          "min": 54.313720703125,
+          "max": 60.768330891927086,
+          "std": 2.5557573008716443,
+          "n": 4
+        },
+        "roi_hu_std_mean": {
+          "mean": 56.84635439515114,
+          "min": 29.02970600128174,
+          "max": 89.97828849156697,
+          "std": 26.43037794731641,
+          "n": 4
+        },
+        "roi_grad_mean_mean": {
+          "mean": 179.00494623184204,
+          "min": 122.86569722493489,
+          "max": 237.91456031799316,
+          "std": 44.54746682769319,
+          "n": 4
+        }
+      },
+      "n_patients": 4
+    }
+  }
+}

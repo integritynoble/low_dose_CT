@@ -1,0 +1,73 @@
+{
+  "schema_version": "0.5.0",
+  "task_version": "detectability-task-v1",
+  "task": "SKE-Gaussian20HU-s2px",
+  "class": "SKE/BKS",
+  "signal": {
+    "type": "2D Gaussian",
+    "sigma_px": 2.0,
+    "sigma_mm": 1.4,
+    "mm_per_px": 0.7,
+    "peak_contrast_hu": 20.0,
+    "insertion_domain": "low-dose INPUT slice (HU-space addition, before reconstruction)"
+  },
+  "location": {
+    "known": true,
+    "note": "lesion centred in the extracted tissue ROI patch"
+  },
+  "background": {
+    "type": "homogeneous soft-tissue ROI",
+    "anatomy_free": true,
+    "noise_roi_hu_band": [10.0, 120.0],
+    "low_gradient_constraint": true,
+    "roi_size_px": 32,
+    "selection": "find_tissue_roi: scores candidate patches by closeness to soft-tissue HU (band 10-120), low Sobel gradient (exp(-mean_grad/20)), and low internal std (exp(-std_hu/50)); deterministic RNG seed 42"
+  },
+  "observer": {
+    "cnr": {
+      "definition": "(mu_present - mu_absent) / sigma_absent, on model OUTPUT patches",
+      "rose_criterion": 3.0
+    },
+    "cho": {
+      "type": "Channelized Hotelling Observer",
+      "channels": "DOG",
+      "n_channels": 4,
+      "internal_noise": "none",
+      "auc": "Mann-Whitney on Hotelling template scores"
+    },
+    "npwe": {
+      "type": "non-prewhitening matched filter with eye filter",
+      "eye_filter": "rho*exp(-rho/0.2)"
+    }
+  },
+  "protocol": {
+    "insertion_study": "lesion inserted into low-dose INPUT; model reconstructs both lesion-present and lesion-absent inputs; detectability measured on model OUTPUTS",
+    "trials_per_slice": 64,
+    "n_slices_per_dose_p0_pilot": 30,
+    "n_slices_per_dose_full": 764,
+    "roi_reuse": "tissue ROI chosen once from the first reference slice and reused across slices"
+  },
+  "rationale": {
+    "blur_trap": "a method that merely smooths (e.g. Gaussian blur, sigma=1.0, 5x5) destroys high-frequency signal content: on the LIDC simulated-dose pilot (v0.5) its CNR falls below Rose 3.0 even when PSNR rises; blur is a permanent control. On the AAPM real-paired held-out set (calibrated 2026-08-21) the insertion-based CNR/CHO/NPWE indices are NOT discriminative (blur CNR is the highest, CHO AUC saturates at 1.000 for all methods); the discriminative dimension on real anatomy is the frequency-domain high-frequency band-energy retention ratio (band_energy_ratio, see frequency_domain_detectability below), where blur retains 2.6-4.2x less 1-px-band energy than every learned baseline while scoring the highest SSIM",
+    "no_anatomy_roi": "noise ROI constrained to tissue HU band + low gradient, never placed over anatomy (Rung 3)"
+  },
+  "calibration_note": {
+    "date": "2026-08-21",
+    "scope": "AAPM 2016 real paired held-out test (4 patients: L109/L192/L286/L333; train 3 / val 3 / test 4, splits/aapm_{train,val,test}.txt)",
+    "attempted_insertion_grid": "contrast HU in {20,40,60} x sigma px in {0.5,0.75,1,1.5,2,3} (plus 80HU/4px and disk micro-structures 15-240HU): CHO AUC saturated >=0.92-1.000 and blur-vs-model AUC gap <=0.02 in every grid cell -> insertion protocol is not discriminative on real anatomy (cross-slice background spread 65-75 HU dominates inserted-signal response 3-15 HU)",
+    "resolved_by": "frequency-domain template/energy protocol (Section frequency_domain_detectability): band_energy_ratio separates blur (0.247 mean) from learned baselines (0.631-1.040 mean) by 2.6-4.2x on the same held-out test",
+    "status": "detectability dimension calibrated and discriminative; task version v1 kept (signal/insertion parameters unchanged), frequency-domain protocol added as the calibrated discriminative index"
+  },
+  "frequency_domain_detectability": {
+    "protocol_version": "detectability-freq-v1",
+    "signal_model": "1-px high-frequency band h = img - G(sigma=1.0px)(img) in HU space (Gaussian high-pass residual)",
+    "target_selection": "find_micro_peak: local 32x32-px patch in the FD high-frequency residual with maximal HF energy, restricted to soft-tissue ROI (same tissue HU band as insertion ROI)",
+    "indices": {
+      "band_energy_ratio": "HF-band energy retention of the model output vs the full-dose reference: sum(o_hf^2) / sum(fd_hf^2), computed on the same 48-slice detection subset; blur (sigma=1.0) is expected to retain the least HF energy",
+      "tm_auc": "template-match AUC: correlation of the FD HF micro-structure template with the model output HF residual at the signal location (positive) vs an absent soft-tissue patch (negative), Mann-Whitney AUC"
+    },
+    "calibrated_threshold": "blur band_energy_ratio <= 0.35 vs learned baselines >= 0.60 on AAPM held-out test (2026-08-21, mean over 4 patients)",
+    "rationale": "A learned denoiser that preserves diagnostic microstructure must retain the 1-px high-frequency band of the real anatomy; a pure smoother (blur trap) erases that band while keeping PSNR/SSIM high. This makes the blur trap a 'high fidelity, low detectability' failure on real anatomy."
+  },
+  "source_of_truth": "baselines/src/pwm_ldct_baselines/observers.py (TaskSpec); this file is the published configuration mirror; per-model result JSONs under baselines/results/ embed the same parameters"
+}

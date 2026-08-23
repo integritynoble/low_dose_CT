@@ -1,0 +1,884 @@
+{
+  "schema": "ws2-pred-vs-measured/ct-v1.1",
+  "updated_at": "2026-08-22T12:14:51",
+  "corpus": "AAPM 2016 LDCT grand challenge, held-out test (4 patients), FD vs official real QD (r=0.25)",
+  "metric_definition": "Delta_r = |r_hat - r_star| / r_star (predicted_vs_measured_dose.md)",
+  "protocol": {
+    "physical_dose_response": "input-image SSIM/PSNR/ROI-BandER (no restoration) at r=0.10/0.25/0.50/1.0, shared 48-slice subset; r=0.10/0.50 lowdose_sim (seed 42), r=0.25 official real QD, r=1.0 FD",
+    "equivalent_dose_channels": {
+      "ssim": "monotone, r=1.0 anchor = 1.0; used for Delta_r mapping",
+      "psnr": "monotone, no r=1.0 anchor (identity PSNR inf); curve 0.10..0.50, high end clamped at 0.50",
+      "bander": "NOT usable as dose-response on physical inputs: low-dose noise adds broadband HF energy (BandER ~ 1 + HF_noise/HF_fd), curve is non-monotone. Kept as detectability CONTRAST channel: eps_bander = |BandER_pred - BandER_QD_phys| / BandER_QD_phys."
+    },
+    "r_star": "measured equivalent dose = QD acquisition performance mapped back through the physical curve (verified == 0.25 official)",
+    "r_hat": "predicted equivalent dose = model restored-output performance on QD input (48-slice subset, reused from aapm_dose_detectability.json R4) mapped back through the same curve",
+    "organization": "per volume (per patient per model); R3/R4 persisted only per-patient ROI BandER means",
+    "extrapolation": "SSIM high end clamped at r=1.0; PSNR high end clamped at r=0.50; low end extrapolated down to 0.02"
+  },
+  "dose_response": {
+    "aapm-0003": {
+      "subset_idx": [
+        0,
+        13,
+        26,
+        39,
+        52,
+        65,
+        78,
+        91,
+        104,
+        117,
+        130,
+        143,
+        156,
+        169,
+        182,
+        195,
+        208,
+        221,
+        234,
+        247,
+        260,
+        273,
+        286,
+        299,
+        312,
+        325,
+        338,
+        351,
+        364,
+        377,
+        390,
+        403,
+        416,
+        429,
+        442,
+        455,
+        468,
+        481,
+        494,
+        507,
+        520,
+        533,
+        546,
+        559,
+        572,
+        585,
+        598,
+        611
+      ],
+      "curve": {
+        "bander": {
+          "0.1": 3.2820356829525177,
+          "0.25": 3.868881526436445,
+          "0.5": 1.4385656096007204,
+          "1.0": 1.0
+        },
+        "psnr": {
+          "0.1": 43.32830602893215,
+          "0.25": 39.70139102730223,
+          "0.5": 49.55531608482585
+        },
+        "ssim": {
+          "0.1": 0.954257071018219,
+          "0.25": 0.9153501987457275,
+          "0.5": 0.9829047918319702,
+          "1.0": 1.0
+        }
+      },
+      "n_slices": 636,
+      "subset_n_slices": 48
+    },
+    "aapm-0005": {
+      "subset_idx": [
+        0,
+        25,
+        50,
+        75,
+        100,
+        125,
+        150,
+        175,
+        200,
+        225,
+        250,
+        275,
+        300,
+        325,
+        350,
+        375,
+        400,
+        425,
+        450,
+        475,
+        500,
+        525,
+        550,
+        575,
+        600,
+        625,
+        650,
+        675,
+        700,
+        725,
+        750,
+        775,
+        800,
+        825,
+        850,
+        875,
+        900,
+        925,
+        950,
+        975,
+        1000,
+        1025,
+        1050,
+        1075,
+        1100,
+        1125,
+        1150,
+        1175
+      ],
+      "curve": {
+        "bander": {
+          "0.1": 9.42746876938956,
+          "0.25": 3.7585632400643925,
+          "0.5": 2.3722204178885895,
+          "1.0": 1.0
+        },
+        "psnr": {
+          "0.1": 41.533467210931256,
+          "0.25": 41.74937305011669,
+          "0.5": 48.65378956542904
+        },
+        "ssim": {
+          "0.1": 0.9453452229499817,
+          "0.25": 0.9455379843711853,
+          "0.5": 0.9854820370674133,
+          "1.0": 1.0
+        }
+      },
+      "n_slices": 1200,
+      "subset_n_slices": 48
+    },
+    "aapm-0006": {
+      "subset_idx": [
+        0,
+        21,
+        42,
+        63,
+        84,
+        105,
+        126,
+        147,
+        168,
+        189,
+        210,
+        231,
+        252,
+        273,
+        294,
+        315,
+        336,
+        357,
+        378,
+        399,
+        420,
+        441,
+        462,
+        483,
+        504,
+        525,
+        546,
+        567,
+        588,
+        609,
+        630,
+        651,
+        672,
+        693,
+        714,
+        735,
+        756,
+        777,
+        798,
+        819,
+        840,
+        861,
+        882,
+        903,
+        924,
+        945,
+        966,
+        987
+      ],
+      "curve": {
+        "bander": {
+          "0.1": 21.83231148430879,
+          "0.25": 4.449905632972734,
+          "0.5": 4.684596830579358,
+          "1.0": 1.0
+        },
+        "psnr": {
+          "0.1": 38.68091306732929,
+          "0.25": 42.99205993412491,
+          "0.5": 46.108350906152744
+        },
+        "ssim": {
+          "0.1": 0.9006108045578003,
+          "0.25": 0.9587662816047668,
+          "0.5": 0.9771095514297485,
+          "1.0": 1.0
+        }
+      },
+      "n_slices": 1050,
+      "subset_n_slices": 48
+    },
+    "aapm-0009": {
+      "subset_idx": [
+        0,
+        25,
+        50,
+        75,
+        100,
+        125,
+        150,
+        175,
+        200,
+        225,
+        250,
+        275,
+        300,
+        325,
+        350,
+        375,
+        400,
+        425,
+        450,
+        475,
+        500,
+        525,
+        550,
+        575,
+        600,
+        625,
+        650,
+        675,
+        700,
+        725,
+        750,
+        775,
+        800,
+        825,
+        850,
+        875,
+        900,
+        925,
+        950,
+        975,
+        1000,
+        1025,
+        1050,
+        1075,
+        1100,
+        1125,
+        1150,
+        1175
+      ],
+      "curve": {
+        "bander": {
+          "0.1": 5.923716170320081,
+          "0.25": 5.08584016590978,
+          "0.5": 1.9043065652241957,
+          "1.0": 1.0
+        },
+        "psnr": {
+          "0.1": 43.278392720507185,
+          "0.25": 40.68414109976213,
+          "0.5": 49.6723654456718
+        },
+        "ssim": {
+          "0.1": 0.9546555876731873,
+          "0.25": 0.9298089146614075,
+          "0.5": 0.9831445217132568,
+          "1.0": 1.0
+        }
+      },
+      "n_slices": 1220,
+      "subset_n_slices": 48
+    }
+  },
+  "per_patient": {
+    "aapm-0003": {
+      "r_star": {
+        "ssim": 0.25,
+        "psnr": 0.25,
+        "official": 0.25,
+        "qd_physical_bander": 3.868881526436445
+      },
+      "models": {
+        "red_cnn": {
+          "output_bander": 3.4917182026623124,
+          "output_ssim": 0.9171483864386877,
+          "output_psnr": 40.05940916668985,
+          "r_hat_ssim": 0.24306733905375558,
+          "r_hat_flag_ssim": "interp",
+          "r_hat_psnr": 0.23519327834150788,
+          "r_hat_flag_psnr": "interp",
+          "delta_r_ssim": 0.027730643784977693,
+          "delta_r_psnr": 0.05922688663396847,
+          "eps_bander": 0.09748639786381127
+        },
+        "ctformer": {
+          "output_bander": 5.115730074604183,
+          "output_ssim": 0.8946416179339091,
+          "output_psnr": 38.602536150201935,
+          "r_hat_ssim": 0.3298390346059513,
+          "r_hat_flag_ssim": "extrap_low",
+          "r_hat_psnr": 0.2954458490179591,
+          "r_hat_flag_psnr": "extrap_low",
+          "delta_r_ssim": 0.3193561384238053,
+          "delta_r_psnr": 0.18178339607183647,
+          "eps_bander": 0.3222762288397565
+        },
+        "learn": {
+          "output_bander": 3.4790327546814717,
+          "output_ssim": 0.9193969940145811,
+          "output_psnr": 40.143955814695566,
+          "r_hat_ssim": 0.23439814729704664,
+          "r_hat_flag_ssim": "interp",
+          "r_hat_psnr": 0.2316966435443986,
+          "r_hat_flag_psnr": "interp",
+          "delta_r_ssim": 0.062407410811813446,
+          "delta_r_psnr": 0.07321342582240564,
+          "eps_bander": 0.10076523902091566
+        },
+        "blur": {
+          "output_bander": 0.35234389748095163,
+          "output_ssim": 0.9536946328977743,
+          "output_psnr": 40.70776788444674,
+          "r_hat_ssim": 0.10216840144527237,
+          "r_hat_flag_ssim": "interp",
+          "r_hat_psnr": 0.20837880719458898,
+          "r_hat_flag_psnr": "interp",
+          "delta_r_ssim": 0.5913263942189105,
+          "delta_r_psnr": 0.16648477122164407,
+          "eps_bander": 0.9089287446324341
+        }
+      }
+    },
+    "aapm-0005": {
+      "r_star": {
+        "ssim": 0.25,
+        "psnr": 0.25,
+        "official": 0.25,
+        "qd_physical_bander": 3.7585632400643925
+      },
+      "models": {
+        "red_cnn": {
+          "output_bander": 3.4326210172853173,
+          "output_ssim": 0.936138196537892,
+          "output_psnr": 41.424178779571115,
+          "r_hat_ssim": 0.02,
+          "r_hat_flag_ssim": "extrap_low",
+          "r_hat_psnr": 0.024072156798215047,
+          "r_hat_flag_psnr": "extrap_low",
+          "delta_r_ssim": 0.92,
+          "delta_r_psnr": 0.9037113728071398,
+          "eps_bander": 0.08671989852523834
+        },
+        "ctformer": {
+          "output_bander": 5.971265657146607,
+          "output_ssim": 0.9182692269484202,
+          "output_psnr": 39.920024707939795,
+          "r_hat_ssim": 0.02,
+          "r_hat_flag_ssim": "extrap_low",
+          "r_hat_psnr": 0.02,
+          "r_hat_flag_psnr": "extrap_low",
+          "delta_r_ssim": 0.92,
+          "delta_r_psnr": 0.92,
+          "eps_bander": 0.5887096413586768
+        },
+        "learn": {
+          "output_bander": 3.4078719435016716,
+          "output_ssim": 0.9378700591623783,
+          "output_psnr": 41.99658219577529,
+          "r_hat_ssim": 0.02,
+          "r_hat_flag_ssim": "extrap_low",
+          "r_hat_psnr": 0.258951123715898,
+          "r_hat_flag_psnr": "interp",
+          "delta_r_ssim": 0.92,
+          "delta_r_psnr": 0.03580449486359205,
+          "eps_bander": 0.0933046151317951
+        },
+        "blur": {
+          "output_bander": 0.4565335548228148,
+          "output_ssim": 0.9692872563997904,
+          "output_psnr": 42.1241421626634,
+          "r_hat_ssim": 0.39864085155064766,
+          "r_hat_flag_ssim": "interp",
+          "r_hat_psnr": 0.26356990528148033,
+          "r_hat_flag_psnr": "interp",
+          "delta_r_ssim": 0.5945634062025906,
+          "delta_r_psnr": 0.05427962112592133,
+          "eps_bander": 0.8785350875684632
+        }
+      }
+    },
+    "aapm-0006": {
+      "r_star": {
+        "ssim": 0.25,
+        "psnr": 0.25,
+        "official": 0.25,
+        "qd_physical_bander": 4.449905632972734
+      },
+      "models": {
+        "red_cnn": {
+          "output_bander": 4.059031176929026,
+          "output_ssim": 0.9532676947613558,
+          "output_psnr": 42.3270845553983,
+          "r_hat_ssim": 0.23581753484980336,
+          "r_hat_flag_ssim": "interp",
+          "r_hat_psnr": 0.2268631619634126,
+          "r_hat_flag_psnr": "interp",
+          "delta_r_ssim": 0.05672986060078655,
+          "delta_r_psnr": 0.09254735214634957,
+          "eps_bander": 0.08783881913077478
+        },
+        "ctformer": {
+          "output_bander": 8.667820479592264,
+          "output_ssim": 0.9269127771258354,
+          "output_psnr": 40.4760201783174,
+          "r_hat_ssim": 0.16784048701069093,
+          "r_hat_flag_ssim": "interp",
+          "r_hat_psnr": 0.16245810568925376,
+          "r_hat_flag_psnr": "interp",
+          "delta_r_ssim": 0.3286380519572363,
+          "delta_r_psnr": 0.350167577242985,
+          "eps_bander": 0.947866133467144
+        },
+        "learn": {
+          "output_bander": 4.012791904087241,
+          "output_ssim": 0.9543480475743612,
+          "output_psnr": 43.16913557751883,
+          "r_hat_ssim": 0.23860408102188518,
+          "r_hat_flag_ssim": "interp",
+          "r_hat_psnr": 0.26420564101550287,
+          "r_hat_flag_psnr": "interp",
+          "delta_r_ssim": 0.045583675912459265,
+          "delta_r_psnr": 0.05682256406201147,
+          "eps_bander": 0.09822988731414559
+        },
+        "blur": {
+          "output_bander": 0.5230291151735803,
+          "output_ssim": 0.9769267874459425,
+          "output_psnr": 42.47583010164013,
+          "r_hat_ssim": 0.49750911389368124,
+          "r_hat_flag_ssim": "interp",
+          "r_hat_psnr": 0.23203854397327162,
+          "r_hat_flag_psnr": "interp",
+          "delta_r_ssim": 0.990036455574725,
+          "delta_r_psnr": 0.07184582410691354,
+          "eps_bander": 0.8824628748758041
+        }
+      }
+    },
+    "aapm-0009": {
+      "r_star": {
+        "ssim": 0.25,
+        "psnr": 0.25,
+        "official": 0.25,
+        "qd_physical_bander": 5.08584016590978
+      },
+      "models": {
+        "red_cnn": {
+          "output_bander": 4.521345183130523,
+          "output_ssim": 0.928619559854269,
+          "output_psnr": 40.88127379036343,
+          "r_hat_ssim": 0.257180165368063,
+          "r_hat_flag_ssim": "extrap_low",
+          "r_hat_psnr": 0.23860175961586072,
+          "r_hat_flag_psnr": "interp",
+          "delta_r_ssim": 0.02872066147225194,
+          "delta_r_psnr": 0.04559296153655712,
+          "eps_bander": 0.11099345719966747
+        },
+        "ctformer": {
+          "output_bander": 7.185885370280407,
+          "output_ssim": 0.9067153707146645,
+          "output_psnr": 39.27218385686287,
+          "r_hat_ssim": 0.3894163150281391,
+          "r_hat_flag_ssim": "extrap_low",
+          "r_hat_psnr": 0.3316395698633363,
+          "r_hat_flag_psnr": "extrap_low",
+          "delta_r_ssim": 0.5576652601125565,
+          "delta_r_psnr": 0.32655827945334526,
+          "eps_bander": 0.4129200163322396
+        },
+        "learn": {
+          "output_bander": 4.51595422794909,
+          "output_ssim": 0.9308137794335684,
+          "output_psnr": 41.00893467553763,
+          "r_hat_ssim": 0.24393360568826772,
+          "r_hat_flag_ssim": "interp",
+          "r_hat_psnr": 0.23122038896430047,
+          "r_hat_flag_psnr": "interp",
+          "delta_r_ssim": 0.024265577246929126,
+          "delta_r_psnr": 0.07511844414279811,
+          "eps_bander": 0.11205345024026067
+        },
+        "blur": {
+          "output_bander": 0.39426222906059505,
+          "output_ssim": 0.9616634771227837,
+          "output_psnr": 41.306114823914704,
+          "r_hat_ssim": 0.39931189603977546,
+          "r_hat_flag_ssim": "interp",
+          "r_hat_psnr": 0.21403739025280358,
+          "r_hat_flag_psnr": "interp",
+          "delta_r_ssim": 0.5972475841591018,
+          "delta_r_psnr": 0.1438504389887857,
+          "eps_bander": 0.9224784467857795
+        }
+      }
+    }
+  },
+  "by_model": {
+    "red_cnn": {
+      "delta_r_ssim": {
+        "mean": 0.25829529146450403,
+        "median": 0.042725261036519246,
+        "min": 0.027730643784977693,
+        "max": 0.92,
+        "std": 0.3822127390972812,
+        "n": 4
+      },
+      "delta_r_psnr": {
+        "mean": 0.27526964328100373,
+        "median": 0.07588711939015902,
+        "min": 0.04559296153655712,
+        "max": 0.9037113728071398,
+        "std": 0.3632328089270324,
+        "n": 4
+      },
+      "eps_bander": {
+        "mean": 0.09575964317987297,
+        "median": 0.09266260849729302,
+        "min": 0.08671989852523834,
+        "max": 0.11099345719966747,
+        "std": 0.00974047237517203,
+        "n": 4
+      },
+      "r_hat_ssim": {
+        "mean": 0.18901625981790549,
+        "median": 0.23944243695177947,
+        "min": 0.02,
+        "max": 0.257180165368063,
+        "std": 0.09788346721210894,
+        "n": 4
+      },
+      "r_hat_psnr": {
+        "mean": 0.18118258917974905,
+        "median": 0.23102822015246025,
+        "min": 0.024072156798215047,
+        "max": 0.23860175961586072,
+        "std": 0.09080820223175813,
+        "n": 4
+      },
+      "output_bander": {
+        "mean": 3.876178895001795,
+        "median": 3.7753746897956693,
+        "min": 3.4326210172853173,
+        "max": 4.521345183130523,
+        "std": 0.44559738306634417,
+        "n": 4
+      },
+      "output_ssim": {
+        "mean": 0.9337934593980511,
+        "median": 0.9323788781960805,
+        "min": 0.9171483864386877,
+        "max": 0.9532676947613558,
+        "std": 0.013120321314205824,
+        "n": 4
+      },
+      "output_psnr": {
+        "mean": 41.17298657300567,
+        "median": 41.15272628496727,
+        "min": 40.05940916668985,
+        "max": 42.3270845553983,
+        "std": 0.8246500265288146,
+        "n": 4
+      },
+      "flags": {
+        "ssim": {
+          "interp": 2,
+          "extrap_low": 2,
+          "extrap_high": 0,
+          "clamped_high": 0
+        },
+        "psnr": {
+          "interp": 3,
+          "extrap_low": 1,
+          "extrap_high": 0,
+          "clamped_high": 0
+        }
+      },
+      "n_patients": 4
+    },
+    "ctformer": {
+      "delta_r_ssim": {
+        "mean": 0.5314148626233994,
+        "median": 0.44315165603489637,
+        "min": 0.3193561384238053,
+        "max": 0.92,
+        "std": 0.2438108025762142,
+        "n": 4
+      },
+      "delta_r_psnr": {
+        "mean": 0.44462731319204163,
+        "median": 0.3383629283481651,
+        "min": 0.18178339607183647,
+        "max": 0.92,
+        "std": 0.28192598965582505,
+        "n": 4
+      },
+      "eps_bander": {
+        "mean": 0.5679430049994543,
+        "median": 0.5008148288454581,
+        "min": 0.3222762288397565,
+        "max": 0.947866133467144,
+        "std": 0.2393517958227843,
+        "n": 4
+      },
+      "r_hat_ssim": {
+        "mean": 0.22677395916119536,
+        "median": 0.24883976080832113,
+        "min": 0.02,
+        "max": 0.3894163150281391,
+        "std": 0.14431178921461404,
+        "n": 4
+      },
+      "r_hat_psnr": {
+        "mean": 0.2023858811426373,
+        "median": 0.22895197735360645,
+        "min": 0.02,
+        "max": 0.3316395698633363,
+        "std": 0.12270443203252208,
+        "n": 4
+      },
+      "output_bander": {
+        "mean": 6.735175395405865,
+        "median": 6.578575513713507,
+        "min": 5.115730074604183,
+        "max": 8.667820479592264,
+        "std": 1.3364521819125301,
+        "n": 4
+      },
+      "output_ssim": {
+        "mean": 0.9116347481807072,
+        "median": 0.9124922988315423,
+        "min": 0.8946416179339091,
+        "max": 0.9269127771258354,
+        "std": 0.012149086665316295,
+        "n": 4
+      },
+      "output_psnr": {
+        "mean": 39.5676912233305,
+        "median": 39.59610428240133,
+        "min": 38.602536150201935,
+        "max": 40.4760201783174,
+        "std": 0.7014359011461705,
+        "n": 4
+      },
+      "flags": {
+        "ssim": {
+          "interp": 1,
+          "extrap_low": 3,
+          "extrap_high": 0,
+          "clamped_high": 0
+        },
+        "psnr": {
+          "interp": 1,
+          "extrap_low": 3,
+          "extrap_high": 0,
+          "clamped_high": 0
+        }
+      },
+      "n_patients": 4
+    },
+    "learn": {
+      "delta_r_ssim": {
+        "mean": 0.26306416599280047,
+        "median": 0.053995543362136356,
+        "min": 0.024265577246929126,
+        "max": 0.92,
+        "std": 0.37952284284187116,
+        "n": 4
+      },
+      "delta_r_psnr": {
+        "mean": 0.06023973222270182,
+        "median": 0.06501799494220856,
+        "min": 0.03580449486359205,
+        "max": 0.07511844414279811,
+        "std": 0.015799134921370545,
+        "n": 4
+      },
+      "eps_bander": {
+        "mean": 0.10108829792677926,
+        "median": 0.09949756316753063,
+        "min": 0.0933046151317951,
+        "max": 0.11205345024026067,
+        "std": 0.006875593817952269,
+        "n": 4
+      },
+      "r_hat_ssim": {
+        "mean": 0.18423395850179988,
+        "median": 0.2365011141594659,
+        "min": 0.02,
+        "max": 0.24393360568826772,
+        "std": 0.09488071071046779,
+        "n": 4
+      },
+      "r_hat_psnr": {
+        "mean": 0.24651844931002498,
+        "median": 0.2453238836301483,
+        "min": 0.23122038896430047,
+        "max": 0.26420564101550287,
+        "std": 0.015175018285031492,
+        "n": 4
+      },
+      "output_bander": {
+        "mean": 3.8539127075548683,
+        "median": 3.745912329384356,
+        "min": 3.4078719435016716,
+        "max": 4.51595422794909,
+        "std": 0.44805940345008494,
+        "n": 4
+      },
+      "output_ssim": {
+        "mean": 0.9356072200462223,
+        "median": 0.9343419192979734,
+        "min": 0.9193969940145811,
+        "max": 0.9543480475743612,
+        "std": 0.012669723341582813,
+        "n": 4
+      },
+      "output_psnr": {
+        "mean": 41.57965206588183,
+        "median": 41.50275843565646,
+        "min": 40.143955814695566,
+        "max": 43.16913557751883,
+        "std": 1.127744500351304,
+        "n": 4
+      },
+      "flags": {
+        "ssim": {
+          "interp": 3,
+          "extrap_low": 1,
+          "extrap_high": 0,
+          "clamped_high": 0
+        },
+        "psnr": {
+          "interp": 4,
+          "extrap_low": 0,
+          "extrap_high": 0,
+          "clamped_high": 0
+        }
+      },
+      "n_patients": 4
+    },
+    "blur": {
+      "delta_r_ssim": {
+        "mean": 0.693293460038832,
+        "median": 0.5959054951808462,
+        "min": 0.5913263942189105,
+        "max": 0.990036455574725,
+        "std": 0.17133747526121573,
+        "n": 4
+      },
+      "delta_r_psnr": {
+        "mean": 0.10911516386081616,
+        "median": 0.10784813154784961,
+        "min": 0.05427962112592133,
+        "max": 0.16648477122164407,
+        "std": 0.04715334457828416,
+        "n": 4
+      },
+      "eps_bander": {
+        "mean": 0.8981012884656202,
+        "median": 0.8956958097541191,
+        "min": 0.8785350875684632,
+        "max": 0.9224784467857795,
+        "std": 0.01829532626085444,
+        "n": 4
+      },
+      "r_hat_ssim": {
+        "mean": 0.3494075657323442,
+        "median": 0.39897637379521156,
+        "min": 0.10216840144527237,
+        "max": 0.49750911389368124,
+        "std": 0.14830343180541583,
+        "n": 4
+      },
+      "r_hat_psnr": {
+        "mean": 0.2295061616755361,
+        "median": 0.22303796711303758,
+        "min": 0.20837880719458898,
+        "max": 0.26356990528148033,
+        "std": 0.0215197559538075,
+        "n": 4
+      },
+      "output_bander": {
+        "mean": 0.4315421991344855,
+        "median": 0.42539789194170496,
+        "min": 0.35234389748095163,
+        "max": 0.5230291151735803,
+        "std": 0.06453020769182308,
+        "n": 4
+      },
+      "output_ssim": {
+        "mean": 0.9653930384665728,
+        "median": 0.965475366761287,
+        "min": 0.9536946328977743,
+        "max": 0.9769267874459425,
+        "std": 0.008645152102474641,
+        "n": 4
+      },
+      "output_psnr": {
+        "mean": 41.65346374316624,
+        "median": 41.71512849328905,
+        "min": 40.70776788444674,
+        "max": 42.47583010164013,
+        "std": 0.6915230529480505,
+        "n": 4
+      },
+      "flags": {
+        "ssim": {
+          "interp": 4,
+          "extrap_low": 0,
+          "extrap_high": 0,
+          "clamped_high": 0
+        },
+        "psnr": {
+          "interp": 4,
+          "extrap_low": 0,
+          "extrap_high": 0,
+          "clamped_high": 0
+        }
+      },
+      "n_patients": 4
+    }
+  },
+  "blur_identification": {
+    "blur_identified_by_detectability": true,
+    "blur_fidelity_mask_low_delta_r": true,
+    "eps_bander_blur": 0.8981012884656202,
+    "eps_bander_models": {
+      "red_cnn": 0.09575964317987297,
+      "ctformer": 0.5679430049994543,
+      "learn": 0.10108829792677926
+    },
+    "delta_r_ssim_blur": 0.693293460038832,
+    "rationale": "fidelity channels (SSIM/PSNR) map blur to a small equivalent-dose error (pseudo-low); the detectability contrast channel (ROI BandER relative error vs the QD physical reference) exposes blur, whose high-frequency energy is far below the physical QD level."
+  }
+}

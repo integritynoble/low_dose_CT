@@ -1,0 +1,79 @@
+{
+  "measurement": "leave-one-vendor-out",
+  "folds": [
+    {
+      "label": "GE",
+      "vendor": "GE"
+    },
+    {
+      "label": "Philips",
+      "vendor": "Philips"
+    },
+    {
+      "label": "Siemens",
+      "vendor": "Siemens"
+    },
+    {
+      "label": "Toshiba",
+      "vendor": "Toshiba"
+    }
+  ],
+  "per_dose": {
+    "sim_r010": {
+      "psnr_spread": {
+        "n": 4,
+        "mean": 49.715,
+        "std": 2.0846182704114757,
+        "min": 47.67,
+        "max": 51.78
+      },
+      "cnr_spread": {
+        "n": 4,
+        "mean": 3.8199999999999994,
+        "std": 0.5155579501860096,
+        "min": 3.13,
+        "max": 4.34
+      }
+    },
+    "sim_r025": {
+      "psnr_spread": {
+        "n": 4,
+        "mean": 49.012499999999996,
+        "std": 1.4494452961966746,
+        "min": 47.28,
+        "max": 50.82
+      },
+      "cnr_spread": {
+        "n": 4,
+        "mean": 2.4025,
+        "std": 0.6536755056346127,
+        "min": 1.75,
+        "max": 3.31
+      }
+    },
+    "sim_r050": {
+      "psnr_spread": {
+        "n": 4,
+        "mean": 50.0875,
+        "std": 0.7837250793486198,
+        "min": 49.48,
+        "max": 51.18
+      },
+      "cnr_spread": {
+        "n": 4,
+        "mean": 2.7424999999999997,
+        "std": 0.8237060559851838,
+        "min": 1.7,
+        "max": 3.71
+      }
+    }
+  },
+  "report_rule": "fidelity and detectability are reported together per fold; the spread (mean/std/min/max across folds) is the cross-vendor generalization statement (never a vendor-averaged single number).",
+  "vendors": [
+    "GE",
+    "Siemens",
+    "Philips",
+    "Toshiba"
+  ],
+  "note": "v0.5 is LIDC-only with simulated dose (all vendors at full dose); per-vendor low-dose folds arrive with the v1.0 real paired data. This tool is the standing measurement entrypoint."
+}

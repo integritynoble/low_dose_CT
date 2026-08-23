@@ -79,7 +79,7 @@ specifically as a shared, ground-truth-anchored substrate for reduced-activity
 reconstruction benchmarking. The dataset comprises list-mode PET acquisitions
 of the NEMA NU-2 image-quality phantom (six fillable spheres of known diameter
 plus a low-density lung insert) at a sphere-to-background ratio of
-\todo{SBR, e.g. 4:1}, together with (i) genuinely reduced-activity acquisitions
+4:1 (design-locked in Phase~A), together with (i) genuinely reduced-activity acquisitions
 of the identical phantom fill obtained across radiotracer decay at
 \todo{K} nominal count levels ($r \in \{1.0, 0.50, 0.25, 0.10\}$ of the
 full-count reference) and (ii) \todo{N} controlled reduced-count realizations
@@ -98,6 +98,27 @@ a mirrored Zenodo archive. As a phantom acquisition it contains no protected
 health information. A pip-installable loader and the companion
 \texttt{pwm\_dose\_equivalence} tool consume the dataset directly (Usage Notes).
 \end{abstract}
+
+%% =====================================================================
+\section*{Scope and positioning}
+
+This descriptor is the \textbf{data-descriptor companion to the WS-2
+signal-equivalence framework}~\citep{ws2framework}: its purpose is to provide a
+physically ground-truth-anchored phantom substrate for \emph{validating a
+dose-reduction (digital-twin) model} --- specifically, whether list-mode Poisson
+thinning at rate $r$ faithfully reproduces a genuinely reduced-activity PET
+acquisition of the same geometry, and how a fixed reconstruction preserves known
+physical contrast as counts decrease. It is \textbf{not} a CT detectability
+benchmark and it is \textbf{not} Rung~1 evidence for any reconstruction method:
+no lesion-detectability claim (AUC, channelized-observer, or reader study) is
+made anywhere in this descriptor, and the dataset's endpoints (NEMA contrast
+recovery, background variability, contrast-to-noise, decayed-vs-thinned
+agreement) measure \emph{signal fidelity against physical ground truth}, not
+decision-task performance. The phantom task and observer plan are defined
+explicitly in \texttt{analysis/task\_spec.json} /
+\texttt{analysis/TASK\_DEFINITION.md} (Rung~1.1 task-stated discipline) and are
+summarized in Technical Validation. Readers should treat any statement that this
+dataset ranks or validates detectability as a misreading of the release's scope.
 
 %% =====================================================================
 \section*{Background \& Summary}
@@ -187,7 +208,17 @@ PWM-PET-IQ 1.0 is a physical phantom acquisition. No human or animal subjects ar
 involved, no protected health information is generated, and no institutional
 review-board approval or informed consent is required; the acquisition site's
 radiation-safety authorization for phantom filling is on file
-(\todo{radiation-safety authorization no.}). The dataset is released under
+(\todo{radiation-safety authorization no.}). The acquisition is an
+\emph{irreversible embodied act} (one phantom fill yields the decayed sequence
+exactly once), so it is performed only under a named grant: the site PI /
+radiation-safety office and the PWM Protocol Foundation deposit owner authorize
+the exact act --- one fill, reference scan, and decayed series at
+$r \in \{1.0, 0.50, 0.25, 0.10\}$ on the designated scanner --- and any change
+requires a grant amendment. The grant record, the raw-data hosting lineage
+(secured scratch $\rightarrow$ processing container $\rightarrow$ PhysioNet /
+Zenodo, read-only raw files, two independent copies), and the solved-when gates
+are maintained in \texttt{ACQUISITION\_AUTHORIZATION.md}; no scanning begins
+until that file's signature block is complete. The dataset is released under
 \todo{license, e.g. CC BY 4.0} with no redistribution restriction.
 
 \subsection*{Phantom}
@@ -198,8 +229,10 @@ lung insert, and six fillable spheres of internal diameter 10, 13, 17, 22, 28, a
 37\,mm. The four smallest spheres (10--22\,mm) are conventionally treated as
 ``hot'' (filled above background) and the two largest (28, 37\,mm) as either hot or
 cold depending on protocol; the hot/cold assignment used here is
-\todo{hot/cold sphere assignment}. Sphere and background fill activity
-concentrations were prepared to a sphere-to-background ratio of \todo{SBR, e.g. 4:1},
+hot 10--22\,mm / cold 28--37\,mm (design-locked in Phase~A;
+\texttt{analysis/task\_spec.json}). Sphere and background fill activity
+concentrations were prepared to a sphere-to-background ratio of 4:1
+(design-locked in Phase~A; \texttt{analysis/task\_spec.json}),
 with background activity concentration \todo{background conc. (kBq/mL)} at reference
 start time. Fill activities were assayed in a dose calibrator
 (\todo{dose-calibrator model}) cross-calibrated to the PET scanner within
@@ -361,7 +394,16 @@ submission.}
 All endpoints below are computed against the physical ground-truth table
 (\texttt{ground\_truth.json}); none requires a reader panel. Every number is emitted
 by a committed analysis script over the deposited records, and no endpoint is asserted
-in this skeleton.
+in this skeleton. The phantom task and observer plan follow Rung~1.1
+task-stated discipline: signal = the six known spheres (10--22\,mm hot, 28--37\,mm
+cold) at 4:1 sphere-to-background ratio; background = the NEMA 12-region ROI set;
+location = known by construction; observer = NEMA NU~2-2018 numeric metrics
+(percent contrast recovery, background variability, contrast-to-noise) computed by
+the committed \texttt{analysis/nema\_metrics.py}, with \emph{no} reader panel and
+\emph{no} channelized-observer detectability experiment in 1.0 --- contrast recovery
+measures signal fidelity, not task detectability, and the descriptor makes no
+detectability claim (see \texttt{analysis/TASK\_DEFINITION.md} and the Scope and
+positioning section).
 
 \subsection*{Contrast recovery vs count level}
 For each sphere and each count level we compute the NEMA NU-2 contrast-recovery
@@ -459,7 +501,8 @@ reproduce patient anatomy, respiratory motion, or heterogeneous tracer uptake.
 Conclusions about clinical low-count performance must be confirmed on patient data.
 
 \paragraph{Single scanner / single tracer in 1.0.} The 1.0 release is acquired on one
-scanner with one tracer at one sphere-to-background ratio (\todo{SBR}). Multi-scanner,
+scanner with one tracer at one sphere-to-background ratio (4:1, locked in
+Phase~A). Multi-scanner,
 multi-tracer, and multi-SBR extensions are deferred to a future release and are out of
 1.0 scope.
 

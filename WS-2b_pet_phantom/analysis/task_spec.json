@@ -1,0 +1,51 @@
+{
+  "schema_version": "0.1.0",
+  "task_version": "phantom-crc-task-v1",
+  "task": "NEMA-NU2-CRC-spheres",
+  "class": "physical-ground-truth task (NOT an observer-detectability benchmark)",
+  "signal": {
+    "type": "NEMA NU-2 IQ phantom spheres",
+    "diameters_mm": [10, 13, 17, 22, 28, 37],
+    "hot_spheres_mm": [10, 13, 17, 22],
+    "cold_spheres_mm": [28, 37],
+    "sphere_to_background_ratio_sbr": 4.0,
+    "background": "NEMA 12-region ROI set x 5 slices (60 ROIs)",
+    "lung_insert": "low-density cylindrical insert, standard NEMA geometry"
+  },
+  "location": {
+    "known": true,
+    "note": "sphere centres and diameters are known by construction (physical phantom geometry); VOI placement in reconstructed volumes uses the released ground_truth.json geometry"
+  },
+  "task_definition": {
+    "primary_endpoint": "NEMA NU-2 percent contrast recovery (Q_H / Q_C) per sphere, against physical ground truth",
+    "secondary_endpoints": ["background variability N_j", "contrast-to-noise ratio CNR", "decayed-vs-thinned Bland-Altman agreement", "across-realization variance"],
+    "explicitly_not_answered": "task detectability (AUC / CHO / NPWE-style observer studies) is NOT reported from this dataset; contrast recovery describes signal fidelity, not a decision task. See TASK_DEFINITION.md §Observer plan."
+  },
+  "observer": {
+    "plan": "numeric image-quality metrics per NEMA NU 2-2018; NO reader panel, NO channelized-observer detectability experiment in 1.0",
+    "metrics": {
+      "percent_contrast_hot": "Q_H = [(C_hot/C_bg)-1]/[(a_hot/a_bg)-1] * 100",
+      "percent_contrast_cold": "Q_C = (1 - C_cold/C_bg) * 100",
+      "background_variability": "N_j = SD(bg ROI means)/mean * 100",
+      "contrast_to_noise": "CNR = (C_hot - C_bg)/SD(bg ROIs)",
+      "bland_altman": "decayed vs thinned: bias + 95% limits of agreement",
+      "across_realization_stats": "mean + population variance across seeded thinned realizations"
+    },
+    "implementation": "analysis/nema_metrics.py (pure functions, unit-tested 6/6)"
+  },
+  "protocol": {
+    "count_levels_r": [1.0, 0.5, 0.25, 0.1],
+    "decayed_series": "physical acquisitions across tracer decay at each r (same fill/geometry)",
+    "thinned_series": "seeded list-mode Poisson thinning (series_id, r, realization_index) from full-count reference",
+    "reconstruction": "single fixed protocol for all series (eliminates recon as confound)",
+    "ground_truth": "ground_truth.json: measured fill concentrations, true contrasts, NEMA ROI geometry"
+  },
+  "low_activity_to_dose_mapping": {
+    "relation": "r = A_red / A_ref (injected-activity ratio), same frame duration => same relative dose; low-activity series ARE dose-fraction series",
+    "decayed_series": "physical A_red achieved by tracer decay between scans (measured by dose calibrator, decay-corrected)",
+    "thinned_series": "statistical realization of r x reference counts (models the same dose fraction under the Poisson channel)",
+    "twin_link": "r here is exactly the WS-2 PET T_r signal-reduction level; decayed-vs-thinned agreement measures the thinning-model error (WS-2 theory/proofs/twin_validity_domain.md)",
+    "not_claimed": "activity-dependent detector physics (dead-time, pile-up, randoms fraction) are NOT modelled by thinning; the decayed series measures that discrepancy"
+  },
+  "source_of_truth": "analysis/TASK_DEFINITION.md (human-readable), analysis/nema_metrics.py (implementation); this file is the machine-readable mirror aligned with WS-1_dataset/baselines/task_spec.json"
+}

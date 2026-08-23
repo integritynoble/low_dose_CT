@@ -92,6 +92,10 @@ Emitted by [`../corpus_emit/`](../corpus_emit/) (`emit_stratum_credential` →
 - [ ] Mint the DOI; record it in `dataset_metadata.json` (`doi`) and `manuscript.tex` (`\datadoi{}`).
 - [ ] Set the repository landing page title/description to match the manuscript title.
 - [ ] Mark the deposit **version 1.0.0**; reserve the DOI before final upload if the repository supports it.
+- [ ] **No long embargo:** make the deposit **public at manuscript submission** (Scientific Data
+      requires data available to reviewers at submission and public on publication; target
+      submission→publication ≤ 6 months, zero embargo by design). Do not submit until the DOI
+      link resolves publicly.
 
 ---
 

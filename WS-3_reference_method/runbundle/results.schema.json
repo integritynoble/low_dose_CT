@@ -1,8 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://pwm.health/schemas/ws3-runbundle-results-0.1.json",
+  "$id": "https://pwm.health/schemas/ws3-runbundle-results-0.2.json",
   "title": "WS-3 RunBundle results",
-  "description": "Structured output of the WS-3 RunBundle entrypoint (run.py): what was reproduced and whether the deposit checks and validation passed.",
+  "description": "Structured output of the WS-3 RunBundle entrypoint (run.py): what was reproduced, whether the deposit checks passed, and the paired fidelity + detectability validation block (low-dose-ct.md §4: PSNR and detectability must be reported together -- both numbers or neither).",
   "type": "object",
   "required": ["bundle", "method_version", "mode", "ok", "corpus", "validation"],
   "additionalProperties": true,
@@ -10,8 +10,13 @@
     "bundle": {"const": "pwm-ldct-recon-runbundle"},
     "method_version": {"type": "string"},
     "mode": {"type": "string", "description": "self-test (synthetic) or real reproduction"},
-    "ok": {"type": "boolean", "description": "true iff every deposit check passed"},
+    "ok": {"type": "boolean", "description": "true iff every deposit check AND the paired validation gate passed"},
     "results_schema_ok": {"type": "boolean"},
+    "paired_gate_ok": {"type": "boolean", "description": "true iff the §4 both-or-neither paired gate passed"},
+    "heldout_isolation_ok": {"type": "boolean", "description": "true iff the held-out split isolation gate passed (low-dose-ct.md §6 / §7.2)"},
+    "heldout_gate_mode": {"type": "string", "description": "self-test or emit; emit additionally requires validation.data_provenance == held-out-split"},
+    "artefacts": {"$ref": "#/$defs/artefacts", "description": "Optional per-artefact-class sub-scores (P2-6); absent when no probes ran"},
+    "uq_report": {"$ref": "#/$defs/uq_report", "description": "Optional deep-ensemble low-confidence <-> missed-lesion association report (P2-7)"},
     "corpus": {
       "type": "object",
       "required": ["manifest_ok", "error_maps_ok"],
@@ -24,15 +29,126 @@
       }
     },
     "counts": {"type": "object"},
+    "validation": {"$ref": "#/$defs/validation"},
+    "notes": {"type": "string"}
+  },
+  "$defs": {
+    "artefacts": {
+      "type": "object",
+      "description": "Per-artefact-class sub-scores (low-dose-ct.md §7.5). Each score is a paired fidelity+detectability block; the whole block is optional and only present when artefact probes ran.",
+      "properties": {
+        "enabled": {"type": "boolean"},
+        "artefact_scores": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["artefact_class", "fidelity", "detectability"],
+            "properties": {
+              "artefact_class": {"type": "string", "description": "one of metal|motion|truncation|ring_streak (registry in artefacts.py)"},
+              "fidelity": {"type": "object", "required": ["psnr_db"], "properties": {"psnr_db": {"type": "number"}}},
+              "detectability": {"type": "object", "required": ["cnr"], "properties": {"cnr": {"type": "number"}, "pass_threshold": {"type": "boolean"}}},
+              "notes": {"type": "string"},
+              "extra": {"type": "object"}
+            }
+          }
+        },
+        "note": {"type": "string"}
+      }
+    },
+    "uq_report": {
+      "type": "object",
+      "description": "Deep-ensemble low-confidence <-> missed-lesion association (low-dose-ct.md §7.6). Confidence metric is per-pixel std of the ensemble.",
+      "required": ["module", "analysis", "confidence_metric", "confidence_threshold", "n_pixels", "low_confidence_fraction"],
+      "properties": {
+        "module": {"type": "string"},
+        "analysis": {"const": "low_confidence_vs_missed_lesion"},
+        "confidence_metric": {"type": "string"},
+        "confidence_threshold": {"type": "number"},
+        "n_pixels": {"type": "integer"},
+        "std_range": {"type": "array", "items": {"type": "number"}, "minItems": 2, "maxItems": 2},
+        "low_confidence_fraction": {"type": "number", "minimum": 0.0, "maximum": 1.0},
+        "lesion_association": {
+          "type": ["object", "null"],
+          "properties": {
+            "n_lesions": {"type": "integer"},
+            "n_low_confidence": {"type": "integer"},
+            "n_missed": {"type": "integer"},
+            "n_missed_and_low_confidence": {"type": "integer"},
+            "low_conf_precision": {"type": "number"},
+            "low_conf_recall": {"type": "number"},
+            "flag_rate": {"type": "number"},
+            "iou_std_lesion": {"type": "number"},
+            "notes": {"type": "array", "items": {"type": "string"}}
+          }
+        }
+      }
+    },
+    "detectability": {
+      "type": "object",
+      "description": "Task-based detectability block (observers.py port from WS-1; task and observer parameters are declared here so the detection task is reproducible from the output alone).",
+      "required": ["task", "signal", "observer", "cnr_mean", "cho_auc_mean", "npwe_mean", "n_slices"],
+      "properties": {
+        "task": {"type": "string", "description": "task label, e.g. SKE-Gaussian20HU-s2px"},
+        "task_label": {"type": "string"},
+        "label": {"type": "string", "description": "task label (legacy alias of task)"},
+        "signal": {
+          "type": "object",
+          "required": ["sigma_px", "peak_contrast_hu", "location_known"],
+          "properties": {
+            "sigma_px": {"type": "number"},
+            "peak_contrast_hu": {"type": "number"},
+            "location_known": {"type": "boolean"}
+          }
+        },
+        "observer": {
+          "type": "object",
+          "required": ["cnr", "cho", "npwe"],
+          "properties": {
+            "cnr": {"type": "object", "description": "CNR with Rose criterion"},
+            "cho": {"type": "object", "description": "Channelized Hotelling Observer channel set"},
+            "npwe": {"type": "object", "description": "NPWE eye-filter specification"}
+          }
+        },
+        "noise_roi_hu_band": {"type": "array", "items": {"type": "number"}},
+        "cnr_mean": {"description": "CNR; null when undefined (zero-variance noise region, synthetic only)", "anyOf": [{"type": "number"}, {"type": "null"}]},
+        "cnr_median": {"description": "CNR median; null when undefined", "anyOf": [{"type": "number"}, {"type": "null"}]},
+        "cnr_std": {"description": "CNR std; null when undefined", "anyOf": [{"type": "number"}, {"type": "null"}]},
+        "cho_auc_mean": {"type": "number", "minimum": 0.0, "maximum": 1.0},
+        "cho_auc_median": {"type": "number"},
+        "npwe_mean": {"type": "number"},
+        "n_slices": {"type": "integer", "minimum": 1},
+        "roi_pos": {"type": "array", "items": {"type": "integer"}, "minItems": 2, "maxItems": 2}
+      }
+    },
     "validation": {
       "type": "object",
-      "required": ["psnr_db", "ssim", "uq_spearman"],
+      "description": "Paired validation block. Core rule (low-dose-ct.md §4): PSNR and detectability must be reported together. The top level carries the reference method's pair; paired_methods carries reference + the permanent Gaussian blur trap (Rung 1.3), each as a mandatory (psnr_db, detectability) pair.",
+      "required": ["psnr_db", "ssim", "uq_spearman", "detectability", "paired_methods", "paired_methods_ok"],
       "properties": {
         "psnr_db": {"type": "number"},
         "ssim": {"type": "number"},
-        "uq_spearman": {"type": "number", "minimum": -1.0, "maximum": 1.0}
+        "uq_spearman": {"type": "number", "minimum": -1.0, "maximum": 1.0},
+        "detectability": {"$ref": "#/$defs/detectability"},
+        "paired_methods": {
+          "type": "object",
+          "minProperties": 1,
+          "patternProperties": {
+            "^[A-Za-z0-9_-]+$": {
+              "type": "object",
+              "description": "Per-method paired block: psnr_db and detectability are both required (both numbers or neither).",
+              "required": ["psnr_db", "detectability"],
+              "properties": {
+                "name": {"type": "string"},
+                "psnr_db": {"type": "number"},
+                "ssim": {"type": "number"},
+                "detectability": {"$ref": "#/$defs/detectability"}
+              },
+              "additionalProperties": true
+            }
+          }
+        },
+        "paired_methods_ok": {"type": "boolean", "description": "false => paired gate failed; the block is not publishable"}
       }
-    },
-    "notes": {"type": "string"}
+    }
   }
 }

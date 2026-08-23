@@ -5,6 +5,12 @@ section against the physical ground truth (`ground_truth.json`). The design deli
 splits the **image-dependent** step from the **arithmetic**, so the arithmetic is proven
 correct now, before any phantom scan exists.
 
+**Task & observer plan (P2-3, P2-4):** `TASK_DEFINITION.md` + `task_spec.json` state
+the phantom task (known spheres 10–22 mm hot / 28–37 mm cold, 4:1 SBR, known location),
+the observer plan (NEMA NU 2-2018 numeric metrics only — no reader panel, no
+detectability claim), and the low-activity→dose mapping (`r = A_red/A_ref` ≡ relative
+dose fraction, linked to WS-2 PET `T_r`).
+
 | Stage | File | Status |
 |---|---|---|
 | NEMA metric math (CRC, background variability, CNR, Bland–Altman, replicate variance) | `nema_metrics.py` | **complete + unit-tested** |

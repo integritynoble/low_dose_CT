@@ -1,0 +1,2562 @@
+{
+ "schema": "aapm-lidc-cross-vendor-spread/v1",
+ "updated_at": "2026-08-22T21:01:52",
+ "task": {
+  "task": "SKE-Gaussian20HU-s2px",
+  "signal_sigma_px": 2.0,
+  "peak_contrast_hu": 20.0,
+  "roi_size_px": 32,
+  "location_known": true,
+  "noise_roi_hu_band": [
+   10.0,
+   120.0
+  ],
+  "n_trials": 64
+ },
+ "dose_points": {
+  "LIDC_sim": "r=0.25 (lowdose_sim projection-domain, seed 42)",
+  "AAPM_real": "r=0.25 official real QD"
+ },
+ "protocol": {
+  "roi": "find_tissue_roi HU [10,120] + low gradient + low std, seed 42, 32x32",
+  "freq": "detectability-freq-v1: ROI BandER + full BandER + ROI TM-AUC",
+  "transparency": "CNR/CHO/NPWE insertion protocol reported in parallel"
+ },
+ "models": [
+  "red_cnn",
+  "ctformer",
+  "learn",
+  "blur"
+ ],
+ "per_vendor": {
+  "GE": {
+   "patients": [
+    {
+     "patient_id": "LIDC-IDRI-0529",
+     "vendor": "GE",
+     "dose": "sim_r25",
+     "n_slices": 605,
+     "models": {
+      "red_cnn": {
+       "fidelity": {
+        "psnr": 52.198145134994604,
+        "ssim": 0.9911648333072662,
+        "n_slices": 48
+       },
+       "detectability": {
+        "cnr_mean": 5.03562583424048,
+        "cnr_median": 5.0138682734544275,
+        "cho_auc_mean": 1.0,
+        "npwe_mean": 919686.69848282,
+        "n_slices": 48
+       },
+       "freq_roi": {
+        "n_roi": 48,
+        "roi_band_energy_ratio": 0.48677586236920883,
+        "band_energy_ratio_full": 1.0022926683726496,
+        "roi_tm_auc": 0.9895833333333334,
+        "roi_hu_mean_mean": -1024.0,
+        "roi_hu_std_mean": 0.0,
+        "roi_grad_mean_mean": 0.0
+       }
+      },
+      "ctformer": {
+       "fidelity": {
+        "psnr": 43.56219526504345,
+        "ssim": 0.9371130478878816,
+        "n_slices": 48
+       },
+       "detectability": {
+        "cnr_mean": 0.23018855082183146,
+        "cnr_median": 0.23149723937788053,
+        "cho_auc_mean": 1.0,
+        "npwe_mean": 160082.9920130561,
+        "n_slices": 48
+       },
+       "freq_roi": {
+        "n_roi": 48,
+        "roi_band_energy_ratio": 9.58958152180726,
+        "band_energy_ratio_full": 1.3853578187166355,
+        "roi_tm_auc": 0.9895833333333334,
+        "roi_hu_mean_mean": -1024.0,
+        "roi_hu_std_mean": 0.0,
+        "roi_grad_mean_mean": 0.0
+       }
+      },
+      "learn": {
+       "fidelity": {
+        "psnr": 54.829571220038275,
+        "ssim": 0.9910455035666624,
+        "n_slices": 48
+       },
+       "detectability": {
+        "cnr_mean": 7.040302093355233,
+        "cnr_median": 6.194675684731374,
+        "cho_auc_mean": 1.0,
+        "npwe_mean": 762155.464989529,
+        "n_slices": 48
+       },
+       "freq_roi": {
+        "n_roi": 48,
+        "roi_band_energy_ratio": 0.3162732938364977,
+        "band_energy_ratio_full": 0.9941080193480505,
+        "roi_tm_auc": 0.9895833333333334,
+        "roi_hu_mean_mean": -1024.0,
+        "roi_hu_std_mean": 0.0,
+        "roi_grad_mean_mean": 0.0
+       }
+      },
+      "blur": {
+       "fidelity": {
+        "psnr": 41.07084058503222,
+        "ssim": 0.9258018371959528,
+        "n_slices": 48
+       },
+       "detectability": {
+        "cnr_mean": 5.530882987155061,
+        "cnr_median": 5.856185366952625,
+        "cho_auc_mean": 1.0,
+        "npwe_mean": 220804.72487333792,
+        "n_slices": 48
+       },
+       "freq_roi": {
+        "n_roi": 48,
+        "roi_band_energy_ratio": 0.0633934335325111,
+        "band_energy_ratio_full": 0.2707248189620897,
+        "roi_tm_auc": 0.9895833333333334,
+        "roi_hu_mean_mean": -1024.0,
+        "roi_hu_std_mean": 0.0,
+        "roi_grad_mean_mean": 0.0
+       }
+      }
+     }
+    },
+    {
+     "patient_id": "LIDC-IDRI-0665",
+     "vendor": "GE",
+     "dose": "sim_r25",
+     "n_slices": 602,
+     "models": {
+      "red_cnn": {
+       "fidelity": {
+        "psnr": 50.64194953776251,
+        "ssim": 0.9867235807081064,
+        "n_slices": 48
+       },
+       "detectability": {
+        "cnr_mean": 3.607696298160979,
+        "cnr_median": 3.5797983896446395,
+        "cho_auc_mean": 1.0,
+        "npwe_mean": 848582.8516322039,
+        "n_slices": 48
+       },
+       "freq_roi": {
+        "n_roi": 48,
+        "roi_band_energy_ratio": 0.6625744961904609,
+        "band_energy_ratio_full": 1.0220011737036854,
+        "roi_tm_auc": 0.9895833333333334,
+        "roi_hu_mean_mean": -1024.0,
+        "roi_hu_std_mean": 0.0,
+        "roi_grad_mean_mean": 0.0
+       }
+      },
+      "ctformer": {
+       "fidelity": {
+        "psnr": 42.7281696233346,
+        "ssim": 0.9326042334238688,
+        "n_slices": 48
+       },
+       "detectability": {
+        "cnr_mean": 0.22498380547635688,
+        "cnr_median": 0.22760460373852298,
+        "cho_auc_mean": 1.0,
+        "npwe_mean": 160476.34505297328,
+        "n_slices": 48
+       },
+       "freq_roi": {
+        "n_roi": 48,
+        "roi_band_energy_ratio": 8.316289494526165,
+        "band_energy_ratio_full": 1.39617911409695,
+        "roi_tm_auc": 0.9895833333333334,
+        "roi_hu_mean_mean": -1024.0,
+        "roi_hu_std_mean": 0.0,
+        "roi_grad_mean_mean": 0.0
+       }
+      },
+      "learn": {
+       "fidelity": {
+        "psnr": 52.45653348047632,
+        "ssim": 0.9878612595299879,
+        "n_slices": 48
+       },
+       "detectability": {
+        "cnr_mean": 4.469422920581625,
+        "cnr_median": 4.068623547491407,
+        "cho_auc_mean": 1.0,
+        "npwe_mean": 708148.7858015862,
+        "n_slices": 48
+       },
+       "freq_roi": {
+        "n_roi": 48,
+        "roi_band_energy_ratio": 0.5591681762058714,
+        "band_energy_ratio_full": 1.0238341130839979,
+        "roi_tm_auc": 0.9895833333333334,
+        "roi_hu_mean_mean": -1024.0,
+        "roi_hu_std_mean": 0.0,
+        "roi_grad_mean_mean": 0.0
+       }
+      },
+      "blur": {
+       "fidelity": {
+        "psnr": 40.300611875510114,
+        "ssim": 0.9160434367756048,
+        "n_slices": 48
+       },
+       "detectability": {
+        "cnr_mean": 4.086841849065319,
+        "cnr_median": 3.9032900425831127,
+        "cho_auc_mean": 1.0,
+        "npwe_mean": 220804.73358832765,
+        "n_slices": 48
+       },
+       "freq_roi": {
+        "n_roi": 48,
+        "roi_band_energy_ratio": 0.027098432895082902,
+        "band_energy_ratio_full": 0.23112007092863462,
+        "roi_tm_auc": 0.9895833333333334,
+        "roi_hu_mean_mean": -1024.0,
+        "roi_hu_std_mean": 0.0,
+        "roi_grad_mean_mean": 0.0
+       }
+      }
+     }
+    }
+   ]
+  },
+  "Philips": {
+   "patients": [
+    {
+     "patient_id": "LIDC-IDRI-0490",
+     "vendor": "Philips",
+     "dose": "sim_r25",
+     "n_slices": 590,
+     "models": {
+      "red_cnn": {
+       "fidelity": {
+        "psnr": 43.47355675042157,
+        "ssim": 0.9791911914944649,
+        "n_slices": 48
+       },
+       "detectability": {
+        "cnr_mean": 0.0991409118440198,
+        "cnr_median": 0.09433383626155346,
+        "cho_auc_mean": 1.0,
+        "npwe_mean": 223487.74149107895,
+        "n_slices": 48
+       },
+       "freq_roi": {
+        "n_roi": 48,
+        "roi_band_energy_ratio": 2.6422842045470816,
+        "band_energy_ratio_full": 1.378449987643031,
+        "roi_tm_auc": 0.9895833333333334,
+        "roi_hu_mean_mean": -223.987060546875,
+        "roi_hu_std_mean": 45.61041498184204,
+        "roi_grad_mean_mean": 122.01387693236272
+       }
+      },
+      "ctformer": {
+       "fidelity": {
+        "psnr": 42.345574989978125,
+        "ssim": 0.9482863011459509,
+        "n_slices": 48
+       },
+       "detectability": {
+        "cnr_mean": 0.08165591367731512,
+        "cnr_median": 0.09098554773895427,
+        "cho_auc_mean": 1.0,
+        "npwe_mean": 222952.41483453932,
+        "n_slices": 48
+       },
+       "freq_roi": {
+        "n_roi": 48,
+        "roi_band_energy_ratio": 10.37147007601215,
+        "band_energy_ratio_full": 2.2302243028319073,
+        "roi_tm_auc": 0.9895833333333334,
+        "roi_hu_mean_mean": -223.987060546875,
+        "roi_hu_std_mean": 45.61041498184204,
+        "roi_grad_mean_mean": 122.01387693236272
+       }
+      },
+      "learn": {
+       "fidelity": {
+        "psnr": 48.49275377497084,
+        "ssim": 0.9776851683855057,
+        "n_slices": 48
+       },
+       "detectability": {
+        "cnr_mean": 0.09865033948364517,
+        "cnr_median": 0.09367564255268365,
+        "cho_auc_mean": 1.0,
+        "npwe_mean": 222744.8695622238,
+        "n_slices": 48
+       },
+       "freq_roi": {
+        "n_roi": 48,
+        "roi_band_energy_ratio": 2.6226980307653314,
+        "band_energy_ratio_full": 1.352338993054812,
+        "roi_tm_auc": 0.9895833333333334,
+        "roi_hu_mean_mean": -223.987060546875,
+        "roi_hu_std_mean": 45.61041498184204,
+        "roi_grad_mean_mean": 122.01387693236272
+       }
+      },
+      "blur": {
+       "fidelity": {
+        "psnr": 43.53249934517323,
+        "ssim": 0.9875471815466881,
+        "n_slices": 48
+       },
+       "detectability": {
+        "cnr_mean": 0.1359776782832555,
+        "cnr_median": 0.12646254772290882,
+        "cho_auc_mean": 1.0,
+        "npwe_mean": 220804.71791493698,
+        "n_slices": 48
+       },
+       "freq_roi": {
+        "n_roi": 48,
+        "roi_band_energy_ratio": 0.18114736182926153,
+        "band_energy_ratio_full": 0.39969469173094074,
+        "roi_tm_auc": 0.9895833333333334,
+        "roi_hu_mean_mean": -223.987060546875,
+        "roi_hu_std_mean": 45.61041498184204,
+        "roi_grad_mean_mean": 122.01387693236272
+       }
+      }
+     }
+    },
+    {
+     "patient_id": "LIDC-IDRI-0651",
+     "vendor": "Philips",
+     "dose": "sim_r25",
+     "n_slices": 580,
+     "models": {
+      "red_cnn": {
+       "fidelity": {
+        "psnr": 46.73647107892176,
+        "ssim": 0.976524201532205,
+        "n_slices": 48
+       },
+       "detectability": {
+        "cnr_mean": 0.1694534678759302,
+        "cnr_median": 0.16349730481604102,
+        "cho_auc_mean": 1.0,
+        "npwe_mean": 223862.3657040333,
+        "n_slices": 48
+       },
+       "freq_roi": {
+        "n_roi": 48,
+        "roi_band_energy_ratio": 3.743279922909475,
+        "band_energy_ratio_full": 1.3821016994657047,
+        "roi_tm_auc": 0.9895833333333334,
+        "roi_hu_mean_mean": -71.95753987630208,
+        "roi_hu_std_mean": 70.63900209963322,
+        "roi_grad_mean_mean": 162.45569479465485
+       }
+      },
+      "ctformer": {
+       "fidelity": {
+        "psnr": 42.18228725958216,
+        "ssim": 0.9455765224993229,
+        "n_slices": 48
+       },
+       "detectability": {
+        "cnr_mean": 0.12324451935765722,
+        "cnr_median": 0.13237777604173695,
+        "cho_auc_mean": 1.0,
+        "npwe_mean": 222452.2191546762,
+        "n_slices": 48
+       },
+       "freq_roi": {
+        "n_roi": 48,
+        "roi_band_energy_ratio": 10.818986207646775,
+        "band_energy_ratio_full": 2.2358665162775355,
+        "roi_tm_auc": 0.9895833333333334,
+        "roi_hu_mean_mean": -71.95753987630208,
+        "roi_hu_std_mean": 70.63900209963322,
+        "roi_grad_mean_mean": 162.45569479465485
+       }
+      },
+      "learn": {
+       "fidelity": {
+        "psnr": 49.07722920496443,
+        "ssim": 0.9744214142362276,
+        "n_slices": 48
+       },
+       "detectability": {
+        "cnr_mean": 0.16899546826152964,
+        "cnr_median": 0.16215227615498765,
+        "cho_auc_mean": 1.0,
+        "npwe_mean": 222451.50843675644,
+        "n_slices": 48
+       },
+       "freq_roi": {
+        "n_roi": 48,
+        "roi_band_energy_ratio": 3.7659810072504105,
+        "band_energy_ratio_full": 1.3775652036923038,
+        "roi_tm_auc": 0.9895833333333334,
+        "roi_hu_mean_mean": -71.95753987630208,
+        "roi_hu_std_mean": 70.63900209963322,
+        "roi_grad_mean_mean": 162.45569479465485
+       }
+      },
+      "blur": {
+       "fidelity": {
+        "psnr": 43.63104444619049,
+        "ssim": 0.9863270136217276,
+        "n_slices": 48
+       },
+       "detectability": {
+        "cnr_mean": 0.2791555149716292,
+        "cnr_median": 0.2295185625246951,
+        "cho_auc_mean": 1.0,
+        "npwe_mean": 220804.73099601964,
+        "n_slices": 48
+       },
+       "freq_roi": {
+        "n_roi": 48,
+        "roi_band_energy_ratio": 0.31758244571993594,
+        "band_energy_ratio_full": 0.43369040766297307,
+        "roi_tm_auc": 0.9895833333333334,
+        "roi_hu_mean_mean": -71.95753987630208,
+        "roi_hu_std_mean": 70.63900209963322,
+        "roi_grad_mean_mean": 162.45569479465485
+       }
+      }
+     }
+    }
+   ]
+  },
+  "Siemens": {
+   "patients": [
+    {
+     "patient_id": "LIDC-IDRI-0648",
+     "vendor": "Siemens",
+     "dose": "sim_r25",
+     "n_slices": 764,
+     "models": {
+      "red_cnn": {
+       "fidelity": {
+        "psnr": 46.18501303977383,
+        "ssim": 0.9819064723948637,
+        "n_slices": 48
+       },
+       "detectability": {
+        "cnr_mean": 0.07458418043108907,
+        "cnr_median": 0.06235273808222218,
+        "cho_auc_mean": 1.0,
+        "npwe_mean": 223549.24019673234,
+        "n_slices": 48
+       },
+       "freq_roi": {
+        "n_roi": 48,
+        "roi_band_energy_ratio": 1.378593098492318,
+        "band_energy_ratio_full": 1.2149762172350254,
+        "roi_tm_auc": 0.9895833333333334,
+        "roi_hu_mean_mean": 46.607889811197914,
+        "roi_hu_std_mean": 100.16603338718414,
+        "roi_grad_mean_mean": 308.36706765492755
+       }
+      },
+      "ctformer": {
+       "fidelity": {
+        "psnr": 42.38986914607572,
+        "ssim": 0.949596588810285,
+        "n_slices": 48
+       },
+       "detectability": {
+        "cnr_mean": 0.0670737863478265,
+        "cnr_median": 0.05881579083291681,
+        "cho_auc_mean": 1.0,
+        "npwe_mean": 222907.37451291364,
+        "n_slices": 48
+       },
+       "freq_roi": {
+        "n_roi": 48,
+        "roi_band_energy_ratio": 2.7264424046854163,
+        "band_energy_ratio_full": 1.8829171566643363,
+        "roi_tm_auc": 0.9895833333333334,
+        "roi_hu_mean_mean": 46.607889811197914,
+        "roi_hu_std_mean": 100.16603338718414,
+        "roi_grad_mean_mean": 308.36706765492755
+       }
+      },
+      "learn": {
+       "fidelity": {
+        "psnr": 50.351870847736315,
+        "ssim": 0.9841394200921059,
+        "n_slices": 48
+       },
+       "detectability": {
+        "cnr_mean": 0.07440118486720214,
+        "cnr_median": 0.06217494015383017,
+        "cho_auc_mean": 1.0,
+        "npwe_mean": 222448.11340065172,
+        "n_slices": 48
+       },
+       "freq_roi": {
+        "n_roi": 48,
+        "roi_band_energy_ratio": 1.3879386383908516,
+        "band_energy_ratio_full": 1.2121191242307146,
+        "roi_tm_auc": 0.9895833333333334,
+        "roi_hu_mean_mean": 46.607889811197914,
+        "roi_hu_std_mean": 100.16603338718414,
+        "roi_grad_mean_mean": 308.36706765492755
+       }
+      },
+      "blur": {
+       "fidelity": {
+        "psnr": 42.74847093784408,
+        "ssim": 0.9727457898358504,
+        "n_slices": 48
+       },
+       "detectability": {
+        "cnr_mean": 0.11447490632643775,
+        "cnr_median": 0.07785513164697717,
+        "cho_auc_mean": 1.0,
+        "npwe_mean": 220804.6790923419,
+        "n_slices": 48
+       },
+       "freq_roi": {
+        "n_roi": 48,
+        "roi_band_energy_ratio": 0.1903325679400413,
+        "band_energy_ratio_full": 0.3190717441271828,
+        "roi_tm_auc": 0.9895833333333334,
+        "roi_hu_mean_mean": 46.607889811197914,
+        "roi_hu_std_mean": 100.16603338718414,
+        "roi_grad_mean_mean": 308.36706765492755
+       }
+      }
+     }
+    },
+    {
+     "patient_id": "LIDC-IDRI-0066",
+     "vendor": "Siemens",
+     "dose": "sim_r25",
+     "n_slices": 733,
+     "models": {
+      "red_cnn": {
+       "fidelity": {
+        "psnr": 43.161169489532874,
+        "ssim": 0.9847315326333046,
+        "n_slices": 48
+       },
+       "detectability": {
+        "cnr_mean": 0.03235899448120299,
+        "cnr_median": 0.0270678737492816,
+        "cho_auc_mean": 1.0,
+        "npwe_mean": 225291.56964616373,
+        "n_slices": 48
+       },
+       "freq_roi": {
+        "n_roi": 48,
+        "roi_band_energy_ratio": 0.935865539639298,
+        "band_energy_ratio_full": 0.9288348857800183,
+        "roi_tm_auc": 0.9895833333333334,
+        "roi_hu_mean_mean": 58.906595865885414,
+        "roi_hu_std_mean": 236.9780944188436,
+        "roi_grad_mean_mean": 1063.0463155110676
+       }
+      },
+      "ctformer": {
+       "fidelity": {
+        "psnr": 41.578786505332815,
+        "ssim": 0.9751098155975342,
+        "n_slices": 48
+       },
+       "detectability": {
+        "cnr_mean": 0.03046886971489703,
+        "cnr_median": 0.02586302056343288,
+        "cho_auc_mean": 1.0,
+        "npwe_mean": 219776.55544512547,
+        "n_slices": 48
+       },
+       "freq_roi": {
+        "n_roi": 48,
+        "roi_band_energy_ratio": 1.0487732140278965,
+        "band_energy_ratio_full": 1.0362477819512643,
+        "roi_tm_auc": 0.9895833333333334,
+        "roi_hu_mean_mean": 58.906595865885414,
+        "roi_hu_std_mean": 236.9780944188436,
+        "roi_grad_mean_mean": 1063.0463155110676
+       }
+      },
+      "learn": {
+       "fidelity": {
+        "psnr": 46.489461607420075,
+        "ssim": 0.989664244155089,
+        "n_slices": 48
+       },
+       "detectability": {
+        "cnr_mean": 0.03241142192551649,
+        "cnr_median": 0.027011945445273966,
+        "cho_auc_mean": 1.0,
+        "npwe_mean": 225681.6706150706,
+        "n_slices": 48
+       },
+       "freq_roi": {
+        "n_roi": 48,
+        "roi_band_energy_ratio": 0.9412771597724819,
+        "band_energy_ratio_full": 0.9338391861739277,
+        "roi_tm_auc": 0.9895833333333334,
+        "roi_hu_mean_mean": 58.906595865885414,
+        "roi_hu_std_mean": 236.9780944188436,
+        "roi_grad_mean_mean": 1063.0463155110676
+       }
+      },
+      "blur": {
+       "fidelity": {
+        "psnr": 31.128982173993787,
+        "ssim": 0.7083353139460087,
+        "n_slices": 48
+       },
+       "detectability": {
+        "cnr_mean": 0.08249793737694579,
+        "cnr_median": 0.07536588177317738,
+        "cho_auc_mean": 1.0,
+        "npwe_mean": 220804.43108960777,
+        "n_slices": 48
+       },
+       "freq_roi": {
+        "n_roi": 48,
+        "roi_band_energy_ratio": 0.0542741636428335,
+        "band_energy_ratio_full": 0.06377725377585555,
+        "roi_tm_auc": 0.9895833333333334,
+        "roi_hu_mean_mean": 58.906595865885414,
+        "roi_hu_std_mean": 236.9780944188436,
+        "roi_grad_mean_mean": 1063.0463155110676
+       }
+      }
+     }
+    }
+   ]
+  },
+  "Toshiba": {
+   "patients": [
+    {
+     "patient_id": "LIDC-IDRI-0120",
+     "vendor": "Toshiba",
+     "dose": "sim_r25",
+     "n_slices": 183,
+     "models": {
+      "red_cnn": {
+       "fidelity": {
+        "psnr": 51.243027018667185,
+        "ssim": 0.9877585309247175,
+        "n_slices": 48
+       },
+       "detectability": {
+        "cnr_mean": 3.9034211186683674,
+        "cnr_median": 4.5372170540136345,
+        "cho_auc_mean": 1.0,
+        "npwe_mean": 864474.0735216831,
+        "n_slices": 48
+       },
+       "freq_roi": {
+        "n_roi": 48,
+        "roi_band_energy_ratio": 0.7918461312251756,
+        "band_energy_ratio_full": 1.0228260178711348,
+        "roi_tm_auc": 0.9895833333333334,
+        "roi_hu_mean_mean": -1024.0,
+        "roi_hu_std_mean": 0.0,
+        "roi_grad_mean_mean": 0.0
+       }
+      },
+      "ctformer": {
+       "fidelity": {
+        "psnr": 43.103476024043765,
+        "ssim": 0.9303857237100601,
+        "n_slices": 48
+       },
+       "detectability": {
+        "cnr_mean": 0.22628928666751436,
+        "cnr_median": 0.22911472611986394,
+        "cho_auc_mean": 1.0,
+        "npwe_mean": 159382.02889051728,
+        "n_slices": 48
+       },
+       "freq_roi": {
+        "n_roi": 48,
+        "roi_band_energy_ratio": 8.540161034982019,
+        "band_energy_ratio_full": 1.365886947462646,
+        "roi_tm_auc": 0.9895833333333334,
+        "roi_hu_mean_mean": -1024.0,
+        "roi_hu_std_mean": 0.0,
+        "roi_grad_mean_mean": 0.0
+       }
+      },
+      "learn": {
+       "fidelity": {
+        "psnr": 53.60603211533956,
+        "ssim": 0.9898554794490337,
+        "n_slices": 48
+       },
+       "detectability": {
+        "cnr_mean": 4.89915281399007,
+        "cnr_median": 5.811113476673615,
+        "cho_auc_mean": 1.0,
+        "npwe_mean": 719073.9808535489,
+        "n_slices": 48
+       },
+       "freq_roi": {
+        "n_roi": 48,
+        "roi_band_energy_ratio": 0.7098146424887105,
+        "band_energy_ratio_full": 1.0258318991200306,
+        "roi_tm_auc": 0.9895833333333334,
+        "roi_hu_mean_mean": -1024.0,
+        "roi_hu_std_mean": 0.0,
+        "roi_grad_mean_mean": 0.0
+       }
+      },
+      "blur": {
+       "fidelity": {
+        "psnr": 40.41651274619882,
+        "ssim": 0.9275333868960539,
+        "n_slices": 48
+       },
+       "detectability": {
+        "cnr_mean": 4.233764645919229,
+        "cnr_median": 4.545525597487337,
+        "cho_auc_mean": 1.0,
+        "npwe_mean": 220804.6363703195,
+        "n_slices": 48
+       },
+       "freq_roi": {
+        "n_roi": 48,
+        "roi_band_energy_ratio": 0.03367297966369192,
+        "band_energy_ratio_full": 0.17192068156434426,
+        "roi_tm_auc": 0.9895833333333334,
+        "roi_hu_mean_mean": -1024.0,
+        "roi_hu_std_mean": 0.0,
+        "roi_grad_mean_mean": 0.0
+       }
+      }
+     }
+    },
+    {
+     "patient_id": "LIDC-IDRI-0084",
+     "vendor": "Toshiba",
+     "dose": "sim_r25",
+     "n_slices": 166,
+     "models": {
+      "red_cnn": {
+       "fidelity": {
+        "psnr": 50.243038912831786,
+        "ssim": 0.9825692176818848,
+        "n_slices": 48
+       },
+       "detectability": {
+        "cnr_mean": 2.5727706895792415,
+        "cnr_median": 2.638009323223495,
+        "cho_auc_mean": 1.0,
+        "npwe_mean": 767535.713008386,
+        "n_slices": 48
+       },
+       "freq_roi": {
+        "n_roi": 48,
+        "roi_band_energy_ratio": 1.5211144116212871,
+        "band_energy_ratio_full": 1.087886131044747,
+        "roi_tm_auc": 0.9895833333333334,
+        "roi_hu_mean_mean": -1024.0,
+        "roi_hu_std_mean": 0.0,
+        "roi_grad_mean_mean": 0.0
+       }
+      },
+      "ctformer": {
+       "fidelity": {
+        "psnr": 42.73117743834634,
+        "ssim": 0.9059630110859871,
+        "n_slices": 48
+       },
+       "detectability": {
+        "cnr_mean": 0.2163996879671298,
+        "cnr_median": 0.22022480510590525,
+        "cho_auc_mean": 1.0,
+        "npwe_mean": 158779.97606028305,
+        "n_slices": 48
+       },
+       "freq_roi": {
+        "n_roi": 48,
+        "roi_band_energy_ratio": 9.95334222896771,
+        "band_energy_ratio_full": 1.4581497401326,
+        "roi_tm_auc": 0.9895833333333334,
+        "roi_hu_mean_mean": -1024.0,
+        "roi_hu_std_mean": 0.0,
+        "roi_grad_mean_mean": 0.0
+       }
+      },
+      "learn": {
+       "fidelity": {
+        "psnr": 52.05198727558201,
+        "ssim": 0.9846550400058428,
+        "n_slices": 48
+       },
+       "detectability": {
+        "cnr_mean": 2.527427398746473,
+        "cnr_median": 2.4377822393329938,
+        "cho_auc_mean": 1.0,
+        "npwe_mean": 639399.5923493073,
+        "n_slices": 48
+       },
+       "freq_roi": {
+        "n_roi": 48,
+        "roi_band_energy_ratio": 1.5357533405445285,
+        "band_energy_ratio_full": 1.0882785911288284,
+        "roi_tm_auc": 0.9895833333333334,
+        "roi_hu_mean_mean": -1024.0,
+        "roi_hu_std_mean": 0.0,
+        "roi_grad_mean_mean": 0.0
+       }
+      },
+      "blur": {
+       "fidelity": {
+        "psnr": 40.3224328439681,
+        "ssim": 0.8955996458729109,
+        "n_slices": 48
+       },
+       "detectability": {
+        "cnr_mean": 2.6855963865399666,
+        "cnr_median": 2.656258844576996,
+        "cho_auc_mean": 1.0,
+        "npwe_mean": 220804.65730577373,
+        "n_slices": 48
+       },
+       "freq_roi": {
+        "n_roi": 48,
+        "roi_band_energy_ratio": 0.08474618972956177,
+        "band_energy_ratio_full": 0.2743178942077416,
+        "roi_tm_auc": 0.9895833333333334,
+        "roi_hu_mean_mean": -1024.0,
+        "roi_hu_std_mean": 0.0,
+        "roi_grad_mean_mean": 0.0
+       }
+      }
+     }
+    }
+   ]
+  },
+  "AAPM-Siemens-real": {
+   "patients": [
+    {
+     "patient_id": "aapm-0003",
+     "vendor": "Siemens",
+     "dose": "real_r025",
+     "n_slices": 636,
+     "models": {
+      "red_cnn": {
+       "fidelity": {
+        "psnr": 40.12226593705129,
+        "ssim": 0.9179296063364677,
+        "n_slices": 636
+       },
+       "detectability": {
+        "cnr_mean": 0.08943337103788429,
+        "cho_auc_mean": 1.0,
+        "npwe_mean": 223882.40039289618
+       },
+       "freq_roi": {
+        "n_roi": 48,
+        "roi_band_energy_ratio": 3.491718131890041,
+        "band_energy_ratio_full": 1.5860457894654492,
+        "roi_tm_auc": 0.9895833333333334,
+        "roi_hu_mean_mean": 60.768330891927086,
+        "roi_hu_std_mean": 89.97828849156697,
+        "roi_grad_mean_mean": 237.91456031799316
+       }
+      },
+      "ctformer": {
+       "fidelity": {
+        "psnr": 38.64673814913105,
+        "ssim": 0.8954603797609701,
+        "n_slices": 636
+       },
+       "detectability": {
+        "cnr_mean": 0.07763153731900245,
+        "cho_auc_mean": 1.0,
+        "npwe_mean": 222903.76901319544
+       },
+       "freq_roi": {
+        "n_roi": 48,
+        "roi_band_energy_ratio": 5.115730074604183,
+        "band_energy_ratio_full": 2.1121724140326985,
+        "roi_tm_auc": 0.9895833333333334,
+        "roi_hu_mean_mean": 60.768330891927086,
+        "roi_hu_std_mean": 89.97828849156697,
+        "roi_grad_mean_mean": 237.91456031799316
+       }
+      },
+      "learn": {
+       "fidelity": {
+        "psnr": 40.20810057204305,
+        "ssim": 0.9201695714731636,
+        "n_slices": 636
+       },
+       "detectability": {
+        "cnr_mean": 0.0898068251752074,
+        "cho_auc_mean": 1.0,
+        "npwe_mean": 222503.7361540935
+       },
+       "freq_roi": {
+        "n_roi": 48,
+        "roi_band_energy_ratio": 3.4790327546814717,
+        "band_energy_ratio_full": 1.5835460358731408,
+        "roi_tm_auc": 0.9895833333333334,
+        "roi_hu_mean_mean": 60.768330891927086,
+        "roi_hu_std_mean": 89.97828849156697,
+        "roi_grad_mean_mean": 237.91456031799316
+       }
+      },
+      "blur": {
+       "fidelity": {
+        "psnr": 40.69181606782119,
+        "ssim": 0.9539103886616305,
+        "n_slices": 636
+       },
+       "detectability": {
+        "cnr_mean": 0.16635528129564123,
+        "cho_auc_mean": 1.0,
+        "npwe_mean": 220805.2656145872
+       },
+       "freq_roi": {
+        "n_roi": 48,
+        "roi_band_energy_ratio": 0.35234389748095163,
+        "band_energy_ratio_full": 0.3940226345637714,
+        "roi_tm_auc": 0.9895833333333334,
+        "roi_hu_mean_mean": 60.768330891927086,
+        "roi_hu_std_mean": 89.97828849156697,
+        "roi_grad_mean_mean": 237.91456031799316
+       }
+      }
+     },
+     "real": true
+    },
+    {
+     "patient_id": "aapm-0005",
+     "vendor": "Siemens",
+     "dose": "real_r025",
+     "n_slices": 1200,
+     "models": {
+      "red_cnn": {
+       "fidelity": {
+        "psnr": 41.40814117385516,
+        "ssim": 0.9360807513197263,
+        "n_slices": 1200
+       },
+       "detectability": {
+        "cnr_mean": 0.10618769151301873,
+        "cho_auc_mean": 1.0,
+        "npwe_mean": 223766.06391239562
+       },
+       "freq_roi": {
+        "n_roi": 48,
+        "roi_band_energy_ratio": 3.4326210830809996,
+        "band_energy_ratio_full": 1.5164023634427022,
+        "roi_tm_auc": 0.9895833333333334,
+        "roi_hu_mean_mean": 54.313720703125,
+        "roi_hu_std_mean": 75.50352327028911,
+        "roi_grad_mean_mean": 203.23335218429565
+       }
+      },
+      "ctformer": {
+       "fidelity": {
+        "psnr": 39.90773027348196,
+        "ssim": 0.9181403397520383,
+        "n_slices": 1200
+       },
+       "detectability": {
+        "cnr_mean": 0.08950603229931793,
+        "cho_auc_mean": 1.0,
+        "npwe_mean": 223186.87099479465
+       },
+       "freq_roi": {
+        "n_roi": 48,
+        "roi_band_energy_ratio": 5.971265657146607,
+        "band_energy_ratio_full": 2.2495601451145304,
+        "roi_tm_auc": 0.9895833333333334,
+        "roi_hu_mean_mean": 54.313720703125,
+        "roi_hu_std_mean": 75.50352327028911,
+        "roi_grad_mean_mean": 203.23335218429565
+       }
+      },
+      "learn": {
+       "fidelity": {
+        "psnr": 41.97921962639536,
+        "ssim": 0.9378665670752525,
+        "n_slices": 1200
+       },
+       "detectability": {
+        "cnr_mean": 0.10615907711062644,
+        "cho_auc_mean": 1.0,
+        "npwe_mean": 222379.9202789718
+       },
+       "freq_roi": {
+        "n_roi": 48,
+        "roi_band_energy_ratio": 3.4078719435016716,
+        "band_energy_ratio_full": 1.5055463825215387,
+        "roi_tm_auc": 0.9895833333333334,
+        "roi_hu_mean_mean": 54.313720703125,
+        "roi_hu_std_mean": 75.50352327028911,
+        "roi_grad_mean_mean": 203.23335218429565
+       }
+      },
+      "blur": {
+       "fidelity": {
+        "psnr": 42.09247397668904,
+        "ssim": 0.9690505385398864,
+        "n_slices": 1200
+       },
+       "detectability": {
+        "cnr_mean": 0.15733472600483864,
+        "cho_auc_mean": 1.0,
+        "npwe_mean": 220803.96533910962
+       },
+       "freq_roi": {
+        "n_roi": 48,
+        "roi_band_energy_ratio": 0.4565335548228148,
+        "band_energy_ratio_full": 0.4390770350348359,
+        "roi_tm_auc": 0.9895833333333334,
+        "roi_hu_mean_mean": 54.313720703125,
+        "roi_hu_std_mean": 75.50352327028911,
+        "roi_grad_mean_mean": 203.23335218429565
+       }
+      }
+     },
+     "real": true
+    },
+    {
+     "patient_id": "aapm-0006",
+     "vendor": "Siemens",
+     "dose": "real_r025",
+     "n_slices": 1050,
+     "models": {
+      "red_cnn": {
+       "fidelity": {
+        "psnr": 42.40550891266322,
+        "ssim": 0.9531524546941121,
+        "n_slices": 1050
+       },
+       "detectability": {
+        "cnr_mean": 0.12649405210923298,
+        "cho_auc_mean": 1.0,
+        "npwe_mean": 224051.98397743455
+       },
+       "freq_roi": {
+        "n_roi": 48,
+        "roi_band_energy_ratio": 4.059031339312554,
+        "band_energy_ratio_full": 1.4214469396452183,
+        "roi_tm_auc": 0.9895833333333334,
+        "roi_hu_mean_mean": 54.72393798828125,
+        "roi_hu_std_mean": 29.02970600128174,
+        "roi_grad_mean_mean": 122.86569722493489
+       }
+      },
+      "ctformer": {
+       "fidelity": {
+        "psnr": 40.52296098691548,
+        "ssim": 0.9275067444074722,
+        "n_slices": 1050
+       },
+       "detectability": {
+        "cnr_mean": 0.10147516907442881,
+        "cho_auc_mean": 1.0,
+        "npwe_mean": 223212.2167430859
+       },
+       "freq_roi": {
+        "n_roi": 48,
+        "roi_band_energy_ratio": 8.667820479592264,
+        "band_energy_ratio_full": 2.304363140592777,
+        "roi_tm_auc": 0.9895833333333334,
+        "roi_hu_mean_mean": 54.72393798828125,
+        "roi_hu_std_mean": 29.02970600128174,
+        "roi_grad_mean_mean": 122.86569722493489
+       }
+      },
+      "learn": {
+       "fidelity": {
+        "psnr": 43.2727577384703,
+        "ssim": 0.9542742823419117,
+        "n_slices": 1050
+       },
+       "detectability": {
+        "cnr_mean": 0.12636033898586083,
+        "cho_auc_mean": 1.0,
+        "npwe_mean": 222427.3459964837
+       },
+       "freq_roi": {
+        "n_roi": 48,
+        "roi_band_energy_ratio": 4.012791904087241,
+        "band_energy_ratio_full": 1.4070215162642405,
+        "roi_tm_auc": 0.9895833333333334,
+        "roi_hu_mean_mean": 54.72393798828125,
+        "roi_hu_std_mean": 29.02970600128174,
+        "roi_grad_mean_mean": 122.86569722493489
+       }
+      },
+      "blur": {
+       "fidelity": {
+        "psnr": 42.45635981206828,
+        "ssim": 0.9769047117233276,
+        "n_slices": 1050
+       },
+       "detectability": {
+        "cnr_mean": 0.20529817357439803,
+        "cho_auc_mean": 1.0,
+        "npwe_mean": 220804.27753107026
+       },
+       "freq_roi": {
+        "n_roi": 48,
+        "roi_band_energy_ratio": 0.5230291151735803,
+        "band_energy_ratio_full": 0.492199728479157,
+        "roi_tm_auc": 0.9895833333333334,
+        "roi_hu_mean_mean": 54.72393798828125,
+        "roi_hu_std_mean": 29.02970600128174,
+        "roi_grad_mean_mean": 122.86569722493489
+       }
+      }
+     },
+     "real": true
+    },
+    {
+     "patient_id": "aapm-0009",
+     "vendor": "Siemens",
+     "dose": "real_r025",
+     "n_slices": 1220,
+     "models": {
+      "red_cnn": {
+       "fidelity": {
+        "psnr": 40.863815124403054,
+        "ssim": 0.928741854429245,
+        "n_slices": 1220
+       },
+       "detectability": {
+        "cnr_mean": 0.09245494581294539,
+        "cho_auc_mean": 1.0,
+        "npwe_mean": 223958.67228596203
+       },
+       "freq_roi": {
+        "n_roi": 48,
+        "roi_band_energy_ratio": 4.521345189158644,
+        "band_energy_ratio_full": 1.5718032341873498,
+        "roi_tm_auc": 0.9895833333333334,
+        "roi_hu_mean_mean": 56.513081868489586,
+        "roi_hu_std_mean": 32.873899817466736,
+        "roi_grad_mean_mean": 152.00617520014444
+       }
+      },
+      "ctformer": {
+       "fidelity": {
+        "psnr": 39.26280761953942,
+        "ssim": 0.9067537552020589,
+        "n_slices": 1220
+       },
+       "detectability": {
+        "cnr_mean": 0.0766783264356551,
+        "cho_auc_mean": 1.0,
+        "npwe_mean": 222330.44798261346
+       },
+       "freq_roi": {
+        "n_roi": 48,
+        "roi_band_energy_ratio": 7.185885370280407,
+        "band_energy_ratio_full": 2.120961922597706,
+        "roi_tm_auc": 0.9895833333333334,
+        "roi_hu_mean_mean": 56.513081868489586,
+        "roi_hu_std_mean": 32.873899817466736,
+        "roi_grad_mean_mean": 152.00617520014444
+       }
+      },
+      "learn": {
+       "fidelity": {
+        "psnr": 40.994073653132126,
+        "ssim": 0.9309409257818441,
+        "n_slices": 1220
+       },
+       "detectability": {
+        "cnr_mean": 0.0920852016655321,
+        "cho_auc_mean": 1.0,
+        "npwe_mean": 223207.76950001475
+       },
+       "freq_roi": {
+        "n_roi": 48,
+        "roi_band_energy_ratio": 4.51595422794909,
+        "band_energy_ratio_full": 1.5597313035660736,
+        "roi_tm_auc": 0.9895833333333334,
+        "roi_hu_mean_mean": 56.513081868489586,
+        "roi_hu_std_mean": 32.873899817466736,
+        "roi_grad_mean_mean": 152.00617520014444
+       }
+      },
+      "blur": {
+       "fidelity": {
+        "psnr": 41.26740989954124,
+        "ssim": 0.9614216973547076,
+        "n_slices": 1220
+       },
+       "detectability": {
+        "cnr_mean": 0.1535542220378309,
+        "cho_auc_mean": 1.0,
+        "npwe_mean": 220804.7437906313
+       },
+       "freq_roi": {
+        "n_roi": 48,
+        "roi_band_energy_ratio": 0.39426222906059505,
+        "band_energy_ratio_full": 0.3945938403823351,
+        "roi_tm_auc": 0.9895833333333334,
+        "roi_hu_mean_mean": 56.513081868489586,
+        "roi_hu_std_mean": 32.873899817466736,
+        "roi_grad_mean_mean": 152.00617520014444
+       }
+      }
+     },
+     "real": true
+    }
+   ]
+  }
+ },
+ "agg_by_vendor": {
+  "GE": {
+   "red_cnn": {
+    "psnr": {
+     "mean": 51.42004733637856,
+     "min": 50.64194953776251,
+     "max": 52.198145134994604,
+     "std": 0.7780977986160487,
+     "n": 2
+    },
+    "ssim": {
+     "mean": 0.9889442070076864,
+     "min": 0.9867235807081064,
+     "max": 0.9911648333072662,
+     "std": 0.0022206262995799197,
+     "n": 2
+    },
+    "roi_band_energy_ratio": {
+     "mean": 0.5746751792798349,
+     "min": 0.48677586236920883,
+     "max": 0.6625744961904609,
+     "std": 0.08789931691062605,
+     "n": 2
+    },
+    "band_energy_ratio_full": {
+     "mean": 1.0121469210381675,
+     "min": 1.0022926683726496,
+     "max": 1.0220011737036854,
+     "std": 0.00985425266551787,
+     "n": 2
+    },
+    "roi_tm_auc": {
+     "mean": 0.9895833333333334,
+     "min": 0.9895833333333334,
+     "max": 0.9895833333333334,
+     "std": 0.0,
+     "n": 2
+    },
+    "cnr_mean": {
+     "mean": 4.321661066200729,
+     "min": 3.607696298160979,
+     "max": 5.03562583424048,
+     "std": 0.7139647680397505,
+     "n": 2
+    },
+    "cho_auc_mean": {
+     "mean": 1.0,
+     "min": 1.0,
+     "max": 1.0,
+     "std": 0.0,
+     "n": 2
+    },
+    "n_patients": 2
+   },
+   "ctformer": {
+    "psnr": {
+     "mean": 43.145182444189025,
+     "min": 42.7281696233346,
+     "max": 43.56219526504345,
+     "std": 0.41701282085442415,
+     "n": 2
+    },
+    "ssim": {
+     "mean": 0.9348586406558752,
+     "min": 0.9326042334238688,
+     "max": 0.9371130478878816,
+     "std": 0.002254407232006428,
+     "n": 2
+    },
+    "roi_band_energy_ratio": {
+     "mean": 8.952935508166712,
+     "min": 8.316289494526165,
+     "max": 9.58958152180726,
+     "std": 0.6366460136405472,
+     "n": 2
+    },
+    "band_energy_ratio_full": {
+     "mean": 1.3907684664067927,
+     "min": 1.3853578187166355,
+     "max": 1.39617911409695,
+     "std": 0.0054106476901572,
+     "n": 2
+    },
+    "roi_tm_auc": {
+     "mean": 0.9895833333333334,
+     "min": 0.9895833333333334,
+     "max": 0.9895833333333334,
+     "std": 0.0,
+     "n": 2
+    },
+    "cnr_mean": {
+     "mean": 0.22758617814909415,
+     "min": 0.22498380547635688,
+     "max": 0.23018855082183146,
+     "std": 0.002602372672737288,
+     "n": 2
+    },
+    "cho_auc_mean": {
+     "mean": 1.0,
+     "min": 1.0,
+     "max": 1.0,
+     "std": 0.0,
+     "n": 2
+    },
+    "n_patients": 2
+   },
+   "learn": {
+    "psnr": {
+     "mean": 53.64305235025729,
+     "min": 52.45653348047632,
+     "max": 54.829571220038275,
+     "std": 1.1865188697809792,
+     "n": 2
+    },
+    "ssim": {
+     "mean": 0.9894533815483252,
+     "min": 0.9878612595299879,
+     "max": 0.9910455035666624,
+     "std": 0.0015921220183372498,
+     "n": 2
+    },
+    "roi_band_energy_ratio": {
+     "mean": 0.4377207350211846,
+     "min": 0.3162732938364977,
+     "max": 0.5591681762058714,
+     "std": 0.12144744118468687,
+     "n": 2
+    },
+    "band_energy_ratio_full": {
+     "mean": 1.008971066216024,
+     "min": 0.9941080193480505,
+     "max": 1.0238341130839979,
+     "std": 0.014863046867973684,
+     "n": 2
+    },
+    "roi_tm_auc": {
+     "mean": 0.9895833333333334,
+     "min": 0.9895833333333334,
+     "max": 0.9895833333333334,
+     "std": 0.0,
+     "n": 2
+    },
+    "cnr_mean": {
+     "mean": 5.754862506968429,
+     "min": 4.469422920581625,
+     "max": 7.040302093355233,
+     "std": 1.2854395863868042,
+     "n": 2
+    },
+    "cho_auc_mean": {
+     "mean": 1.0,
+     "min": 1.0,
+     "max": 1.0,
+     "std": 0.0,
+     "n": 2
+    },
+    "n_patients": 2
+   },
+   "blur": {
+    "psnr": {
+     "mean": 40.68572623027117,
+     "min": 40.300611875510114,
+     "max": 41.07084058503222,
+     "std": 0.38511435476105405,
+     "n": 2
+    },
+    "ssim": {
+     "mean": 0.9209226369857788,
+     "min": 0.9160434367756048,
+     "max": 0.9258018371959528,
+     "std": 0.004879200210173962,
+     "n": 2
+    },
+    "roi_band_energy_ratio": {
+     "mean": 0.045245933213797,
+     "min": 0.027098432895082902,
+     "max": 0.0633934335325111,
+     "std": 0.0181475003187141,
+     "n": 2
+    },
+    "band_energy_ratio_full": {
+     "mean": 0.2509224449453622,
+     "min": 0.23112007092863462,
+     "max": 0.2707248189620897,
+     "std": 0.019802374016727547,
+     "n": 2
+    },
+    "roi_tm_auc": {
+     "mean": 0.9895833333333334,
+     "min": 0.9895833333333334,
+     "max": 0.9895833333333334,
+     "std": 0.0,
+     "n": 2
+    },
+    "cnr_mean": {
+     "mean": 4.8088624181101896,
+     "min": 4.086841849065319,
+     "max": 5.530882987155061,
+     "std": 0.7220205690448709,
+     "n": 2
+    },
+    "cho_auc_mean": {
+     "mean": 1.0,
+     "min": 1.0,
+     "max": 1.0,
+     "std": 0.0,
+     "n": 2
+    },
+    "n_patients": 2
+   }
+  },
+  "Philips": {
+   "red_cnn": {
+    "psnr": {
+     "mean": 45.105013914671666,
+     "min": 43.47355675042157,
+     "max": 46.73647107892176,
+     "std": 1.6314571642500937,
+     "n": 2
+    },
+    "ssim": {
+     "mean": 0.977857696513335,
+     "min": 0.976524201532205,
+     "max": 0.9791911914944649,
+     "std": 0.0013334949811299457,
+     "n": 2
+    },
+    "roi_band_energy_ratio": {
+     "mean": 3.192782063728278,
+     "min": 2.6422842045470816,
+     "max": 3.743279922909475,
+     "std": 0.5504978591811966,
+     "n": 2
+    },
+    "band_energy_ratio_full": {
+     "mean": 1.3802758435543678,
+     "min": 1.378449987643031,
+     "max": 1.3821016994657047,
+     "std": 0.0018258559113368822,
+     "n": 2
+    },
+    "roi_tm_auc": {
+     "mean": 0.9895833333333334,
+     "min": 0.9895833333333334,
+     "max": 0.9895833333333334,
+     "std": 0.0,
+     "n": 2
+    },
+    "cnr_mean": {
+     "mean": 0.13429718985997502,
+     "min": 0.0991409118440198,
+     "max": 0.1694534678759302,
+     "std": 0.03515627801595521,
+     "n": 2
+    },
+    "cho_auc_mean": {
+     "mean": 1.0,
+     "min": 1.0,
+     "max": 1.0,
+     "std": 0.0,
+     "n": 2
+    },
+    "n_patients": 2
+   },
+   "ctformer": {
+    "psnr": {
+     "mean": 42.26393112478014,
+     "min": 42.18228725958216,
+     "max": 42.345574989978125,
+     "std": 0.08164386519798228,
+     "n": 2
+    },
+    "ssim": {
+     "mean": 0.9469314118226368,
+     "min": 0.9455765224993229,
+     "max": 0.9482863011459509,
+     "std": 0.0013548893233140125,
+     "n": 2
+    },
+    "roi_band_energy_ratio": {
+     "mean": 10.595228141829462,
+     "min": 10.37147007601215,
+     "max": 10.818986207646775,
+     "std": 0.2237580658173126,
+     "n": 2
+    },
+    "band_energy_ratio_full": {
+     "mean": 2.2330454095547214,
+     "min": 2.2302243028319073,
+     "max": 2.2358665162775355,
+     "std": 0.002821106722814104,
+     "n": 2
+    },
+    "roi_tm_auc": {
+     "mean": 0.9895833333333334,
+     "min": 0.9895833333333334,
+     "max": 0.9895833333333334,
+     "std": 0.0,
+     "n": 2
+    },
+    "cnr_mean": {
+     "mean": 0.10245021651748618,
+     "min": 0.08165591367731512,
+     "max": 0.12324451935765722,
+     "std": 0.02079430284017105,
+     "n": 2
+    },
+    "cho_auc_mean": {
+     "mean": 1.0,
+     "min": 1.0,
+     "max": 1.0,
+     "std": 0.0,
+     "n": 2
+    },
+    "n_patients": 2
+   },
+   "learn": {
+    "psnr": {
+     "mean": 48.78499148996764,
+     "min": 48.49275377497084,
+     "max": 49.07722920496443,
+     "std": 0.2922377149967943,
+     "n": 2
+    },
+    "ssim": {
+     "mean": 0.9760532913108666,
+     "min": 0.9744214142362276,
+     "max": 0.9776851683855057,
+     "std": 0.001631877074639021,
+     "n": 2
+    },
+    "roi_band_energy_ratio": {
+     "mean": 3.1943395190078707,
+     "min": 2.6226980307653314,
+     "max": 3.7659810072504105,
+     "std": 0.5716414882425396,
+     "n": 2
+    },
+    "band_energy_ratio_full": {
+     "mean": 1.364952098373558,
+     "min": 1.352338993054812,
+     "max": 1.3775652036923038,
+     "std": 0.012613105318745932,
+     "n": 2
+    },
+    "roi_tm_auc": {
+     "mean": 0.9895833333333334,
+     "min": 0.9895833333333334,
+     "max": 0.9895833333333334,
+     "std": 0.0,
+     "n": 2
+    },
+    "cnr_mean": {
+     "mean": 0.1338229038725874,
+     "min": 0.09865033948364517,
+     "max": 0.16899546826152964,
+     "std": 0.035172564388942236,
+     "n": 2
+    },
+    "cho_auc_mean": {
+     "mean": 1.0,
+     "min": 1.0,
+     "max": 1.0,
+     "std": 0.0,
+     "n": 2
+    },
+    "n_patients": 2
+   },
+   "blur": {
+    "psnr": {
+     "mean": 43.581771895681854,
+     "min": 43.53249934517323,
+     "max": 43.63104444619049,
+     "std": 0.04927255050862911,
+     "n": 2
+    },
+    "ssim": {
+     "mean": 0.9869370975842078,
+     "min": 0.9863270136217276,
+     "max": 0.9875471815466881,
+     "std": 0.0006100839624802457,
+     "n": 2
+    },
+    "roi_band_energy_ratio": {
+     "mean": 0.24936490377459875,
+     "min": 0.18114736182926153,
+     "max": 0.31758244571993594,
+     "std": 0.0682175419453372,
+     "n": 2
+    },
+    "band_energy_ratio_full": {
+     "mean": 0.4166925496969569,
+     "min": 0.39969469173094074,
+     "max": 0.43369040766297307,
+     "std": 0.01699785796601616,
+     "n": 2
+    },
+    "roi_tm_auc": {
+     "mean": 0.9895833333333334,
+     "min": 0.9895833333333334,
+     "max": 0.9895833333333334,
+     "std": 0.0,
+     "n": 2
+    },
+    "cnr_mean": {
+     "mean": 0.20756659662744237,
+     "min": 0.1359776782832555,
+     "max": 0.2791555149716292,
+     "std": 0.07158891834418686,
+     "n": 2
+    },
+    "cho_auc_mean": {
+     "mean": 1.0,
+     "min": 1.0,
+     "max": 1.0,
+     "std": 0.0,
+     "n": 2
+    },
+    "n_patients": 2
+   }
+  },
+  "Siemens": {
+   "red_cnn": {
+    "psnr": {
+     "mean": 44.67309126465335,
+     "min": 43.161169489532874,
+     "max": 46.18501303977383,
+     "std": 1.5119217751204772,
+     "n": 2
+    },
+    "ssim": {
+     "mean": 0.9833190025140841,
+     "min": 0.9819064723948637,
+     "max": 0.9847315326333046,
+     "std": 0.0014125301192204343,
+     "n": 2
+    },
+    "roi_band_energy_ratio": {
+     "mean": 1.157229319065808,
+     "min": 0.935865539639298,
+     "max": 1.378593098492318,
+     "std": 0.22136377942651003,
+     "n": 2
+    },
+    "band_energy_ratio_full": {
+     "mean": 1.0719055515075218,
+     "min": 0.9288348857800183,
+     "max": 1.2149762172350254,
+     "std": 0.14307066572750354,
+     "n": 2
+    },
+    "roi_tm_auc": {
+     "mean": 0.9895833333333334,
+     "min": 0.9895833333333334,
+     "max": 0.9895833333333334,
+     "std": 0.0,
+     "n": 2
+    },
+    "cnr_mean": {
+     "mean": 0.053471587456146025,
+     "min": 0.03235899448120299,
+     "max": 0.07458418043108907,
+     "std": 0.02111259297494304,
+     "n": 2
+    },
+    "cho_auc_mean": {
+     "mean": 1.0,
+     "min": 1.0,
+     "max": 1.0,
+     "std": 0.0,
+     "n": 2
+    },
+    "n_patients": 2
+   },
+   "ctformer": {
+    "psnr": {
+     "mean": 41.98432782570427,
+     "min": 41.578786505332815,
+     "max": 42.38986914607572,
+     "std": 0.4055413203714515,
+     "n": 2
+    },
+    "ssim": {
+     "mean": 0.9623532022039096,
+     "min": 0.949596588810285,
+     "max": 0.9751098155975342,
+     "std": 0.012756613393624605,
+     "n": 2
+    },
+    "roi_band_energy_ratio": {
+     "mean": 1.8876078093566564,
+     "min": 1.0487732140278965,
+     "max": 2.7264424046854163,
+     "std": 0.8388345953287599,
+     "n": 2
+    },
+    "band_energy_ratio_full": {
+     "mean": 1.4595824693078003,
+     "min": 1.0362477819512643,
+     "max": 1.8829171566643363,
+     "std": 0.423334687356536,
+     "n": 2
+    },
+    "roi_tm_auc": {
+     "mean": 0.9895833333333334,
+     "min": 0.9895833333333334,
+     "max": 0.9895833333333334,
+     "std": 0.0,
+     "n": 2
+    },
+    "cnr_mean": {
+     "mean": 0.04877132803136176,
+     "min": 0.03046886971489703,
+     "max": 0.0670737863478265,
+     "std": 0.018302458316464734,
+     "n": 2
+    },
+    "cho_auc_mean": {
+     "mean": 1.0,
+     "min": 1.0,
+     "max": 1.0,
+     "std": 0.0,
+     "n": 2
+    },
+    "n_patients": 2
+   },
+   "learn": {
+    "psnr": {
+     "mean": 48.420666227578195,
+     "min": 46.489461607420075,
+     "max": 50.351870847736315,
+     "std": 1.9312046201581197,
+     "n": 2
+    },
+    "ssim": {
+     "mean": 0.9869018321235974,
+     "min": 0.9841394200921059,
+     "max": 0.989664244155089,
+     "std": 0.002762412031491579,
+     "n": 2
+    },
+    "roi_band_energy_ratio": {
+     "mean": 1.1646078990816668,
+     "min": 0.9412771597724819,
+     "max": 1.3879386383908516,
+     "std": 0.22333073930918484,
+     "n": 2
+    },
+    "band_energy_ratio_full": {
+     "mean": 1.0729791552023211,
+     "min": 0.9338391861739277,
+     "max": 1.2121191242307146,
+     "std": 0.13913996902839343,
+     "n": 2
+    },
+    "roi_tm_auc": {
+     "mean": 0.9895833333333334,
+     "min": 0.9895833333333334,
+     "max": 0.9895833333333334,
+     "std": 0.0,
+     "n": 2
+    },
+    "cnr_mean": {
+     "mean": 0.053406303396359316,
+     "min": 0.03241142192551649,
+     "max": 0.07440118486720214,
+     "std": 0.020994881470842823,
+     "n": 2
+    },
+    "cho_auc_mean": {
+     "mean": 1.0,
+     "min": 1.0,
+     "max": 1.0,
+     "std": 0.0,
+     "n": 2
+    },
+    "n_patients": 2
+   },
+   "blur": {
+    "psnr": {
+     "mean": 36.93872655591893,
+     "min": 31.128982173993787,
+     "max": 42.74847093784408,
+     "std": 5.809744381925148,
+     "n": 2
+    },
+    "ssim": {
+     "mean": 0.8405405518909295,
+     "min": 0.7083353139460087,
+     "max": 0.9727457898358504,
+     "std": 0.13220523794492084,
+     "n": 2
+    },
+    "roi_band_energy_ratio": {
+     "mean": 0.1223033657914374,
+     "min": 0.0542741636428335,
+     "max": 0.1903325679400413,
+     "std": 0.0680292021486039,
+     "n": 2
+    },
+    "band_energy_ratio_full": {
+     "mean": 0.1914244989515192,
+     "min": 0.06377725377585555,
+     "max": 0.3190717441271828,
+     "std": 0.12764724517566362,
+     "n": 2
+    },
+    "roi_tm_auc": {
+     "mean": 0.9895833333333334,
+     "min": 0.9895833333333334,
+     "max": 0.9895833333333334,
+     "std": 0.0,
+     "n": 2
+    },
+    "cnr_mean": {
+     "mean": 0.09848642185169176,
+     "min": 0.08249793737694579,
+     "max": 0.11447490632643775,
+     "std": 0.015988484474745983,
+     "n": 2
+    },
+    "cho_auc_mean": {
+     "mean": 1.0,
+     "min": 1.0,
+     "max": 1.0,
+     "std": 0.0,
+     "n": 2
+    },
+    "n_patients": 2
+   }
+  },
+  "Toshiba": {
+   "red_cnn": {
+    "psnr": {
+     "mean": 50.743032965749485,
+     "min": 50.243038912831786,
+     "max": 51.243027018667185,
+     "std": 0.4999940529176996,
+     "n": 2
+    },
+    "ssim": {
+     "mean": 0.9851638743033011,
+     "min": 0.9825692176818848,
+     "max": 0.9877585309247175,
+     "std": 0.0025946566214163913,
+     "n": 2
+    },
+    "roi_band_energy_ratio": {
+     "mean": 1.1564802714232314,
+     "min": 0.7918461312251756,
+     "max": 1.5211144116212871,
+     "std": 0.3646341401980558,
+     "n": 2
+    },
+    "band_energy_ratio_full": {
+     "mean": 1.0553560744579409,
+     "min": 1.0228260178711348,
+     "max": 1.087886131044747,
+     "std": 0.03253005658680608,
+     "n": 2
+    },
+    "roi_tm_auc": {
+     "mean": 0.9895833333333334,
+     "min": 0.9895833333333334,
+     "max": 0.9895833333333334,
+     "std": 0.0,
+     "n": 2
+    },
+    "cnr_mean": {
+     "mean": 3.2380959041238047,
+     "min": 2.5727706895792415,
+     "max": 3.9034211186683674,
+     "std": 0.665325214544563,
+     "n": 2
+    },
+    "cho_auc_mean": {
+     "mean": 1.0,
+     "min": 1.0,
+     "max": 1.0,
+     "std": 0.0,
+     "n": 2
+    },
+    "n_patients": 2
+   },
+   "ctformer": {
+    "psnr": {
+     "mean": 42.917326731195054,
+     "min": 42.73117743834634,
+     "max": 43.103476024043765,
+     "std": 0.18614929284871096,
+     "n": 2
+    },
+    "ssim": {
+     "mean": 0.9181743673980236,
+     "min": 0.9059630110859871,
+     "max": 0.9303857237100601,
+     "std": 0.012211356312036514,
+     "n": 2
+    },
+    "roi_band_energy_ratio": {
+     "mean": 9.246751631974863,
+     "min": 8.540161034982019,
+     "max": 9.95334222896771,
+     "std": 0.7065905969928457,
+     "n": 2
+    },
+    "band_energy_ratio_full": {
+     "mean": 1.412018343797623,
+     "min": 1.365886947462646,
+     "max": 1.4581497401326,
+     "std": 0.04613139633497698,
+     "n": 2
+    },
+    "roi_tm_auc": {
+     "mean": 0.9895833333333334,
+     "min": 0.9895833333333334,
+     "max": 0.9895833333333334,
+     "std": 0.0,
+     "n": 2
+    },
+    "cnr_mean": {
+     "mean": 0.2213444873173221,
+     "min": 0.2163996879671298,
+     "max": 0.22628928666751436,
+     "std": 0.004944799350192278,
+     "n": 2
+    },
+    "cho_auc_mean": {
+     "mean": 1.0,
+     "min": 1.0,
+     "max": 1.0,
+     "std": 0.0,
+     "n": 2
+    },
+    "n_patients": 2
+   },
+   "learn": {
+    "psnr": {
+     "mean": 52.82900969546078,
+     "min": 52.05198727558201,
+     "max": 53.60603211533956,
+     "std": 0.7770224198787758,
+     "n": 2
+    },
+    "ssim": {
+     "mean": 0.9872552597274382,
+     "min": 0.9846550400058428,
+     "max": 0.9898554794490337,
+     "std": 0.0026002197215954648,
+     "n": 2
+    },
+    "roi_band_energy_ratio": {
+     "mean": 1.1227839915166196,
+     "min": 0.7098146424887105,
+     "max": 1.5357533405445285,
+     "std": 0.412969349027909,
+     "n": 2
+    },
+    "band_energy_ratio_full": {
+     "mean": 1.0570552451244295,
+     "min": 1.0258318991200306,
+     "max": 1.0882785911288284,
+     "std": 0.03122334600439891,
+     "n": 2
+    },
+    "roi_tm_auc": {
+     "mean": 0.9895833333333334,
+     "min": 0.9895833333333334,
+     "max": 0.9895833333333334,
+     "std": 0.0,
+     "n": 2
+    },
+    "cnr_mean": {
+     "mean": 3.7132901063682713,
+     "min": 2.527427398746473,
+     "max": 4.89915281399007,
+     "std": 1.1858627076217985,
+     "n": 2
+    },
+    "cho_auc_mean": {
+     "mean": 1.0,
+     "min": 1.0,
+     "max": 1.0,
+     "std": 0.0,
+     "n": 2
+    },
+    "n_patients": 2
+   },
+   "blur": {
+    "psnr": {
+     "mean": 40.36947279508346,
+     "min": 40.3224328439681,
+     "max": 40.41651274619882,
+     "std": 0.04703995111535875,
+     "n": 2
+    },
+    "ssim": {
+     "mean": 0.9115665163844824,
+     "min": 0.8955996458729109,
+     "max": 0.9275333868960539,
+     "std": 0.01596687051157153,
+     "n": 2
+    },
+    "roi_band_energy_ratio": {
+     "mean": 0.05920958469662685,
+     "min": 0.03367297966369192,
+     "max": 0.08474618972956177,
+     "std": 0.025536605032934926,
+     "n": 2
+    },
+    "band_energy_ratio_full": {
+     "mean": 0.22311928788604293,
+     "min": 0.17192068156434426,
+     "max": 0.2743178942077416,
+     "std": 0.051198606321698675,
+     "n": 2
+    },
+    "roi_tm_auc": {
+     "mean": 0.9895833333333334,
+     "min": 0.9895833333333334,
+     "max": 0.9895833333333334,
+     "std": 0.0,
+     "n": 2
+    },
+    "cnr_mean": {
+     "mean": 3.459680516229598,
+     "min": 2.6855963865399666,
+     "max": 4.233764645919229,
+     "std": 0.7740841296896313,
+     "n": 2
+    },
+    "cho_auc_mean": {
+     "mean": 1.0,
+     "min": 1.0,
+     "max": 1.0,
+     "std": 0.0,
+     "n": 2
+    },
+    "n_patients": 2
+   }
+  },
+  "AAPM-Siemens-real": {
+   "red_cnn": {
+    "psnr": {
+     "mean": 41.19993278699318,
+     "min": 40.12226593705129,
+     "max": 42.40550891266322,
+     "std": 0.8323318823813589,
+     "n": 4
+    },
+    "ssim": {
+     "mean": 0.9339761666948878,
+     "min": 0.9179296063364677,
+     "max": 0.9531524546941121,
+     "std": 0.012816487643880645,
+     "n": 4
+    },
+    "roi_band_energy_ratio": {
+     "mean": 3.87617893586056,
+     "min": 3.4326210830809996,
+     "max": 4.521345189158644,
+     "std": 0.4455974007988965,
+     "n": 4
+    },
+    "band_energy_ratio_full": {
+     "mean": 1.5239245816851799,
+     "min": 1.4214469396452183,
+     "max": 1.5860457894654492,
+     "std": 0.06463292641305378,
+     "n": 4
+    },
+    "roi_tm_auc": {
+     "mean": 0.9895833333333334,
+     "min": 0.9895833333333334,
+     "max": 0.9895833333333334,
+     "std": 0.0,
+     "n": 4
+    },
+    "cnr_mean": {
+     "mean": 0.10364251511827034,
+     "min": 0.08943337103788429,
+     "max": 0.12649405210923298,
+     "std": 0.01462644991264402,
+     "n": 4
+    },
+    "cho_auc_mean": {
+     "mean": 1.0,
+     "min": 1.0,
+     "max": 1.0,
+     "std": 0.0,
+     "n": 4
+    },
+    "n_patients": 4
+   },
+   "ctformer": {
+    "psnr": {
+     "mean": 39.58505925726698,
+     "min": 38.64673814913105,
+     "max": 40.52296098691548,
+     "std": 0.7014393878259152,
+     "n": 4
+    },
+    "ssim": {
+     "mean": 0.9119653047806349,
+     "min": 0.8954603797609701,
+     "max": 0.9275067444074722,
+     "std": 0.012033704765027624,
+     "n": 4
+    },
+    "roi_band_energy_ratio": {
+     "mean": 6.735175395405865,
+     "min": 5.115730074604183,
+     "max": 8.667820479592264,
+     "std": 1.3364521819125301,
+     "n": 4
+    },
+    "band_energy_ratio_full": {
+     "mean": 2.196764405584428,
+     "min": 2.1121724140326985,
+     "max": 2.304363140592777,
+     "std": 0.08256315665835373,
+     "n": 4
+    },
+    "roi_tm_auc": {
+     "mean": 0.9895833333333334,
+     "min": 0.9895833333333334,
+     "max": 0.9895833333333334,
+     "std": 0.0,
+     "n": 4
+    },
+    "cnr_mean": {
+     "mean": 0.08632276628210107,
+     "min": 0.0766783264356551,
+     "max": 0.10147516907442881,
+     "std": 0.010102984382820113,
+     "n": 4
+    },
+    "cho_auc_mean": {
+     "mean": 1.0,
+     "min": 1.0,
+     "max": 1.0,
+     "std": 0.0,
+     "n": 4
+    },
+    "n_patients": 4
+   },
+   "learn": {
+    "psnr": {
+     "mean": 41.613537897510206,
+     "min": 40.20810057204305,
+     "max": 43.2727577384703,
+     "std": 1.1451772388319679,
+     "n": 4
+    },
+    "ssim": {
+     "mean": 0.935812836668043,
+     "min": 0.9201695714731636,
+     "max": 0.9542742823419117,
+     "std": 0.01238436561349724,
+     "n": 4
+    },
+    "roi_band_energy_ratio": {
+     "mean": 3.8539127075548683,
+     "min": 3.4078719435016716,
+     "max": 4.51595422794909,
+     "std": 0.44805940345008494,
+     "n": 4
+    },
+    "band_energy_ratio_full": {
+     "mean": 1.5139613095562485,
+     "min": 1.4070215162642405,
+     "max": 1.5835460358731408,
+     "std": 0.06790408101615306,
+     "n": 4
+    },
+    "roi_tm_auc": {
+     "mean": 0.9895833333333334,
+     "min": 0.9895833333333334,
+     "max": 0.9895833333333334,
+     "std": 0.0,
+     "n": 4
+    },
+    "cnr_mean": {
+     "mean": 0.10360286073430668,
+     "min": 0.0898068251752074,
+     "max": 0.12636033898586083,
+     "std": 0.014555275041243489,
+     "n": 4
+    },
+    "cho_auc_mean": {
+     "mean": 1.0,
+     "min": 1.0,
+     "max": 1.0,
+     "std": 0.0,
+     "n": 4
+    },
+    "n_patients": 4
+   },
+   "blur": {
+    "psnr": {
+     "mean": 41.62701493902994,
+     "min": 40.69181606782119,
+     "max": 42.45635981206828,
+     "std": 0.6907202305038737,
+     "n": 4
+    },
+    "ssim": {
+     "mean": 0.9653218340698881,
+     "min": 0.9539103886616305,
+     "max": 0.9769047117233276,
+     "std": 0.008565898149958891,
+     "n": 4
+    },
+    "roi_band_energy_ratio": {
+     "mean": 0.4315421991344855,
+     "min": 0.35234389748095163,
+     "max": 0.5230291151735803,
+     "std": 0.06453020769182308,
+     "n": 4
+    },
+    "band_energy_ratio_full": {
+     "mean": 0.42997330961502483,
+     "min": 0.3940226345637714,
+     "max": 0.492199728479157,
+     "std": 0.0403086929241119,
+     "n": 4
+    },
+    "roi_tm_auc": {
+     "mean": 0.9895833333333334,
+     "min": 0.9895833333333334,
+     "max": 0.9895833333333334,
+     "std": 0.0,
+     "n": 4
+    },
+    "cnr_mean": {
+     "mean": 0.17063560072817718,
+     "min": 0.1535542220378309,
+     "max": 0.20529817357439803,
+     "std": 0.020545692110105918,
+     "n": 4
+    },
+    "cho_auc_mean": {
+     "mean": 1.0,
+     "min": 1.0,
+     "max": 1.0,
+     "std": 0.0,
+     "n": 4
+    },
+    "n_patients": 4
+   }
+  }
+ },
+ "spread": {
+  "red_cnn": {
+   "n_groups": 5,
+   "groups": [
+    "AAPM-Siemens-real",
+    "GE",
+    "Philips",
+    "Siemens",
+    "Toshiba"
+   ],
+   "roi_band_energy_ratio": {
+    "ber_span": 3.301503756580725,
+    "ber_mean": 1.9914691538715423,
+    "ber_std": 1.2958203094520393,
+    "n": 5,
+    "ber_span_pct_of_mean": 1.6578231955852254
+   },
+   "psnr": {
+    "psnr_span": 10.220114549385379,
+    "psnr_mean": 46.62822365368925,
+    "psnr_std": 3.8859305753384468,
+    "n": 5,
+    "psnr_span_pct_of_mean": 0.2191830129599363
+   },
+   "cnr": {
+    "cnr_span": 4.268189478744583,
+    "cnr_mean": 1.570233652551785,
+    "cnr_std": 1.836599442131974,
+    "n": 5,
+    "cnr_span_pct_of_mean": 2.7181874950956204
+   }
+  },
+  "ctformer": {
+   "n_groups": 5,
+   "groups": [
+    "AAPM-Siemens-real",
+    "GE",
+    "Philips",
+    "Siemens",
+    "Toshiba"
+   ],
+   "roi_band_energy_ratio": {
+    "ber_span": 8.707620332472807,
+    "ber_mean": 7.483539697346712,
+    "ber_std": 3.060233591549552,
+    "n": 5,
+    "ber_span_pct_of_mean": 1.1635697390046709
+   },
+   "psnr": {
+    "psnr_span": 3.5601231869220484,
+    "psnr_mean": 41.979165476627095,
+    "psnr_std": 1.2690630261740088,
+    "n": 5,
+    "psnr_span_pct_of_mean": 0.08480690710500742
+   },
+   "cnr": {
+    "cnr_span": 0.1788148501177324,
+    "cnr_mean": 0.13729499525947303,
+    "cnr_std": 0.07330154325087908,
+    "n": 5,
+    "cnr_span_pct_of_mean": 1.3024134621935144
+   }
+  },
+  "learn": {
+   "n_groups": 5,
+   "groups": [
+    "AAPM-Siemens-real",
+    "GE",
+    "Philips",
+    "Siemens",
+    "Toshiba"
+   ],
+   "roi_band_energy_ratio": {
+    "ber_span": 3.416191972533684,
+    "ber_mean": 1.9546729704364416,
+    "ber_std": 1.3237273817105322,
+    "n": 5,
+    "ber_span_pct_of_mean": 1.7477051272525206
+   },
+   "psnr": {
+    "psnr_span": 12.029514452747087,
+    "psnr_mean": 49.05825153215482,
+    "psnr_std": 4.269519008997227,
+    "n": 5,
+    "psnr_span_pct_of_mean": 0.24520878908337046
+   },
+   "cnr": {
+    "cnr_span": 5.70145620357207,
+    "cnr_mean": 1.951796936267991,
+    "cnr_std": 2.3618172597232645,
+    "n": 5,
+    "cnr_span_pct_of_mean": 2.9211318542561915
+   }
+  },
+  "blur": {
+   "n_groups": 5,
+   "groups": [
+    "AAPM-Siemens-real",
+    "GE",
+    "Philips",
+    "Siemens",
+    "Toshiba"
+   ],
+   "roi_band_energy_ratio": {
+    "ber_span": 0.3862962659206885,
+    "ber_mean": 0.18153319732218912,
+    "ber_std": 0.14432678122545875,
+    "n": 5,
+    "ber_span_pct_of_mean": 2.127964866035392
+   },
+   "psnr": {
+    "psnr_span": 6.643045339762921,
+    "psnr_mean": 40.64054248319707,
+    "psnr_std": 2.163465732071866,
+    "n": 5,
+    "psnr_span_pct_of_mean": 0.1634585793855853
+   },
+   "cnr": {
+    "cnr_span": 4.710375996258498,
+    "cnr_mean": 1.7490463107094196,
+    "cnr_std": 1.9940226689393794,
+    "n": 5,
+    "cnr_span_pct_of_mean": 2.6931110785442565
+   }
+  }
+ },
+ "ranks_by_vendor": {
+  "GE": {
+   "ctformer": 1,
+   "red_cnn": 2,
+   "learn": 3,
+   "blur": 4
+  },
+  "Philips": {
+   "ctformer": 1,
+   "learn": 2,
+   "red_cnn": 3,
+   "blur": 4
+  },
+  "Siemens": {
+   "ctformer": 1,
+   "learn": 2,
+   "red_cnn": 3,
+   "blur": 4
+  },
+  "Toshiba": {
+   "ctformer": 1,
+   "red_cnn": 2,
+   "learn": 3,
+   "blur": 4
+  },
+  "AAPM-Siemens-real": {
+   "ctformer": 1,
+   "red_cnn": 2,
+   "learn": 3,
+   "blur": 4
+  }
+ },
+ "separation": {
+  "GE": {
+   "blur_roi_ber": 0.045245933213797,
+   "min_model_roi_ber": 0.4377207350211846,
+   "ratio_min_model_over_blur": 9.674255870751027,
+   "blur_last_in_detectability": true,
+   "blur_highest_ssim": false
+  },
+  "Philips": {
+   "blur_roi_ber": 0.24936490377459875,
+   "min_model_roi_ber": 3.192782063728278,
+   "ratio_min_model_over_blur": 12.803654465402388,
+   "blur_last_in_detectability": true,
+   "blur_highest_ssim": true
+  },
+  "Siemens": {
+   "blur_roi_ber": 0.1223033657914374,
+   "min_model_roi_ber": 1.157229319065808,
+   "ratio_min_model_over_blur": 9.461958071041304,
+   "blur_last_in_detectability": true,
+   "blur_highest_ssim": false
+  },
+  "Toshiba": {
+   "blur_roi_ber": 0.05920958469662685,
+   "min_model_roi_ber": 1.1227839915166196,
+   "ratio_min_model_over_blur": 18.962875643689227,
+   "blur_last_in_detectability": true,
+   "blur_highest_ssim": false
+  },
+  "AAPM-Siemens-real": {
+   "blur_roi_ber": 0.4315421991344855,
+   "min_model_roi_ber": 3.8539127075548683,
+   "ratio_min_model_over_blur": 8.930558159281748,
+   "blur_last_in_detectability": true,
+   "blur_highest_ssim": true
+  }
+ },
+ "kruskal_wallis": {
+  "red_cnn": {
+   "n_groups": 4,
+   "groups": [
+    "GE",
+    "Philips",
+    "Siemens",
+    "Toshiba"
+   ],
+   "samples_per_group": [
+    96,
+    96,
+    96,
+    96
+   ],
+   "H": 328.28571428571433,
+   "p_value": 7.499734285363943e-71,
+   "significant_at_0_05": true
+  },
+  "ctformer": {
+   "n_groups": 4,
+   "groups": [
+    "GE",
+    "Philips",
+    "Siemens",
+    "Toshiba"
+   ],
+   "samples_per_group": [
+    96,
+    96,
+    96,
+    96
+   ],
+   "H": 337.404761904762,
+   "p_value": 7.95763511635617e-73,
+   "significant_at_0_05": true
+  },
+  "learn": {
+   "n_groups": 4,
+   "groups": [
+    "GE",
+    "Philips",
+    "Siemens",
+    "Toshiba"
+   ],
+   "samples_per_group": [
+    96,
+    96,
+    96,
+    96
+   ],
+   "H": 328.28571428571433,
+   "p_value": 7.499734285363943e-71,
+   "significant_at_0_05": true
+  },
+  "blur": {
+   "n_groups": 4,
+   "groups": [
+    "GE",
+    "Philips",
+    "Siemens",
+    "Toshiba"
+   ],
+   "samples_per_group": [
+    96,
+    96,
+    96,
+    96
+   ],
+   "H": 209.7380952380952,
+   "p_value": 3.3173100170226177e-45,
+   "significant_at_0_05": true
+  }
+ },
+ "mann_whitney_blur_vs_model": {},
+ "gate": {
+  "blur_trap_separation_all_vendors": true,
+  "sep_ok_vendors": [
+   "AAPM-Siemens-real",
+   "GE",
+   "Philips",
+   "Siemens",
+   "Toshiba"
+  ],
+  "sep_fail_vendors": [],
+  "vendor_effect_significant": true,
+  "never_average_across_vendors": true,
+  "verdict": "PASS",
+  "rationale": "blur trap must separate on every vendor (blur ROI BandER < min model, ratio>=3x) AND vendor effect must be statistically significant (Kruskal-Wallis p<0.05) — significant cross-vendor differences justify the Rung-6 rule of reporting spread per vendor instead of averaging across vendors."
+ }
+}

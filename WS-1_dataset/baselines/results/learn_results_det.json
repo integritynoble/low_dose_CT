@@ -1,0 +1,121 @@
+{
+  "model": "learn",
+  "split": "test",
+  "seed": 42,
+  "per_dose": {
+    "sim_r010": {
+      "psnr": 48.17342090817959,
+      "ssim": 0.9800904015700023,
+      "lpips": 0.013359884979824226,
+      "n": 30,
+      "detectability": {
+        "task": "SKE-Gaussian20HU-s2px",
+        "signal_sigma_px": 2.0,
+        "peak_contrast_hu": 20.0,
+        "location_known": true,
+        "observer": {
+          "cnr": {
+            "rose_criterion": 3.0
+          },
+          "cho": {
+            "channels": "DOG",
+            "n_channels": 4
+          },
+          "npwe": {
+            "eye_filter": "rho*exp(-rho/0.2)"
+          }
+        },
+        "cnr_mean": 1.3363671588183634,
+        "cnr_median": 1.310408742725268,
+        "cnr_std": 0.4038375996631946,
+        "cho_auc_mean": 1.0,
+        "cho_auc_median": 1.0,
+        "npwe_mean": 537706.3465185007,
+        "n_slices": 30,
+        "roi_pos": [
+          426,
+          30
+        ]
+      }
+    },
+    "sim_r025": {
+      "psnr": 52.13622212680025,
+      "ssim": 0.9916232943534851,
+      "lpips": 0.004059522738680243,
+      "n": 30,
+      "detectability": {
+        "task": "SKE-Gaussian20HU-s2px",
+        "signal_sigma_px": 2.0,
+        "peak_contrast_hu": 20.0,
+        "location_known": true,
+        "observer": {
+          "cnr": {
+            "rose_criterion": 3.0
+          },
+          "cho": {
+            "channels": "DOG",
+            "n_channels": 4
+          },
+          "npwe": {
+            "eye_filter": "rho*exp(-rho/0.2)"
+          }
+        },
+        "cnr_mean": 2.732404873948885,
+        "cnr_median": 2.6146843291255877,
+        "cnr_std": 0.636186605764593,
+        "cho_auc_mean": 1.0,
+        "cho_auc_median": 1.0,
+        "npwe_mean": 684342.1811934038,
+        "n_slices": 30,
+        "roi_pos": [
+          426,
+          30
+        ]
+      }
+    },
+    "sim_r050": {
+      "psnr": 54.940094410731824,
+      "ssim": 0.9956246733665466,
+      "lpips": 0.002090498855492721,
+      "n": 30,
+      "detectability": {
+        "task": "SKE-Gaussian20HU-s2px",
+        "signal_sigma_px": 2.0,
+        "peak_contrast_hu": 20.0,
+        "location_known": true,
+        "observer": {
+          "cnr": {
+            "rose_criterion": 3.0
+          },
+          "cho": {
+            "channels": "DOG",
+            "n_channels": 4
+          },
+          "npwe": {
+            "eye_filter": "rho*exp(-rho/0.2)"
+          }
+        },
+        "cnr_mean": 4.350063517240026,
+        "cnr_median": 4.104980749089571,
+        "cnr_std": 1.3579938876072355,
+        "cho_auc_mean": 1.0,
+        "cho_auc_median": 1.0,
+        "npwe_mean": 742859.142232056,
+        "n_slices": 30,
+        "roi_pos": [
+          426,
+          30
+        ]
+      }
+    },
+    "real": {
+      "psnr": null,
+      "ssim": null,
+      "lpips": null,
+      "n": 0,
+      "detectability": null,
+      "real_available": false
+    }
+  },
+  "task": "SKE-Gaussian20HU-s2px"
+}

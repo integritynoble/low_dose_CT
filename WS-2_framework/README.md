@@ -22,6 +22,43 @@ A successful WS-2 means: an external researcher can compute a 5-tuple credential
 
 Method **M** is **signal-equivalent at level (r, T, ε, α)** over subpopulation **Π** iff the population-mean task performance on reduced-signal scans is within `ε` of the population-mean performance of a reference method on full-signal scans. The `1 − α` is the confidence level at which the paired-bootstrap estimator returns `PASS` on a test set drawn from Π — population claim and finite-sample evidence are kept distinct (manuscript v0.3 §framework). Π is formalized to carry the **acquisition-protocol metadata** that determines `T_r` for the modality (CT vendor / kVp; MRI mask family; PET tracer / scanner), so the 5-tuple shape holds verbatim across CT, MRI, and PET.
 
+## Task equivalence (P1-1, observer detectability)
+
+The 5-tuple credential is **task-level by construction**: the metric `T` inside a
+credential is a task endpoint, and since P1-1 the schema also carries the
+**observer-model detectability dimension** — a task-equivalence credential
+requires the observer specification (`ObserverSpec`: CHO / NPWE / CNR /
+contrast-recovery parameters, e.g. the WS-1/WS-3 SKE Gaussian 20-HU σ=2 px
+operating point) and asserts that detectability is unchanged at the equivalent
+dose. This upgrades "signal equivalence" to "task equivalence": two series are
+equivalent only if a declared observer cannot distinguish their detectability at
+the same dose level. See `theory/proofs/task_equivalence.md` note in
+`pwm_dose_equivalence/src/pwm_dose_equivalence/task_equivalence.py` +
+`tests/test_task_equivalence.py`.
+
+## Digital-twin validity domain (P1-2, twin refusal)
+
+The framework is a **digital twin of the signal-reduction experiment**: it predicts
+task performance under `T_r` without physically re-acquiring the low-signal data.
+Its validity domain is deliberately bounded — scatter / beam-hardening / motion /
+activity-dependent detector physics are **approximated as fixed or outside
+domain**. The twin **refuses to score outside its domain**: an input whose physics
+falls outside the declared domain (or a detectability endpoint without a declared
+observer spec, or a PET count level without decayed-vs-thinned agreement) returns
+`INDETERMINATE` with a machine-readable refusal code, never a scored `FAIL`. Full
+domain table + refusal rules: [`theory/proofs/twin_validity_domain.md`](theory/proofs/twin_validity_domain.md).
+
+## Acceptance metric: predicted vs measured equivalent-dose error (P2-3)
+
+**Defined before data collection** — the relative deviation
+`Δr = |r̂ − r*| / r*` between the predicted equivalent-dose level `r̂` (twin) and
+the measured one `r*` (physical acquisition), reported per subpopulation and per
+modality with the twin's CI. A `Δr` that flips the equivalence verdict is a
+twin-fidelity failure and blocks publication of that credential as a *measured*
+claim. Definition + thresholds + data gates:
+[`theory/proofs/predicted_vs_measured_dose.md`](theory/proofs/predicted_vs_measured_dose.md).
+No `Δr` value is claimed until Phase 1 / WS-2b data exists.
+
 The formal definition lives in [`theory/dose-equivalence-framework.md`](theory/dose-equivalence-framework.md) (v0.1; intentionally lags the manuscript v0.3 pending the literature depth-pass per [`theory/open_questions.md`](theory/open_questions.md) §1). It sharpens the one-liner across six points (patient vs image; operator vs scalar; reference-acquisition vs reference-algorithm; performance functional form; subpopulation-as-acquisition-protocol-bearing measure; aggregate vs per-patient) — the same six points appear in the manuscript as clarifications C1–C6.
 
 ---
@@ -181,6 +218,7 @@ D9 anchor ≈ 2026-05-20 (theory v0.1 seed date); today (2026-06-05) is **≈ D9
 
 - [ ] *Nature Methods* paper accepted (or fallback venue: *IEEE TMI* / *Medical Image Analysis*)
 - [ ] Per-modality Results tables filled with real-cohort numbers — Table 2 (CT, Phase 1 pilot), Table 3 (MRI, fastMRI knee), Table 4 (PET, NEMA NU-2 IQ phantom)
+- [ ] Predicted vs measured equivalent-dose error `Δr` (P2-3) reported in `validation/predicted_vs_measured.json` with per-vendor / per-modality spread; no *measured* credential claim published without it
 - [ ] `pwm_dose_equivalence` v1.0.0 on PyPI with ≥ 2 modality validators
 - [ ] Framework SHA-256 hash registered as L2 spec on PWMRegistry mainnet
 - [ ] ≥ 3 external research groups have computed a credential under the framework
@@ -194,7 +232,7 @@ D9 anchor ≈ 2026-05-20 (theory v0.1 seed date); today (2026-06-05) is **≈ D9
 |---|---|---|
 | [`paper_draft/`](paper_draft/) | *Nature Methods* manuscript + reviewer-facing reproduction guide + non-coder reading guide | **v0.3 working draft** (24 pp incl. 3-pp Supplementary S1; see [`paper_draft/CHANGELOG.md`](paper_draft/CHANGELOG.md)). Two reviewer-facing companions: [`paper_draft/reproduction_guide.md`](paper_draft/reproduction_guide.md) maps every numerical claim to its repo anchor + the command that re-derives it (16-row per-claim table; for code-savvy reviewers); [`paper_draft/credential_reading_guide.md`](paper_draft/credential_reading_guide.md) walks a credential JSON field-by-field with verdict semantics + framework-hash guarantees + a 9-entry red-flag checklist (for non-coder reviewers / regulators / clinicians). |
 | [`theory/`](theory/) | Formal definition ([`dose-equivalence-framework.md`](theory/dose-equivalence-framework.md)), open-questions work plan ([`open_questions.md`](theory/open_questions.md)), related-work memo ([`related_work.md`](theory/related_work.md)) | **v0.1 seeded** — definition + work plan + related-work memo |
-| [`theory/proofs/`](theory/proofs/) | Theory-side decision writeups paired with the manuscript v0.2 / v0.3 commitments: `mri_mask.md` (§7), `pet_reduction.md` (§8), `composition.md` (§4), `estimator.md` (§3, **v0.4 with AUC + Dice + CR sims backing — per-modality trio closed**), `sample_size.md` (§2, numerical table + the AUC `ε` correction that v0.3 V3-1 applied), `monotonicity.md` (§5, conjecture + counterexample sketch; empirical check gated on Phase 1 pilot) | **6 writeups landed at D9 + 13/14; estimator.md extended to v0.4 at D9 + 15 with Dice + CR sims; manuscript-side propagation landed at D9 + 14** (V3-1 / V3-2 / V3-4 / V3-5 / V3-6 / V3-7 / V3-8 / V3-9 — see [`paper_draft/CHANGELOG.md`](paper_draft/CHANGELOG.md)). Sections §2 / §3 / §4 / §7 / §8 closed (all BLOCKs done; §3 per-modality trio closed); §5 partially closed (theory side; empirical check gated on Phase 1 pilot); §1 depth-pass still pending. |
+| [`theory/proofs/`](theory/proofs/) | Theory-side decision writeups paired with the manuscript v0.2 / v0.3 commitments: `mri_mask.md` (§7), `pet_reduction.md` (§8), `composition.md` (§4), `estimator.md` (§3, **v0.4 with AUC + Dice + CR sims backing — per-modality trio closed**), `sample_size.md` (§2, numerical table + the AUC `ε` correction that v0.3 V3-1 applied), `monotonicity.md` (§5, conjecture + counterexample sketch; empirical check gated on Phase 1 pilot), **`twin_validity_domain.md` (P1-2, digital-twin validity domain + refusal)**, **`predicted_vs_measured_dose.md` (P2-3, acceptance metric defined before data)** | **6 writeups landed at D9 + 13/14; estimator.md extended to v0.4 at D9 + 15 with Dice + CR sims; manuscript-side propagation landed at D9 + 14** (V3-1 / V3-2 / V3-4 / V3-5 / V3-6 / V3-7 / V3-8 / V3-9 — see [`paper_draft/CHANGELOG.md`](paper_draft/CHANGELOG.md)); **P1-2 / P2-3 writeups added 2026-08-21**. Sections §2 / §3 / §4 / §7 / §8 closed (all BLOCKs done; §3 per-modality trio closed); §5 partially closed (theory side; empirical check gated on Phase 1 pilot); §1 depth-pass still pending. |
 | [`experiments/cross_modality_consistency/`](experiments/cross_modality_consistency/) | Synthetic anchor for the modality-general claim — same bootstrap code path applied to 3 `T_r` operators; 6 credentials (3 PASS + 3 FAIL) at seed=42 | **reproducible** — `results.json` committed; not data-blocked |
 | [`experiments/estimator_coverage/`](experiments/estimator_coverage/) | **Four** seed-reproducible simulations of the paired-bootstrap estimator covering the per-modality trio: `coverage_sim.py` (27 cells, ~35 min, AUC null) + `power_sim.py` (24 cells, ~25 min, AUC non-null) + `dice_sim.py` (18 cells, ~2.5 min, Dice / MRI) + `cr_sim.py` (24 cells, ~3 min, CR / PET phantom). All four back the estimator-default decision in `theory/proofs/estimator.md` §§2 / 4a / 4b / 4c; the CR sim surfaces a small-$n$ anti-conservativeness regime (n < 30) recorded as a v0.2.0 library item. | **reproducible** — `results.json` + `power_results.json` + `dice_results.json` + `cr_results.json` committed; seed = 42 |
 | [`pwm_dose_equivalence/`](pwm_dose_equivalence/) | Pip-installable Python library + `pwm-audit` console entry point + four tutorial notebooks in `notebooks/` (three per validated modality + one extending-to-a-new-modality worked example) + worked examples in `examples/` + standalone `credential_schema.json` + governance artifacts (`CONTRIBUTING.md` with two-tier sign-off, `CITATION.cff`); the productionised counterpart to the experiments-folder prototype | **v0.2.2 alpha** — 140/140 tests (incl. 10 end-to-end integration tests + 35 credential-audit tests + 12 CLI tests + 11 examples/schema-artifact tests) at 100 % line coverage on 443 statements; v0.2.0 added BCa + small-$n$ warning + `bound_M` + integration tests + tutorial notebooks (R3-2 / R3-3); v0.2.1 added `audit_credential()` + machine-readable `CREDENTIAL_JSON_SCHEMA`; v0.2.2 added the `pwm-audit` shell entry point; D9 + 19 added `examples/` (one clean + six broken credentials, one per audit signal) and `credential_schema.json` standalone artifact; TestPyPI publish pending (D9 + 365); v1.0.0 alongside paper acceptance (D9 + 540) |

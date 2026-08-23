@@ -19,6 +19,21 @@ from typing import Any, Dict, Iterable, List, Optional, Tuple
 SOURCES = ("lidc", "aapm", "mayo")
 
 
+def normalize_source(source: Any) -> str:
+    """Bucket a series' raw ``source`` field onto a canonical source key.
+
+    LIDC-derived entries may carry an annotation suffix, e.g. ``"lidc
+    (simulated_from lidc-0237)"`` for the placeholder-fill supplements; anything
+    whose key starts with ``"lidc"`` is bucketed under ``"lidc"`` so the full
+    1,010-patient cohort is counted. AAPM/Mayo keys are returned unchanged, so
+    future v1.0 builds need no script changes.
+    """
+    src = str(source or "").strip()
+    if src.startswith("lidc"):
+        return "lidc"
+    return src
+
+
 # --------------------------------------------------------------------------- IO
 def load_series_metadata(metadata_dir: str) -> List[Dict[str, Any]]:
     """Load every ``metadata/{series_id}.json`` under *metadata_dir* (sorted)."""

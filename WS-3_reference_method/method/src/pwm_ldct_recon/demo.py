@@ -18,7 +18,8 @@ from .config import EnsembleConfig, ReconConfig
 from .data import SyntheticPairs, denormalize
 from .detector import DeterministicStubDetector
 from .ensemble import ensemble_infer, train_ensemble
-from .metrics import psnr, spearman, ssim
+from .evaluation import evaluate_validation_block
+from .metrics import spearman
 
 VENDORS = ("Siemens", "GE")
 
@@ -62,15 +63,25 @@ def _baseline_scores_fn():
 
 
 @torch.no_grad()
-def _validation(models, ds: SyntheticPairs) -> dict:
-    """Reconstruct the synthetic pairs and report fidelity + UQ tracking (structure, not science)."""
+def _validation(models, ds: SyntheticPairs, *, n_trials: int = 4, max_slices: int = 3) -> dict:
+    """Reconstruct the synthetic pairs and report fidelity + UQ + paired detectability.
+
+    The validation block is built by :mod:`pwm_ldct_recon.evaluation`, which emits the
+    reference method **and** the permanent Gaussian-blur trap with fidelity and
+    detectability as a required pair (low-dose-ct.md §4: both numbers or neither;
+    Rung 1.3: the blur stays). ``n_trials`` is kept small here -- this is a smoke test,
+    the numbers are structure, not science.
+    """
     low = torch.from_numpy(np.stack(ds.low)).unsqueeze(1)
     full = torch.from_numpy(np.stack(ds.full)).unsqueeze(1)
     res = ensemble_infer(models, models[0].physics.forward(low))
     err = (res.mean - full).abs()
-    return {"psnr_db": round(psnr(res.mean, full), 3),
-            "ssim": round(ssim(res.mean, full), 4),
-            "uq_spearman": round(spearman(res.sigma, err), 4)}
+    uq = float(spearman(res.sigma, err))
+    return evaluate_validation_block(
+        models,
+        [np.asarray(s) for s in ds.low],
+        [np.asarray(s) for s in ds.full],
+        n_trials=n_trials, max_slices=max_slices, uq_spearman=uq)
 
 
 def run_demo(out_dir: Path | str, *, size: int = 32, steps: int = 4, members: int = 2) -> dict:

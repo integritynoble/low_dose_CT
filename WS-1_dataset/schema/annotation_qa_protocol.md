@@ -16,11 +16,13 @@ Validation → Inter-rater annotation reliability*.
 | Task | Scope | Label content | Scale |
 |---|---|---|---|
 | **Lung-nodule detection** | chest scans (all sources) | per-nodule `bbox_xyxy`, `diameter_mm`, `texture`, `location` | LIDC nodule protocol |
-| **Diagnostic-quality Likert** | AAPM + Mayo paired-dose scans | per (reconstruction × dose level) confidence score | 1–5 |
+| **Diagnostic-quality Likert** | AAPM + Mayo paired-dose scans (**v1.0 roadmap**) | per (reconstruction × dose level) confidence score | 1–5 |
 
-The nodule task **reuses** LIDC-IDRI's existing four-radiologist annotations (consolidated, §3) and
-**tops up** the AAPM and Mayo chest cases that lack equivalent labels, following the *same* LIDC
-protocol so the harmonized convention is uniform across sources.
+**Version scope.** v0.5 is an **LIDC-IDRI-only release**: it reuses LIDC-IDRI's existing
+four-radiologist annotations (consolidated, §3) as the sole nodule-label source; no AAPM/Mayo
+chest cases or Likert series are included in v0.5 (see also §5 and §7.3). The top-up annotation of
+AAPM and Mayo chest cases that lack equivalent labels, following the *same* LIDC protocol so the
+harmonized convention is uniform across sources, is planned for **v1.0**.
 
 ---
 
@@ -64,7 +66,7 @@ Mirrors the three mechanisms in the manuscript:
 - **All cases annotated since that reader's last passing calibration window are re-annotated by an
   alternate qualified reader** and the affected ground truth is recomputed.
 
-### 4.2 Discordance adjudication (top-up, 2-reader cases)
+### 4.2 Discordance adjudication (top-up, 2-reader cases; **v1.0 roadmap**)
 A case is **discordant** if any of:
 - non-overlapping bounding boxes (a nodule marked by one reader, IoU `< [CONFIRM: 0.3]` with any of
   the other's), **or**
@@ -91,9 +93,44 @@ released ground truth (`ground_truth: "adjudicated"`). The two original readers'
 - **Texture κ:** linearly-weighted Cohen's κ on the 1–5 ordinal texture score over matched nodules.
 - **Likert agreement:** intraclass correlation coefficient (ICC(2,k)) across readers per
   (reconstruction × dose level).
-- Reported per LIDC reader pair and for each top-up reader vs the LIDC calibration majority vote
-  (manuscript Table *Inter-rater annotation reliability*). Calibration-set κ values are also the
-  pass/fail gate of §2.
+- Reported per LIDC reader pair; for the planned **v1.0** top-up readers, agreement vs the LIDC
+  calibration majority vote will be reported (manuscript Table *Inter-rater annotation
+  reliability*). Calibration-set κ values are also the pass/fail gate of §2.
+
+> **Executable implementation.** The metrics above are implemented in
+> [`pipelines/pwm_ldct_prep/interrater_metrics.py`](../pipelines/pwm_ldct_prep/interrater_metrics.py)
+> (`cohen_kappa` / `detection_kappa` / `texture_kappa` / `icc_2k`), the reference implementation
+> used for the manuscript's inter-rater table and the QA gates. It ships with two modes:
+> `python interrater_metrics.py --demo` validates the full framework on synthetic data; the
+> real-data path (`--annotations-root <release>/annotations`) consumes the §7.2 `raw_per_reader`
+> and §7.3 `likert` files. **Real-data run status: PASS for detection κ on the primary anon group;
+> gate FAIL overall due to Likert ICC(2,k) being uncovered and reader-naming inconsistencies in
+> auxiliary groups (see below).** The real-data report is
+> `lidc_interrater_agreement.json` (per-pair κ values below).
+
+> **Real LIDC results (reported in the manuscript, Table *Inter-rater annotation reliability*).**
+> Computed over the full 911-case LIDC raw_per_reader release (4 readers/case, 3{,}643 annotation
+> files); the primary analysis group `anon_1–4` covers 677 cases.
+
+| Group (cases) | Metric | Pairwise κ range (min–max) | Pass (≥ 0.60) |
+|---|---|---|---|
+| **anon 1–4 (677)** | Detection Cohen's κ (IoU ≥ 0.30) | 0.926 – 0.997 | ✅ all 6 pairs pass |
+| **anon 1–4 (677)** | Texture, linearly-weighted κ (1–5) | 0.330 – 0.471 | ⚠️ low, disclosed |
+| reader1–4 (21) | Detection Cohen's κ | 0.243 – 0.751 | mixed |
+| anonymous (6) | Detection Cohen's κ | 0.748 – 1.000 | ✅ all pass |
+| Likert ICC(2,k) | — | no data (`annotations/likert/` absent) | not covered |
+
+> **Disclosure notes.**
+> - **Texture agreement is low (κ ≈ 0.33–0.47) on the primary anon group** and must be disclosed
+>   as such in the manuscript; the LIDC 1–5 ordinal texture scale is known to be reader-sensitive,
+>   and the majority-vote consolidation (§3) mitigates single-reader noise.
+> - **Likert ICC(2,k) is not covered:** the `annotations/likert/` directory does not exist in the
+>   current release, so no ICC values are reported. The metric is implemented and will be populated
+>   when Likert series are emitted (§7.3).
+> - **Reader-naming inconsistency:** four naming schemes (`anon`, `reader`, `anonymous`, numeric
+>   IDs) coexist across groups and are **not mergeable** across groups; statistics are reported per
+>   naming group only. Recommend harmonizing reader IDs in a future patch (or disclosing as a
+>   limitation).
 
 ---
 
@@ -110,11 +147,14 @@ it. Windows are recorded in `annotations/calibration_windows.json` and hashed in
 ## 7. Annotation file formats
 
 ### 7.1 Consolidated nodules — `annotations/{lidc_majority_vote,topup_aapm,topup_mayo}/{patient_id}.json`
+> **v0.5 scope:** only `lidc_majority_vote/` is populated in the v0.5 release; the
+> `topup_aapm/` / `topup_mayo/` directories are **v1.0 roadmap** (AAPM 2016 + Mayo LDCT-PD top-up
+> annotation), reserved here so the consolidated-nodule schema is uniform across sources.
 ```jsonc
 {
   "patient_id": "string",
   "series_id": "string",
-  "source": "lidc|aapm|mayo",
+  "source": "lidc|aapm|mayo",   // v0.5: only "lidc" occurs; aapm|mayo reserved for v1.0
   "nodules": [
     {
       "nodule_id": "string",
@@ -135,7 +175,7 @@ it. Windows are recorded in `annotations/calibration_windows.json` and hashed in
 Same `nodules` shape as §7.1 **minus** `ground_truth`/`n_contributing_readers`, **plus**
 `reader_id` and the reader's per-nodule `confidence` (1–5). These are the pre-consolidation labels.
 
-### 7.3 Likert — `annotations/likert/{series_id}.json`
+### 7.3 Likert — `annotations/likert/{series_id}.json` (**v1.0 roadmap**; not populated in v0.5)
 ```jsonc
 {
   "series_id": "string",
@@ -146,7 +186,10 @@ Same `nodules` shape as §7.1 **minus** `ground_truth`/`n_contributing_readers`,
 }
 ```
 `reconstruction: "ir"` (vendor iterative) is present only where the source provides it; full-dose-only
-LIDC scans receive a single full-dose Likert at `dose_ratio: 1.0`, `reconstruction: "fbp"`.
+LIDC scans receive a single full-dose Likert at `dose_ratio: 1.0`, `reconstruction: "fbp"`. Likert
+series apply to the AAPM + Mayo paired-dose scans and are therefore **planned for v1.0**; v0.5 ships
+no `annotations/likert/` directory (consistent with the §5 disclosure that Likert ICC(2,k) is not
+reported for v0.5).
 
 ---
 

@@ -2,6 +2,9 @@
 
 Unified Python loader for **PWM-LDCT v0.5** — a content-addressed harmonization of three public
 low-dose CT datasets (LIDC-IDRI, AAPM 2016, Mayo LDCT-and-Projection-Data) under one schema.
+**v0.5 release scope: LIDC-IDRI only (1,010 patients); AAPM 2016 + Mayo LDCT-PD are v1.0 roadmap
+additions** — the loader and schema already model all three sources, but the v0.5 deposited tree
+contains only LIDC-derived data.
 
 It implements the loader contract (§4) and the conformance check (§8) defined in the
 specification at [`../schema/dataset_schema.md`](../schema/dataset_schema.md) (schema `0.5.0`).

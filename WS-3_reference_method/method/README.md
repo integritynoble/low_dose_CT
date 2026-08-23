@@ -17,6 +17,9 @@ downstream tools it drives.
 | `measurement.py` | Forms the data term from **measured** low-dose projections (`get_series_projections`, fan-beam `[V,C,R]`) or **simulated** (`op.forward(low)`); records `real_paired`/`simulated` provenance. Both **axial** (row→slice) and **helical** (360°-LI single-slice rebinning) geometries → fan→parallel rebinning onto the parallel-beam operator. Only genuinely insufficient geometry falls back to simulated. |
 | `models/unet.py` | Compact residual U-Net denoiser `f_theta` (S1: 4 stages, `(32,64,128,256)`, GroupNorm/GELU). |
 | `models/unrolled.py` | K-step unrolled loop: `x ← f_theta(x − τ·Rᵀ(Rx − y))`, learned τ, weights shared (S1). |
+| `models/gaussian_blur.py` | **Permanent Gaussian blur trap** (Rung 1.3 / low-dose-ct.md §4): fixed σ=1.0 px / 5×5 kernel, always in the comparison suite — reference methods may fail, the blur stays. |
+| `observers.py` | **Task-based detectability observers** (Rung 1 / Rung 1.2), ported from the WS-1 baselines: `TaskSpec` (signal contrast/size/location-known/background), tissue-ROI selection, CNR (Rose criterion), **CHO** (DOG-4 channels), **NPWE** (eye filter ρ·exp(−ρ/0.2)), and batch `evaluate_detectability`. |
+| `evaluation.py` | **Paired fidelity + detectability evaluation** (low-dose-ct.md §4: both numbers or neither): builds the reference + blur validation block, declares the task/observer config in every output, and exposes `validate_paired_report` (the RunBundle paired gate). |
 | `data.py` | `PairedSlices` over the WS-1 `pwm_ldct_loader` (same contract as the WS-1 baselines) + `SyntheticPairs` for tests. |
 | `train.py` | Train one seeded member (AdamW + cosine/warmup, L1 on HU — S1). |
 | `ensemble.py` | M seeded members → `recon_mean` + per-pixel `uncertainty_sigma` (ensemble std). |

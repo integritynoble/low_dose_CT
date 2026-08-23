@@ -7,7 +7,9 @@ It is run by every preprocessing Dockerfile on each scan before any harmonized a
 All three source datasets are **already** de-identified to HIPAA Safe Harbor by their original
 release teams; this pipeline is a **belt-and-suspenders re-verification** plus a second
 de-identification layer over our own re-indexed identifiers. We never relax a source's
-de-identification; we only add to it.
+de-identification; we only add to it. **v0.5 release scope: LIDC-IDRI only; the AAPM 2016 and
+Mayo LDCT-PD sources are v1.0 roadmap** — this spec covers all three sources by design, but the
+v0.5 deposited cohort contains LIDC scans only.
 
 - **Schema version:** `0.5.0`. Companion: [`dataset_schema.md`](dataset_schema.md),
   [`dicom_to_hdf5_mapping.md`](dicom_to_hdf5_mapping.md).

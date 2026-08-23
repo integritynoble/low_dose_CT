@@ -2,7 +2,8 @@
 
 How to package, deposit, and DOI-mint the v0.5 release, then backfill the identifiers across the
 manuscript and submission docs. The listing **content** is in [`listing.md`](listing.md); this is the
-**mechanics**. Prerequisite: the value-added records exist (annotation campaign + LIDC/AAPM builds,
+**mechanics**. Prerequisite: the value-added records exist (**v0.5: the LIDC harmonized build +
+inherited LIDC annotations; the AAPM/Mayo builds and top-up annotation campaign are v1.0 roadmap**,
 SUBMISSION_CHECKLIST §3–§5). `[CONFIRM]` marks account/DOI decisions.
 
 > **What is deposited** (openly licensed; **not** the DICOM): `annotations/`, `sim_lowdose/lidc/`,
@@ -43,6 +44,12 @@ Two options; Zenodo issues a DOI on publish (useful at *submission*, before Phys
 - **B (data records):** create a Zenodo upload, attach the Step-1 tree (or a tarball), set
   **CC BY 4.0**, version `0.5.0`, link the paper; publish → DOI.
 Record the **Zenodo DOI** (and concept DOI).
+
+> **Embargo policy (all channels):** the deposit is **public at the moment of manuscript
+> submission — no embargo, no private-access window** (Scientific Data requirement: data must be
+> available to reviewers at submission and public on publication). If any artifact cannot be made
+> public at submission, it must be split out of this release rather than embargoed; the paper will
+> not be submitted until the matching deposit link resolves publicly.
 
 ## Step 4 — PhysioNet (primary DOI)
 1. Create a project on physionet.org → type **Database**; paste each section from `listing.md`.

@@ -349,6 +349,16 @@ deterministic, all RNGs seed-propagated. The complete hyperparameter
 table, library version pins, and compute disclosure accompany the deposit
 (Supplementary Tables~S1--S3) so the corpus is regenerable.
 
+\textbf{Training status.} As of 2026-08-17, the method scaffold is complete and
+CPU-verified ($19$ tests; \texttt{pwm-recon smoke} runs the full Phase-3 pipeline on
+synthetic data), but the production deep-ensemble training described above has
+\textbf{not yet been executed}: the WS-1 v0.5 harmonized data tree is not yet landed
+and no data-center GPU has been booked (current workstation: RTX~4060 Laptop 8\,GB,
+insufficient; planned envelope $\approx 600$--$1{,}800$ A100-h per
+\texttt{COMPUTE\_RESOURCES.md}). All quantitative Technical-Validation tables and
+figures below therefore remain \todo{} until Phase-3 training completes; no
+synthetic-data number will be promoted into the descriptor.
+
 %% =====================================================================
 \section{Data Records}
 \label{sec:datarecords}

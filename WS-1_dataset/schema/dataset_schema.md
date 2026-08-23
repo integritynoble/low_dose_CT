@@ -4,12 +4,17 @@ This document is the **single source of truth** for the on-disk layout, the harm
 record schema, and the loader contract of PWM-LDCT v0.5. The `pwm_ldct_loader` package
 and the three preprocessing Dockerfiles (`pipelines/Dockerfile.{lidc_idri,aapm_2016,mayo_ldct_pd}`)
 implement exactly this schema; the manuscript's *Methods → Cross-source harmonization* and
-*Data Records* sections describe it in prose.
+*Data Records* sections describe it in prose. **v0.5 release scope: LIDC-IDRI only (1,010
+patients); AAPM 2016 is a v1.0 real-paired validation subset; Mayo LDCT-PD is NOT included
+in any release plan** — this schema models LIDC + AAPM by design, and the v0.5 deposited
+tree contains LIDC-derived data only.
 
 - **Schema version:** `0.5.0` (`MAJOR.MINOR.PATCH`; see *Data versioning* in the manuscript).
 - **Companion specs:** [`dicom_cleaning_spec.md`](dicom_cleaning_spec.md) (de-identification),
   [`dicom_to_hdf5_mapping.md`](dicom_to_hdf5_mapping.md) (DICOM↔HDF5 tag/axis mapping),
-  [`annotation_qa_protocol.md`](annotation_qa_protocol.md) (annotation QA loop).
+  [`annotation_qa_protocol.md`](annotation_qa_protocol.md) (annotation QA loop),
+  [`detectability_task_spec.md`](detectability_task_spec.md) (published task-based detectability
+  benchmark, Rung 1.1 / 1.3; machine-readable mirror at `baselines/task_spec.json`).
 - Values marked **[CONFIRM]** are pre-registered parameters to be ratified at release; they
   correspond to the manuscript's `\todo{}` markers and must match the manuscript at submission.
 
@@ -22,8 +27,13 @@ Three public sources are harmonized under one schema:
 | `source` value | Dataset | Paired LD ref. | Sinograms | Native annotations |
 |---|---|---|---|---|
 | `lidc` | LIDC-IDRI | no | no | 4-radiologist nodule XML |
-| `aapm` | AAPM 2016 Low-Dose CT Grand Challenge | yes (r=0.25) | yes | none |
+| `aapm` | AAPM 2016 Low-Dose CT Grand Challenge (v1.0 real-paired validation subset) | yes (r=0.25) | yes | none |
 | `mayo` | Mayo LDCT-and-Projection-Data | yes (r=0.25) | yes | lesion labels on subset |
+
+> **v1.0 scope note (2026-08-21):** `mayo` is retained as a reserved schema-level source value
+> (the loader and metadata schema still accept `"mayo"` for forward compatibility) but is **not
+> part of any release plan** — Mayo LDCT-PD and prospective clinical acquisition are unavailable.
+> v1.0 = LIDC simulated-dose primary corpus + AAPM 2016 10-patient real-paired validation subset.
 
 ### 1.1 Identifiers
 
@@ -55,7 +65,7 @@ redistributed (DICOM-derived pixels under restrictive DUAs); see *Data Records* 
 ```
 pwm_ldct_v0_5/
 ├── schema/                         # these specification documents
-├── pipelines/                      # Dockerfile.lidc_idri | aapm_2016 | mayo_ldct_pd
+├── pipelines/                      # Dockerfile.lidc_idri | aapm_2016 (mayo_ldct_pd reserved, not planned)
 ├── annotations/
 │   ├── lidc_majority_vote/         # {patient_id}.json   (consolidated LIDC nodules)
 │   ├── topup_aapm/                 # {patient_id}.json   (top-up nodules)
@@ -85,12 +95,12 @@ the per-source HU offset correction; see §5.1). All arrays use C-order.
 | HDF5 path | Shape | dtype | Units | Present for |
 |---|---|---|---|---|
 | `recon/full_dose`            | `[Z, H, W]` | float32 | HU  | all |
-| `recon/low_dose_real`        | `[Z, H, W]` | float32 | HU  | `aapm`, `mayo` |
+| `recon/low_dose_real`        | `[Z, H, W]` | float32 | HU  | `aapm` |
 | `recon/low_dose_sim/r010`    | `[Z, H, W]` | float32 | HU  | all (sim at r=0.10) |
 | `recon/low_dose_sim/r025`    | `[Z, H, W]` | float32 | HU  | all (sim at r=0.25) |
 | `recon/low_dose_sim/r050`    | `[Z, H, W]` | float32 | HU  | all (sim at r=0.50) |
-| `sinogram/full_dose`         | `[V, C, R]` | float32 | line integral | `aapm`, `mayo` |
-| `sinogram/low_dose_real`     | `[V, C, R]` | float32 | line integral | `aapm`, `mayo` |
+| `sinogram/full_dose`         | `[V, C, R]` | float32 | line integral | `aapm` |
+| `sinogram/low_dose_real`     | `[V, C, R]` | float32 | line integral | `aapm` |
 
 - **Axes.** Reconstructed volumes use `[Z, H, W]`: `Z` = slice (cranio-caudal, increasing
   `ImagePositionPatient[2]`), `H` = rows, `W` = columns. Projection data (DICOM-CT-PD) are stored
@@ -108,7 +118,7 @@ the per-source HU offset correction; see §5.1). All arrays use C-order.
 - For full-dose-only sources (`lidc`), the `recon/low_dose_real` and `sinogram/*` groups are
   absent; the simulated-low-dose groups are always present.
 - **Terminology.** `recon/low_dose_real` (and `low_dose_kind="real"` in §4) denotes the
-  *source-distributed* reduced-dose. For AAPM/Mayo this is **Mayo's validated projection-domain
+  *source-distributed* reduced-dose. For AAPM this is **Mayo's validated projection-domain
   noise insertion** applied to the real full-dose projections — **not** a second physical low-dose
   scan — as distinct from `recon/low_dose_sim/*` (this release's own forward-model simulation). The
   `_real` suffix is shorthand for *measured-reference* (vs. *our-simulation*), not "re-acquired".
@@ -119,7 +129,7 @@ the per-source HU offset correction; see §5.1). All arrays use C-order.
 
 ```python
 from pwm_ldct_loader import LowDoseCTDataset
-ds = LowDoseCTDataset(root_lidc=..., root_aapm=..., root_mayo=...,
+ds = LowDoseCTDataset(root_lidc=..., root_aapm=...,
                       split="train", seed=42)
 sample = ds[i]
 ```
@@ -134,7 +144,7 @@ sample = ds[i]
 | `dose_ratio`   | `float`                 | `0.25` for real; the requested `r` for sim |
 | `sinogram`     | `None`                  | always `None` at the slice level — projections are series-level, not per-slice; use `get_series_projections` (below) |
 | `has_projections` | `bool`               | whether series-level projection data exist for this `series_id` |
-| `source`       | `str`                   | `"lidc"` \| `"aapm"` \| `"mayo"` |
+| `source`       | `str`                   | `"lidc"` \| `"aapm"` (`"mayo"` reserved, not planned) |
 | `patient_id`   | `str`                   | |
 | `series_id`    | `str`                   | |
 | `slice_index`  | `int`                   | `Z` index within the series |
@@ -151,7 +161,7 @@ sample = ds[i]
 | `prefer_real_ld` | `True` | use real low-dose when present, else simulated |
 | `resample_spacing` | `None` | if set (e.g. `0.75`), resample in-plane to that mm spacing; default preserves native |
 | `slice_thickness` | `"thin"` | `"thin"` selects ≤ 1.5 mm series; or a float mm target |
-| `sources` | all three | restrict to a subset, e.g. `["aapm","mayo"]` for real-paired-only studies |
+| `sources` | all three | restrict to a subset, e.g. `["aapm"]` for real-paired-only studies; `"mayo"` reserved, not planned |
 
 ### 4.2 Series-level projections
 
@@ -181,7 +191,7 @@ One JSON object per series. Fields (✓ = always present; ○ = present where th
   "scan_uid": "string",                 // ✓
   "patient_id": "string",               // ✓
   "series_id": "string",                // ✓
-  "source": "lidc|aapm|mayo",           // ✓
+  "source": "lidc|aapm",                // ✓ ("mayo" reserved, not planned)
   "anatomy": "chest|abdomen",           // ✓
   "schema_version": "0.5.0",            // ✓
 
@@ -245,7 +255,7 @@ Simulated low-dose images are produced by the single forward model
 `pwm_core.contrib.modalities.ct_radon` (manuscript Eq. 1: ray-dependent Poisson photon-counting
 noise + additive electronic-noise floor) at `r ∈ {0.10, 0.25, 0.50}`, seeded by `seed` so the
 realization is reproducible. The model is applied to **every** source's full-dose scan (including
-AAPM/Mayo) so the simulated distribution is consistent; the AAPM/Mayo **real** low-dose is preserved
+AAPM) so the simulated distribution is consistent; the AAPM **real** low-dose is preserved
 alongside for sim-vs-real comparison.
 
 ---
@@ -295,12 +305,7 @@ keyed by `reader_id`, for uncertainty-aware downstream methods.
   `hdf5/{split}/{source}/{patient}/` folder (exactly what the loader globs), so the split files
   always match what is loaded; it falls back to the deterministic rule above only when the
   (regenerable) HDF5 were pruned during a streaming build. Every record is listed.
-- **Cross-source de-duplication.** A physical patient that appears in more than one source (e.g.
-  AAPM 2016 ⊂ Mayo LDCT-PD, which share Mayo's native ID scheme) yields the same `ckey`, so its
-  records are **co-located in one split** (the `ckey`-keyed placement) — preventing train/test
-  leakage. `write_splits` verifies this and warns on any `ckey` spanning >1 split. De-duplication is
-  a *counting* notion (distinct `ckey`s = unique physical patients); both source records remain
-  listed and loadable, so e.g. the 209-record Mayo+AAPM tree is **208 unique patients** (L143 shared).
+- **Cross-source de-duplication.** A physical patient that appears in more than one source yields the same `ckey`, so its records are **co-located in one split** (the `ckey`-keyed placement) — preventing train/test leakage. `write_splits` verifies this and warns on any `ckey` spanning >1 split. De-duplication is a *counting* notion (distinct `ckey`s = unique physical patients); both source records remain listed and loadable. (AAPM 2016 originates from the Mayo patient population, but Mayo LDCT-PD is not in the release scope, so no cross-source overlap is expected among the planned sources.)
 - `splits/split_assignment.csv` records the final assignment and is itself hashed into
   `manifest.sha256`, so the split is frozen and verifiable.
 

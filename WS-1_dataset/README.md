@@ -2,7 +2,9 @@
 
 The **PWM Low-Dose CT Benchmark Dataset**: a content-addressed harmonization of multi-source CT data, distributable via PhysioNet + Zenodo, supported by a *Nature Scientific Data* paper. Released in two stages per the 2026-05-21 director decision — see [`data_needs.md`](data_needs.md) for the strategy doc.
 
-> **Status (D9 + 16, 2026-06-05):** **v0.5 (public-data harmonization) is the current ship target** — manuscript active in [`paper_draft/manuscript.tex`](paper_draft/manuscript.tex); D9 + 180 submission window. v0.5 unifies LIDC-IDRI + AAPM 2016 + Mayo LDCT-PD under one schema, one Python loader, one harmonized annotation convention, and one content-addressed manifest; cross-vendor (GE ↔ Siemens) paired-dose comes free from the Mayo cohort. **v1.0 (prospective multi-vendor + multi-site extension)** is preserved in [`paper_draft/manuscript_v1.tex`](paper_draft/manuscript_v1.tex) for the D9 + 365–540 submission window once Track K + IRB + clinical acquisition land. The two manuscripts coexist — do not conflate them.
+> **Status (2026-08-18):** **v0.5 (LIDC-IDRI first release) is the current ship target** — manuscript active in [`paper_draft/manuscript.tex`](paper_draft/manuscript.tex). **v0.5 = LIDC-only: 1,010 LIDC-IDRI patients** (train 589 / val 216 / test 205), each with the inherited 4-radiologist raw annotations + majority-vote consensus; low-dose is **simulated** (projection-domain forward model `projection_domain_v1_gpu`, dose ratios 0.10/0.25/0.50); full-dose real reconstructions + simulated low-dose. **AAPM 2016 + Mayo LDCT-PD are v1.0 roadmap items** and are NOT part of the v0.5 release (no real paired-dose data, no AAPM/Mayo data tree in v0.5). **v1.0 (multi-source + prospective multi-vendor + multi-site extension)** is preserved in [`paper_draft/manuscript_v1.tex`](paper_draft/manuscript_v1.tex) for the D9 + 365–540 submission window once Track K + IRB + clinical acquisition land. The two manuscripts coexist — do not conflate them.
+
+> **AAPM paired held-out baseline (2026-08-21):** AAPM 2016 10 training patients (1mm B30) staged as real FD/QD pairs; split 3/3/4 into [`splits/aapm_{train,val,test}.txt`](splits/aapm_train.txt) + [`splits/split_assignment.csv`](splits/split_assignment.csv). Geometric pairing validated 10/10 (Pearson=1.0, see [`output/aapm_pairing_validation.json`](output/aapm_pairing_validation.json)). Complete held-out baseline run executed on the paired tree — RED-CNN / CTformer / LEARN + permanent Gaussian blur trap, fidelity (PSNR/SSIM/LPIPS) + detectability (CNR/CHO-AUC/NPWE, task_spec SKE-Gaussian 20HU/s2px) per split and per patient: [`output/aapm_paired_baselines_v2.json`](output/aapm_paired_baselines_v2.json) + [`output/aapm_paired_baselines_v2_summary.md`](output/aapm_paired_baselines_v2_summary.md). **Task-spec calibration 2026-08-21 (Rung 1 closed):** the insertion contrast/sigma grid (20–60 HU × 0.5–3 px, + 80HU/4px, disk micro-structures to 240 HU) is **not discriminative** on real anatomy (CHO AUC saturated ≥ 0.92–1.000 for all incl. blur; blur-vs-model AUC gap ≤ 0.02); the calibrated discriminative dimension is the frequency-domain protocol `detectability-freq-v1` (`schema/detectability_task_spec.md` §6): 1-px high-pass band-energy retention (BandER) separates blur (0.247) from RED-CNN (0.636) / CTformer (1.040) / LEARN (0.631) by 2.6–4.2× on the same held-out test, while blur scores the **highest SSIM (0.929)** and comparable PSNR (39.46) — the blur trap is now a demonstrated "high fidelity, low detectability" failure on real anatomy. Remaining before full Rung 1 closure: independent recomputation by a domain verifier.
 
 ---
 
@@ -22,16 +24,16 @@ The two releases have different scope. v0.5 ships the harmonization layer over e
 
 | Item | v0.5 (current ship target) | v1.0 (future, gated on Track K + IRB) |
 |---|---|---|
-| Patient scans, paired full-dose / reduced-dose | **208 unique paired-dose / 1,226 unique union** (LIDC + AAPM 2016 + Mayo LDCT-PD); AAPM paired FD+QD covers the 10 training patients (testing is QD-only, FD withheld) | ≥ 500 (stretch 1,000) prospectively acquired |
-| Credential-issuance regime (per WS-2 [V3-9 power sim](../WS-2_framework/theory/proofs/estimator.md), D9 + 14; per-modality trio closed at D9 + 15 with V3-10 / V3-11) | At AUC ≈ 0.92 (typical lung-nodule operating point) and the v0.3 AUC default `ε = 0.05`, the cohort satisfies WS-2's (S3) sample-size formula (n ≈ 130–250 required) **but sits in the empirical INDETERMINATE-dominated regime**: P(`PASS`) under the null ≈ 0.40 at n = 200, lifting to ≈ 0.94 at n = 500. Downstream users should **expect `INDETERMINATE` verdicts on the v0.5 cohort for genuinely equivalent methods** — absence of `PASS` is not evidence of non-equivalence, only of insufficient n. **For Dice-type segmentation tasks at the non-AUC default `ε = 0.02`**, the cohort is *comfortably* in the PASS regime per WS-2 V3-10 (`proofs/estimator.md` §4b): at clinical $\sigma_\Delta \approx 0.05$ and n = 200, P(`PASS`) under the null = 1.000 — substantively easier than the AUC case because the variance-relative-to-margin ratio is much narrower. For tighter AUC margins (`ε = 0.02`) the cohort is undersized by both the formula and the empirical power criterion. The CR small-$n$ anti-conservativeness finding from V3-11 (`proofs/estimator.md` §4c) does not affect the v0.5 cohort because n = 208 ≫ 30. | Prospective n ≥ 500 lifts cleanly into the **P(`PASS`) ≈ 0.94** regime at the typical AUC / `ε = 0.05` operating point; supports reliable `PASS` verdicts on equivalent methods and (with the upper end of the cohort range) the tighter `ε = 0.02` margin. For Dice and CR derived tasks, n ≥ 500 is well above all thresholds in WS-2's `proofs/estimator.md` §§4b / 4c. |
-| Reduced-dose nature | **Measured-reference vs.\ our-simulation**: AAPM/Mayo "low-dose" is Mayo's validated projection-domain noise insertion from the real full-dose projections, not a second physical scan (corrected 2026-05-26); LIDC reduced-dose is our Poisson-noise simulation at 25% photon count | Re-acquired paired-dose physical scans (≥ 50 patients) |
-| Vendor coverage | **Two-vendor: ~99 GE + ~101 Siemens** in the Mayo LDCT-PD cohort (corrected 2026-05-26 from prior "Siemens-only" framing); cross-vendor (GE ↔ Siemens) paired-dose is a v0.5 strength | + Canon and/or Philips via partner-site acquisition (≥ 3 vendors total) |
-| Anatomy | Chest (lung-screening primary) + abdomen (oncology follow-up, partial coverage) | Chest + abdomen at multi-site scale |
-| Sites | Public sources only — no PHI-bearing institutional acquisition | UTSW lead + ≥ 1 partner academic medical center |
-| Annotations | Re-use LIDC-IDRI's 4-radiologist annotations; top up AAPM + Mayo chest cases that lack equivalents per [`schema/annotation_qa_protocol.md`](schema/annotation_qa_protocol.md) | Same protocol extended to the prospective cohort |
-| Format | HDF5 shards + DICOM-CT-PD projections (where source provides) + harmonized annotations + content-addressed manifest | Same + raw projections from the prospective acquisitions |
+| Patient scans, paired full-dose / reduced-dose | **1,010 LIDC-IDRI patients** (LIDC-only first release; train 589 / val 216 / test 205). Low-dose is **simulated** (projection-domain forward model, dose ratios 0.10/0.25/0.50); no real paired-dose data in v0.5. **AAPM 2016 + Mayo LDCT-PD are v1.0 roadmap items** (208 unique paired-dose / 1,226 unique union once AAPM + Mayo join) | ≥ 500 (stretch 1,000) prospectively acquired + AAPM/Mayo sources |
+| Credential-issuance regime (per WS-2 [V3-9 power sim](../WS-2_framework/theory/proofs/estimator.md), D9 + 14; per-modality trio closed at D9 + 15 with V3-10 / V3-11) | For the v1.0 AAPM+Mayo paired-dose cohort at AUC ≈ 0.92 (typical lung-nodule operating point) and the v0.3 AUC default `ε = 0.05`, the cohort would satisfy WS-2's (S3) sample-size formula (n ≈ 130–250 required) **but sits in the empirical INDETERMINATE-dominated regime**: P(`PASS`) under the null ≈ 0.40 at n = 200, lifting to ≈ 0.94 at n = 500. **v0.5 (LIDC-only, simulated low-dose) is not a real paired-dose cohort and is not suited to credential issuance** — downstream users should treat v0.5 as a methodological/data-format release and wait for v1.0 paired-dose for WS-2 credentials. **For Dice-type segmentation tasks at the non-AUC default `ε = 0.02`**, a v1.0 paired cohort would be *comfortably* in the PASS regime per WS-2 V3-10 (`proofs/estimator.md` §4b): at clinical $\sigma_\Delta \approx 0.05$ and n = 200, P(`PASS`) under the null = 1.000. For tighter AUC margins (`ε = 0.02`) the cohort is undersized by both the formula and the empirical power criterion. The CR small-$n$ anti-conservativeness finding from V3-11 (`proofs/estimator.md` §4c) applies once the v1.0 paired cohort exists (n = 208 ≫ 30 in the union once AAPM+Mayo join). | Prospective n ≥ 500 lifts cleanly into the **P(`PASS`) ≈ 0.94** regime at the typical AUC / `ε = 0.05` operating point; supports reliable `PASS` verdicts on equivalent methods and (with the upper end of the cohort range) the tighter `ε = 0.02` margin. For Dice and CR derived tasks, n ≥ 500 is well above all thresholds in WS-2's `proofs/estimator.md` §§4b / 4c. |
+| Reduced-dose nature | **v0.5: simulated low-dose only** — LIDC reduced-dose is our Poisson-noise/projection-domain simulation at dose ratios 0.10/0.25/0.50 (forward model `projection_domain_v1_gpu`); no measured real low-dose in v0.5. (v1.0 adds Mayo's validated projection-domain noise-inserted reference for AAPM/Mayo and prospective re-acquired scans.) | Re-acquired paired-dose physical scans (≥ 50 patients) + AAPM/Mayo noise-inserted reference |
+| Vendor coverage | **v0.5: LIDC-IDRI four-vendor** (GE / Siemens / Philips / Toshiba; 669 / 201 / 74 / 66), full-dose real reconstructions + simulated low-dose. No GE↔Siemens paired-dose in v0.5. | v1.0 adds **~99 GE + ~101 Siemens** (Mayo LDCT-PD; corrected 2026-05-26) for cross-vendor paired-dose, + Canon and/or Philips via partner-site acquisition (≥ 3 vendors total) |
+| Anatomy | Chest (lung-screening primary; LIDC) | Chest + abdomen at multi-site scale (AAPM/Mayo oncology + prospective) |
+| Sites | Public source only — LIDC-IDRI (US multi-site consortium); no PHI-bearing institutional acquisition | AAPM 2016 + Mayo LDCT-PD public sources + UTSW lead + ≥ 1 partner academic medical center |
+| Annotations | Re-use LIDC-IDRI's 4-radiologist annotations (raw_per_reader + majority-vote consensus) per [`schema/annotation_qa_protocol.md`](schema/annotation_qa_protocol.md) | Same protocol + top-up AAPM/Mayo chest cases + prospective cohort |
+| Format | HDF5 shards + harmonized annotations + content-addressed manifest (LIDC) | Same + DICOM-CT-PD projections (AAPM/Mayo) + raw projections from the prospective acquisitions |
 | Distribution | PhysioNet DOI + Zenodo (primary); PWM L3 registry as an optional mirror (post-2026-05-25 reframe) | Same |
-| Patient-level split | Already deposited under [`hdf5/{train,val,test}/`](pipelines/) (pid-bucketed for Mayo, ckey-bucketed for AAPM); 60 / 20 / 20 | Same protocol over the larger cohort |
+| Patient-level split | LIDC: 589 / 216 / 205 (train / val / test; 60 / 20 / 20) | Same protocol over the larger cohort |
 | Citations target (24 mo post-release) | ≥ 25 (v0.5 alone) | ≥ 50 (combined v0.5 + v1.0) |
 
 ---
@@ -42,11 +44,11 @@ The two releases have different scope. v0.5 ships the harmonization layer over e
 
 | # | Task | Output | Status @ v0.5 |
 |---|---|---|---|
-| 1.1 | Download and stage LIDC-IDRI 50-patient subset (NBIA Data Retriever) | Raw DICOM tree on disk | **done** — staged; pipeline runs end-to-end |
-| 1.2 | Request AAPM 2016 access (Mayo); 1-2 wk lead time | Access granted; raw DICOM staged | **done** — staged at `gs://low-dose-ct/aapm_2016_grand_challenge/` (52 zips, 174.7 GB); unzip step wired in commit `a4a14ec` |
+| 1.1 | Download and stage LIDC-IDRI full cohort (NBIA Data Retriever) | Raw DICOM tree on disk | **done** — staged; pipeline runs end-to-end; 1,010 patients in the v0.5 build |
+| 1.2 | **(v1.0)** Request AAPM 2016 access (Mayo); 1-2 wk lead time | Access granted; raw DICOM staged | **roadmap** — staged at `gs://low-dose-ct/aapm_2016_grand_challenge/` (52 zips, 174.7 GB); unzip step wired in commit `a4a14ec` |
 | 1.3 | Author canonical metadata schema (`schema/dataset_schema.md`) | Schema doc + DICOM cleaning spec | **done** — 4 specs + README in [`schema/`](schema/) |
-| 1.4 | Build `Dockerfile.lidc_idri` (HU window, 512×512 resize, Poisson-noise simulated low-dose at 25% photon count) | Working Docker image; HDF5 shards | **done** — pipeline built; HDF5 shards land under `hdf5/{train,val,test}/` |
-| 1.5 | Build `Dockerfile.aapm_2016` (uses Mayo projection-domain noise-inserted low-dose) | Working Docker image; HDF5 shards | **done** — pipeline built; AAPM unzip + DICOM-CT-PD projection ingest wired; output is ckey-bucketed |
+| 1.4 | Build `Dockerfile.lidc_idri` (HU window, 512×512 resize, simulated low-dose at dose ratios 0.10/0.25/0.50 via `projection_domain_v1_gpu`) | Working Docker image; HDF5 shards | **done** — pipeline built; HDF5 shards land under `hdf5/{train,val,test}/` (589 / 216 / 205) |
+| 1.5 | **(v1.0)** Build `Dockerfile.aapm_2016` (uses Mayo projection-domain noise-inserted low-dose) | Working Docker image; HDF5 shards | **roadmap** — pipeline built; AAPM unzip + DICOM-CT-PD projection ingest wired; output is ckey-bucketed |
 | 1.6 | Build `pwm_ldct_loader` Python data loader; pytest suite verifying schema invariants | Pip-installable package; tests green | **done** — 24 pytest green on synthetic fixture; reads pipeline output; folder-authoritative split discovery (commit `7b94070`) |
 | 1.7 | Validate that downstream code (`baselines/`, `reference_method/v0.1/`) consumes the loader without modification | Integration smoke test | **partial** — `baselines/` RED-CNN trains/evals via loader (5 tests green); 3 other methods pluggable; benchmark numbers gated on GPU |
 
@@ -58,7 +60,7 @@ The two releases have different scope. v0.5 ships the harmonization layer over e
 |---|---|---|---|
 | 2.1 | IRB submission to UTSW Radiology (gated by Track K — new PI) | IRB approval letter | v1.0 — pending Track K |
 | 2.2 | Partner-site MOU; second-vendor acquisition (target ≥ 200 scans) | Signed MOU; raw scans arriving | v1.0 — pending Track K + partner-site recruitment |
-| 2.3 | Annotation pipeline: ≥ 2 board-certified radiologists × honoraria; majority-vote ground truth | Annotated cases | v0.5 uses [`schema/annotation_qa_protocol.md`](schema/annotation_qa_protocol.md) on existing LIDC + top-up AAPM/Mayo; v1.0 extends to prospective cohort |
+| 2.3 | Annotation pipeline: ≥ 2 board-certified radiologists × honoraria; majority-vote ground truth | Annotated cases | v0.5 uses [`schema/annotation_qa_protocol.md`](schema/annotation_qa_protocol.md) on inherited LIDC 4-reader annotations; **top-up AAPM/Mayo is v1.0**; v1.0 extends to prospective cohort |
 | 2.4 | PHI scrubbing per HIPAA Safe Harbor; verify against DICOM cleaning whitelist | Clean DICOM exports | v1.0 — public data is already de-identified upstream; whitelist applies to prospective acquisitions |
 | 2.5 | Build `Dockerfile.utsw_clinical` (consumes clean DICOM, produces HDF5 matching schema) | Working Docker image | v1.0 — pending UTSW data arrival |
 
@@ -82,18 +84,18 @@ D9 anchor ≈ 2026-05-20; today (2026-06-05) is **≈ D9 + 16**. The two-stage s
 | Date | Milestone | Status |
 |---|---|---|
 | D9 + 12 (2026-06-01) | **LIDC-IDRI Docker pipeline** reproducible end-to-end ([`pipelines/`](pipelines/)) | **done** ahead of schedule (was D9 + 30) |
-| D9 + 12 (2026-06-01) | **AAPM 2016 Docker pipeline** reproducible end-to-end (unzip + DICOM-CT-PD ingest, commit `a4a14ec`) | **done** ahead of schedule (was D9 + 60) |
+| D9 + 12 (2026-06-01) | **(v1.0 roadmap)** AAPM 2016 Docker pipeline reproducible end-to-end (unzip + DICOM-CT-PD ingest, commit `a4a14ec`) | **roadmap** — not part of v0.5 release |
 | D9 + 12 (2026-06-01) | **Metadata schema ratified** ([`schema/`](schema/), 4 specs); **`pwm_ldct_loader` passes 24 pytest** on synthetic fixture | **done** ahead of schedule (was D9 + 90) |
-| D9 + 12 (2026-06-01) | **Cohort count locked**: 208 unique paired-dose / 1,226 unique union (commit `bdd42b7`); deposited under `gs://low-dose-ct/pwm_ldct_v0_5` | **done** |
+| 2026-08-18 | **v0.5 scope locked: LIDC-only 1,010 patients** (train 589 / val 216 / test 205); AAPM/Mayo deferred to v1.0 roadmap | **done** |
 | D9 + 12 (2026-06-01) | **v0.5 manuscript active** in [`paper_draft/manuscript.tex`](paper_draft/manuscript.tex); PhysioNet listing drafted in [`physionet_listing/`](physionet_listing/) | **active** — `[CONFIRM]` fields = authors / DOI / IRB / funding |
-| D9 + 90 | RED-CNN + 3 pluggable baselines benchmarked on v0.5 splits (needs GPU); paper Figure 1 (real-vs-simulated low-dose) generated | pending — gated on GPU access |
+| D9 + 90 | RED-CNN + 3 pluggable baselines benchmarked on v0.5 LIDC splits (needs GPU); paper Figure 1 (real-vs-simulated low-dose) generated | pending — gated on GPU access |
 | D9 + 180 | **v0.5 paper submitted to *Nature Scientific Data*; PhysioNet DOI + Zenodo deposit live** | pending (v0.5 ship target) |
 | D9 + 120 | IRB submitted to UTSW Radiology (v1.0 critical path) | pending — gated on Track K |
 | D9 + 270 | UTSW IRB approved; first clinical scans acquired (v1.0 critical path) | pending — gated on Track K + IRB |
 | D9 + 365 | v0.5 paper accepted (within ~6 mo of submission); v1.0 prospective acquisition underway | pending |
-| D9 + 540 | **v1.0 paper submitted (≥ 500 prospectively-acquired paired scans across ≥ 2 vendors + ≥ 2 sites); v0.5 widely cited** | pending (v1.0 ship target) |
+| D9 + 540 | **v1.0 paper submitted (≥ 500 prospectively-acquired paired scans across ≥ 2 vendors + ≥ 2 sites + AAPM/Mayo); v0.5 widely cited** | pending (v1.0 ship target) |
 
-The critical-path leg for **v0.5** is now GPU access and the radiologist top-up annotation campaign on AAPM + Mayo chest cases (months ~D9 + 30 → D9 + 90). The critical-path leg for **v1.0** remains the IRB lag (months 5–9), still exogenous; the v0.5 release plus parallel-tracked WS-2 and WS-3 work absorb that window.
+The critical-path leg for **v0.5** is now GPU access and LIDC-only baselines (months ~D9 + 30 → D9 + 90); **AAPM/Mayo top-up annotation is a v1.0 item**, not on the v0.5 critical path. The critical-path leg for **v1.0** remains the IRB lag (months 5–9), still exogenous; the v0.5 release plus parallel-tracked WS-2 and WS-3 work absorb that window.
 
 ---
 
@@ -103,15 +105,15 @@ The two-stage release strategy has two separate ship gates. The intermediate-pro
 
 ### v0.5 progress at D9 + 16 (intermediate, not terminal)
 
-- [x] Public-data substrate (LIDC-IDRI + AAPM 2016 + Mayo LDCT-PD) staged and reproducibly preprocessed under `pwm_ldct_prep`
+- [x] Public-data substrate (**LIDC-IDRI 1,010 patients**) staged and reproducibly preprocessed under `pwm_ldct_prep` (AAPM 2016 + Mayo LDCT-PD pipelines built but **deferred to v1.0**)
 - [x] Canonical schema + DICOM cleaning + annotation-QA protocol drafted in [`schema/`](schema/) (4 specs)
 - [x] `pwm_ldct_loader` scaffolded; 24 pytest green on synthetic fixture; folder-authoritative split discovery
-- [x] Cohort count locked: 208 unique paired-dose / 1,226 unique union; deposited at `gs://low-dose-ct/pwm_ldct_v0_5`
+- [x] v0.5 scope locked: **LIDC-only 1,010 patients** (train 589 / val 216 / test 205); simulated low-dose at 0.10/0.25/0.50 via `projection_domain_v1_gpu`
 - [x] v0.5 manuscript drafted with real prose for Abstract / Background / Methods / Data Records / Usage Notes / Roadmap ([`paper_draft/manuscript.tex`](paper_draft/manuscript.tex))
 - [x] PhysioNet listing drafted (paste-ready; `[CONFIRM]` fields = authors / DOI / IRB / funding)
-- [ ] RED-CNN + 3 pluggable baselines benchmarked on v0.5 splits (gated on GPU)
-- [ ] Figure 1 (real-vs-simulated low-dose) generated from AAPM 2016 paired-dose training subset
-- [ ] Radiologist top-up annotation campaign on AAPM + Mayo chest cases per `schema/annotation_qa_protocol.md`
+- [ ] RED-CNN + 3 pluggable baselines benchmarked on v0.5 LIDC splits (gated on GPU)
+- [ ] Figure 1 (real-vs-simulated low-dose) generated from LIDC simulated low-dose
+- [ ] *(v1.0)* Radiologist top-up annotation campaign on AAPM + Mayo chest cases per `schema/annotation_qa_protocol.md`
 
 ### v0.5 ship gate (D9 + 180 → D9 + 365)
 
@@ -124,9 +126,9 @@ The two-stage release strategy has two separate ship gates. The intermediate-pro
 ### v1.0 ship gate (D9 + 365 → D9 + 540, gated on Track K + IRB)
 
 - [ ] ≥ 500 prospectively-acquired paired scans across ≥ 2 vendors and ≥ 2 sites (UTSW + partner; Canon and/or Philips coverage)
-- [ ] v1.0 paper submitted and accepted at *Nature Scientific Data*
+- [ ] **v1.0** paper submitted and accepted at *Nature Scientific Data* (incl. AAPM 2016 + Mayo LDCT-PD sources)
 - [ ] ≥ 3 external research groups have used the v0.5 + v1.0 dataset (early adoption signal across both releases)
-- [ ] Per-vendor cross-validation analyses included in v1.0 (extending the v0.5 GE↔Siemens cross-vendor result)
+- [ ] Per-vendor cross-validation analyses included in v1.0 (extending v0.5 LIDC four-vendor coverage with v1.0 GE↔Siemens paired-dose cross-vendor result)
 
 ---
 
@@ -147,7 +149,7 @@ Do not pre-create empty directories. Create each one when the work that fills it
 
 ## Dependencies
 
-- **Two-stage release strategy (decision taken 2026-05-21).** The public-data-only first dataset paper (v0.5) is *no longer a fallback* — it is the **primary current ship target** ([`data_needs.md`](data_needs.md)). v0.5 ships at D9 + 180 using LIDC + AAPM 2016 + Mayo LDCT-PD; v1.0 follows at D9 + 365–540 with the prospective clinical extension. The Track K + IRB lag no longer blocks the first paper; it only governs the second.
+- **Two-stage release strategy (decision taken 2026-05-21; scope update 2026-08-18).** The public-data-only first dataset paper (v0.5) is the **primary current ship target** ([`data_needs.md`](data_needs.md)). **v0.5 ships as LIDC-only (1,010 patients) at D9 + 180**; **AAPM 2016 + Mayo LDCT-PD are deferred to v1.0** (D9 + 365–540) together with the prospective clinical extension. The Track K + IRB lag no longer blocks the first paper; it only governs the second.
 - **Track K** (new UTSW PI confirmed) — required for **v1.0** IRB submission and prospective acquisition. v0.5 does not depend on Track K.
 - **Forward model** `packages/pwm_core/contrib/modalities/ct_radon.py` — single source of truth for simulated low-dose generation. Do not reimplement.
 - **PhysioNet DOI + Zenodo deposit** (primary v0.5 distribution channels per the 2026-05-25 reframe) and the optional [`../pwm_integration/l3_spec.md`](../pwm_integration/l3_spec.md) PWM L3 registry mirror — release payloads depend on this folder's final dataset specs.
@@ -161,7 +163,7 @@ Do not pre-create empty directories. Create each one when the work that fills it
 - [`data_needs.md`](data_needs.md) — the 2026-05-21 two-stage strategy doc; gap analysis between manuscript claims and actual data; the single canonical source for v0.5 vs v1.0 scoping. Read this first if the two-stage framing is unfamiliar.
 - [`paper_draft/README.md`](paper_draft/README.md) — paper_draft folder status; coexistence of `manuscript.tex` (v0.5 active) and `manuscript_v1.tex` (v1.0 preserved); per-section completeness for v0.5.
 - [`SUBMISSION_CHECKLIST.md`](SUBMISSION_CHECKLIST.md) — consolidated open-items checklist for the v0.5 submission.
-- [`annotation_campaign_plan.md`](annotation_campaign_plan.md) — operational plan for the radiologist top-up annotation campaign on AAPM + Mayo chest cases.
+- [`annotation_campaign_plan.md`](annotation_campaign_plan.md) — operational plan for the radiologist top-up annotation campaign on AAPM + Mayo chest cases (**v1.0 scope**; v0.5 reuses LIDC's inherited 4-reader annotations).
 
 **Inside WS-1 (specs + code):**
 
