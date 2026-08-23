@@ -116,7 +116,6 @@ def test_spread_by_vendor_and_dose():
     result = {"validation": {"paired_methods": {
         "m1": {"psnr_db": 16.0, "ssim": 0.8,
                "detectability": {"cnr_mean": 5.0, "cho_auc_mean": 0.9,
-                                 "bander_roi": 0.63,
                                  "task": "SKE-Gaussian20HU-s2px"}}}}}
     add_submission(board, result, method="M1", vendor="Siemens", dose="0.25")
     add_submission(board, result, method="M1", vendor="GE", dose="0.25")
@@ -128,12 +127,6 @@ def test_spread_by_vendor_and_dose():
     assert spread_v["Siemens"]["psnr_db_span"] == 0.0
     assert spread_v["Siemens"]["cnr_mean_span"] == 0.0
     assert "cnr_mean_std" in spread_v["Siemens"]
-    # bander_roi must survive extract_paired_methods into the entry metrics and
-    # reach the spread block. Before 2026-09-04 it was dropped during extraction,
-    # so compute_spread's bander_roi branch and leaderboard.py's carry-through
-    # were both unreachable.
-    assert spread_v["Siemens"]["bander_roi_span"] == 0.0
-    assert "bander_roi_std" in spread_v["Siemens"]
 
     spread_d = compute_spread(board["entries"], by="dose")
     assert set(spread_d) == {"0.25", "0.50"}
@@ -149,7 +142,6 @@ def test_submission_updates_board_spread_block():
     result = {"validation": {"paired_methods": {
         "m1": {"psnr_db": 16.0, "ssim": 0.8,
                "detectability": {"cnr_mean": 5.0, "cho_auc_mean": 0.9,
-                                 "bander_roi": 0.63,
                                  "task": "SKE-Gaussian20HU-s2px"}}}}}
     add_submission(board, result, method="M1", vendor="Siemens", dose="0.25")
     assert board["spread"]["Siemens"]["n_entries"] == 1

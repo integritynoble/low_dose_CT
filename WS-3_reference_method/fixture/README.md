@@ -48,16 +48,10 @@ doesn't verify, or the metadata isn't schema-valid. What it builds (default):
 - **Reviewer artifact** — a runnable example for the manuscript's reproducibility story: a reviewer can generate a corpus, `pwm-audit` a credential, and `sha256sum -c` the manifest in one command.
 - **Schema regression** — if the credential wire format, metadata schema, or layout drifts, the fixture build fails loudly.
 
-## Verified both ways, in isolation
-
-[`DEMO_RUN_GUIDE.md`](DEMO_RUN_GUIDE.md) pins an isolated environment, runs these tests with skips reported,
-and runs `demo_verify.py`: one valid package accepted, six corrupted **copies** rejected for named reasons,
-one verifier failure reported as UNVERIFIED, the valid package proven untouched, and an evidence packet written.
-
 ## Tests
 
 ```
-cd fixture && PYTHONPATH=. ../../.venv/bin/python -m pytest -q   # 14 passed
+cd fixture && PYTHONPATH=. ../../.venv/bin/python -m pytest -q   # 11 passed
 ```
 
 Covers the NIfTI round-trip, full-build green report, directory structure,

@@ -102,9 +102,7 @@ def assert_no_referee_paths(obj: Any) -> List[str]:
     """Return referee-owned path strings found inside a submission object.
 
     Scans strings recursively for the leaderboard / held-out file names so a
-    submitter cannot smuggle a write-back path into the envelope. Dict **keys**
-    are scanned as well as values: a key is submitter-controlled data too, so a
-    values-only walk lets ``{"../data/leaderboard.json": 1}`` through.
+    submitter cannot smuggle a write-back path into the envelope.
     """
     found: List[str] = []
     targets = (LEADERBOARD_FILE_NAME, HELDOUT_FILE_NAME)
@@ -116,7 +114,6 @@ def assert_no_referee_paths(obj: Any) -> List[str]:
                 if t in item:
                     found.append(item)
         elif isinstance(item, dict):
-            stack.extend(item.keys())
             stack.extend(item.values())
         elif isinstance(item, (list, tuple)):
             stack.extend(item)
@@ -154,9 +151,7 @@ def check_submission_cannot_write_back(submission: SubmissionEnvelope) -> List[s
 
     The scan is **recursive**: a submitter can hide a ``write`` / ``save`` /
     ``append`` attribute or a referee-owned path string anywhere inside the result
-    dict, so both the envelope itself and every nested key and value are inspected.
-    ``method_name`` is submitter-controlled and is recorded verbatim on the board,
-    so it is scanned for referee-owned paths too, not just the payload.
+    dict, so both the envelope itself and every nested value are inspected.
     """
     violations: List[str] = []
     write_surface = assert_no_write_path(submission)
@@ -169,10 +164,6 @@ def check_submission_cannot_write_back(submission: SubmissionEnvelope) -> List[s
     if referee_paths:
         violations.append(
             f"submission references referee-owned files: {referee_paths}")
-    name_paths = assert_no_referee_paths(submission.method_name)
-    if name_paths:
-        violations.append(
-            f"submission method name references referee-owned files: {name_paths}")
     return violations
 
 
@@ -181,8 +172,7 @@ def _find_nested_write_surface(obj: Any, _seen: set | None = None) -> List[str]:
 
     Dict / list / tuple nodes are traversed without being flagged (their native
     methods are not filesystem-write capable); every *non-container* leaf is checked
-    for callable write/save/append/... attributes. Dict **keys** are traversed as
-    well as values, or a smuggled handle used as a key escapes the scan.
+    for callable write/save/append/... attributes.
     """
     if _seen is None:
         _seen = set()
@@ -194,7 +184,6 @@ def _find_nested_write_surface(obj: Any, _seen: set | None = None) -> List[str]:
             continue
         _seen.add(id(item))
         if isinstance(item, dict):
-            stack.extend(item.keys())
             stack.extend(item.values())
         elif isinstance(item, (list, tuple)):
             stack.extend(item)

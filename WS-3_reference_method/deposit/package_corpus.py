@@ -261,7 +261,6 @@ def _derive_counts(corpus_root: Path) -> dict[str, Any]:
     # Patients: read scan_meta.json patient ids if present, else fall back to scans.
     patients: set[str] = set()
     found_patient_field = False
-    detectors: set[tuple[str, str]] = set()
     for meta in corpus_root.glob("reconstructions/*/*/r*/scan_meta.json"):
         try:
             d = json.loads(meta.read_text(encoding="utf-8"))
@@ -271,11 +270,6 @@ def _derive_counts(corpus_root: Path) -> dict[str, Any]:
         if pid is not None:
             patients.add(str(pid))
             found_patient_field = True
-        # Which detector scored the task maps. emit_corpus writes this; the
-        # synthetic fixture does not, so absence is normal and not an error.
-        det = d.get("detector")
-        if isinstance(det, dict) and "name" in det and "version" in det:
-            detectors.add((str(det["name"]), str(det["version"])))
     n_patients = len(patients) if found_patient_field else None
 
     total_bytes = sum(
@@ -286,7 +280,6 @@ def _derive_counts(corpus_root: Path) -> dict[str, Any]:
         "n_scans": n_scans,
         "n_patients": n_patients,
         "total_bytes": total_bytes,
-        "task_detectors": sorted(detectors),
     }
 
 
@@ -297,11 +290,6 @@ def fill_metadata(seed: dict[str, Any], corpus_root: Path | str) -> dict[str, An
     ``path_glob``; fills ``counts.{n_scans, n_records_total, total_bytes}`` and,
     when ``scan_meta.json`` carries a patient id, ``counts.n_patients``.
     Descriptive fields are left untouched.
-
-    Also fills ``generating_pipeline.task_detector`` when the corpus records which
-    detector scored its task maps, so a reader of the deposit can tell a
-    real-model-scored corpus from a stub-scored one without opening per-scan files.
-    Raises ``ValueError`` if the corpus records more than one detector.
     """
     corpus_root = Path(corpus_root)
     md = json.loads(json.dumps(seed))  # deep copy
@@ -324,22 +312,6 @@ def fill_metadata(seed: dict[str, Any], corpus_root: Path | str) -> dict[str, An
     counts["total_bytes"] = derived["total_bytes"]
     if derived["n_patients"] is not None:
         counts["n_patients"] = derived["n_patients"]
-
-    # Detector provenance. A deposit describes one corpus, so it names one
-    # detector; more than one is a provenance defect the depositor must resolve
-    # rather than something to silently pick from or drop.
-    dets = derived["task_detectors"]
-    if len(dets) > 1:
-        listed = ", ".join(f"{n}@{v}" for n, v in dets)
-        raise ValueError(
-            f"corpus records more than one task detector ({listed}); a deposit "
-            "describes a single detector, so re-emit with one or split the corpus"
-        )
-    if dets:
-        name, version = dets[0]
-        md.setdefault("generating_pipeline", {})["task_detector"] = {
-            "name": name, "version": version,
-        }
     return md
 
 

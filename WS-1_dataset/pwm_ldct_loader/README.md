@@ -63,40 +63,13 @@ assert report.ok, report.errors
 ## Develop / test
 
 ```bash
-cd WS-1_dataset/pwm_ldct_loader
 pip install -e .[dev,torch]
 pytest
 ```
 
 The test suite builds a tiny synthetic conformant tree and asserts the schema invariants, the
 sample contract, split determinism, annotation consolidation, and `validate()` behavior — no
-network or real data required. Expect **25 passed**.
-
-### Troubleshooting: `No module named 'pwm_ldct_loader.schema'`
-
-If you run the suite from the `WS-1_dataset/` level *without installing first*:
-
-```bash
-python3 -m pytest pwm_ldct_loader        # ModuleNotFoundError at conftest.py
-```
-
-**This is not a bug in the package.** It is a `src/`-layout project, so the importable code
-lives at `pwm_ldct_loader/src/pwm_ldct_loader/`. When it is not installed, the *outer*
-`pwm_ldct_loader/` directory is picked up as an empty namespace package and shadows the real
-one — so `pwm_ldct_loader` imports, but `pwm_ldct_loader.schema` does not exist.
-
-Fix it by installing (preferred, and what the `baselines` package means by
-"needs `pwm_ldct_loader` on the path"):
-
-```bash
-pip install -e WS-1_dataset/pwm_ldct_loader
-```
-
-or, for a one-off run without touching the environment:
-
-```bash
-PYTHONPATH=pwm_ldct_loader/src python3 -m pytest pwm_ldct_loader   # 25 passed
-```
+network or real data required.
 
 ## License
 

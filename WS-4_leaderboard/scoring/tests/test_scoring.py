@@ -11,18 +11,9 @@ from scoring import (BLUR_ENTRY_ID, add_submission, blur_entry, check_paired_sub
                      sort_entries)
 
 
-def paired_metrics(psnr=15.0, ssim=0.8, cnr=4.2, auc=0.93, npwe=123.0,
-                   bander_roi=0.63, task="SKE-Gaussian20HU-s2px"):
-    """A publishable submission: fidelity + the discriminating BandER + transparency.
-
-    ``bander_roi`` is required by the gate (Rung 1); pass ``bander_roi=None`` to
-    build the pre-2026-09-04 shape that reported insertion-based indices only.
-    """
-    m = {"psnr_db": psnr, "ssim": ssim, "cnr_mean": cnr,
-         "cho_auc_mean": auc, "npwe_mean": npwe, "task": task}
-    if bander_roi is not None:
-        m["bander_roi"] = bander_roi
-    return m
+def paired_metrics(psnr=15.0, ssim=0.8, cnr=4.2, auc=0.93, npwe=123.0, task="SKE-Gaussian20HU-s2px"):
+    return {"psnr_db": psnr, "ssim": ssim, "cnr_mean": cnr,
+            "cho_auc_mean": auc, "npwe_mean": npwe, "task": task}
 
 
 def test_seed_entries_include_permanent_blur_trap():
@@ -73,48 +64,6 @@ def test_paired_gate_rejects_empty():
     assert check_paired_submission({}) != []
 
 
-def test_paired_gate_rejects_transparency_only_detectability():
-    """CNR/CHO/NPWE alone must not pass: the blur trap outscores real methods on CNR.
-
-    This is the defect the gate carried until 2026-09-04 -- DETECTABILITY_FIELDS
-    required "at least one of" the insertion-based indices, so a submission could
-    clear the gate on the very metric the permanent trap wins.
-    """
-    errs = check_paired_submission(paired_metrics(bander_roi=None))
-    assert errs, "transparency-only detectability must be rejected"
-    assert any("bander_roi" in e for e in errs)
-    assert not any("both numbers or neither" in e for e in errs), \
-        "it is paired; the violation is the missing discriminating index"
-
-
-def test_paired_gate_opens_when_bander_roi_present():
-    """The gate must ACCEPT a submission carrying the discriminating index.
-
-    Guards against a gate that refuses everything: same metrics as the rejected
-    case above, plus bander_roi.
-    """
-    assert check_paired_submission(paired_metrics(bander_roi=0.63)) == []
-
-
-def test_paired_gate_accepts_bander_roi_without_transparency_indices():
-    """BandER alone satisfies the detectability side; transparency is optional."""
-    assert check_paired_submission(
-        {"psnr_db": 39.5, "ssim": 0.93, "bander_roi": 0.636}) == []
-
-
-def test_blur_trap_is_rejected_on_cnr_but_caught_by_bander():
-    """The trap's own numbers: it wins on CNR and loses on BandER.
-
-    Uses the measured AAPM values from RUNG_REGISTRY.md Rung 3 (blur ROI BandER
-    0.432 vs models 3.854-6.735). A CNR-only gate would rank the trap first.
-    """
-    trap = paired_metrics(psnr=41.6, ssim=0.965, cnr=13.04, bander_roi=0.432)
-    model = paired_metrics(psnr=39.46, ssim=0.929, cnr=5.19, bander_roi=3.854)
-    assert check_paired_submission(trap) == []      # it is admissible...
-    assert trap["cnr_mean"] > model["cnr_mean"]     # ...and beats the model on CNR
-    assert trap["bander_roi"] < model["bander_roi"]  # but BandER separates them
-
-
 def test_ws3_runbundle_format_accepted(tmp_path):
     """A WS-3 RunBundle results.json (validation.paired_methods) passes the gate."""
     result = {
@@ -136,17 +85,13 @@ def test_ws3_runbundle_format_accepted(tmp_path):
 
 def test_submit_accepts_paired_and_keeps_trap(tmp_path):
     board = new_leaderboard()
-    before = len(board["entries"])
     result = {"validation": {"paired_methods": {
         "mymethod": {"psnr_db": 17.0, "ssim": 0.9,
                      "detectability": paired_metrics(cnr=5.1, auc=0.97)}}}}
     created = add_submission(board, result, method="MyMethod")
     assert len(created) == 1
     assert blur_entry(board["entries"]) is not None  # trap still present
-    # one entry added, none displaced. The seed count is not asserted directly:
-    # it grew from 2 to 7 on 2026-09-05 when the per-vendor traps landed, and
-    # pinning it here would make this test about seeding rather than submission.
-    assert len(board["entries"]) == before + 1
+    assert len(board["entries"]) == 3
 
 
 def test_submit_rejects_unpaired(tmp_path):

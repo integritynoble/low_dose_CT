@@ -40,10 +40,7 @@
       "description": "One-paragraph summary of what the corpus contains and what it is for."
     },
     "doi": {
-      "type": [
-        "string",
-        "null"
-      ],
+      "type": ["string", "null"],
       "pattern": "^10\\.[0-9]{4,}/.+$",
       "description": "Repository DOI (figshare/Zenodo). null until minted; required to be non-null at submission. IPFS CID is NOT a substitute."
     },
@@ -53,10 +50,7 @@
       "description": "Corpus release version, e.g. 1.0.0."
     },
     "release_date": {
-      "type": [
-        "string",
-        "null"
-      ],
+      "type": ["string", "null"],
       "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
       "description": "ISO-8601 release date; null until deposit is finalized."
     },
@@ -77,60 +71,32 @@
       "items": {
         "type": "object",
         "additionalProperties": false,
-        "required": [
-          "name",
-          "affiliation"
-        ],
+        "required": ["name", "affiliation"],
         "properties": {
-          "name": {
-            "type": "string",
-            "description": "Family, Given"
-          },
+          "name": { "type": "string", "description": "Family, Given" },
           "orcid": {
-            "type": [
-              "string",
-              "null"
-            ],
+            "type": ["string", "null"],
             "pattern": "^0000-000[0-9]-[0-9]{4}-[0-9]{3}[0-9X]$",
             "description": "ORCID iD; required for the corresponding author."
           },
-          "affiliation": {
-            "type": "string"
-          },
-          "corresponding": {
-            "type": "boolean",
-            "default": false
-          }
+          "affiliation": { "type": "string" },
+          "corresponding": { "type": "boolean", "default": false }
         }
       }
     },
     "keywords": {
       "type": "array",
       "minItems": 3,
-      "items": {
-        "type": "string"
-      }
+      "items": { "type": "string" }
     },
     "source_dataset": {
       "type": "object",
       "additionalProperties": false,
-      "required": [
-        "name",
-        "relation"
-      ],
+      "required": ["name", "relation"],
       "description": "The raw benchmark this corpus is derived from (WS-1). Establishes distinctness for Scientific Data review.",
       "properties": {
-        "name": {
-          "type": "string",
-          "description": "e.g. PWM-LDCT benchmark (WS-1)"
-        },
-        "doi": {
-          "type": [
-            "string",
-            "null"
-          ],
-          "pattern": "^10\\.[0-9]{4,}/.+$"
-        },
+        "name": { "type": "string", "description": "e.g. PWM-LDCT benchmark (WS-1)" },
+        "doi": { "type": ["string", "null"], "pattern": "^10\\.[0-9]{4,}/.+$" },
         "relation": {
           "type": "string",
           "const": "isDerivedFrom",
@@ -141,104 +107,42 @@
     "generating_pipeline": {
       "type": "object",
       "additionalProperties": false,
-      "required": [
-        "repository_url",
-        "commit",
-        "runbundle_cid"
-      ],
+      "required": ["repository_url", "commit", "runbundle_cid"],
       "description": "How the records were produced; must permit bit-identical regeneration.",
       "properties": {
-        "repository_url": {
-          "type": "string",
-          "format": "uri"
-        },
-        "commit": {
-          "type": "string",
-          "pattern": "^[0-9a-f]{7,40}$",
-          "description": "Git commit the pipeline was run at."
-        },
-        "docker_image_digest": {
-          "type": [
-            "string",
-            "null"
-          ],
-          "pattern": "^sha256:[0-9a-f]{64}$"
-        },
-        "runbundle_cid": {
-          "type": [
-            "string",
-            "null"
-          ],
-          "description": "IPFS CID of the pinned RunBundle (supplementary integrity anchor)."
-        },
-        "l4_cert_id": {
-          "type": [
-            "string",
-            "null"
-          ],
-          "description": "PWM L4 cert identifier anchoring the RunBundle."
-        },
+        "repository_url": { "type": "string", "format": "uri" },
+        "commit": { "type": "string", "pattern": "^[0-9a-f]{7,40}$", "description": "Git commit the pipeline was run at." },
+        "docker_image_digest": { "type": ["string", "null"], "pattern": "^sha256:[0-9a-f]{64}$" },
+        "runbundle_cid": { "type": ["string", "null"], "description": "IPFS CID of the pinned RunBundle (supplementary integrity anchor)." },
+        "l4_cert_id": { "type": ["string", "null"], "description": "PWM L4 cert identifier anchoring the RunBundle." },
         "library_versions": {
           "type": "object",
           "description": "Exact pins of load-bearing libraries used for generation.",
-          "additionalProperties": {
-            "type": "string"
-          }
-        },
-        "task_detector": {
-          "type": "object",
-          "description": "The frozen detector that produced the task-score maps, filled by the packager from the corpus's scan_meta.json records. Optional: absent when the corpus records no detector identity, as the synthetic fixture does. Pinning the generating commit is not sufficient on its own, because the same commit produces stub-scored or real-model-scored maps depending on which FrozenDetector is passed to emit_corpus.run().",
-          "properties": {
-            "name": {
-              "type": "string",
-              "description": "FrozenDetector.name, e.g. 'nndetection' or 'stub_local_contrast'."
-            },
-            "version": {
-              "type": "string",
-              "description": "FrozenDetector.version, e.g. the pinned weights tag or 'stub-0'."
-            }
-          },
-          "required": [
-            "name",
-            "version"
-          ],
-          "additionalProperties": false
+          "additionalProperties": { "type": "string" }
         }
       }
     },
     "acquisition": {
       "type": "object",
       "additionalProperties": false,
-      "required": [
-        "dose_ratios",
-        "vendors",
-        "anatomy"
-      ],
+      "required": ["dose_ratios", "vendors", "anatomy"],
       "properties": {
         "dose_ratios": {
           "type": "array",
           "minItems": 1,
-          "items": {
-            "type": "number",
-            "exclusiveMinimum": 0,
-            "maximum": 1.0
-          },
+          "items": { "type": "number", "exclusiveMinimum": 0, "maximum": 1.0 },
           "description": "Signal ratios r present in the corpus, e.g. [0.10, 0.25, 0.50, 1.00]."
         },
         "vendors": {
           "type": "array",
           "minItems": 1,
-          "items": {
-            "type": "string"
-          },
+          "items": { "type": "string" },
           "description": "CT vendors represented, e.g. [Siemens, GE, Canon]."
         },
         "anatomy": {
           "type": "array",
           "minItems": 1,
-          "items": {
-            "type": "string"
-          },
+          "items": { "type": "string" },
           "description": "e.g. [chest, abdomen]."
         }
       }
@@ -246,9 +150,7 @@
     "splits": {
       "type": "object",
       "additionalProperties": false,
-      "required": [
-        "released_split"
-      ],
+      "required": ["released_split"],
       "properties": {
         "released_split": {
           "type": "string",
@@ -269,13 +171,7 @@
       "items": {
         "type": "object",
         "additionalProperties": false,
-        "required": [
-          "type",
-          "format",
-          "path_glob",
-          "count",
-          "total_bytes"
-        ],
+        "required": ["type", "format", "path_glob", "count", "total_bytes"],
         "properties": {
           "type": {
             "type": "string",
@@ -290,50 +186,19 @@
               "index"
             ]
           },
-          "format": {
-            "type": "string",
-            "enum": [
-              "nifti",
-              "json",
-              "jsonl"
-            ]
-          },
-          "path_glob": {
-            "type": "string",
-            "description": "Glob locating these records within the corpus root."
-          },
-          "count": {
-            "type": "integer",
-            "minimum": 0
-          },
-          "total_bytes": {
-            "type": "integer",
-            "minimum": 0
-          },
-          "dtype": {
-            "type": [
-              "string",
-              "null"
-            ],
-            "description": "e.g. float32 for NIfTI image records."
-          },
-          "units": {
-            "type": [
-              "string",
-              "null"
-            ],
-            "description": "e.g. HU for reconstructions."
-          }
+          "format": { "type": "string", "enum": ["nifti", "json", "jsonl"] },
+          "path_glob": { "type": "string", "description": "Glob locating these records within the corpus root." },
+          "count": { "type": "integer", "minimum": 0 },
+          "total_bytes": { "type": "integer", "minimum": 0 },
+          "dtype": { "type": ["string", "null"], "description": "e.g. float32 for NIfTI image records." },
+          "units": { "type": ["string", "null"], "description": "e.g. HU for reconstructions." }
         }
       }
     },
     "credential": {
       "type": "object",
       "additionalProperties": false,
-      "required": [
-        "framework_hash",
-        "schema_version"
-      ],
+      "required": ["framework_hash", "schema_version"],
       "description": "Pins the WS-2 framework version every credential.json was issued under.",
       "properties": {
         "framework_hash": {
@@ -346,10 +211,7 @@
           "description": "Credential wire-format version, e.g. pwm-signal-equivalence/v0.2."
         },
         "audited_with": {
-          "type": [
-            "string",
-            "null"
-          ],
+          "type": ["string", "null"],
           "description": "Tool + version used to audit every credential, e.g. pwm-audit 0.2.2."
         }
       }
@@ -357,49 +219,21 @@
     "integrity": {
       "type": "object",
       "additionalProperties": false,
-      "required": [
-        "manifest_file",
-        "algorithm"
-      ],
+      "required": ["manifest_file", "algorithm"],
       "properties": {
-        "manifest_file": {
-          "type": "string",
-          "const": "MANIFEST.sha256"
-        },
-        "algorithm": {
-          "type": "string",
-          "const": "sha256"
-        }
+        "manifest_file": { "type": "string", "const": "MANIFEST.sha256" },
+        "algorithm": { "type": "string", "const": "sha256" }
       }
     },
     "counts": {
       "type": "object",
       "additionalProperties": false,
-      "required": [
-        "n_patients",
-        "n_scans",
-        "n_records_total"
-      ],
+      "required": ["n_patients", "n_scans", "n_records_total"],
       "properties": {
-        "n_patients": {
-          "type": "integer",
-          "minimum": 1
-        },
-        "n_scans": {
-          "type": "integer",
-          "minimum": 1
-        },
-        "n_records_total": {
-          "type": "integer",
-          "minimum": 1
-        },
-        "total_bytes": {
-          "type": [
-            "integer",
-            "null"
-          ],
-          "minimum": 0
-        }
+        "n_patients": { "type": "integer", "minimum": 1 },
+        "n_scans": { "type": "integer", "minimum": 1 },
+        "n_records_total": { "type": "integer", "minimum": 1 },
+        "total_bytes": { "type": ["integer", "null"], "minimum": 0 }
       }
     },
     "related_identifiers": {
@@ -408,38 +242,14 @@
       "items": {
         "type": "object",
         "additionalProperties": false,
-        "required": [
-          "identifier",
-          "relation"
-        ],
+        "required": ["identifier", "relation"],
         "properties": {
-          "identifier": {
-            "type": "string"
-          },
+          "identifier": { "type": "string" },
           "relation": {
             "type": "string",
-            "enum": [
-              "isSupplementTo",
-              "isDerivedFrom",
-              "isDocumentedBy",
-              "isVersionOf",
-              "references"
-            ]
+            "enum": ["isSupplementTo", "isDerivedFrom", "isDocumentedBy", "isVersionOf", "references"]
           },
-          "scheme": {
-            "type": [
-              "string",
-              "null"
-            ],
-            "enum": [
-              "doi",
-              "ipfs",
-              "url",
-              "sha256",
-              "pwm-l4",
-              null
-            ]
-          }
+          "scheme": { "type": ["string", "null"], "enum": ["doi", "ipfs", "url", "sha256", "pwm-l4", null] }
         }
       }
     }
