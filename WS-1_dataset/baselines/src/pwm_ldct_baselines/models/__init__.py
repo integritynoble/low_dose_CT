@@ -12,13 +12,14 @@ import torch.nn as nn
 
 from .red_cnn import REDCNN
 from .learn import LEARN
-from .ctformer_wrapper import CTformerWrapper
+from .ctformer_wrapper import CTformerWrapper, ctformer_small
 from .corediff_wrapper import CoreDiffWrapper
 from .gaussian_blur import GaussianBlur
 
 _REGISTRY = {
     "red_cnn": REDCNN,
     "ctformer": CTformerWrapper,
+    "ctformer_small": ctformer_small,
     "learn": LEARN,
     "corediff": CoreDiffWrapper,
     # Standing trap (Rung 1.3 / §4): higher PSNR, fails Rose criterion.

@@ -39,3 +39,8 @@ WS-1_dataset/baselines/checkpoints/
 
 # Local backup of nested vendor .git metadata (removed from submodule tracking)
 **/.git_local_backup/
+
+*.log.err
+*.bak
+*.legacy
+*.flag

@@ -1,0 +1,511 @@
+{
+ "schema": "vendor-spread/recalc (freq-v1)",
+ "models": [
+  "red_cnn",
+  "ctformer",
+  "learn",
+  "blur"
+ ],
+ "per_vendor": {
+  "GE": {
+   "patients": [
+    {
+     "patient_id": "lidc-0528",
+     "vendor": "GE",
+     "dose": "sim_r25",
+     "n_slices": 48,
+     "models": {
+      "red_cnn": {
+       "freq_roi": {
+        "n_roi": 48,
+        "roi_band_energy_ratio": 0.4753930825227335,
+        "band_energy_ratio_full": 1.0021120373857155,
+        "roi_tm_auc": 0.9895833333333334
+       }
+      },
+      "ctformer": {
+       "freq_roi": {
+        "n_roi": 48,
+        "roi_band_energy_ratio": 9.60659265875219,
+        "band_energy_ratio_full": 1.3851491277716566,
+        "roi_tm_auc": 0.9895833333333334
+       }
+      },
+      "learn": {
+       "freq_roi": {
+        "n_roi": 48,
+        "roi_band_energy_ratio": 0.3052809960237634,
+        "band_energy_ratio_full": 0.9939361024882589,
+        "roi_tm_auc": 0.9895833333333334
+       }
+      },
+      "blur": {
+       "freq_roi": {
+        "n_roi": 48,
+        "roi_band_energy_ratio": 0.06387083813405525,
+        "band_energy_ratio_full": 0.27073316662167457,
+        "roi_tm_auc": 0.9895833333333334
+       }
+      }
+     }
+    },
+    {
+     "patient_id": "lidc-0663",
+     "vendor": "GE",
+     "dose": "sim_r25",
+     "n_slices": 48,
+     "models": {
+      "red_cnn": {
+       "freq_roi": {
+        "n_roi": 48,
+        "roi_band_energy_ratio": 0.6833245538424905,
+        "band_energy_ratio_full": 1.0220222720921643,
+        "roi_tm_auc": 0.9895833333333334
+       }
+      },
+      "ctformer": {
+       "freq_roi": {
+        "n_roi": 48,
+        "roi_band_energy_ratio": 8.311678849884316,
+        "band_energy_ratio_full": 1.3961061824463392,
+        "roi_tm_auc": 0.9895833333333334
+       }
+      },
+      "learn": {
+       "freq_roi": {
+        "n_roi": 48,
+        "roi_band_energy_ratio": 0.5762363669923304,
+        "band_energy_ratio_full": 1.0238592163383586,
+        "roi_tm_auc": 0.9895833333333334
+       }
+      },
+      "blur": {
+       "freq_roi": {
+        "n_roi": 48,
+        "roi_band_energy_ratio": 0.026750727275904034,
+        "band_energy_ratio_full": 0.23114111167025278,
+        "roi_tm_auc": 0.9895833333333334
+       }
+      }
+     }
+    }
+   ]
+  },
+  "Philips": {
+   "patients": [
+    {
+     "patient_id": "lidc-0489",
+     "vendor": "Philips",
+     "dose": "sim_r25",
+     "n_slices": 48,
+     "models": {
+      "red_cnn": {
+       "freq_roi": {
+        "n_roi": 48,
+        "roi_band_energy_ratio": 2.647901588358457,
+        "band_energy_ratio_full": 1.3808820885028694,
+        "roi_tm_auc": 0.9895833333333334
+       }
+      },
+      "ctformer": {
+       "freq_roi": {
+        "n_roi": 48,
+        "roi_band_energy_ratio": 10.362552932760446,
+        "band_energy_ratio_full": 2.2332423842041536,
+        "roi_tm_auc": 0.9895833333333334
+       }
+      },
+      "learn": {
+       "freq_roi": {
+        "n_roi": 48,
+        "roi_band_energy_ratio": 2.6421629014223913,
+        "band_energy_ratio_full": 1.354861401745503,
+        "roi_tm_auc": 0.9895833333333334
+       }
+      },
+      "blur": {
+       "freq_roi": {
+        "n_roi": 48,
+        "roi_band_energy_ratio": 0.17954850084159538,
+        "band_energy_ratio_full": 0.39979689717040395,
+        "roi_tm_auc": 0.9895833333333334
+       }
+      }
+     }
+    },
+    {
+     "patient_id": "lidc-0649",
+     "vendor": "Philips",
+     "dose": "sim_r25",
+     "n_slices": 48,
+     "models": {
+      "red_cnn": {
+       "freq_roi": {
+        "n_roi": 48,
+        "roi_band_energy_ratio": 3.6924081887932396,
+        "band_energy_ratio_full": 1.3849157030097177,
+        "roi_tm_auc": 0.9895833333333334
+       }
+      },
+      "ctformer": {
+       "freq_roi": {
+        "n_roi": 48,
+        "roi_band_energy_ratio": 10.83001262964619,
+        "band_energy_ratio_full": 2.239658904457626,
+        "roi_tm_auc": 0.9895833333333334
+       }
+      },
+      "learn": {
+       "freq_roi": {
+        "n_roi": 48,
+        "roi_band_energy_ratio": 3.712682703425721,
+        "band_energy_ratio_full": 1.380607550456576,
+        "roi_tm_auc": 0.9895833333333334
+       }
+      },
+      "blur": {
+       "freq_roi": {
+        "n_roi": 48,
+        "roi_band_energy_ratio": 0.3078806298767994,
+        "band_energy_ratio_full": 0.43370418301652225,
+        "roi_tm_auc": 0.9895833333333334
+       }
+      }
+     }
+    }
+   ]
+  },
+  "Siemens": {
+   "patients": [
+    {
+     "patient_id": "lidc-0646",
+     "vendor": "Siemens",
+     "dose": "sim_r25",
+     "n_slices": 48,
+     "models": {
+      "red_cnn": {
+       "freq_roi": {
+        "n_roi": 48,
+        "roi_band_energy_ratio": 1.379388088522323,
+        "band_energy_ratio_full": 1.2151119064768225,
+        "roi_tm_auc": 0.9895833333333334
+       }
+      },
+      "ctformer": {
+       "freq_roi": {
+        "n_roi": 48,
+        "roi_band_energy_ratio": 2.7277835177856864,
+        "band_energy_ratio_full": 1.8832106784685003,
+        "roi_tm_auc": 0.9895833333333334
+       }
+      },
+      "learn": {
+       "freq_roi": {
+        "n_roi": 48,
+        "roi_band_energy_ratio": 1.3882080451262675,
+        "band_energy_ratio_full": 1.212267795492523,
+        "roi_tm_auc": 0.9895833333333334
+       }
+      },
+      "blur": {
+       "freq_roi": {
+        "n_roi": 48,
+        "roi_band_energy_ratio": 0.19037979896987547,
+        "band_energy_ratio_full": 0.3191114950078882,
+        "roi_tm_auc": 0.9895833333333334
+       }
+      }
+     }
+    },
+    {
+     "patient_id": "lidc-0066",
+     "vendor": "Siemens",
+     "dose": "sim_r25",
+     "n_slices": 48,
+     "models": {
+      "red_cnn": {
+       "freq_roi": {
+        "n_roi": 48,
+        "roi_band_energy_ratio": 0.9353174229434097,
+        "band_energy_ratio_full": 0.9287566327397707,
+        "roi_tm_auc": 0.9895833333333334
+       }
+      },
+      "ctformer": {
+       "freq_roi": {
+        "n_roi": 48,
+        "roi_band_energy_ratio": 1.0482982673116854,
+        "band_energy_ratio_full": 1.0361345198154546,
+        "roi_tm_auc": 0.9895833333333334
+       }
+      },
+      "learn": {
+       "freq_roi": {
+        "n_roi": 48,
+        "roi_band_energy_ratio": 0.9406729645586228,
+        "band_energy_ratio_full": 0.9337732242481733,
+        "roi_tm_auc": 0.9895833333333334
+       }
+      },
+      "blur": {
+       "freq_roi": {
+        "n_roi": 48,
+        "roi_band_energy_ratio": 0.05427728535174232,
+        "band_energy_ratio_full": 0.06378318765084734,
+        "roi_tm_auc": 0.9895833333333334
+       }
+      }
+     }
+    }
+   ]
+  },
+  "Toshiba": {
+   "patients": [
+    {
+     "patient_id": "lidc-0120",
+     "vendor": "Toshiba",
+     "dose": "sim_r25",
+     "n_slices": 48,
+     "models": {
+      "red_cnn": {
+       "freq_roi": {
+        "n_roi": 48,
+        "roi_band_energy_ratio": 0.8199728275448092,
+        "band_energy_ratio_full": 1.0235721488109073,
+        "roi_tm_auc": 0.9895833333333334
+       }
+      },
+      "ctformer": {
+       "freq_roi": {
+        "n_roi": 48,
+        "roi_band_energy_ratio": 8.58798587695405,
+        "band_energy_ratio_full": 1.3667882941101883,
+        "roi_tm_auc": 0.9895833333333334
+       }
+      },
+      "learn": {
+       "freq_roi": {
+        "n_roi": 48,
+        "roi_band_energy_ratio": 0.7372959102210067,
+        "band_energy_ratio_full": 1.0263464621665677,
+        "roi_tm_auc": 0.9895833333333334
+       }
+      },
+      "blur": {
+       "freq_roi": {
+        "n_roi": 48,
+        "roi_band_energy_ratio": 0.034155713429145564,
+        "band_energy_ratio_full": 0.17195995945734788,
+        "roi_tm_auc": 0.9895833333333334
+       }
+      }
+     }
+    },
+    {
+     "patient_id": "lidc-0084",
+     "vendor": "Toshiba",
+     "dose": "sim_r25",
+     "n_slices": 48,
+     "models": {
+      "red_cnn": {
+       "freq_roi": {
+        "n_roi": 48,
+        "roi_band_energy_ratio": 1.5917291843060362,
+        "band_energy_ratio_full": 1.0887175234224404,
+        "roi_tm_auc": 0.9895833333333334
+       }
+      },
+      "ctformer": {
+       "freq_roi": {
+        "n_roi": 48,
+        "roi_band_energy_ratio": 10.0197486340803,
+        "band_energy_ratio_full": 1.458842793384061,
+        "roi_tm_auc": 0.9895833333333334
+       }
+      },
+      "learn": {
+       "freq_roi": {
+        "n_roi": 48,
+        "roi_band_energy_ratio": 1.61189490726532,
+        "band_energy_ratio_full": 1.0891372495785265,
+        "roi_tm_auc": 0.9895833333333334
+       }
+      },
+      "blur": {
+       "freq_roi": {
+        "n_roi": 48,
+        "roi_band_energy_ratio": 0.09063172423944489,
+        "band_energy_ratio_full": 0.27443081662249497,
+        "roi_tm_auc": 0.9895833333333334
+       }
+      }
+     }
+    }
+   ]
+  },
+  "AAPM-Siemens-real": {
+   "patients": [
+    {
+     "patient_id": "aapm-0003",
+     "vendor": "AAPM-Siemens-real",
+     "dose": "real_r025",
+     "n_slices": null,
+     "models": {
+      "red_cnn": {
+       "freq_roi": {
+        "n_roi": 48,
+        "roi_band_energy_ratio": 3.491716340173405,
+        "band_energy_ratio_full": 1.5860453040601499,
+        "roi_tm_auc": 0.9895833333333334
+       }
+      },
+      "ctformer": {
+       "freq_roi": {
+        "n_roi": 48,
+        "roi_band_energy_ratio": 5.11573032601959,
+        "band_energy_ratio_full": 2.1121723639724657,
+        "roi_tm_auc": 0.9895833333333334
+       }
+      },
+      "learn": {
+       "freq_roi": {
+        "n_roi": 48,
+        "roi_band_energy_ratio": 3.4790327546814717,
+        "band_energy_ratio_full": 1.5835460358731408,
+        "roi_tm_auc": 0.9895833333333334
+       }
+      },
+      "blur": {
+       "freq_roi": {
+        "n_roi": 48,
+        "roi_band_energy_ratio": 0.35234389748095163,
+        "band_energy_ratio_full": 0.3940226345637714,
+        "roi_tm_auc": 0.9895833333333334
+       }
+      }
+     }
+    },
+    {
+     "patient_id": "aapm-0005",
+     "vendor": "AAPM-Siemens-real",
+     "dose": "real_r025",
+     "n_slices": null,
+     "models": {
+      "red_cnn": {
+       "freq_roi": {
+        "n_roi": 48,
+        "roi_band_energy_ratio": 3.4326231907699594,
+        "band_energy_ratio_full": 1.5164024709420225,
+        "roi_tm_auc": 0.9895833333333334
+       }
+      },
+      "ctformer": {
+       "freq_roi": {
+        "n_roi": 48,
+        "roi_band_energy_ratio": 5.971265750883553,
+        "band_energy_ratio_full": 2.2495601166111086,
+        "roi_tm_auc": 0.9895833333333334
+       }
+      },
+      "learn": {
+       "freq_roi": {
+        "n_roi": 48,
+        "roi_band_energy_ratio": 3.4078719435016716,
+        "band_energy_ratio_full": 1.5055463825215387,
+        "roi_tm_auc": 0.9895833333333334
+       }
+      },
+      "blur": {
+       "freq_roi": {
+        "n_roi": 48,
+        "roi_band_energy_ratio": 0.4565335548228148,
+        "band_energy_ratio_full": 0.4390770350348359,
+        "roi_tm_auc": 0.9895833333333334
+       }
+      }
+     }
+    },
+    {
+     "patient_id": "aapm-0006",
+     "vendor": "AAPM-Siemens-real",
+     "dose": "real_r025",
+     "n_slices": null,
+     "models": {
+      "red_cnn": {
+       "freq_roi": {
+        "n_roi": 48,
+        "roi_band_energy_ratio": 4.059015526987223,
+        "band_energy_ratio_full": 1.4214470829889405,
+        "roi_tm_auc": 0.9895833333333334
+       }
+      },
+      "ctformer": {
+       "freq_roi": {
+        "n_roi": 48,
+        "roi_band_energy_ratio": 8.667820282469199,
+        "band_energy_ratio_full": 2.304363137994708,
+        "roi_tm_auc": 0.9895833333333334
+       }
+      },
+      "learn": {
+       "freq_roi": {
+        "n_roi": 48,
+        "roi_band_energy_ratio": 4.012791904087241,
+        "band_energy_ratio_full": 1.4070215162642405,
+        "roi_tm_auc": 0.9895833333333334
+       }
+      },
+      "blur": {
+       "freq_roi": {
+        "n_roi": 48,
+        "roi_band_energy_ratio": 0.5230291151735803,
+        "band_energy_ratio_full": 0.492199728479157,
+        "roi_tm_auc": 0.9895833333333334
+       }
+      }
+     }
+    },
+    {
+     "patient_id": "aapm-0009",
+     "vendor": "AAPM-Siemens-real",
+     "dose": "real_r025",
+     "n_slices": null,
+     "models": {
+      "red_cnn": {
+       "freq_roi": {
+        "n_roi": 48,
+        "roi_band_energy_ratio": 4.521337701174518,
+        "band_energy_ratio_full": 1.57180333606184,
+        "roi_tm_auc": 0.9895833333333334
+       }
+      },
+      "ctformer": {
+       "freq_roi": {
+        "n_roi": 48,
+        "roi_band_energy_ratio": 7.185885245759212,
+        "band_energy_ratio_full": 2.120961911244427,
+        "roi_tm_auc": 0.9895833333333334
+       }
+      },
+      "learn": {
+       "freq_roi": {
+        "n_roi": 48,
+        "roi_band_energy_ratio": 4.51595422794909,
+        "band_energy_ratio_full": 1.5597313035660736,
+        "roi_tm_auc": 0.9895833333333334
+       }
+      },
+      "blur": {
+       "freq_roi": {
+        "n_roi": 48,
+        "roi_band_energy_ratio": 0.39426222906059505,
+        "band_energy_ratio_full": 0.3945938403823351,
+        "roi_tm_auc": 0.9895833333333334
+       }
+      }
+     }
+    }
+   ]
+  }
+ }
+}

@@ -49,6 +49,7 @@ def build_parser() -> argparse.ArgumentParser:
     tr.add_argument("--sources", default=None, help="comma list, e.g. mayo,aapm")
     tr.add_argument("--seed", type=int, default=42)
     tr.add_argument("--device", default=None)
+    tr.add_argument("--num-workers", type=int, default=0, help="DataLoader workers (train)")
 
     ev = sub.add_parser("eval", help="evaluate a checkpoint -> results.json (PSNR/SSIM/LPIPS + detectability per dose)")
     ev.add_argument("--dataset", required=True)
@@ -101,7 +102,8 @@ def main(argv: Optional[List[str]] = None) -> int:
     if args.cmd == "train":
         train(args.dataset, args.out, model_name=args.model, split=args.split, epochs=args.epochs,
               lr=args.lr, batch_size=args.batch_size, max_steps=args.max_steps,
-              sources=_sources(args.sources), seed=args.seed, device=args.device)
+              sources=_sources(args.sources), seed=args.seed, device=args.device,
+              num_workers=args.num_workers)
     elif args.cmd == "dose-curve":
         _pkg = os.path.dirname(os.path.abspath(__file__))
         results_dir = args.results_dir or os.path.join(_pkg, "..", "..", "results")
