@@ -6,7 +6,15 @@
     0.5
   ],
   "task": "SKE-Gaussian20HU-s2px",
-  "n_models": 4,
+  "n_per_dose": 764,
+  "seeds": [
+    42,
+    2023,
+    7,
+    12345,
+    999
+  ],
+  "note": "n=764 test slices per dose level per seed, 5-seed aggregate; LEARN CNR is the slice median (mean undefined: inf); knee below_r010 means the r010 point already exceeds Rose (not extrapolated)",
   "per_model": {
     "blur": {
       "dose_ratios": [
@@ -14,85 +22,15 @@
         0.25,
         0.5
       ],
-      "cnr_mean": [
-        1.6725634277213737,
-        2.9854174475537696,
-        4.043751951527772
+      "cnr": [
+        5.74552887334026,
+        9.383903757497647,
+        13.04470551337729
       ],
-      "psnr": [
-        43.23865579485606,
-        43.31741766028771,
-        43.34044305130878
-      ],
-      "rose_crossing_ratio": 0.25344469361800864,
       "knee": {
-        "label": "rose-crossing@0.253",
-        "rose_crossing_ratio": 0.25344469361800864,
-        "max_gain_interval_midpoint": 0.175,
-        "max_gain": 1.312854019832396,
-        "max_gain_interval": [
-          0.1,
-          0.25
-        ],
-        "method": "linear interpolation between adjacent simulated points"
-      }
-    },
-    "ctformer": {
-      "dose_ratios": [
-        0.1,
-        0.25,
-        0.5
-      ],
-      "cnr_mean": [
-        0.20500831140746215,
-        0.22173166338022732,
-        0.22250959577417717
-      ],
-      "psnr": [
-        42.28146033126494,
-        43.064986206878096,
-        43.34282337589408
-      ],
-      "rose_crossing_ratio": null,
-      "knee": {
-        "label": "not_reached",
-        "rose_crossing_ratio": null,
-        "max_gain_interval_midpoint": 0.175,
-        "max_gain": 0.01672335197276517,
-        "max_gain_interval": [
-          0.1,
-          0.25
-        ],
-        "method": "closest approach (max CNR gain interval)"
-      }
-    },
-    "learn": {
-      "dose_ratios": [
-        0.1,
-        0.25,
-        0.5
-      ],
-      "cnr_mean": [
-        1.3363671588183634,
-        2.732404873948885,
-        4.350063517240026
-      ],
-      "psnr": [
-        48.17342090817959,
-        52.13622212680025,
-        54.940094410731824
-      ],
-      "rose_crossing_ratio": 0.2913553142316061,
-      "knee": {
-        "label": "rose-crossing@0.291",
-        "rose_crossing_ratio": 0.2913553142316061,
-        "max_gain_interval_midpoint": 0.375,
-        "max_gain": 1.6176586432911413,
-        "max_gain_interval": [
-          0.25,
-          0.5
-        ],
-        "method": "linear interpolation between adjacent simulated points"
+        "label": "at-or-below-r010 (0.100)",
+        "rose_crossing_ratio": 0.1,
+        "kind": "below_r010"
       }
     },
     "red_cnn": {
@@ -101,27 +39,66 @@
         0.25,
         0.5
       ],
-      "cnr_mean": [
-        1.5617661033083783,
-        2.684397396465487,
-        3.6906524100295868
+      "cnr": [
+        5.1919247308056855,
+        8.052347933038154,
+        10.970394471729882
       ],
-      "psnr": [
-        47.66117204674627,
-        50.63817063000158,
-        52.27099492988361
-      ],
-      "rose_crossing_ratio": 0.3284101940562428,
       "knee": {
-        "label": "rose-crossing@0.328",
-        "rose_crossing_ratio": 0.3284101940562428,
-        "max_gain_interval_midpoint": 0.175,
-        "max_gain": 1.1226312931571085,
-        "max_gain_interval": [
-          0.1,
-          0.25
-        ],
-        "method": "linear interpolation between adjacent simulated points"
+        "label": "at-or-below-r010 (0.100)",
+        "rose_crossing_ratio": 0.1,
+        "kind": "below_r010"
+      }
+    },
+    "learn": {
+      "dose_ratios": [
+        0.1,
+        0.25,
+        0.5
+      ],
+      "cnr": [
+        6.491361896080218,
+        12.212371871616991,
+        21.6212450739891
+      ],
+      "knee": {
+        "label": "at-or-below-r010 (0.100)",
+        "rose_crossing_ratio": 0.1,
+        "kind": "below_r010"
+      }
+    },
+    "ctformer": {
+      "dose_ratios": [
+        0.1,
+        0.25,
+        0.5
+      ],
+      "cnr": [
+        2.5744348619575876,
+        4.608439708189747,
+        6.85691874085334
+      ],
+      "knee": {
+        "label": "rose-crossing@0.131",
+        "rose_crossing_ratio": 0.13138378496226838,
+        "kind": "interp"
+      }
+    },
+    "corediff": {
+      "dose_ratios": [
+        0.1,
+        0.25,
+        0.5
+      ],
+      "cnr": [
+        5.34298422953716,
+        8.431432364856756,
+        11.540357159171828
+      ],
+      "knee": {
+        "label": "at-or-below-r010 (0.100)",
+        "rose_crossing_ratio": 0.1,
+        "kind": "below_r010"
       }
     }
   }

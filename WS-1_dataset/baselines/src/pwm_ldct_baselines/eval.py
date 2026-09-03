@@ -49,6 +49,9 @@ def _eval_loader(model, ds, dev, only_real=False, task: Optional[TaskSpec] = Non
     loader = DataLoader(ds, batch_size=1, shuffle=False, num_workers=0)
     ps, ss, lp, n = 0.0, 0.0, 0.0, 0
     lp_n = 0
+    pvals: list = []   # per-slice PSNR (same order as lows / fulls)
+    svals: list = []   # per-slice SSIM
+    lvals: list = []   # per-slice LPIPS (None when the package is unavailable)
     lows: list = []
     fulls: list = []
     scanned = 0
@@ -65,9 +68,14 @@ def _eval_loader(model, ds, dev, only_real=False, task: Optional[TaskSpec] = Non
                 break
             low, full = low.to(dev), full.to(dev)
             out = run_model(model, low).clamp(0, 1)
-            ps += M.psnr(out, full)
-            ss += M.ssim(out, full)
+            _ps = M.psnr(out, full)
+            _ss = M.ssim(out, full)
+            ps += _ps
+            ss += _ss
+            pvals.append(float(_ps))
+            svals.append(float(_ss))
             lv = M.lpips(out, full)
+            lvals.append(float(lv) if lv is not None else None)
             if lv is not None:
                 lp += lv
                 lp_n += 1
@@ -103,6 +111,17 @@ def _eval_loader(model, ds, dev, only_real=False, task: Optional[TaskSpec] = Non
             "npwe_mean": det["npwe_mean"],
             "n_slices": det["n_slices"],
             "roi_pos": det["roi_pos"],
+            # Per-slice detail (added for sample-level bootstrap; aggregates above unchanged):
+            # cnr / cho_auc / npwe are per-slice observer results, psnr / ssim / lpips are
+            # per-slice fidelity metrics over the same slices in the same order.
+            "per_slice": {
+                "psnr": pvals,
+                "ssim": svals,
+                "lpips": lvals,
+                "cnr": det["cnr_values"],
+                "cho_auc": det["cho_auc_values"],
+                "npwe": det["npwe_values"],
+            },
         }
     return res
 
@@ -196,7 +215,7 @@ def evaluate_seed_set(root, ckpt, out_path, seeds=FIXED_SEED_SET, **kw) -> dict:
             vals = []
             for seed in seeds:
                 d = per_seed[str(seed)]["per_dose"].get(dose, {})
-                v = d.get("detectability", {}).get(m) if m in ("cnr_mean", "cho_auc_mean") else d.get(m)
+                v = (d.get("detectability") or {}).get(m) if m in ("cnr_mean", "cho_auc_mean") else d.get(m)
                 if v is not None:
                     vals.append(float(v))
             if vals:

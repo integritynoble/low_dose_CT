@@ -20,12 +20,13 @@ def _device(name: Optional[str]) -> str:
 def train(root: str, out_ckpt: str, model_name: str = "red_cnn", split: str = "train",
           epochs: int = 1, lr: float = 1e-4, batch_size: int = 1, seed: int = 42,
           max_steps: Optional[int] = None, sources: Optional[Sequence[str]] = None,
-          device: Optional[str] = None) -> str:
+          device: Optional[str] = None, num_workers: int = 0) -> str:
     seed_everything(seed)
     dev = _device(device)
     model = get_model(model_name).to(dev)
     loader = DataLoader(PairedSlices(root, split, seed=seed, sources=sources),
-                        batch_size=batch_size, shuffle=True, num_workers=0)
+                        batch_size=batch_size, shuffle=True, num_workers=num_workers,
+                        persistent_workers=num_workers > 0)
     opt = torch.optim.Adam(model.parameters(), lr=lr)
     loss_fn = nn.MSELoss()
     model.train()
