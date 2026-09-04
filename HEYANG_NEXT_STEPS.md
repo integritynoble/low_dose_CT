@@ -1,6 +1,6 @@
 # What to do next — heyang
 
-_Date: 2026-09-04 · against `main` @ `3e5f575` · companion to [`REVIEW_FOR_HEYANG.md`](REVIEW_FOR_HEYANG.md)_
+_Date: 2026-09-04 · against `main` @ `572fcaa` · companion to [`REVIEW_FOR_HEYANG.md`](REVIEW_FOR_HEYANG.md)_
 
 That review is the diagnosis. This is the task list, in the order I would do it.
 
@@ -67,11 +67,22 @@ Then re-run step 4 for `red_cnn`, `corediff`, `ctformer` and regenerate the comp
 
 Run `python3 WS-1_dataset/R6_recalc/tolerance_audit.py` to see the full ladder.
 
+### ⚠️ E. Rung 1's status — re-close it, or record why not
+
+Rung 1 is marked **done**, and its named gate is `scoring/verify.py::check_paired_submission`. Until 2026-09-04 that gate did not enforce what Rung 1 claims — it accepted a submission on a metric the blur trap wins. The gate now matches the claim, so the status is arguably *more* true than it was. But a rung that sat at "done" for its whole life against an unenforced gate is a fact about the ladder, not about one metric.
+
+Both of these are defensible; **silence is not**, because the registry is a public assertion about what has been verified.
+
+- [ ] **Either** re-close Rung 1 with a dated note recording that the gate was aligned on 2026-09-04
+- [ ] **Or** leave the status and record why that is the right call
+
+Same question applies to Rungs 5 and 6, whose `bander_roi` spread block could never populate from a submission (see "Already done" below).
+
 ---
 
 ## Then, in order
 
-### E. Strengthen the simulated arm — patient-level bootstrap
+### F. Strengthen the simulated arm — patient-level bootstrap
 
 The corrected slice-level bootstrap covers slice-sampling uncertainty only. Slices within a patient are correlated, so even the corrected CI is optimistic about inter-patient heterogeneity. The fix needs a **slice → patient map** persisted into the result JSONs, which the current ones do not carry.
 
@@ -81,14 +92,28 @@ The corrected slice-level bootstrap covers slice-sampling uncertainty only. Slic
 
 This is the single cheapest remaining strengthening of the simulated arm, and a reviewer *will* ask.
 
-### F. Small consistency items
+### G. Write the trap-rank gate — the trap is still only *reported*, never *enforced*
+
+Requiring `bander_roi` fixed which numbers a submission must carry. It did **not** add a check that the blur actually comes last on that index. Verified against the current tree:
+
+- `leaderboard.py::assert_trap_present` only asserts the trap is **on the board**, not where it ranks.
+- `observer_sensitivity.py` *reports* trap position (`above_trap_primary`, `trap_flip`) but gates nothing.
+- `compute_spread`'s own docstring says separation is "checked by the R5/R6 gate, **not** by this report function" — and no such gate exists in code.
+
+So today a board on which the blur trap outranks a real method on BandER would be accepted silently. That is the check which turns the trap from something a person notices into something the bench enforces.
+
+- [ ] `assert_trap_ranks_last(entries, metric="bander_roi", by=vendor|dose)` — refuse a board where the trap is not last on the discriminating index in **every** group
+- [ ] Enforce the declared separation ratio (the ≥3× used throughout Rungs 5/6)
+- [ ] Test in **both** directions: a compliant board passes, a board with the trap ranked above a method is refused
+
+### H. Small consistency items
 
 - [ ] **WS-1 loader tests do not collect** — `No module named pwm_ldct_loader.schema`. Packaging, not logic; the 25/25 suite should run again.
 - [ ] **The recalculation verified 5 groups, not 8.** Claim ① says "8 groups (4 vendors × 2 dose tracks)" but `aapm_lidc_cross_vendor_spread.json` has 5 (four LIDC vendors at sim r=0.25, plus AAPM-Siemens real). Either recalculate the second dose track or restate the claim as 5.
 - [ ] **Three separation ranges appear in the text**: 8.9–15.6× (`manuscript.tex:481,485,495`), 9.17–15.59× (`:636`), 8.9–23.1× (R6 runbook), against a measured 8.93–18.83×. Plausibly different scopes — label each with its scope so a reviewer does not read them as one number.
 - [ ] Update `R6_recalc_report.md`'s "feedback to author" item ①: the guide's ctformer command **was already fixed**; that recommendation is stale.
 
-### G. Then the other workstreams
+### I. Then the other workstreams
 
 | Order | WS | What it needs | Blocked by |
 |---|---|---|---|
