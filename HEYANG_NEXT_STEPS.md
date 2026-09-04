@@ -39,6 +39,9 @@ All four 🔴 sections of `WS-1_dataset/SUBMISSION_CHECKLIST.md`. None of this i
 - [ ] **Per-author competing interests.** The PWM Protocol Foundation equity/token disclosure is **not optional at a medical venue** and is currently a `\todo`. Undisclosed, it is the kind of thing that gets a paper retracted rather than rejected.
 - [ ] **IRB determination number** — obtain the letter, cite the number. Do not assert a determination whose number you do not have.
 - [ ] **Funding / grant numbers**, cover letter, reporting summary
+- [ ] **Assemble the submission package from `manuscript.tex` only** — plus `refs.bib` and the figures it actually references.
+
+> ⚠️ `manuscript_v1.tex` (v1.0 target, D9+365–540 window) and `manuscript_tex_pre_ctformer_retrain.tex` (pre-retrain archive) are **deliberately preserved — do not delete them** (`paper_draft/README.md:93`). They simply do not go in the v0.5 package. The two manuscripts coexist; do not conflate them. An earlier review of this repo advised stripping them as "stray", which was wrong — the submission-hygiene issue is what goes *into the package*, not what exists in the repo.
 
 ---
 
