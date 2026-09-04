@@ -42,7 +42,9 @@ CTformer 复算使用 `ctformer_small_retrain.pt`（模型字段 `ctformer_small
 | 来源路径 | `D:\ZHY\low_dose_CT-heyang\WS-1_dataset\pwm_ldct_loader` |
 | 安装方式 | `pip install -e <路径>` 或提供 wheel |
 | 用途 | 低剂量模拟 `lowdose_sim`（A3 频域脚本依赖） |
-| SHA256（源码树压缩包） | （交付时填写） |
+| SHA256（源码树组合哈希） | `87BA7C4F5B0F4AA883DB0A93C48AF59D76EF0C3AF6962AA95F44E9327B9EEB84` |
+| 哈希口径 | `analysis/common.py::inputs_fingerprint` — 对 17 个源文件（排除 `__pycache__`/`*.pyc`）各自 SHA256 排序后再取 SHA256。压缩包哈希不可复现（依赖 tar/zip 参数），故改用与本仓库 `analysis/` 溯源一致的组合哈希口径。复算者可运行下方命令自行核验。 |
+| 核验命令 | `python3 -c "import sys,glob,os;sys.path.insert(0,'analysis');from common import inputs_fingerprint;print(inputs_fingerprint([p for p in glob.glob('pwm_ldct_loader/**/*',recursive=True) if os.path.isfile(p) and '__pycache__' not in p and not p.endswith('.pyc')]))"` |
 
 说明：baselines README 注明 "needs pwm_ldct_loader on the path"，该包不在 baselines 仓库内。
 指引：《指南》§1 步骤 3。
