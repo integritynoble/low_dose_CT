@@ -16,17 +16,27 @@ What it establishes
 The comparison applies an **absolute** tolerance of 1e-6 uniformly, to metrics
 whose magnitudes differ by five orders of magnitude:
 
-    psnr       ~ 5.2e+1     absolute 1e-6 => ~8 significant figures   (attainable)
-    cnr_mean   ~ 5.2e+0     absolute 1e-6 => ~7 significant figures   (attainable)
-    npwe_mean  ~ 1.56e+5    absolute 1e-6 => ~11 significant figures  (NOT attainable)
+    metric      magnitude   absolute 1e-6 means...   as a relative tolerance
+    cnr_mean    ~ 5.2e+0    ~7 significant figures   ~2e-7
+    psnr        ~ 5.2e+1    ~8 significant figures   ~2e-8
+    npwe_mean   ~ 1.56e+5   ~11 significant figures  ~6e-12   (worst case 9.7e5 -> ~1e-12)
 
-An absolute 1e-6 on a quantity near 156,001 demands agreement to roughly eleven
-significant figures in a value accumulated over 764 slices.  Float64 carries
-about 15-16 significant digits before accumulation; after a 764-term reduction
-the achievable agreement is well short of eleven figures even with deterministic
-kernels.  So the npwe_mean comparison cannot pass at absolute 1e-6 for reasons
-that have nothing to do with cuDNN.  That is a units/scale defect in the
-comparator, separable from the determinism question.
+An absolute 1e-6 on a quantity near 1.56e5 (worst case 9.7e5) demands agreement
+to roughly eleven significant figures.  That is a badly scaled criterion: it is
+five orders of magnitude stricter, in relative terms, for npwe_mean than for
+cnr_mean, so a single threshold means something different for each metric and
+will misfire again on the next submission.
+
+It is *not*, however, unattainable.  Float64 carries ~15-16 significant digits,
+and a 764-term reduction accumulates on the order of 1e-13 relative, i.e. about
+1e-8 absolute at 9.7e5 -- two orders of magnitude inside the 1e-6 budget.  With
+deterministic kernels the two runs should agree bit-for-bit (absdiff exactly 0)
+and the absolute criterion passes untouched.  The differences seen here come
+from non-deterministic kernel selection, not from float64 headroom.
+
+That asymmetry matters for the choice of route below: enabling determinism
+satisfies the guide's same-hardware clause exactly as pre-registered, with no
+amendment and no change to the kind of test.
 
 Splitting the two questions
 ---------------------------
@@ -44,11 +54,20 @@ live cuDNN question, and this script deliberately does **not** answer it.  The
 two defensible routes, both of which leave the artifact carrying its own
 verdict, are:
 
-  (a) enable deterministic kernels (``torch.backends.cudnn.deterministic=True``,
-      ``torch.use_deterministic_algorithms(True)``) and re-run, in which case the
-      strict branch should pass on its own terms; or
+  (a) PREFERRED -- enable deterministic kernels
+      (``torch.backends.cudnn.deterministic=True``,
+      ``torch.use_deterministic_algorithms(True)``) and re-run. The runs should
+      then be bit-identical and the existing absolute 1e-6 passes as written.
+      This is the only route that leaves the pre-registered rule untouched: it
+      needs no amendment and no change to the kind of test.
   (b) amend the operator guide in writing, dated, to state that GPU inference
-      paths compare at a relative 1e-4 -- and record *why* -- then re-run.
+      paths compare at a relative 1e-4 -- and record *why* -- then re-run. This
+      changes the kind of test, which is a larger thing to ask a reviewer to
+      accept.
+
+Independently of which route is taken, the comparator should declare agreement
+per metric in that metric's own units rather than applying one absolute
+threshold across metrics spanning five orders of magnitude.
 
 Relaxing the number without (a) or (b) would relocate the prose ``PASS*`` into a
 script, which is the same post-hoc adjudication in a less visible place.
@@ -155,24 +174,33 @@ def main() -> None:
                 "overall": doc["overall"],
             },
             "finding": (
-                "The shipped criterion applies an absolute tolerance of 1e-6 to "
-                "metrics spanning five orders of magnitude. npwe_mean is ~1.56e5, "
-                "where absolute 1e-6 demands ~11 significant figures from a "
-                "764-term float64 reduction; that is unattainable regardless of "
-                "cuDNN determinism, so ctformer's FAIL is an artifact of the "
-                "criterion rather than evidence of a mismatch. Under a relative "
-                "criterion at the same 1e-6 strictness, ctformer passes "
-                "(4.4e-07) while corediff (2.5e-05) and red_cnn (6.4e-05) still "
-                "exceed it. Those two are the genuine cuDNN non-determinism "
-                "question."
+                "The shipped criterion applies one absolute tolerance of 1e-6 to "
+                "metrics spanning five orders of magnitude (cnr_mean ~5, "
+                "npwe_mean ~1.56e5, worst case 9.7e5). In relative terms it is "
+                "therefore ~5 orders stricter for npwe_mean than for cnr_mean, "
+                "which is why ctformer is marked FAIL on a worst relative "
+                "difference of 4.4e-07. The criterion is badly scaled and will "
+                "misfire again on the next submission. It is NOT unattainable: "
+                "a 764-term float64 reduction accumulates ~1e-13 relative "
+                "(~1e-8 absolute at 9.7e5), well inside the 1e-6 budget, so with "
+                "deterministic kernels the runs should be bit-identical and the "
+                "existing criterion passes as written. Under a relative criterion "
+                "at the same 1e-6 strictness, ctformer passes while corediff "
+                "(2.5e-05) and red_cnn (6.4e-05) still exceed it; those two are "
+                "the genuine cuDNN non-determinism question."
             ),
             "unresolved": (
-                "This audit deliberately does not change the verdict. Resolve by "
-                "either (a) re-running with deterministic kernels enabled, or "
-                "(b) amending the operator guide in writing, dated, to declare a "
-                "relative tolerance for GPU inference paths, then re-running. "
-                "Relaxing the threshold without (a) or (b) reproduces the prose "
-                "PASS* as a script constant."
+                "This audit deliberately does not change the verdict. Route (a), "
+                "PREFERRED: re-run with deterministic kernels enabled "
+                "(cudnn.deterministic=True, use_deterministic_algorithms(True)); "
+                "the runs should be bit-identical and the pre-registered absolute "
+                "1e-6 then passes untouched, with no amendment and no change to "
+                "the kind of test. Route (b): amend the operator guide in writing, "
+                "dated, to declare a relative tolerance for GPU inference paths, "
+                "then re-run -- this changes the kind of test. Relaxing the "
+                "threshold without (a) or (b) reproduces the prose PASS* as a "
+                "script constant. Independently of the route, agreement should be "
+                "declared per metric in that metric's own units."
             ),
             "per_model": models,
             "ladder": lad,

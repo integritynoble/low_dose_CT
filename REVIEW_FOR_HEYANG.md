@@ -74,7 +74,9 @@ The tempting fix — loosen the tolerance — would relocate the prose `PASS*` i
 
 What the audit establishes:
 
-**(a) The criterion is scale-inappropriate.** An *absolute* 1e-6 is applied to metrics spanning five orders of magnitude. `npwe_mean` ≈ 1.56e5, where absolute 1e-6 demands ~11 significant figures from a 764-term float64 reduction — unattainable regardless of cuDNN. So this is a units defect in the comparator, separable from the determinism question.
+**(a) The criterion is scale-inappropriate.** One *absolute* 1e-6 is applied to metrics spanning five orders of magnitude. On `cnr_mean` (≈5) it is a ~2e-7 relative tolerance; on `npwe_mean` (≈1.56e5, worst case 9.7e5) it is ~1e-12. The same threshold means something different for every metric and will misfire again on the next submission.
+
+> **Correction (2026-09-04).** An earlier version of this review said that precision was "unattainable regardless of cuDNN." That was wrong, and it changes the recommendation. Float64 carries ~15–16 significant digits; a 764-term reduction accumulates ~1e-13 relative, which at 9.7e5 is ~1e-8 absolute — two orders *inside* the 1e-6 budget. With deterministic kernels the runs should be bit-identical (absdiff exactly 0) and the existing criterion passes untouched. The differences come from non-deterministic kernel selection, not float64 headroom. _(Caught by the parallel review session.)_
 
 **(b) A relative criterion at the same strictness separates the two questions.**
 
@@ -96,16 +98,26 @@ CTformer's FAIL is an **artifact of the criterion**. RED-CNN and CoreDiff genuin
 
 Note the guide's §153 relaxation to 1e-3 is written for *differing hardware* and is absolute — under it, all three still FAIL. "Set the tolerance to 1e-3" would not make the artifact self-consistent.
 
-**Two defensible routes, both yours to pick:**
+**Two routes, and they are not equal:**
 
-- **(a)** Enable deterministic kernels (`torch.backends.cudnn.deterministic=True`, `torch.use_deterministic_algorithms(True)`) and re-run, so the strict branch passes on its own terms. *Preferred* — it removes the question instead of relitigating it.
-- **(b)** Amend the operator guide in writing, dated, to declare that GPU inference paths compare at **relative** 1e-4 and say why; then re-run the comparison. One command once the guide says so.
+- **(a) Preferred.** Enable deterministic kernels (`torch.backends.cudnn.deterministic=True`, `torch.use_deterministic_algorithms(True)`) and re-run. The runs should then be bit-identical and the pre-registered absolute 1e-6 passes **as written** — no amendment, no change to the kind of test. This is the only route that leaves the pre-registered rule untouched.
+- **(b)** Amend the operator guide in writing, dated, to declare that GPU inference paths compare at **relative** 1e-4 and say why; then re-run. This changes the *kind* of test, which is a larger thing to ask a reviewer to accept.
 
-### 4. The paired gate does not require the metric that catches the trap ⚠️
+Either way, the comparator should declare agreement **per metric in that metric's own units**. The scale defect is real independently of the determinism question.
+
+### 4. The paired gate did not require the metric that catches the trap ✅ fixed
 
 `task_spec` declares `DETECTABILITY_FIELDS = (cnr_mean, cho_auc_mean, npwe_mean)`. `bander_roi` is **absent** — so the gate never requires the only metric that separates the blur trap. This is not academic: the manuscript itself reports that on simulated data the trap's CNR *exceeds* RED-CNN by 1.11–1.19×, CoreDiff by 1.08–1.13× and CTformer by 1.90–2.23× at every dose level. **A metric the gate requires ranks the deliberate cheat above three of four real methods.** BandER is what catches it (8.9–15.6× separation, P(blur last) = 1.0000) and it is exactly what the gate omits. Add `bander_roi` to the required set.
 
-_(Credit: raised by a parallel review session; verified here.)_
+**Fixed.** `task_spec.py` now splits the fields by role: `DISCRIMINATING_FIELDS = ("bander_roi",)` is **required**, `TRANSPARENCY_FIELDS = (cnr_mean, cho_auc_mean, npwe_mean)` are reported but never sufficient alone. `verify.check_paired_submission` adds a fourth violation when detectability is present without the discriminating index.
+
+This also repaired a second, silent bug with the same root: because `bander_roi` was not in `DETECTABILITY_FIELDS`, it was **dropped during `extract_paired_methods`**, which made `leaderboard.py`'s `("bander_roi", "bander_full", "roi_tm_auc")` carry-through unreachable and meant `compute_spread`'s `bander_roi_span` could never populate from a submission — the Rung 5 dual-metric spread block was silently fidelity+CNR only. Both now work.
+
+Four new tests, and the fix is proven in **both** directions: a transparency-only submission is rejected (and the violation is the missing index, not a both-or-neither error), while the same submission plus `bander_roi` is accepted — guarding against a gate that simply refuses everything. Suite: 55 passed / 10 skipped, up from 51. Rung 1 of the registry, `scoring/README.md`, and `OPTIMIZATIONS_LOG.md` (entry P0-1b, with the migration message) are updated.
+
+**Migration for submitters:** a result reporting only CNR/CHO-AUC/NPWE is now rejected. Add `detectability.bander_roi`. Existing seed entries are unaffected — the gate runs on incoming submissions, not stored entries.
+
+_(Credit: raised by a parallel review session; verified, fixed and extended here.)_
 
 ### 5. Vendored third-party code and data 🔴 blocks going public
 
@@ -139,7 +151,7 @@ All four 🔴 sections of `SUBMISSION_CHECKLIST.md` are paperwork, not research:
 ## Suggested order
 
 1. ~~Fix the bootstrap *n* and the seed protocol~~ ✅ done in this pass.
-2. **Decide the tolerance question** (§3) — route (a) preferred. Then **add `bander_roi` to the gate** (§4).
+2. ~~Add `bander_roi` to the gate~~ ✅ done in this pass (§4). **Decide the tolerance question** (§3) — route (a), deterministic re-run, is now clearly preferred rather than merely tidier.
 3. **Start the PhysioNet deposit now** — longest lead time, gates submission.
 4. **Resolve vendor licensing and the Mayo-derived `.npy` files** (§5) before the repo goes public.
 5. **Clear the four administrative sections** of the WS-1 checklist.

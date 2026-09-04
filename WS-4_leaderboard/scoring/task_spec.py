@@ -44,5 +44,29 @@ SCHEMA_VERSION = "0.1.0"
 
 # Fidelity fields that must be paired with a detectability field (§4 both-or-neither).
 FIDELITY_FIELDS = ("psnr_db", "ssim")
-# Detectability fields; at least one is required for publishability.
-DETECTABILITY_FIELDS = ("cnr_mean", "cho_auc_mean", "npwe_mean")
+
+# Discriminating detectability fields: frequency-domain ``detectability-freq-v1``
+# ROI BandER. **At least one is required for publishability.**
+#
+# Rung 1 of RUNG_REGISTRY.md declares BandER the discriminative index and the
+# insertion-based indices below "non-discriminative on real anatomy ... reported
+# as transparency". The gate did not enforce that until 2026-09-04: it accepted
+# any one of CNR/CHO-AUC/NPWE alone, which meant a submission could clear the
+# gate on a metric the permanent blur trap *wins*. On the simulated arm the trap's
+# CNR exceeds RED-CNN by 1.11-1.19x, CoreDiff by 1.08-1.13x and CTformer by
+# 1.90-2.23x at every dose level; on real anatomy CHO-AUC saturates at 1.000 for
+# every method. BandER is what separates the trap (8.9-19.0x, blur last 4/4 in
+# every vendor group), so it is what the gate must require.
+DISCRIMINATING_FIELDS = ("bander_roi",)
+
+# Transparency fields: insertion-based observers. Reported alongside the
+# discriminating index per Rung 1, but never sufficient on their own -- a
+# submission carrying only these is not publishable.
+TRANSPARENCY_FIELDS = ("cnr_mean", "cho_auc_mean", "npwe_mean")
+
+# Every detectability field the gate recognises and carries through to the
+# leaderboard entry. Ordered discriminating-first.
+DETECTABILITY_FIELDS = DISCRIMINATING_FIELDS + TRANSPARENCY_FIELDS
+
+# Supplementary frequency-domain fields carried when present (not gate criteria).
+FREQ_SUPPLEMENTARY_FIELDS = ("bander_full", "roi_tm_auc")
