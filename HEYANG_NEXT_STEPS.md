@@ -23,6 +23,22 @@ The R6 recalculation is the strongest research-integrity artifact in this reposi
 
 ---
 
+## What each task needs — check before you start
+
+Verified against a clean checkout on 2026-09-04.
+
+| Task | Runs from a clean clone? | Needs |
+|---|---|---|
+| **A.** R6 re-run | ❌ | **Your machine only.** Checkpoints are gitignored (`*.pt`), and the LIDC/AAPM trees live on your `D:\ZHY\...` paths. Nobody else can reproduce this without your assets — which is exactly why `ASSET_MANIFEST.md` matters. |
+| **B.** Patient-level bootstrap | ⚠️ partly | The bootstrap script itself runs anywhere (numpy + the 5 committed `*_det_full764.json`). But emitting `patient_id` means re-running `eval.py` over the data → your machine. |
+| **C.** Trap-rank gate | ✅ | Nothing. `WS-4_leaderboard/scoring/` is **stdlib-only** (no numpy, no torch). `python3 -m pytest scoring/tests` → 55 passed / 10 skipped. |
+| **D.** Consistency items | ✅ | Repo only, except the 5-vs-8 dose-track recalculation, which needs your data. |
+| **E.** WS-2 prose | ✅ | LaTeX (`compile_manuscript.bat` is already in the repo). |
+
+**You have `write` access and `main` is unprotected**, so you can push directly — no PR needed unless you want review.
+
+---
+
 ## A. The R6 re-run — **as soon as the route is picked**
 
 If **route (a), deterministic re-run** (the recommendation):
@@ -77,7 +93,7 @@ So a board where the blur outranks a real method on BandER is accepted silently 
 
 ## D. Consistency items
 
-- [ ] **WS-1 loader tests do not collect** — `No module named pwm_ldct_loader.schema`. Packaging, not logic; the 25/25 suite should run again.
+- [ ] **WS-1 loader tests: not a bug — an install step.** `pytest pwm_ldct_loader` fails to collect with `No module named pwm_ldct_loader.schema`, but there is nothing to fix. It is a `src/`-layout package that is simply not installed, and the outer `pwm_ldct_loader/` directory shadows it as a namespace package. Verified: `PYTHONPATH=pwm_ldct_loader/src python3 -m pytest pwm_ldct_loader` gives **25 passed**. The real fix is `pip install -e WS-1_dataset/pwm_ldct_loader` in the dev environment; worth adding to the dev-setup docs so the next person does not treat it as a defect.
 - [ ] **The recalculation verified 5 groups, not 8.** Claim ① says "8 groups (4 vendors × 2 dose tracks)" but `aapm_lidc_cross_vendor_spread.json` has 5 (four LIDC vendors at sim r=0.25, plus AAPM-Siemens real). Recalculate the second dose track, or restate the claim as 5.
 - [ ] **Three separation ranges appear in the text** — 8.9–15.6× (`manuscript.tex:481,485,495`), 9.17–15.59× (`:636`), 8.9–23.1× (R6 runbook), against a measured 8.93–18.83×. Plausibly different scopes; label each with its scope so a reviewer doesn't read them as one number.
 - [ ] **`R6_recalc_report.md` feedback item ① is stale** — the guide's ctformer command was already fixed (`R6独立复算操作指南.md` lines 120–133 use `ctformer_small_retrain.pt`).
