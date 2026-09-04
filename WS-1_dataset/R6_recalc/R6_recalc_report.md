@@ -136,6 +136,65 @@
 
 ---
 
+## 9. 容差口径审计（2026-09-04 追加）
+
+> 本节由 `R6_recalc/tolerance_audit.py` 生成，**不改变** §8 的判定，也不改动
+> `comparison_full764.json` 的 `status` / `overall` 字段；审计结果以附加的
+> `tolerance_audit` 块写入同一文件，使该产物自身携带其判定依据。
+
+§8 判定 red_cnn / corediff / ctformer 为 `PASS*`（GPU 非确定性），但
+`comparison_full764.json` 中三者的机器判定为 `FAIL`（`overall: FAIL`）。
+即：仓库中存在一个**仅由文字覆盖的机器可读 FAIL**。审计澄清如下。
+
+**发现 1 — 比对采用绝对容差，但各指标量级相差五个数量级。**
+
+| 指标 | 典型量级 | 绝对容差 1e-6 相当于 | 可达性 |
+|---|---|---|---|
+| `psnr` | ~5.2e+1 | ~8 位有效数字 | 可达 |
+| `cnr_mean` | ~5.2e+0 | ~7 位有效数字 | 可达 |
+| `npwe_mean` | ~1.56e+5 | ~11 位有效数字 | **不可达** |
+
+`npwe_mean` 在 764 slice 累加后要求 11 位有效数字一致，float64 本身约 15–16 位，
+累加后不可能达到——**与 cuDNN 是否确定性无关**。这是比对器的量纲/尺度缺陷，
+应与确定性问题分开讨论。
+
+**发现 2 — 改用同等严格度的相对判据可分离两个问题。**
+
+| 模型 | 最大绝对差 | 最大相对差 | 相对 1e-6 下 |
+|---|---|---|---|
+| blur | 0 | 0 | 通过（逐位一致） |
+| learn | 0 | 0 | 通过（逐位一致） |
+| ctformer | 3.35e-02 | **4.41e-07** | **通过** |
+| corediff | 4.58e+00 | 2.50e-05 | 超出 |
+| red_cnn | 3.43e+01 | 6.36e-05 | 超出 |
+
+即 **ctformer 的 FAIL 是判据尺度错误的产物**；corediff 与 red_cnn 则确实在相对
+口径下超出 1e-6，这两个才是真正的 cuDNN 非确定性问题。
+
+**发现 3 — 仅放宽数值无法解决，必须改变判据种类。**
+
+| 判据 | 1e-6 | 1e-5 | 1e-4 | 1e-3 |
+|---|---|---|---|---|
+| 绝对（现行） | FAIL | FAIL | FAIL | **FAIL** |
+| 相对 | FAIL | FAIL | **PASS** | PASS |
+
+指南 §153 的 1e-3 放宽条款是为**硬件不同**的情形所设，且是绝对口径——
+在绝对口径下 1e-3 依然全数 FAIL。因此"把容差改成 1e-3"并不能使产物自洽。
+
+**未决（需作者决定，本审计不代为决定）**：
+
+- **(a)** 开启确定性内核（`torch.backends.cudnn.deterministic=True`、
+  `torch.use_deterministic_algorithms(True)`）后重跑，使严格分支凭自身通过；或
+- **(b)** 以书面、注明日期的方式修订操作指南，声明 GPU 推理路径按**相对** 1e-4
+  比对并说明理由，然后据此重跑比对。
+
+在未做 (a) 或 (b) 的情况下直接调低阈值，等于把 §8 的文字 `PASS*` 搬进脚本常量，
+是同一种事后追认，只是更不可见。
+
+复现：`python3 R6_recalc/tolerance_audit.py`（加 `--write` 写回审计块）。
+
+---
+
 *附：复算产物清单（均在 `r6_recalc/`）*
 - `smoke_blur_seed42.json`、`{blur,red_cnn,learn,ctformer,corediff}_det_full764.json`（步骤4，已完成）
 - `comparison_full764.json`（步骤4 逐 seed×dose 比对结果）
