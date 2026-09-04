@@ -24,7 +24,7 @@ WS-1 is now the closest to submission, not WS-2. The remaining WS-1 blockers are
 - `WS-1_dataset/R6_recalc/` — an **independent recalculation** on a separate venv and toolchain: report, runbook, asset manifest, A3/A4 scripts, results, SHA256 manifests. `blur` and `learn` reproduce **bit-identically**.
 - The recalculation caught two real protocol errors *of its own accord* (a cached LIDC low-dose tree that silently changed the vendor KW result; a checkpoint/guide mismatch worth 9–13 dB) and documented both. That is exactly the discipline this project needs — keep it.
 
-Tests at `92fbe4a`: WS-4 scoring **51 passed / 10 skipped**, WS-3 method **65 passed**, WS-1 analysis extractors **4 passed**. WS-1's loader tests fail to *collect* (`No module named pwm_ldct_loader.schema`) — packaging, not logic.
+Tests at `92fbe4a`: WS-4 scoring **51 passed / 10 skipped**, WS-3 method **65 passed**, WS-1 analysis extractors **4 passed**. WS-1's loader tests fail to *collect* (`No module named pwm_ldct_loader.schema`) — but that is an uninstalled `src/`-layout package, not a defect: with `PYTHONPATH=pwm_ldct_loader/src` it is **25 passed**.
 
 ---
 
@@ -134,7 +134,7 @@ Code Availability points readers at this repository, so resolve before it goes p
 - **The recalculation verified 5 groups, not 8.** Claim ① is stated as "8 groups (4 vendors × 2 dose tracks)" but `aapm_lidc_cross_vendor_spread.json` contains 5 (four LIDC vendors at simulated r = 0.25, plus AAPM-Siemens real). The second dose track was not recalculated. Either recalculate it or restate the claim as 5 groups.
 - **Three different separation ranges** appear: 8.9–15.6× (`manuscript.tex:481,485,495`), 9.17–15.59× (`:636`), 8.9–23.1× (R6 runbook claim ①), against a measured 8.93–18.83×. These are plausibly different scopes (AAPM-only vs cross-vendor), but a reviewer will read them as one number. Label each with its scope.
 - **Do not "clean up" the extra manuscripts.** `manuscript_v1.tex`/`.pdf` (v1.0 target) and `manuscript_tex_pre_ctformer_retrain.tex` (pre-retrain archive) are deliberately preserved and marked "Do not delete" in `paper_draft/README.md:93`, and are referenced from both READMEs and `manuscript.tex:11`. The 2026-07-20 review's advice to "remove stray `manuscript_v1.tex`/`manuscript_v2.tex` from the submission set" was **half wrong** and is retracted here: it was right about `v2` (an untracked stale draft, now deleted) and wrong about `v1`. The real requirement is that the *submission package* contain only `manuscript.tex` + `refs.bib` + referenced figures — not that these files be removed from the repository.
-- **WS-1 loader tests do not collect** — `pwm_ldct_loader.schema` missing. Fix the packaging so the 25/25 suite runs again.
+- **WS-1 loader tests do not collect** — `pwm_ldct_loader.schema` missing. **Not a defect**: it is a `src/`-layout package that is not installed, and the outer directory shadows it. `PYTHONPATH=pwm_ldct_loader/src python3 -m pytest pwm_ldct_loader` → 25 passed. Fix is `pip install -e`, and a line in the dev-setup docs.
 
 ---
 
