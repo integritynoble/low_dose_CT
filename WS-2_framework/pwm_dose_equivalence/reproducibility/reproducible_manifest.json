@@ -1,0 +1,96 @@
+{
+  "schema_version": "pwm-reproducible-artifact/v0.1",
+  "generated_at_utc": "2026-08-21T05:36:22+00:00",
+  "library": {
+    "name": "pwm_dose_equivalence",
+    "version": "0.2.2",
+    "framework_hash": "sha256:b366f51c11a8fbdfc7b60f1f977d42a10a8bdaa55521b43de0c428afc289fb58",
+    "credential_schema": "unknown"
+  },
+  "test_matrix": {
+    "total": 140,
+    "integration_e2e": 10,
+    "credential_audit": 35,
+    "cli": 12,
+    "examples_schema_artifact": 11
+  },
+  "artifacts": [
+    {
+      "path": "credential_schema.json",
+      "sha256": "sha256:82e421218703b0a2ed7d314c977848e89289745ba126f8463a500b2b8fe9bc15",
+      "role": "schema-artifact"
+    },
+    {
+      "path": "examples/valid_ct_lung_nodule.json",
+      "sha256": "sha256:cacf74c7285c19cee6ab9615834a9e63913b20fa72d89b7a2ac79ad70f06fed6",
+      "role": "credential-example-clean"
+    },
+    {
+      "path": "examples/failures/tampered_verdict.json",
+      "sha256": "sha256:13ca5bf16a4bd1506514df53396cf0dc4844b57bfa970d878c4cacacdbf27974",
+      "role": "credential-example-broken"
+    },
+    {
+      "path": "examples/failures/inverted_ci.json",
+      "sha256": "sha256:3db574391050b58ba054a7269852d24da2244a1034d997774ea8963ad4af9fdf",
+      "role": "credential-example-broken"
+    },
+    {
+      "path": "examples/failures/missing_field.json",
+      "sha256": "sha256:f7e46f4d1529adb8d7ff4ac7ce7280d4988f277fe8e811fa9e0f84f12558ea8a",
+      "role": "credential-example-broken"
+    },
+    {
+      "path": "examples/failures/unknown_framework_hash.json",
+      "sha256": "sha256:575280f86621ab072d430d51f5fe46b25e92aa0009f81dfc65c00155ccbfb571",
+      "role": "credential-example-broken"
+    },
+    {
+      "path": "examples/failures/undersized_pass.json",
+      "sha256": "sha256:003740d62a57addf1b2370daf3895c0709c9539ba185daaa5f44b8054b159f85",
+      "role": "credential-example-broken"
+    },
+    {
+      "path": "examples/failures/bca_headline.json",
+      "sha256": "sha256:e0e3e421b2aaa4579232e6f5e18ab0c252a2c3e2e2f5f4d1d7595f0c7b53632d",
+      "role": "credential-example-broken"
+    },
+    {
+      "path": "examples/expected_audit_output.txt",
+      "sha256": "sha256:4f26f85671b7168acebb48c1be183d013c907c7f8a7be8b595c36244f29e95a0",
+      "role": "audit-snapshot"
+    },
+    {
+      "path": "../experiments/cross_modality_consistency/results.json",
+      "sha256": "sha256:3eadb327536b49b1cdf7c00b5141b7495dd9bf7f5d986cc18e30a1c3ee2035fe",
+      "role": "6-credential-demo"
+    },
+    {
+      "path": "../experiments/estimator_coverage/results.json",
+      "sha256": "sha256:cbaaad3e10940656aed620058bd388e1093759bf265e5bf90509d7cad3e72466",
+      "role": "estimator-coverage"
+    },
+    {
+      "path": "../experiments/estimator_coverage/power_results.json",
+      "sha256": "sha256:de28c012632aa44f149b87469c059424533d204e77ca78ec7048154ae5c8422c",
+      "role": "estimator-power"
+    },
+    {
+      "path": "../experiments/estimator_coverage/dice_results.json",
+      "sha256": "sha256:ad363125978e86d6cf10c7ae55f412189dc3bcc6e4d66b62410ec9279bfd414b",
+      "role": "estimator-dice"
+    },
+    {
+      "path": "../experiments/estimator_coverage/cr_results.json",
+      "sha256": "sha256:5883024f6e41650e0de9693d41ba61137560c76e681c1e201d818c37d12c980c",
+      "role": "estimator-cr"
+    }
+  ],
+  "reproduce_commands": [
+    "pip install -e \"pwm_dose_equivalence[test]\"",
+    "cd pwm_dose_equivalence && pytest -q            # 140/140 tests",
+    "cd pwm_dose_equivalence && python examples/regenerate.py   # re-issue examples",
+    "cd pwm_dose_equivalence && python scripts/generate_reproducible_manifest.py",
+    "cd experiments/cross_modality_consistency && python cross_modality_consistency.py  # 6-credential demo (seed=42)"
+  ]
+}

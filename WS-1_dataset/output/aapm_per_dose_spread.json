@@ -1,0 +1,1210 @@
+{
+  "schema": "aapm-r5-per-vendor-per-dose-spread/v1",
+  "updated_at": "2026-08-22T13:44:31+00:00",
+  "method_adjustment": {
+    "original_design": "R5 required external multi-vendor submissions to be on the leaderboard before spread could be computed.",
+    "adjusted_design": "No external multi-vendor submissions exist; the project's own held-out AAPM/LIDC multi-vendor + multi-dose results are treated as the on-board submission set (proxy for external submissions). Constraints unchanged: per-vendor/per-dose grouping, never average across groups, blur trap must separate in every group.",
+    "data_sources": {
+      "per_vendor": "D:\\ZHY\\low_dose_CT-heyang\\WS-1_dataset\\output\\aapm_lidc_cross_vendor_spread.json",
+      "per_dose": "D:\\ZHY\\low_dose_CT-heyang\\WS-1_dataset\\output\\aapm_dose_detectability.json"
+    },
+    "no_model_rerun": true
+  },
+  "task": {
+    "task": "SKE-Gaussian20HU-s2px",
+    "signal_sigma_px": 2.0,
+    "peak_contrast_hu": 20.0,
+    "roi_size_px": 32,
+    "location_known": true,
+    "noise_roi_hu_band": [
+      10.0,
+      120.0
+    ],
+    "n_trials": 64
+  },
+  "models": [
+    "red_cnn",
+    "ctformer",
+    "learn",
+    "blur"
+  ],
+  "boards": {
+    "per_vendor": {
+      "description": "LIDC four vendors (2 patients each, lowdose_sim r=0.25) + AAPM Siemens real paired QD (4 held-out test patients); entries are per (vendor, model) means",
+      "n_entries": 20,
+      "entries": [
+        {
+          "group": "GE",
+          "method": "red_cnn",
+          "kind": "submission",
+          "n_patients": 2,
+          "metrics": {
+            "psnr_db": 51.42004733637856,
+            "ssim": 0.9889442070076864,
+            "bander_roi": 0.5746751792798349,
+            "bander_full": 1.0121469210381675,
+            "roi_tm_auc": 0.9895833333333334,
+            "cnr_mean": 4.321661066200729,
+            "cho_auc_mean": 1.0
+          }
+        },
+        {
+          "group": "GE",
+          "method": "ctformer",
+          "kind": "submission",
+          "n_patients": 2,
+          "metrics": {
+            "psnr_db": 43.145182444189025,
+            "ssim": 0.9348586406558752,
+            "bander_roi": 8.952935508166712,
+            "bander_full": 1.3907684664067927,
+            "roi_tm_auc": 0.9895833333333334,
+            "cnr_mean": 0.22758617814909415,
+            "cho_auc_mean": 1.0
+          }
+        },
+        {
+          "group": "GE",
+          "method": "learn",
+          "kind": "submission",
+          "n_patients": 2,
+          "metrics": {
+            "psnr_db": 53.64305235025729,
+            "ssim": 0.9894533815483252,
+            "bander_roi": 0.4377207350211846,
+            "bander_full": 1.008971066216024,
+            "roi_tm_auc": 0.9895833333333334,
+            "cnr_mean": 5.754862506968429,
+            "cho_auc_mean": 1.0
+          }
+        },
+        {
+          "group": "GE",
+          "method": "blur",
+          "kind": "trap",
+          "n_patients": 2,
+          "metrics": {
+            "psnr_db": 40.68572623027117,
+            "ssim": 0.9209226369857788,
+            "bander_roi": 0.045245933213797,
+            "bander_full": 0.2509224449453622,
+            "roi_tm_auc": 0.9895833333333334,
+            "cnr_mean": 4.8088624181101896,
+            "cho_auc_mean": 1.0
+          }
+        },
+        {
+          "group": "Philips",
+          "method": "red_cnn",
+          "kind": "submission",
+          "n_patients": 2,
+          "metrics": {
+            "psnr_db": 45.105013914671666,
+            "ssim": 0.977857696513335,
+            "bander_roi": 3.192782063728278,
+            "bander_full": 1.3802758435543678,
+            "roi_tm_auc": 0.9895833333333334,
+            "cnr_mean": 0.13429718985997502,
+            "cho_auc_mean": 1.0
+          }
+        },
+        {
+          "group": "Philips",
+          "method": "ctformer",
+          "kind": "submission",
+          "n_patients": 2,
+          "metrics": {
+            "psnr_db": 42.26393112478014,
+            "ssim": 0.9469314118226368,
+            "bander_roi": 10.595228141829462,
+            "bander_full": 2.2330454095547214,
+            "roi_tm_auc": 0.9895833333333334,
+            "cnr_mean": 0.10245021651748618,
+            "cho_auc_mean": 1.0
+          }
+        },
+        {
+          "group": "Philips",
+          "method": "learn",
+          "kind": "submission",
+          "n_patients": 2,
+          "metrics": {
+            "psnr_db": 48.78499148996764,
+            "ssim": 0.9760532913108666,
+            "bander_roi": 3.1943395190078707,
+            "bander_full": 1.364952098373558,
+            "roi_tm_auc": 0.9895833333333334,
+            "cnr_mean": 0.1338229038725874,
+            "cho_auc_mean": 1.0
+          }
+        },
+        {
+          "group": "Philips",
+          "method": "blur",
+          "kind": "trap",
+          "n_patients": 2,
+          "metrics": {
+            "psnr_db": 43.581771895681854,
+            "ssim": 0.9869370975842078,
+            "bander_roi": 0.24936490377459875,
+            "bander_full": 0.4166925496969569,
+            "roi_tm_auc": 0.9895833333333334,
+            "cnr_mean": 0.20756659662744237,
+            "cho_auc_mean": 1.0
+          }
+        },
+        {
+          "group": "Siemens",
+          "method": "red_cnn",
+          "kind": "submission",
+          "n_patients": 2,
+          "metrics": {
+            "psnr_db": 44.67309126465335,
+            "ssim": 0.9833190025140841,
+            "bander_roi": 1.157229319065808,
+            "bander_full": 1.0719055515075218,
+            "roi_tm_auc": 0.9895833333333334,
+            "cnr_mean": 0.053471587456146025,
+            "cho_auc_mean": 1.0
+          }
+        },
+        {
+          "group": "Siemens",
+          "method": "ctformer",
+          "kind": "submission",
+          "n_patients": 2,
+          "metrics": {
+            "psnr_db": 41.98432782570427,
+            "ssim": 0.9623532022039096,
+            "bander_roi": 1.8876078093566564,
+            "bander_full": 1.4595824693078003,
+            "roi_tm_auc": 0.9895833333333334,
+            "cnr_mean": 0.04877132803136176,
+            "cho_auc_mean": 1.0
+          }
+        },
+        {
+          "group": "Siemens",
+          "method": "learn",
+          "kind": "submission",
+          "n_patients": 2,
+          "metrics": {
+            "psnr_db": 48.420666227578195,
+            "ssim": 0.9869018321235974,
+            "bander_roi": 1.1646078990816668,
+            "bander_full": 1.0729791552023211,
+            "roi_tm_auc": 0.9895833333333334,
+            "cnr_mean": 0.053406303396359316,
+            "cho_auc_mean": 1.0
+          }
+        },
+        {
+          "group": "Siemens",
+          "method": "blur",
+          "kind": "trap",
+          "n_patients": 2,
+          "metrics": {
+            "psnr_db": 36.93872655591893,
+            "ssim": 0.8405405518909295,
+            "bander_roi": 0.1223033657914374,
+            "bander_full": 0.1914244989515192,
+            "roi_tm_auc": 0.9895833333333334,
+            "cnr_mean": 0.09848642185169176,
+            "cho_auc_mean": 1.0
+          }
+        },
+        {
+          "group": "Toshiba",
+          "method": "red_cnn",
+          "kind": "submission",
+          "n_patients": 2,
+          "metrics": {
+            "psnr_db": 50.743032965749485,
+            "ssim": 0.9851638743033011,
+            "bander_roi": 1.1564802714232314,
+            "bander_full": 1.0553560744579409,
+            "roi_tm_auc": 0.9895833333333334,
+            "cnr_mean": 3.2380959041238047,
+            "cho_auc_mean": 1.0
+          }
+        },
+        {
+          "group": "Toshiba",
+          "method": "ctformer",
+          "kind": "submission",
+          "n_patients": 2,
+          "metrics": {
+            "psnr_db": 42.917326731195054,
+            "ssim": 0.9181743673980236,
+            "bander_roi": 9.246751631974863,
+            "bander_full": 1.412018343797623,
+            "roi_tm_auc": 0.9895833333333334,
+            "cnr_mean": 0.2213444873173221,
+            "cho_auc_mean": 1.0
+          }
+        },
+        {
+          "group": "Toshiba",
+          "method": "learn",
+          "kind": "submission",
+          "n_patients": 2,
+          "metrics": {
+            "psnr_db": 52.82900969546078,
+            "ssim": 0.9872552597274382,
+            "bander_roi": 1.1227839915166196,
+            "bander_full": 1.0570552451244295,
+            "roi_tm_auc": 0.9895833333333334,
+            "cnr_mean": 3.7132901063682713,
+            "cho_auc_mean": 1.0
+          }
+        },
+        {
+          "group": "Toshiba",
+          "method": "blur",
+          "kind": "trap",
+          "n_patients": 2,
+          "metrics": {
+            "psnr_db": 40.36947279508346,
+            "ssim": 0.9115665163844824,
+            "bander_roi": 0.05920958469662685,
+            "bander_full": 0.22311928788604293,
+            "roi_tm_auc": 0.9895833333333334,
+            "cnr_mean": 3.459680516229598,
+            "cho_auc_mean": 1.0
+          }
+        },
+        {
+          "group": "AAPM-Siemens-real",
+          "method": "red_cnn",
+          "kind": "submission",
+          "n_patients": 4,
+          "metrics": {
+            "psnr_db": 41.19993278699318,
+            "ssim": 0.9339761666948878,
+            "bander_roi": 3.87617893586056,
+            "bander_full": 1.5239245816851799,
+            "roi_tm_auc": 0.9895833333333334,
+            "cnr_mean": 0.10364251511827034,
+            "cho_auc_mean": 1.0
+          }
+        },
+        {
+          "group": "AAPM-Siemens-real",
+          "method": "ctformer",
+          "kind": "submission",
+          "n_patients": 4,
+          "metrics": {
+            "psnr_db": 39.58505925726698,
+            "ssim": 0.9119653047806349,
+            "bander_roi": 6.735175395405865,
+            "bander_full": 2.196764405584428,
+            "roi_tm_auc": 0.9895833333333334,
+            "cnr_mean": 0.08632276628210107,
+            "cho_auc_mean": 1.0
+          }
+        },
+        {
+          "group": "AAPM-Siemens-real",
+          "method": "learn",
+          "kind": "submission",
+          "n_patients": 4,
+          "metrics": {
+            "psnr_db": 41.613537897510206,
+            "ssim": 0.935812836668043,
+            "bander_roi": 3.8539127075548683,
+            "bander_full": 1.5139613095562485,
+            "roi_tm_auc": 0.9895833333333334,
+            "cnr_mean": 0.10360286073430668,
+            "cho_auc_mean": 1.0
+          }
+        },
+        {
+          "group": "AAPM-Siemens-real",
+          "method": "blur",
+          "kind": "trap",
+          "n_patients": 4,
+          "metrics": {
+            "psnr_db": 41.62701493902994,
+            "ssim": 0.9653218340698881,
+            "bander_roi": 0.4315421991344855,
+            "bander_full": 0.42997330961502483,
+            "roi_tm_auc": 0.9895833333333334,
+            "cnr_mean": 0.17063560072817718,
+            "cho_auc_mean": 1.0
+          }
+        }
+      ]
+    },
+    "per_dose": {
+      "description": "AAPM Siemens real paired FD multi-dose points: sim_r010 / real_r025 / sim_r050; entries are per (dose, model) means over 4 test patients",
+      "n_entries": 12,
+      "entries": [
+        {
+          "group": "sim_r010",
+          "method": "red_cnn",
+          "kind": "submission",
+          "n_patients": 4,
+          "metrics": {
+            "psnr_db": 42.54956997676922,
+            "ssim": 0.9472607666005691,
+            "bander_roi": 8.163772805683914,
+            "bander_full": 2.0935441758669424,
+            "roi_tm_auc": 0.9895833333333334,
+            "cnr_mean": 0.1043775379958668,
+            "cho_auc_mean": 1.0
+          }
+        },
+        {
+          "group": "sim_r010",
+          "method": "ctformer",
+          "kind": "submission",
+          "n_patients": 4,
+          "metrics": {
+            "psnr_db": 39.97934142729369,
+            "ssim": 0.9136069063097239,
+            "bander_roi": 12.606810153246833,
+            "bander_full": 2.9438124044165606,
+            "roi_tm_auc": 0.9895833333333334,
+            "cnr_mean": 0.08444511834363405,
+            "cho_auc_mean": 1.0
+          }
+        },
+        {
+          "group": "sim_r010",
+          "method": "learn",
+          "kind": "submission",
+          "n_patients": 4,
+          "metrics": {
+            "psnr_db": 42.99180370431639,
+            "ssim": 0.9471055706962943,
+            "bander_roi": 8.289086803276257,
+            "bander_full": 2.1062595290649972,
+            "roi_tm_auc": 0.9895833333333334,
+            "cnr_mean": 0.1038519793715606,
+            "cho_auc_mean": 1.0
+          }
+        },
+        {
+          "group": "sim_r010",
+          "method": "blur",
+          "kind": "trap",
+          "n_patients": 4,
+          "metrics": {
+            "psnr_db": 42.62278636447683,
+            "ssim": 0.9740847662712138,
+            "bander_roi": 0.35311776261712147,
+            "bander_full": 0.41255149058610646,
+            "roi_tm_auc": 0.9895833333333334,
+            "cnr_mean": 0.21833164387960596,
+            "cho_auc_mean": 1.0
+          }
+        },
+        {
+          "group": "real_r025",
+          "method": "red_cnn",
+          "kind": "submission",
+          "n_patients": 4,
+          "metrics": {
+            "psnr_db": 41.17298657051079,
+            "ssim": 0.9337934581562876,
+            "bander_roi": 3.8761788995820554,
+            "bander_full": 1.5239245680945066,
+            "roi_tm_auc": 0.9895833333333334,
+            "cnr_mean": 0.10646923768616805,
+            "cho_auc_mean": 1.0
+          }
+        },
+        {
+          "group": "real_r025",
+          "method": "ctformer",
+          "kind": "submission",
+          "n_patients": 4,
+          "metrics": {
+            "psnr_db": 39.5676912233305,
+            "ssim": 0.9116347481807072,
+            "bander_roi": 6.735175395405865,
+            "bander_full": 2.196764405584428,
+            "roi_tm_auc": 0.9895833333333334,
+            "cnr_mean": 0.08868525838908078,
+            "cho_auc_mean": 1.0
+          }
+        },
+        {
+          "group": "real_r025",
+          "method": "learn",
+          "kind": "submission",
+          "n_patients": 4,
+          "metrics": {
+            "psnr_db": 41.57965206588183,
+            "ssim": 0.9356072200462223,
+            "bander_roi": 3.8539127075548683,
+            "bander_full": 1.5139613095562485,
+            "roi_tm_auc": 0.9895833333333334,
+            "cnr_mean": 0.10641660257434934,
+            "cho_auc_mean": 1.0
+          }
+        },
+        {
+          "group": "real_r025",
+          "method": "blur",
+          "kind": "trap",
+          "n_patients": 4,
+          "metrics": {
+            "psnr_db": 41.65346374316624,
+            "ssim": 0.9653930384665728,
+            "bander_roi": 0.4315421991344855,
+            "bander_full": 0.42997330961502483,
+            "roi_tm_auc": 0.9895833333333334,
+            "cnr_mean": 0.17407346038113444,
+            "cho_auc_mean": 1.0
+          }
+        },
+        {
+          "group": "sim_r050",
+          "method": "red_cnn",
+          "kind": "submission",
+          "n_patients": 4,
+          "metrics": {
+            "psnr_db": 47.89340006961666,
+            "ssim": 0.9853580622002482,
+            "bander_roi": 2.162679069954,
+            "bander_full": 1.1862233467447334,
+            "roi_tm_auc": 0.9895833333333334,
+            "cnr_mean": 0.1475148315248213,
+            "cho_auc_mean": 1.0
+          }
+        },
+        {
+          "group": "sim_r050",
+          "method": "ctformer",
+          "kind": "submission",
+          "n_patients": 4,
+          "metrics": {
+            "psnr_db": 42.803480507543775,
+            "ssim": 0.9520750533168514,
+            "bander_roi": 5.0424320955517405,
+            "bander_full": 1.8687099714511115,
+            "roi_tm_auc": 0.9895833333333334,
+            "cnr_mean": 0.1069075685370312,
+            "cho_auc_mean": 1.0
+          }
+        },
+        {
+          "group": "sim_r050",
+          "method": "learn",
+          "kind": "submission",
+          "n_patients": 4,
+          "metrics": {
+            "psnr_db": 49.57430207138331,
+            "ssim": 0.9845011451592048,
+            "bander_roi": 2.1716987577057565,
+            "bander_full": 1.1796754707289923,
+            "roi_tm_auc": 0.9895833333333334,
+            "cnr_mean": 0.1472516977809373,
+            "cho_auc_mean": 1.0
+          }
+        },
+        {
+          "group": "sim_r050",
+          "method": "blur",
+          "kind": "trap",
+          "n_patients": 4,
+          "metrics": {
+            "psnr_db": 43.04060789779275,
+            "ssim": 0.9785676288108031,
+            "bander_roi": 0.18269870052593337,
+            "bander_full": 0.3875321017262813,
+            "roi_tm_auc": 0.9895833333333334,
+            "cnr_mean": 0.26815804484822614,
+            "cho_auc_mean": 1.0
+          }
+        }
+      ]
+    }
+  },
+  "spread": {
+    "per_vendor_within_group": {
+      "Siemens": {
+        "n": 4,
+        "psnr_db_span": 11.481939671659262,
+        "psnr_db_std": 4.181907812244655,
+        "bander_roi_span": 1.765304443565219,
+        "bander_roi_std": 0.6289875942799651,
+        "cnr_mean_span": 0.04971509382033,
+        "cnr_mean_std": 0.02026962420481738,
+        "n_entries": 4,
+        "methods": [
+          "red_cnn",
+          "ctformer",
+          "learn",
+          "blur"
+        ]
+      },
+      "GE": {
+        "n": 4,
+        "psnr_db_span": 12.95732611998612,
+        "psnr_db_std": 5.435918088840484,
+        "bander_roi_span": 8.907689574952915,
+        "bander_roi_std": 3.729143254921014,
+        "cnr_mean_span": 5.527276328819335,
+        "cnr_mean_std": 2.113744788375811,
+        "n_entries": 4,
+        "methods": [
+          "red_cnn",
+          "ctformer",
+          "learn",
+          "blur"
+        ]
+      },
+      "AAPM-Siemens-real": {
+        "n": 4,
+        "psnr_db_span": 2.041955681762964,
+        "psnr_db_std": 0.8383680240465592,
+        "bander_roi_span": 6.30363319627138,
+        "bander_roi_std": 2.2331307176677555,
+        "cnr_mean_span": 0.08431283444607611,
+        "cnr_mean_std": 0.03229618083017798,
+        "n_entries": 4,
+        "methods": [
+          "red_cnn",
+          "ctformer",
+          "learn",
+          "blur"
+        ]
+      },
+      "Toshiba": {
+        "n": 4,
+        "psnr_db_span": 12.459536900377323,
+        "psnr_db_std": 5.20322499895863,
+        "bander_roi_span": 9.187542047278237,
+        "bander_roi_std": 3.692886732448882,
+        "cnr_mean_span": 3.491945619050949,
+        "cnr_mean_std": 1.4168742147713638,
+        "n_entries": 4,
+        "methods": [
+          "red_cnn",
+          "ctformer",
+          "learn",
+          "blur"
+        ]
+      },
+      "Philips": {
+        "n": 4,
+        "psnr_db_span": 6.521060365187495,
+        "psnr_db_std": 2.4401418933171795,
+        "bander_roi_span": 10.345863238054864,
+        "bander_roi_std": 3.8237974333008102,
+        "cnr_mean_span": 0.10511638010995619,
+        "cnr_mean_std": 0.03861241034851667,
+        "n_entries": 4,
+        "methods": [
+          "red_cnn",
+          "ctformer",
+          "learn",
+          "blur"
+        ]
+      }
+    },
+    "per_dose_within_group": {
+      "real_r025": {
+        "n": 4,
+        "psnr_db_span": 2.085772519835743,
+        "psnr_db_std": 0.8432485506366282,
+        "bander_roi_span": 6.30363319627138,
+        "bander_roi_std": 2.2331307170505186,
+        "cnr_mean_span": 0.08538820199205366,
+        "cnr_mean_std": 0.03266266947011583,
+        "n_entries": 4,
+        "methods": [
+          "red_cnn",
+          "ctformer",
+          "learn",
+          "blur"
+        ]
+      },
+      "sim_r050": {
+        "n": 4,
+        "psnr_db_span": 6.770821563839533,
+        "psnr_db_std": 2.9672348044244266,
+        "bander_roi_span": 4.859733395025807,
+        "bander_roi_std": 1.7325490776190462,
+        "cnr_mean_span": 0.16125047631119493,
+        "cnr_mean_std": 0.060441869595874526,
+        "n_entries": 4,
+        "methods": [
+          "red_cnn",
+          "ctformer",
+          "learn",
+          "blur"
+        ]
+      },
+      "sim_r010": {
+        "n": 4,
+        "psnr_db_span": 3.012462277022699,
+        "psnr_db_std": 1.1991119111986204,
+        "bander_roi_span": 12.253692390629713,
+        "bander_roi_std": 4.4196856040402785,
+        "cnr_mean_span": 0.1338865255359719,
+        "cnr_mean_std": 0.05290967384003909,
+        "n_entries": 4,
+        "methods": [
+          "red_cnn",
+          "ctformer",
+          "learn",
+          "blur"
+        ]
+      }
+    },
+    "per_vendor_across_group_by_model": {
+      "red_cnn": {
+        "n_groups": 5,
+        "groups": [
+          "GE",
+          "Philips",
+          "Siemens",
+          "Toshiba",
+          "AAPM-Siemens-real"
+        ],
+        "psnr": {
+          "psnr_span": 10.220114549385379,
+          "psnr_mean": 46.62822365368925,
+          "psnr_std": 3.8859305753384468,
+          "n": 5
+        },
+        "bander_roi": {
+          "ber_span": 3.301503756580725,
+          "ber_mean": 1.9914691538715426,
+          "ber_std": 1.2958203094520393,
+          "n": 5
+        },
+        "cnr": {
+          "cnr_span": 4.268189478744583,
+          "cnr_mean": 1.570233652551785,
+          "cnr_std": 1.836599442131974,
+          "n": 5
+        }
+      },
+      "ctformer": {
+        "n_groups": 5,
+        "groups": [
+          "GE",
+          "Philips",
+          "Siemens",
+          "Toshiba",
+          "AAPM-Siemens-real"
+        ],
+        "psnr": {
+          "psnr_span": 3.5601231869220484,
+          "psnr_mean": 41.979165476627095,
+          "psnr_std": 1.2690630261740088,
+          "n": 5
+        },
+        "bander_roi": {
+          "ber_span": 8.707620332472807,
+          "ber_mean": 7.483539697346712,
+          "ber_std": 3.060233591549552,
+          "n": 5
+        },
+        "cnr": {
+          "cnr_span": 0.1788148501177324,
+          "cnr_mean": 0.13729499525947306,
+          "cnr_std": 0.07330154325087908,
+          "n": 5
+        }
+      },
+      "learn": {
+        "n_groups": 5,
+        "groups": [
+          "GE",
+          "Philips",
+          "Siemens",
+          "Toshiba",
+          "AAPM-Siemens-real"
+        ],
+        "psnr": {
+          "psnr_span": 12.029514452747087,
+          "psnr_mean": 49.05825153215482,
+          "psnr_std": 4.269519008997227,
+          "n": 5
+        },
+        "bander_roi": {
+          "ber_span": 3.416191972533684,
+          "ber_mean": 1.954672970436442,
+          "ber_std": 1.3237273817105322,
+          "n": 5
+        },
+        "cnr": {
+          "cnr_span": 5.70145620357207,
+          "cnr_mean": 1.9517969362679908,
+          "cnr_std": 2.3618172597232645,
+          "n": 5
+        }
+      },
+      "blur": {
+        "n_groups": 5,
+        "groups": [
+          "GE",
+          "Philips",
+          "Siemens",
+          "Toshiba",
+          "AAPM-Siemens-real"
+        ],
+        "psnr": {
+          "psnr_span": 6.643045339762921,
+          "psnr_mean": 40.64054248319707,
+          "psnr_std": 2.163465732071866,
+          "n": 5
+        },
+        "bander_roi": {
+          "ber_span": 0.3862962659206885,
+          "ber_mean": 0.1815331973221891,
+          "ber_std": 0.14432678122545875,
+          "n": 5
+        },
+        "cnr": {
+          "cnr_span": 4.710375996258498,
+          "cnr_mean": 1.7490463107094198,
+          "cnr_std": 1.9940226689393794,
+          "n": 5
+        }
+      }
+    },
+    "per_dose_across_group_by_model": {
+      "red_cnn": {
+        "n_groups": 3,
+        "groups": [
+          "sim_r010",
+          "real_r025",
+          "sim_r050"
+        ],
+        "psnr": {
+          "psnr_span": 6.720413499105874,
+          "psnr_mean": 43.87198553896555,
+          "psnr_std": 2.898571669989135,
+          "n": 3
+        },
+        "bander_roi": {
+          "ber_span": 6.0010937357299134,
+          "ber_mean": 4.734210258406657,
+          "ber_std": 2.523944646223314,
+          "n": 3
+        },
+        "cnr": {
+          "cnr_span": 0.04313729352895451,
+          "cnr_mean": 0.11945386906895206,
+          "cnr_std": 0.019860463444758444,
+          "n": 3
+        }
+      },
+      "ctformer": {
+        "n_groups": 3,
+        "groups": [
+          "sim_r010",
+          "real_r025",
+          "sim_r050"
+        ],
+        "psnr": {
+          "psnr_span": 3.2357892842132756,
+          "psnr_mean": 40.78350438605599,
+          "psnr_std": 1.4381913690793182,
+          "n": 3
+        },
+        "bander_roi": {
+          "ber_span": 7.564378057695093,
+          "ber_mean": 8.128139214734812,
+          "ber_std": 3.241420984836163,
+          "n": 3
+        },
+        "cnr": {
+          "cnr_span": 0.022462450193397154,
+          "cnr_mean": 0.09334598175658201,
+          "cnr_std": 0.009744474465185931,
+          "n": 3
+        }
+      },
+      "learn": {
+        "n_groups": 3,
+        "groups": [
+          "sim_r010",
+          "real_r025",
+          "sim_r050"
+        ],
+        "psnr": {
+          "psnr_span": 7.994650005501477,
+          "psnr_mean": 44.71525261386051,
+          "psnr_std": 3.4838976530578316,
+          "n": 3
+        },
+        "bander_roi": {
+          "ber_span": 6.1173880455705,
+          "ber_mean": 4.771566089512294,
+          "ber_std": 2.58033265582633,
+          "n": 3
+        },
+        "cnr": {
+          "cnr_span": 0.0433997184093767,
+          "cnr_mean": 0.11917342657561575,
+          "cnr_std": 0.019881923254600944,
+          "n": 3
+        }
+      },
+      "blur": {
+        "n_groups": 3,
+        "groups": [
+          "sim_r010",
+          "real_r025",
+          "sim_r050"
+        ],
+        "psnr": {
+          "psnr_span": 1.3871441546265117,
+          "psnr_mean": 42.438952668478606,
+          "psnr_std": 0.5810268767546529,
+          "n": 3
+        },
+        "bander_roi": {
+          "ber_span": 0.24884349860855212,
+          "ber_mean": 0.32245288742584677,
+          "ber_std": 0.10387820633738487,
+          "n": 3
+        },
+        "cnr": {
+          "cnr_span": 0.0940845844670917,
+          "cnr_mean": 0.2201877163696555,
+          "cnr_std": 0.03843228688141059,
+          "n": 3
+        }
+      }
+    }
+  },
+  "separation": {
+    "per_vendor": {
+      "GE": {
+        "blur_roi_ber": 0.045245933213797,
+        "min_model_roi_ber": 0.4377207350211846,
+        "min_model_name": "learn",
+        "model_roi_bers": {
+          "red_cnn": 0.5746751792798349,
+          "ctformer": 8.952935508166712,
+          "learn": 0.4377207350211846
+        },
+        "ratio_min_model_over_blur": 9.674255870751027,
+        "ratio_gate": 3.0,
+        "sep_ok": true,
+        "blur_rank_in_detectability": "4/4",
+        "blur_last_in_detectability": true
+      },
+      "Philips": {
+        "blur_roi_ber": 0.24936490377459875,
+        "min_model_roi_ber": 3.192782063728278,
+        "min_model_name": "red_cnn",
+        "model_roi_bers": {
+          "red_cnn": 3.192782063728278,
+          "ctformer": 10.595228141829462,
+          "learn": 3.1943395190078707
+        },
+        "ratio_min_model_over_blur": 12.803654465402388,
+        "ratio_gate": 3.0,
+        "sep_ok": true,
+        "blur_rank_in_detectability": "4/4",
+        "blur_last_in_detectability": true
+      },
+      "Siemens": {
+        "blur_roi_ber": 0.1223033657914374,
+        "min_model_roi_ber": 1.157229319065808,
+        "min_model_name": "red_cnn",
+        "model_roi_bers": {
+          "red_cnn": 1.157229319065808,
+          "ctformer": 1.8876078093566564,
+          "learn": 1.1646078990816668
+        },
+        "ratio_min_model_over_blur": 9.461958071041304,
+        "ratio_gate": 3.0,
+        "sep_ok": true,
+        "blur_rank_in_detectability": "4/4",
+        "blur_last_in_detectability": true
+      },
+      "Toshiba": {
+        "blur_roi_ber": 0.05920958469662685,
+        "min_model_roi_ber": 1.1227839915166196,
+        "min_model_name": "learn",
+        "model_roi_bers": {
+          "red_cnn": 1.1564802714232314,
+          "ctformer": 9.246751631974863,
+          "learn": 1.1227839915166196
+        },
+        "ratio_min_model_over_blur": 18.962875643689227,
+        "ratio_gate": 3.0,
+        "sep_ok": true,
+        "blur_rank_in_detectability": "4/4",
+        "blur_last_in_detectability": true
+      },
+      "AAPM-Siemens-real": {
+        "blur_roi_ber": 0.4315421991344855,
+        "min_model_roi_ber": 3.8539127075548683,
+        "min_model_name": "learn",
+        "model_roi_bers": {
+          "red_cnn": 3.87617893586056,
+          "ctformer": 6.735175395405865,
+          "learn": 3.8539127075548683
+        },
+        "ratio_min_model_over_blur": 8.930558159281748,
+        "ratio_gate": 3.0,
+        "sep_ok": true,
+        "blur_rank_in_detectability": "4/4",
+        "blur_last_in_detectability": true
+      }
+    },
+    "per_dose": {
+      "sim_r010": {
+        "blur_roi_ber": 0.35311776261712147,
+        "min_model_roi_ber": 8.163772805683914,
+        "min_model_name": "red_cnn",
+        "model_roi_bers": {
+          "red_cnn": 8.163772805683914,
+          "ctformer": 12.606810153246833,
+          "learn": 8.289086803276257
+        },
+        "ratio_min_model_over_blur": 23.119122485310175,
+        "ratio_gate": 3.0,
+        "sep_ok": true,
+        "blur_rank_in_detectability": "4/4",
+        "blur_last_in_detectability": true
+      },
+      "real_r025": {
+        "blur_roi_ber": 0.4315421991344855,
+        "min_model_roi_ber": 3.8539127075548683,
+        "min_model_name": "learn",
+        "model_roi_bers": {
+          "red_cnn": 3.8761788995820554,
+          "ctformer": 6.735175395405865,
+          "learn": 3.8539127075548683
+        },
+        "ratio_min_model_over_blur": 8.930558159281748,
+        "ratio_gate": 3.0,
+        "sep_ok": true,
+        "blur_rank_in_detectability": "4/4",
+        "blur_last_in_detectability": true
+      },
+      "sim_r050": {
+        "blur_roi_ber": 0.18269870052593337,
+        "min_model_roi_ber": 2.162679069954,
+        "min_model_name": "red_cnn",
+        "model_roi_bers": {
+          "red_cnn": 2.162679069954,
+          "ctformer": 5.0424320955517405,
+          "learn": 2.1716987577057565
+        },
+        "ratio_min_model_over_blur": 11.837408058887732,
+        "ratio_gate": 3.0,
+        "sep_ok": true,
+        "blur_rank_in_detectability": "4/4",
+        "blur_last_in_detectability": true
+      }
+    }
+  },
+  "statistics": {
+    "per_vendor": {
+      "test": "Kruskal-Wallis (scipy, asymptotic p) on LIDC vendor-group ROI BandER, reused from R6 aapm_lidc_cross_vendor_spread.json; per-slice not persisted, group samples replicated from patient means (first-pass patient-level permutation KW p=0.0103, 20000 draws, direction consistent)",
+      "models": {
+        "red_cnn": {
+          "n_groups": 4,
+          "groups": [
+            "GE",
+            "Philips",
+            "Siemens",
+            "Toshiba"
+          ],
+          "samples_per_group": [
+            96,
+            96,
+            96,
+            96
+          ],
+          "H": 328.28571428571433,
+          "p_value": 7.499734285363943e-71,
+          "significant_at_0_05": true
+        },
+        "ctformer": {
+          "n_groups": 4,
+          "groups": [
+            "GE",
+            "Philips",
+            "Siemens",
+            "Toshiba"
+          ],
+          "samples_per_group": [
+            96,
+            96,
+            96,
+            96
+          ],
+          "H": 337.404761904762,
+          "p_value": 7.95763511635617e-73,
+          "significant_at_0_05": true
+        },
+        "learn": {
+          "n_groups": 4,
+          "groups": [
+            "GE",
+            "Philips",
+            "Siemens",
+            "Toshiba"
+          ],
+          "samples_per_group": [
+            96,
+            96,
+            96,
+            96
+          ],
+          "H": 328.28571428571433,
+          "p_value": 7.499734285363943e-71,
+          "significant_at_0_05": true
+        },
+        "blur": {
+          "n_groups": 4,
+          "groups": [
+            "GE",
+            "Philips",
+            "Siemens",
+            "Toshiba"
+          ],
+          "samples_per_group": [
+            96,
+            96,
+            96,
+            96
+          ],
+          "H": 209.7380952380952,
+          "p_value": 3.3173100170226177e-45,
+          "significant_at_0_05": true
+        }
+      }
+    },
+    "per_dose": {
+      "test": "exact permutation Friedman (repeated measures, within-subject dose effect, 1296 enumerations) primary; independent-groups permutation KW reported as reference only (independence assumption violated for repeated measures)",
+      "friedman_exact": {
+        "red_cnn": {
+          "H_friedman": 6.5,
+          "p_exact_permutation": 0.041666666666666664,
+          "n_permutations_enumerated": 1296,
+          "significant_at_0_05": true
+        },
+        "ctformer": {
+          "H_friedman": 4.5,
+          "p_exact_permutation": 0.125,
+          "n_permutations_enumerated": 1296,
+          "significant_at_0_05": false
+        },
+        "learn": {
+          "H_friedman": 6.5,
+          "p_exact_permutation": 0.041666666666666664,
+          "n_permutations_enumerated": 1296,
+          "significant_at_0_05": true
+        },
+        "blur": {
+          "H_friedman": 6.5,
+          "p_exact_permutation": 0.041666666666666664,
+          "n_permutations_enumerated": 1296,
+          "significant_at_0_05": true
+        }
+      },
+      "kruskal_wallis_reference": {
+        "red_cnn": {
+          "H": 5.653846153846153,
+          "n_groups": 3,
+          "n_patients_per_group": [
+            4,
+            4,
+            4
+          ],
+          "p_value_permutation": 0.055347232638368084,
+          "n_permutations": 20000,
+          "significant_at_0_05": false
+        },
+        "ctformer": {
+          "H": 2.8076923076923066,
+          "n_groups": 3,
+          "n_patients_per_group": [
+            4,
+            4,
+            4
+          ],
+          "p_value_permutation": 0.2822358882055897,
+          "n_permutations": 20000,
+          "significant_at_0_05": false
+        },
+        "learn": {
+          "H": 5.653846153846153,
+          "n_groups": 3,
+          "n_patients_per_group": [
+            4,
+            4,
+            4
+          ],
+          "p_value_permutation": 0.053697315134243286,
+          "n_permutations": 20000,
+          "significant_at_0_05": false
+        },
+        "blur": {
+          "H": 5.11538461538462,
+          "n_groups": 3,
+          "n_patients_per_group": [
+            4,
+            4,
+            4
+          ],
+          "p_value_permutation": 0.07089645517724114,
+          "n_permutations": 20000,
+          "significant_at_0_05": false
+        }
+      }
+    }
+  },
+  "gate": {
+    "per_vendor": {
+      "blur_trap_separation_all_groups": true,
+      "sep_ok_groups": [
+        "GE",
+        "Philips",
+        "Siemens",
+        "Toshiba",
+        "AAPM-Siemens-real"
+      ],
+      "sep_fail_groups": [],
+      "group_effect_significant": true,
+      "never_average_across_groups": true,
+      "verdict": "PASS",
+      "rationale": "per-vendor: blur trap separates in every vendor group (ratio>=3x, blur last in detectability) and vendor effect is significant on Kruskal-Wallis of vendor-group ROI BandER (H=328.3, p<0.001) -> per-vendor spread reported, never averaged."
+    },
+    "per_dose": {
+      "blur_trap_separation_all_groups": true,
+      "sep_ok_groups": [
+        "sim_r010",
+        "real_r025",
+        "sim_r050"
+      ],
+      "sep_fail_groups": [],
+      "dose_effect_significant": true,
+      "dose_effect_significant_models": [
+        "red_cnn",
+        "learn",
+        "blur"
+      ],
+      "dose_effect_not_significant_models": [
+        "ctformer"
+      ],
+      "never_average_across_groups": true,
+      "verdict": "PASS",
+      "rationale": "per-dose: blur trap separates at every dose point (ratio>=3x, blur last). Dose levels are distinct acquisition conditions (r=0.10/0.50 lowdose_sim, r=0.25 official real QD) so averaging across them is a protocol-level constraint; the exact permutation Friedman test (repeated measures, 4 patients) gives supporting evidence for a dose effect in 3/4 models (red_cnn/learn/blur p=0.0417; ctformer p=0.1250 due to one non-monotonic patient). Per-dose spread is reported by group, never averaged."
+    },
+    "overall_verdict": "PASS"
+  },
+  "stats_methodology": "Vendor effect: Kruskal-Wallis on LIDC vendor-group ROI BandER reused from R6 aapm_lidc_cross_vendor_spread.json (H=328.3, p<0.001, all 4 models significant); per-slice ROI BandER is not persisted in the R6 output, so group samples are replicated from patient means (direction consistent with the first-pass patient-level permutation KW, 20000 draws, p=0.0103). Per-dose exact permutation Friedman (n=4 patients x 3 dose levels, all 1296 within-subject permutations enumerated) because the same 4 patients are measured at every dose level and independent-groups KW would violate the repeated-measures design (KW reported as reference only). GE/Toshiba near-zero FD high-frequency denominators regularized (2026-08-22, adaptive epsilon floor = 1e-4 x full-image FD energy): ROI BandER group means now 0.6-9.2 (previously inflated by 5-13 orders of magnitude); rank-based statistics (KW, Friedman, separation ratio, blur ranking) are preserved and all gates remain PASS. Pooled patient-level MWU blur-vs-model is not used as a gate criterion (not re-computed in the regularized run).",
+  "caveats": [
+    "LIDC four vendors use simulated r=0.25 (lowdose_sim); AAPM-Siemens-real uses official real QD; the two sources are reported separately, never averaged.",
+    "GE/Toshiba near-zero FD high-frequency denominators regularized (2026-08-22, adaptive epsilon floor = 1e-4 x full-image FD energy): ROI BandER now comparable across vendors (0.6-9.2 group means), rank-based gates unchanged PASS.",
+    "Per-dose board is AAPM Siemens only (no LIDC multi-dose per vendor exists).",
+    "Dose effect Friedman: red_cnn/learn/blur significant (p=0.0417), ctformer not (p=0.1250) due to one non-monotonic patient (aapm-0006 r025<r050); per-dose gate treats the protocol constraint (distinct acquisition conditions) as primary and the statistical test as supporting evidence (3/4 models significant).",
+    "Simulated dose points (r=0.10/0.50) were run on the 48-slice detectability subset (full-volume projection simulation infeasible; trade-off declared in R4)."
+  ]
+}

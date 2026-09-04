@@ -1,0 +1,691 @@
+{
+  "schema": "aapm-paired-baselines/v2",
+  "updated_at": "2026-08-22T02:27:29",
+  "corpus": "AAPM 2016 Low-Dose CT Grand Challenge, 10 training patients, 1mm B30, FD_1mm vs QD_1mm, harmonized tree (held-out test only)",
+  "tree": "D:\\ZHY\\low_dose_CT-heyang\\WS-1_dataset\\pipelines\\_runtime\\aapm_tree_v1",
+  "task": {
+    "task": "SKE-Gaussian20HU-s2px",
+    "signal_sigma_px": 2.0,
+    "peak_contrast_hu": 20.0,
+    "roi_size_px": 32,
+    "location_known": true,
+    "noise_roi_hu_band": [
+      10.0,
+      120.0
+    ],
+    "n_trials": 64
+  },
+  "protocol": {
+    "fidelity": "PSNR/SSIM/LPIPS over all paired slices + band_energy_ratio (1px high-frequency band retention, gauss sigma=1.0 matched to blur)",
+    "detectability": "insertion protocol, 48 slices/patient, 24 trials/slice; + tm_auc (FD high-frequency micro-structure template-match detection AUC)",
+    "aggregation": "test split, per-patient mean + min/max interval + std over patients"
+  },
+  "models": [
+    "red_cnn",
+    "ctformer",
+    "learn",
+    "blur"
+  ],
+  "split_assignment": {
+    "test": [
+      "aapm-0003",
+      "aapm-0005",
+      "aapm-0006",
+      "aapm-0009"
+    ]
+  },
+  "per_patient": {
+    "aapm-0003": {
+      "patient_id": "aapm-0003",
+      "split": "test",
+      "n_slices": 636,
+      "models": {
+        "red_cnn": {
+          "fidelity": {
+            "psnr": 39.50668197688867,
+            "ssim": 0.8603378986974932,
+            "lpips": 0.09561732952606003,
+            "n_slices": 636
+          },
+          "detectability": {
+            "cnr_mean": 0.13768245190150522,
+            "cnr_median": 0.12990460841663115,
+            "cnr_std": 0.08591779435382385,
+            "cho_auc_mean": 1.0,
+            "cho_auc_median": 1.0,
+            "npwe_mean": 223466.9867524463,
+            "tm_auc_mean": 0.9895833333333334,
+            "band_energy_ratio": 0.6000588895218303,
+            "n_slices": 48,
+            "roi_pos": [
+              213,
+              428
+            ]
+          }
+        },
+        "ctformer": {
+          "fidelity": {
+            "psnr": 38.537579535548545,
+            "ssim": 0.8824703116087044,
+            "lpips": 0.06211361112131637,
+            "n_slices": 636
+          },
+          "detectability": {
+            "cnr_mean": 0.10176599358204393,
+            "cnr_median": 0.10941091684619511,
+            "cnr_std": 0.047286224208937744,
+            "cho_auc_mean": 1.0,
+            "cho_auc_median": 1.0,
+            "npwe_mean": 222668.37970326468,
+            "tm_auc_mean": 0.9895833333333334,
+            "band_energy_ratio": 0.8876678995424768,
+            "n_slices": 48,
+            "roi_pos": [
+              213,
+              428
+            ]
+          }
+        },
+        "learn": {
+          "fidelity": {
+            "psnr": 39.599875167766406,
+            "ssim": 0.863877368423174,
+            "lpips": 0.09401171874700102,
+            "n_slices": 636
+          },
+          "detectability": {
+            "cnr_mean": 0.1375422076629033,
+            "cnr_median": 0.12920663372637092,
+            "cnr_std": 0.08595790122005373,
+            "cho_auc_mean": 1.0,
+            "cho_auc_median": 1.0,
+            "npwe_mean": 222520.67132187518,
+            "tm_auc_mean": 0.9895833333333334,
+            "band_energy_ratio": 0.5997605575726935,
+            "n_slices": 48,
+            "roi_pos": [
+              213,
+              428
+            ]
+          }
+        },
+        "blur": {
+          "fidelity": {
+            "psnr": 38.38737152564929,
+            "ssim": 0.90930996450988,
+            "lpips": 0.18501259093670724,
+            "n_slices": 636
+          },
+          "detectability": {
+            "cnr_mean": 0.20296781762337412,
+            "cnr_median": 0.1558251298344667,
+            "cnr_std": 0.16893853840151887,
+            "cho_auc_mean": 1.0,
+            "cho_auc_median": 1.0,
+            "npwe_mean": 220804.44195813432,
+            "tm_auc_mean": 0.9895833333333334,
+            "band_energy_ratio": 0.21467214177048344,
+            "n_slices": 48,
+            "roi_pos": [
+              213,
+              428
+            ]
+          }
+        }
+      }
+    },
+    "aapm-0005": {
+      "patient_id": "aapm-0005",
+      "split": "test",
+      "n_slices": 1200,
+      "models": {
+        "red_cnn": {
+          "fidelity": {
+            "psnr": 40.78743582803944,
+            "ssim": 0.8891554941733678,
+            "lpips": 0.08524155777258177,
+            "n_slices": 1200
+          },
+          "detectability": {
+            "cnr_mean": 0.167651467135337,
+            "cnr_median": 0.13860459647372675,
+            "cnr_std": 0.09772173357497857,
+            "cho_auc_mean": 1.0,
+            "cho_auc_median": 1.0,
+            "npwe_mean": 223759.74472050942,
+            "tm_auc_mean": 0.9895833333333334,
+            "band_energy_ratio": 0.6376357020029473,
+            "n_slices": 48,
+            "roi_pos": [
+              193,
+              394
+            ]
+          }
+        },
+        "ctformer": {
+          "fidelity": {
+            "psnr": 39.81036710795928,
+            "ssim": 0.9103896846373876,
+            "lpips": 0.059734516277288395,
+            "n_slices": 1200
+          },
+          "detectability": {
+            "cnr_mean": 0.1150789703578564,
+            "cnr_median": 0.11711308618727263,
+            "cnr_std": 0.04063909454354889,
+            "cho_auc_mean": 1.0,
+            "cho_auc_median": 1.0,
+            "npwe_mean": 223186.77282321223,
+            "tm_auc_mean": 0.9895833333333334,
+            "band_energy_ratio": 1.078444372455777,
+            "n_slices": 48,
+            "roi_pos": [
+              193,
+              394
+            ]
+          }
+        },
+        "learn": {
+          "fidelity": {
+            "psnr": 41.29446863415982,
+            "ssim": 0.8908453912536303,
+            "lpips": 0.08310864804933468,
+            "n_slices": 1200
+          },
+          "detectability": {
+            "cnr_mean": 0.1671198040304128,
+            "cnr_median": 0.13785844198085773,
+            "cnr_std": 0.09710038541967991,
+            "cho_auc_mean": 1.0,
+            "cho_auc_median": 1.0,
+            "npwe_mean": 222364.9461772088,
+            "tm_auc_mean": 0.9895833333333334,
+            "band_energy_ratio": 0.632024276576083,
+            "n_slices": 48,
+            "roi_pos": [
+              193,
+              394
+            ]
+          }
+        },
+        "blur": {
+          "fidelity": {
+            "psnr": 39.89864516193787,
+            "ssim": 0.9369009842475255,
+            "lpips": 0.15533336681624255,
+            "n_slices": 1200
+          },
+          "detectability": {
+            "cnr_mean": 0.24674578384448453,
+            "cnr_median": 0.15857699917788098,
+            "cnr_std": 0.21769454517586706,
+            "cho_auc_mean": 1.0,
+            "cho_auc_median": 1.0,
+            "npwe_mean": 220804.02464292082,
+            "tm_auc_mean": 0.9895833333333334,
+            "band_energy_ratio": 0.24869579754005677,
+            "n_slices": 48,
+            "roi_pos": [
+              193,
+              394
+            ]
+          }
+        }
+      }
+    },
+    "aapm-0006": {
+      "patient_id": "aapm-0006",
+      "split": "test",
+      "n_slices": 1050,
+      "models": {
+        "red_cnn": {
+          "fidelity": {
+            "psnr": 41.97368594290013,
+            "ssim": 0.9314401473317827,
+            "lpips": 0.07858776027425414,
+            "n_slices": 1050
+          },
+          "detectability": {
+            "cnr_mean": 0.22476147681958247,
+            "cnr_median": 0.2151661619096054,
+            "cnr_std": 0.12588330028392206,
+            "cho_auc_mean": 1.0,
+            "cho_auc_median": 1.0,
+            "npwe_mean": 224093.3319899165,
+            "tm_auc_mean": 0.9895833333333334,
+            "band_energy_ratio": 0.6934837508871227,
+            "n_slices": 48,
+            "roi_pos": [
+              158,
+              108
+            ]
+          }
+        },
+        "ctformer": {
+          "fidelity": {
+            "psnr": 40.451989556322005,
+            "ssim": 0.9226051049005417,
+            "lpips": 0.05780732181100618,
+            "n_slices": 1050
+          },
+          "detectability": {
+            "cnr_mean": 0.13024143949604955,
+            "cnr_median": 0.14427051471939376,
+            "cnr_std": 0.044799875160902385,
+            "cho_auc_mean": 1.0,
+            "cho_auc_median": 1.0,
+            "npwe_mean": 223212.04220731664,
+            "tm_auc_mean": 0.9895833333333334,
+            "band_energy_ratio": 1.2756810263000524,
+            "n_slices": 48,
+            "roi_pos": [
+              158,
+              108
+            ]
+          }
+        },
+        "learn": {
+          "fidelity": {
+            "psnr": 42.77896638566248,
+            "ssim": 0.9320309982981001,
+            "lpips": 0.07792079006986959,
+            "n_slices": 1050
+          },
+          "detectability": {
+            "cnr_mean": 0.22431881537409767,
+            "cnr_median": 0.21353721283919666,
+            "cnr_std": 0.12540376094905922,
+            "cho_auc_mean": 1.0,
+            "cho_auc_median": 1.0,
+            "npwe_mean": 222420.55502428755,
+            "tm_auc_mean": 0.9895833333333334,
+            "band_energy_ratio": 0.6855135508584226,
+            "n_slices": 48,
+            "roi_pos": [
+              158,
+              108
+            ]
+          }
+        },
+        "blur": {
+          "fidelity": {
+            "psnr": 40.67319960753476,
+            "ssim": 0.9520477607136681,
+            "lpips": 0.14604861930722282,
+            "n_slices": 1050
+          },
+          "detectability": {
+            "cnr_mean": 0.3680512978312975,
+            "cnr_median": 0.3002343766142535,
+            "cnr_std": 0.26633478476891115,
+            "cho_auc_mean": 1.0,
+            "cho_auc_median": 1.0,
+            "npwe_mean": 220804.20037439387,
+            "tm_auc_mean": 0.9895833333333334,
+            "band_energy_ratio": 0.30720190816527154,
+            "n_slices": 48,
+            "roi_pos": [
+              158,
+              108
+            ]
+          }
+        }
+      }
+    },
+    "aapm-0009": {
+      "patient_id": "aapm-0009",
+      "split": "test",
+      "n_slices": 1220,
+      "models": {
+        "red_cnn": {
+          "fidelity": {
+            "psnr": 40.10665967780644,
+            "ssim": 0.8646485850459239,
+            "lpips": 0.09572029157129468,
+            "n_slices": 1220
+          },
+          "detectability": {
+            "cnr_mean": 0.13794835270694597,
+            "cnr_median": 0.10158090167999098,
+            "cnr_std": 0.10534255813465536,
+            "cho_auc_mean": 1.0,
+            "cho_auc_median": 1.0,
+            "npwe_mean": 225020.36355304532,
+            "tm_auc_mean": 0.9895833333333334,
+            "band_energy_ratio": 0.611915477539332,
+            "n_slices": 48,
+            "roi_pos": [
+              158,
+              108
+            ]
+          }
+        },
+        "ctformer": {
+          "fidelity": {
+            "psnr": 39.147710986420265,
+            "ssim": 0.8953312842572322,
+            "lpips": 0.0626436789443747,
+            "n_slices": 1220
+          },
+          "detectability": {
+            "cnr_mean": 0.09346589523063098,
+            "cnr_median": 0.08841479173917671,
+            "cnr_std": 0.05119463375123171,
+            "cho_auc_mean": 1.0,
+            "cho_auc_median": 1.0,
+            "npwe_mean": 222414.15724183526,
+            "tm_auc_mean": 0.9895833333333334,
+            "band_energy_ratio": 0.9187398968069337,
+            "n_slices": 48,
+            "roi_pos": [
+              158,
+              108
+            ]
+          }
+        },
+        "learn": {
+          "fidelity": {
+            "psnr": 40.24617130813824,
+            "ssim": 0.8680239180072409,
+            "lpips": 0.09259845695046127,
+            "n_slices": 1220
+          },
+          "detectability": {
+            "cnr_mean": 0.13733390832329104,
+            "cnr_median": 0.10206298796933733,
+            "cnr_std": 0.10412744419060659,
+            "cho_auc_mean": 1.0,
+            "cho_auc_median": 1.0,
+            "npwe_mean": 223658.21282257544,
+            "tm_auc_mean": 0.9895833333333334,
+            "band_energy_ratio": 0.6060842753973865,
+            "n_slices": 48,
+            "roi_pos": [
+              158,
+              108
+            ]
+          }
+        },
+        "blur": {
+          "fidelity": {
+            "psnr": 38.90051169922157,
+            "ssim": 0.919444566574253,
+            "lpips": 0.1789540901535847,
+            "n_slices": 1220
+          },
+          "detectability": {
+            "cnr_mean": 0.20769734801577452,
+            "cnr_median": 0.114648538632719,
+            "cnr_std": 0.2052433597007783,
+            "cho_auc_mean": 1.0,
+            "cho_auc_median": 1.0,
+            "npwe_mean": 220805.52410644732,
+            "tm_auc_mean": 0.9895833333333334,
+            "band_energy_ratio": 0.2181939053141427,
+            "n_slices": 48,
+            "roi_pos": [
+              158,
+              108
+            ]
+          }
+        }
+      }
+    }
+  },
+  "by_split": {
+    "test": {
+      "red_cnn": {
+        "fidelity": {
+          "psnr": {
+            "mean": 40.59361585640867,
+            "min": 39.50668197688867,
+            "max": 41.97368594290013,
+            "std": 0.9166121321691617,
+            "n": 4
+          },
+          "ssim": {
+            "mean": 0.8863955313121419,
+            "min": 0.8603378986974932,
+            "max": 0.9314401473317827,
+            "std": 0.0282336887279098,
+            "n": 4
+          },
+          "lpips": {
+            "mean": 0.08879173478604765,
+            "min": 0.07858776027425414,
+            "max": 0.09572029157129468,
+            "std": 0.00726839898714893,
+            "n": 4
+          }
+        },
+        "detectability": {
+          "cnr_mean": {
+            "mean": 0.16701093714084267,
+            "min": 0.13768245190150522,
+            "max": 0.22476147681958247,
+            "std": 0.03549763714767138,
+            "n": 4
+          },
+          "cho_auc_mean": {
+            "mean": 1.0,
+            "min": 1.0,
+            "max": 1.0,
+            "std": 0.0,
+            "n": 4
+          },
+          "npwe_mean": {
+            "mean": 224085.1067539794,
+            "min": 223466.9867524463,
+            "max": 225020.36355304532,
+            "std": 583.674936035513,
+            "n": 4
+          },
+          "tm_auc_mean": {
+            "mean": 0.9895833333333334,
+            "min": 0.9895833333333334,
+            "max": 0.9895833333333334,
+            "std": 0.0,
+            "n": 4
+          },
+          "band_energy_ratio": {
+            "mean": 0.635773454987808,
+            "min": 0.6000588895218303,
+            "max": 0.6934837508871227,
+            "std": 0.035981521268171286,
+            "n": 4
+          }
+        },
+        "n_patients": 4
+      },
+      "ctformer": {
+        "fidelity": {
+          "psnr": {
+            "mean": 39.486911796562524,
+            "min": 38.537579535548545,
+            "max": 40.451989556322005,
+            "std": 0.7162903308464084,
+            "n": 4
+          },
+          "ssim": {
+            "mean": 0.9026990963509663,
+            "min": 0.8824703116087044,
+            "max": 0.9226051049005417,
+            "std": 0.015156539114886623,
+            "n": 4
+          },
+          "lpips": {
+            "mean": 0.06057478203849641,
+            "min": 0.05780732181100618,
+            "max": 0.0626436789443747,
+            "std": 0.0019373443171958385,
+            "n": 4
+          }
+        },
+        "detectability": {
+          "cnr_mean": {
+            "mean": 0.11013807466664521,
+            "min": 0.09346589523063098,
+            "max": 0.13024143949604955,
+            "std": 0.013933870931379362,
+            "n": 4
+          },
+          "cho_auc_mean": {
+            "mean": 1.0,
+            "min": 1.0,
+            "max": 1.0,
+            "std": 0.0,
+            "n": 4
+          },
+          "npwe_mean": {
+            "mean": 222870.3379939072,
+            "min": 222414.15724183526,
+            "max": 223212.04220731664,
+            "std": 341.2406776672582,
+            "n": 4
+          },
+          "tm_auc_mean": {
+            "mean": 0.9895833333333334,
+            "min": 0.9895833333333334,
+            "max": 0.9895833333333334,
+            "std": 0.0,
+            "n": 4
+          },
+          "band_energy_ratio": {
+            "mean": 1.0401332987763101,
+            "min": 0.8876678995424768,
+            "max": 1.2756810263000524,
+            "std": 0.15405561196634762,
+            "n": 4
+          }
+        },
+        "n_patients": 4
+      },
+      "learn": {
+        "fidelity": {
+          "psnr": {
+            "mean": 40.97987037393173,
+            "min": 39.599875167766406,
+            "max": 42.77896638566248,
+            "std": 1.2019171781938165,
+            "n": 4
+          },
+          "ssim": {
+            "mean": 0.8886944189955364,
+            "min": 0.863877368423174,
+            "max": 0.9320309982981001,
+            "std": 0.027045523647735138,
+            "n": 4
+          },
+          "lpips": {
+            "mean": 0.08690990345416663,
+            "min": 0.07792079006986959,
+            "max": 0.09401171874700102,
+            "std": 0.006671752457605402,
+            "n": 4
+          }
+        },
+        "detectability": {
+          "cnr_mean": {
+            "mean": 0.1665786838476762,
+            "min": 0.13733390832329104,
+            "max": 0.22431881537409767,
+            "std": 0.03547037300495012,
+            "n": 4
+          },
+          "cho_auc_mean": {
+            "mean": 1.0,
+            "min": 1.0,
+            "max": 1.0,
+            "std": 0.0,
+            "n": 4
+          },
+          "npwe_mean": {
+            "mean": 222741.09633648675,
+            "min": 222364.9461772088,
+            "max": 223658.21282257544,
+            "std": 532.4296928406128,
+            "n": 4
+          },
+          "tm_auc_mean": {
+            "mean": 0.9895833333333334,
+            "min": 0.9895833333333334,
+            "max": 0.9895833333333334,
+            "std": 0.0,
+            "n": 4
+          },
+          "band_energy_ratio": {
+            "mean": 0.6308456651011465,
+            "min": 0.5997605575726935,
+            "max": 0.6855135508584226,
+            "std": 0.0337985842465938,
+            "n": 4
+          }
+        },
+        "n_patients": 4
+      },
+      "blur": {
+        "fidelity": {
+          "psnr": {
+            "mean": 39.464931998585875,
+            "min": 38.38737152564929,
+            "max": 40.67319960753476,
+            "std": 0.8842687049293418,
+            "n": 4
+          },
+          "ssim": {
+            "mean": 0.9294258190113316,
+            "min": 0.90930996450988,
+            "max": 0.9520477607136681,
+            "std": 0.016369967503240303,
+            "n": 4
+          },
+          "lpips": {
+            "mean": 0.16633716680343935,
+            "min": 0.14604861930722282,
+            "max": 0.18501259093670724,
+            "std": 0.01612968532741227,
+            "n": 4
+          }
+        },
+        "detectability": {
+          "cnr_mean": {
+            "mean": 0.25636556182873266,
+            "min": 0.20296781762337412,
+            "max": 0.3680512978312975,
+            "std": 0.0666823775012288,
+            "n": 4
+          },
+          "cho_auc_mean": {
+            "mean": 1.0,
+            "min": 1.0,
+            "max": 1.0,
+            "std": 0.0,
+            "n": 4
+          },
+          "npwe_mean": {
+            "mean": 220804.54777047408,
+            "min": 220804.02464292082,
+            "max": 220805.52410644732,
+            "std": 0.5828324496410381,
+            "n": 4
+          },
+          "tm_auc_mean": {
+            "mean": 0.9895833333333334,
+            "min": 0.9895833333333334,
+            "max": 0.9895833333333334,
+            "std": 0.0,
+            "n": 4
+          },
+          "band_energy_ratio": {
+            "mean": 0.24719093819748864,
+            "min": 0.21467214177048344,
+            "max": 0.30720190816527154,
+            "std": 0.037087333266271345,
+            "n": 4
+          }
+        },
+        "n_patients": 4
+      }
+    }
+  }
+}

@@ -41,6 +41,22 @@ This harness is **not** a method ranking (out of scope for a Data Descriptor) �
 the unified loader drives heterogeneous methods to convergence and that the numbers reproduce from
 the released container.
 
+## Container reproduction gate (§7.1) — standing rule
+
+**Any downstream comparison (WS-3 reference method, WS-4 leaderboard, external benchmark) must use
+numbers reproduced inside this released container** (`pwm-ldct-baselines:v0.5`,
+`Dockerfile.baseline`, content-addressed) under the declared task specification
+([`task_spec.json`](task_spec.json), [`../schema/detectability_task_spec.md`](../schema/detectability_task_spec.md))
+and the double-metric evaluation protocol (fidelity + detectability reported together).
+**Paper numbers from the original publications must not be quoted as baseline evidence.** The
+container gate guarantees every comparison rests on the same bits, the same task, and the same
+evaluation — reproduce first, compare second.
+
+## Fixed seed set (§7.3)
+
+Every reported evaluation must run over the fixed seed set and report mean + interval (min/max):
+`eval --seeds 42,2023,7,12345,999 --out <model>_seedset.json` (see `RUN_PLAN.md` §8).
+
 ## Metrics
 
 PSNR and Gaussian-windowed SSIM are computed in normalized `[0,1]` space (`data_range=1`); LPIPS

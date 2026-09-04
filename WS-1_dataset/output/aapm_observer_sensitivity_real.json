@@ -1,0 +1,119 @@
+{
+  "schema": "aapm-observer-sensitivity-real-v1",
+  "updated_at": "2026-08-22T21:52:16",
+  "corpus": "AAPM 2016 held-out test (aapm-0003/0005/0006/0009), FD/QD real pairing",
+  "protocol": "detectability-freq-v1 ROI BandER per slice (R3 noise-ROI protocol, seed 42, 32x32)",
+  "n_slices_per_model": {
+    "red_cnn": 192,
+    "ctformer": 192,
+    "learn": 192,
+    "blur": 192
+  },
+  "slice_level": {
+    "red_cnn": {
+      "mean": 3.8761789350730456,
+      "std": 0.9647069235958426
+    },
+    "ctformer": {
+      "mean": 6.735175395405865,
+      "std": 2.0852844499248215
+    },
+    "learn": {
+      "mean": 3.853912707554868,
+      "std": 0.9574760307927845
+    },
+    "blur": {
+      "mean": 0.4315421991344855,
+      "std": 0.10201244291033923
+    }
+  },
+  "bootstrap": {
+    "n_bootstrap": 4000,
+    "blur_last_prob": 1.0,
+    "blur_rank_sum_over_bootstraps": 16000,
+    "flip_count_blur_over_model": {
+      "red_cnn": 0,
+      "ctformer": 0,
+      "learn": 0
+    }
+  },
+  "binomial_tests": {
+    "red_cnn": {
+      "n_aligned_slices": 192,
+      "n_nonzero": 192,
+      "blur_lower_frac": 1.0,
+      "sign_test_p_greater": 1.5930919111324523e-58
+    },
+    "ctformer": {
+      "n_aligned_slices": 192,
+      "n_nonzero": 192,
+      "blur_lower_frac": 1.0,
+      "sign_test_p_greater": 1.5930919111324523e-58
+    },
+    "learn": {
+      "n_aligned_slices": 192,
+      "n_nonzero": 192,
+      "blur_lower_frac": 1.0,
+      "sign_test_p_greater": 1.5930919111324523e-58
+    }
+  },
+  "observer_count": {
+    "1": {
+      "n_slices_per_observer": 192,
+      "blur_last_frac": 1.0
+    },
+    "2": {
+      "n_slices_per_observer": 96,
+      "blur_last_frac": 1.0
+    },
+    "4": {
+      "n_slices_per_observer": 48,
+      "blur_last_frac": 1.0
+    },
+    "8": {
+      "n_slices_per_observer": 24,
+      "blur_last_frac": 1.0
+    },
+    "16": {
+      "n_slices_per_observer": 12,
+      "blur_last_frac": 1.0
+    },
+    "32": {
+      "n_slices_per_observer": 6,
+      "blur_last_frac": 1.0
+    },
+    "min_k_for_95pct": 1
+  },
+  "per_patient_mean_ber": {
+    "aapm-0006": {
+      "red_cnn": 3.4917181675126643,
+      "ctformer": 5.115730074604183,
+      "learn": 3.4790327546814717,
+      "blur": 0.35234389748095163
+    },
+    "aapm-0003": {
+      "red_cnn": 3.4326210907476944,
+      "ctformer": 5.971265657146607,
+      "learn": 3.4078719435016716,
+      "blur": 0.4565335548228148
+    },
+    "aapm-0005": {
+      "red_cnn": 4.059031363190468,
+      "ctformer": 8.667820479592264,
+      "learn": 4.012791904087241,
+      "blur": 0.5230291151735803
+    },
+    "aapm-0009": {
+      "red_cnn": 4.521345118841356,
+      "ctformer": 7.185885370280407,
+      "learn": 4.51595422794909,
+      "blur": 0.39426222906059505
+    }
+  },
+  "method_notes": [
+    "Slice-level bootstrap approximates observer variance (no true multi-observer readings)",
+    "Binomial sign tests assume slice independence; within-patient correlation makes p conservative",
+    "blur ranks last in detectability iff its mean ROI BandER is the lowest (least high-frequency retention)",
+    "n observers needed = smallest k with >=95% of k-subset rankings placing blur last"
+  ]
+}

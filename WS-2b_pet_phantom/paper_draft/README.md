@@ -17,6 +17,17 @@ committed artifact yet** — the dataset must be acquired and deposited before
 submission. See `../SUBMISSION_CHECKLIST.md`, which maps each `\todo{}` to the
 acquisition / analysis / deposit step that fills it.
 
+**Scope (P1-1):** this descriptor validates a **dose-reduction (digital-twin)
+model** via phantom data — it is *not* a CT detectability benchmark and makes no
+detectability claim (no AUC / channelized-observer / reader endpoint). See the
+"Scope and positioning" section in `manuscript.tex` and
+`../analysis/TASK_DEFINITION.md` / `../analysis/task_spec.json` for the locked
+task and observer plan.
+
+**Embodied acquisition (P1-2):** before any scanning, `../ACQUISITION_AUTHORIZATION.md`
+must be read and signed — it names the irreversible act, the grant, and the
+raw-data hosting lineage (SUBMISSION_CHECKLIST §1b).
+
 ## Build
 
 ```

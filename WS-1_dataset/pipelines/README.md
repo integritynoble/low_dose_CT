@@ -3,7 +3,9 @@
 Build the harmonized **PWM-LDCT v0.5** tree from each source's raw DICOM. The shared package
 `pwm_ldct_prep` reads DICOM, re-verifies de-identification, harmonizes to the canonical schema,
 simulates low-dose, and writes HDF5 + metadata that pass `pwm_ldct_loader.validate`. Each
-Dockerfile bakes one source.
+Dockerfile bakes one source. **v0.5 release scope: LIDC-IDRI only (simulated low-dose); the AAPM
+2016 and Mayo LDCT-PD adapters are v1.0 roadmap** — the Dockerfiles are already written, but the
+v0.5 deposited tree does not include AAPM/Mayo data.
 
 | Image | Source | Build |
 |---|---|---|

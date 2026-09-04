@@ -137,6 +137,27 @@ reports (catches issuance against a stale framework version).
 
 ---
 
+## Reproduce-first gate (P2-5 — low-dose-ct.md §7.1)
+
+**Before any comparison, the baseline must be reproduced locally in the pinned
+container.** The published PSNR/SSIM/detectability numbers in the original paper
+are **not** acceptable as comparison targets:
+
+- every baseline and every submitted method must be run through its own pinned
+  `Dockerfile` (or the WS-3 RunBundle) on the machine that performs the comparison;
+- the reproduced `results.json` must be inside tolerance (default ±0.5 dB PSNR, or
+  the tolerance declared in that baseline's `README.md`) **before** its numbers are
+  used in any leaderboard entry or paper table;
+- citing the paper's table directly (without a local container reproduction) is a
+  reproducibility violation and is rejected by the WS-4 submission gate.
+
+The same rule applies to the **reference method itself**: `runbundle/run.py
+--emit` must reproduce the pinned RunBundle numbers before WS-3's own results are
+eligible for the leaderboard. The `--self-test` mode is explicitly **not**
+scientific data and never feeds a leaderboard entry.
+
+---
+
 ## Per-baseline contract
 
 Each baseline directory must contain:
@@ -147,7 +168,8 @@ baselines/<method>/
 ├── Dockerfile          # pinned environment (CUDA 12.x, pinned PyTorch)
 ├── train.py            # entry point: docker run ... train --seed 42
 ├── eval.py             # entry point: docker run ... eval --checkpoint X --dataset Y
-├── results.json        # PSNR, SSIM, LPIPS, task_AUC, runtime, GPU memory
+├── results.json        # paired (PSNR/SSIM + task detectability: CNR/CHO-AUC/NPWE),
+│                       # runtime, GPU memory -- low-dose-ct.md §4: both or neither
 └── checkpoint/         # (or pointer to HF / IPFS)
 ```
 
@@ -158,6 +180,12 @@ Reproducibility checklist for every baseline:
 - [ ] Deterministic CuDNN (`torch.backends.cudnn.deterministic = True`).
 - [ ] Data loader is `pwm_ldct_loader` (from WS-1), not a one-off rewrite.
 - [ ] Eval metrics computed with the same library as `baselines/comparison/`.
+- [ ] Every baseline (and the permanent Gaussian blur trap, Rung 1.3) reports
+      **both** PSNR/SSIM **and** task detectability (CNR/CHO-AUC/NPWE) as one pair;
+      a result with only one of the two is not publishable (low-dose-ct.md §4).
+      The task/observer parameters are declared in the eval output (signal, contrast,
+      location-known, CHO channels, NPWE eye filter) so the detection task is
+      reproducible from the output alone.
 
 **If a baseline cannot be reproduced within tolerance, that itself is a publishable finding** — and a flag for the field. Document the gap in `<method>/README.md`.
 

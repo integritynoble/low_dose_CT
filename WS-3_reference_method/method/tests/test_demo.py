@@ -7,5 +7,22 @@ def test_run_demo_end_to_end(tmp_path):
     assert report["n_baseline_methods"] == 1
     # validation block is present and structurally sane.
     v = report["validation"]
-    assert set(v) == {"psnr_db", "ssim", "uq_spearman"}
+    required = {"psnr_db", "ssim", "uq_spearman", "detectability",
+                "paired_methods", "paired_methods_ok"}
+    assert required <= set(v)
     assert -1.0 <= v["uq_spearman"] <= 1.0
+    # §4 paired gate: top-level PSNR paired with detectability; reference + blur both
+    # report (psnr_db, detectability) together; the blur trap is a standing member.
+    assert v["paired_methods_ok"] is True
+    assert "reference" in v["paired_methods"]
+    assert "blur" in v["paired_methods"]
+    for name, m in v["paired_methods"].items():
+        assert m["psnr_db"] is not None
+        det = m["detectability"]
+        assert det["cnr_mean"] is not None
+        assert det["cho_auc_mean"] is not None
+        assert det["n_slices"] >= 1
+        # declared task + observer configuration is embedded (Rung 1.1 / Rung 1.2)
+        assert det["task"] == "SKE-Gaussian20HU-s2px"
+        assert det["signal"]["peak_contrast_hu"] == 20.0
+        assert det["observer"]["cho"]["n_channels"] == 4

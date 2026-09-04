@@ -1,0 +1,11 @@
+patient_id,native_id,split,source,seed,canonical_key,series_id
+aapm-0001,L067,val,aapm,42,28be39eec48be930,aapm-0001_abdomen_fd
+aapm-0002,L096,train,aapm,42,25c22c2b67ca5eb5,aapm-0002_chest_fd
+aapm-0003,L109,test,aapm,42,a1b9621e5b9f996f,aapm-0003_abdomen_fd
+aapm-0004,L143,val,aapm,42,2750d51801eeccee,aapm-0004_chest_fd
+aapm-0005,L192,test,aapm,42,a46d79239fe14471,aapm-0005_abdomen_fd
+aapm-0006,L286,test,aapm,42,2b06a3f6b03c97a4,aapm-0006_abdomen_fd
+aapm-0007,L291,train,aapm,42,a8e10dfcea8717fa,aapm-0007_chest_fd
+aapm-0008,L310,val,aapm,42,c42e7fc90706c39d,aapm-0008_abdomen_fd
+aapm-0009,L333,test,aapm,42,9b6691f5932fb76e,aapm-0009_abdomen_fd
+aapm-0010,L506,train,aapm,42,4ba1deb5fe7adbe1,aapm-0010_chest_fd

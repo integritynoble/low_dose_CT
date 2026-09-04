@@ -27,7 +27,7 @@ class PairedSlices(Dataset):
                  sources: Optional[Sequence[str]] = None, seed: int = 42):
         self.ds = LowDoseCTDataset(root=root, split=split, dose_ratio=dose_ratio,
                                    prefer_real_ld=prefer_real_ld, sources=sources, seed=seed,
-                                   backend="numpy")
+                                   backend="numpy", return_sinogram=False)
 
     def __len__(self) -> int:
         return len(self.ds)

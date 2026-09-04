@@ -56,6 +56,8 @@ def lpips(pred: torch.Tensor, target: torch.Tensor) -> Optional[float]:
         return None
     if _LPIPS is None:
         _LPIPS = _lp.LPIPS(net="alex", verbose=False)
+    if _LPIPS is not None and pred.is_cuda and next(_LPIPS.parameters()).device != pred.device:
+        _LPIPS = _LPIPS.to(pred.device)
     if pred.dim() == 3:
         pred, target = pred.unsqueeze(0), target.unsqueeze(0)
     # LPIPS expects 3-channel in [-1, 1]

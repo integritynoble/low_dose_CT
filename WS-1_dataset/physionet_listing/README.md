@@ -15,10 +15,15 @@ Draft content + metadata for the **PhysioNet** project listing of PWM-LDCT v0.5.
 - **Access policy: Open.** The deposit hosts only *value-added, non-PHI* records (annotations,
   metadata, splits, manifest, code, LIDC-derived simulated low-dose) — not the source DICOM. If any
   record is later judged sensitive, switch to Credentialed (adds DUA + CITI training).
+- **Simultaneous publication, no long embargo.** Records are public at manuscript submission and
+  remain public (target: ≤ 6 months submission→publication; zero embargo by design). See
+  `deposit_procedure.md` Step 3 for the enforced policy on every channel.
 - **License: CC BY 4.0** for data records (CC BY 3.0 for LIDC-derived; CC0 for the manifest),
   **Apache-2.0** for code. Mirrors the manuscript Data Records licensing.
-- **Not redistributed:** the AAPM/Mayo DICOM and their DUA-restricted pixel derivatives — users
-  obtain scans from NBIA/Mayo/TCIA and regenerate HDF5 locally.
+- **Not redistributed (v0.5):** the v0.5 deposit is **LIDC-only**; no AAPM/Mayo DICOM or their
+  DUA-restricted pixel derivatives are included. For the **v1.0 roadmap** additions (AAPM 2016 +
+  Mayo LDCT-PD), the same policy will apply — users will obtain scans from NBIA/Mayo/TCIA and
+  regenerate HDF5 locally.
 
 ## Before submission — fill the `[CONFIRM]` fields
 

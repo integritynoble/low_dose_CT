@@ -66,6 +66,45 @@ def cmd_emit(args: argparse.Namespace) -> int:
     )
 
 
+def cmd_artefact_info(args: argparse.Namespace) -> int:
+    """Print the artefact-class registry + validate a sample artefact report block."""
+    from .artefacts import ARTEFACT_CLASSES, artefact_class_names, validate_artefact_report
+
+    info = {
+        "module": "pwm_ldct_recon.artefacts",
+        "classes": artefact_class_names(),
+        "details": ARTEFACT_CLASSES,
+        "pairing_rule": "fidelity.psnr_db + detectability.cnr both-or-neither (low-dose-ct.md §4)",
+    }
+    print(json.dumps(info, indent=2, default=str))
+    return 0
+
+
+def cmd_uq_report(args: argparse.Namespace) -> int:
+    """Run the low-confidence <-> missed-lesion association on a synthetic demo bundle.
+
+    Real-data wiring happens inside runbundle/run.py --emit (see
+    uq_report.future_wiring_points); this command exercises the analysis on a
+    reproducible synthetic ensemble map so reviewers can see the report format.
+    """
+    import numpy as np
+
+    from .uq_report import analyze_ensemble_bundle, render_markdown
+
+    rng = np.random.default_rng(args.seed)
+    mean = rng.normal(0.5, 0.1, size=(args.size, args.size))
+    std = rng.uniform(0.01, 0.3, size=(args.size, args.size))
+    lesion = np.zeros((args.size, args.size), dtype=bool)
+    r, c = args.size // 2 - 2, args.size // 2 - 2
+    lesion[r:r + 4, c:c + 4] = True
+    report = analyze_ensemble_bundle(mean, std, lesion_mask=lesion)
+    if args.markdown:
+        print(render_markdown(report))
+    else:
+        print(json.dumps(report, indent=2))
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     ap = argparse.ArgumentParser(prog="pwm-recon", description="WS-3 reference recon method.")
     sub = ap.add_subparsers(dest="cmd", required=True)
@@ -87,6 +126,15 @@ def build_parser() -> argparse.ArgumentParser:
 
     e = sub.add_parser("emit", help="emit the corpus from a saved ensemble")
     e.set_defaults(fn=cmd_emit)
+
+    a = sub.add_parser("artefact-info", help="print artefact-class registry (P2-6)")
+    a.set_defaults(fn=cmd_artefact_info)
+
+    u = sub.add_parser("uq-report", help="low-confidence <-> missed-lesion demo report (P2-7)")
+    u.add_argument("--size", type=int, default=32)
+    u.add_argument("--seed", type=int, default=7)
+    u.add_argument("--markdown", action="store_true", help="render Markdown summary")
+    u.set_defaults(fn=cmd_uq_report)
     return ap
 
 

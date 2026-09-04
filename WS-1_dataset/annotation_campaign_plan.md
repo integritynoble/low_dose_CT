@@ -1,24 +1,29 @@
-# PWM-LDCT v0.5 — radiologist annotation campaign plan
+# PWM-LDCT radiologist annotation campaign plan (v1.0 roadmap)
 
-Operational plan for producing the v0.5 annotation records. The **methodology** (eligibility,
-calibration thresholds, majority-vote rules, drift monitoring, discordance adjudication, κ metrics,
-JSON formats) is defined normatively in [`schema/annotation_qa_protocol.md`](schema/annotation_qa_protocol.md);
-this document is the *who / what / how much / when / budget / logistics* layer. Values in
+Operational plan for the **v1.0 roadmap** annotation records. **v0.5 (LIDC-IDRI-only first
+release) requires no new annotation campaign**: it reuses LIDC's existing four-radiologist XML
+annotations (converted by `pipelines/pwm_ldct_prep/lidc_annotations.py`) and ships
+`annotations/lidc_majority_vote/` only. The top-up and Likert campaigns below are **v1.0
+roadmap items** (AAPM 2016 + Mayo LDCT-PD are not part of v0.5). The **methodology**
+(eligibility, calibration thresholds, majority-vote rules, drift monitoring, discordance
+adjudication, κ metrics, JSON formats) is defined normatively in
+[`schema/annotation_qa_protocol.md`](schema/annotation_qa_protocol.md); this document is the
+*who / what / how much / when / budget / logistics* layer for the v1.0 campaign. Values in
 **[CONFIRM]** are decisions to finalize before kickoff.
 
 ---
 
-## 1. Scope — what is new vs reused
+## 1. Scope — what is new vs reused (v1.0 roadmap)
 | Task | Cohort | Count | Effort |
 |---|---|---|---|
-| **Lung-nodule detection (reuse)** | LIDC-IDRI | 1,018 | **No campaign** — convert existing 4-radiologist XML (`pipelines/pwm_ldct_prep/lidc_annotations.py`; see `../data_acquisition/lidc_xml_acquisition.md`) |
-| **Lung-nodule top-up (new)** | Mayo **chest** | **99** | ≥2 readers/case, LIDC protocol (bbox + diameter + texture + location) |
-| **Diagnostic-quality Likert (new)** | AAPM + Mayo paired-dose | **~209** (199 Mayo + 10 AAPM, minus overlap) | per scan × reconstruction (FBP / vendor-IR where present / TV) × dose level |
+| **Lung-nodule detection (reuse)** | LIDC-IDRI | 1,018 | **v0.5: no campaign** — convert existing 4-radiologist XML (`pipelines/pwm_ldct_prep/lidc_annotations.py`; see `../data_acquisition/lidc_xml_acquisition.md`) |
+| **Lung-nodule top-up (new)** | Mayo **chest** (v1.0) | **99** | ≥2 readers/case, LIDC protocol (bbox + diameter + texture + location) |
+| **Diagnostic-quality Likert (new)** | AAPM + Mayo paired-dose (v1.0) | **~209** (199 Mayo + 10 AAPM, minus overlap) | per scan × reconstruction (FBP / vendor-IR where present / TV) × dose level |
 | Calibration set | held-out LIDC | 20 | onboarding + rotating drift checks |
 
-**Out of v0.5 scope (deferred to v1.0):** abdominal **liver-lesion segmentation** (AAPM 2016 and
-Mayo abdomen). AAPM 2016 is an abdominal cohort, so it contributes to Likert but **not** to the
-lung-nodule top-up.
+**v1.0 roadmap scope:** the AAPM/Mayo campaigns above. **Out of scope (deferred beyond v1.0):**
+abdominal **liver-lesion segmentation** (AAPM 2016 and Mayo abdomen). AAPM 2016 is an abdominal
+cohort, so it contributes to Likert but **not** to the lung-nodule top-up.
 
 ## 2. Panel
 - **≥ 2 board-certified radiologists**, ≥ 5 y thoracic-CT experience, for the nodule top-up + Likert.
@@ -35,16 +40,16 @@ lung-nodule top-up.
   No patient contact, no new PHI → covered by the UTSW non-human-subjects/exempt determination
   (**[CONFIRM] IRB no.**).
 
-## 4. Workflow (maps to the QA protocol stages)
+## 4. Workflow (v1.0; maps to the QA protocol stages)
 1. **Onboarding / calibration** — each reader annotates the 20-case held-out LIDC set; gate on κ.
-2. **Lung-nodule top-up** — 99 Mayo chest scans, ≥2 readers each, full LIDC nodule protocol.
+2. **Lung-nodule top-up** — 99 Mayo chest scans (v1.0), ≥2 readers each, full LIDC nodule protocol.
 3. **Discordance adjudication** — referred cases (non-overlapping boxes / diameter ≥1.5× / texture
    class disagreement) go to the 3rd reader; raw per-reader labels preserved.
-4. **Likert scoring** — ~209 paired-dose scans scored per reconstruction × dose level.
+4. **Likert scoring** — ~209 paired-dose scans (v1.0) scored per reconstruction × dose level.
 5. **Drift monitoring** — rotating 5-case recalibration every ~50 cases (~monthly); pause + recal +
    re-annotate the affected window if κ drops.
 
-## 5. Timeline (~6–8 weeks, parallelizable)
+## 5. Timeline (v1.0; ~6–8 weeks, parallelizable)
 | Week | Activity |
 |---|---|
 | 1 | Platform setup + reader onboarding/calibration (20 cases) |
@@ -53,20 +58,21 @@ lung-nodule top-up.
 | 6–7 | Consolidation (`consolidate_readers`), QA audit, fidelity check vs published LIDC |
 | 7–8 | Freeze, package into the release tree, hash into `manifest.sha256` |
 
-## 6. Budget (rough; **[CONFIRM]** honoraria rate)
+## 6. Budget (v1.0; rough; **[CONFIRM]** honoraria rate)
 At ~radiologist honorarium **[CONFIRM: ~$200/hr]**:
 - Calibration: 20 × 3 readers × ~5 min ≈ 5 reader-h
 - Nodule top-up: 99 × 2 readers × ~5 min ≈ 16.5 reader-h + adjudication (~10% discordant) ≈ 2 h
 - Likert: ~209 × ~6 score-sets × ~1 min ≈ 21 reader-h
-- ≈ **45–60 reader-hours → ~$9K–$12K** (within the $5K–$15K v0.5 estimate in `data_needs.md`; far
-  below v1.0's full-collection budget, because LIDC is reused not re-collected).
+- ≈ **45–60 reader-hours → ~$9K–$12K** (a v1.0 top-up cost; **v0.5 itself has no annotation
+  budget** because LIDC is reused not re-collected — see `data_needs.md`).
 
-## 7. Deliverables → pipeline
-The campaign emits `raw_per_reader/{pid}/{reader}.json` + `likert/{series}.json`. The pipeline then
-produces the consolidated records (`annotations/lidc_majority_vote/`, `topup_mayo/`, `likert/`) via
-`consolidate_readers` (IoU match + majority vote), and the manuscript's **inter-rater reliability**
-(`tab:irr_v05`, κ values) and **annotation-reuse fidelity** validations. These κ values also fill the
-QA-protocol/manuscript `[CONFIRM]`/`\todo{κ threshold}` placeholders.
+## 7. Deliverables → pipeline (v1.0)
+The v1.0 campaign emits `raw_per_reader/{pid}/{reader}.json` + `likert/{series}.json`. The pipeline
+then produces the consolidated records (`annotations/lidc_majority_vote/`, `topup_mayo/`,
+`likert/`) via `consolidate_readers` (IoU match + majority vote), and the v1.0 manuscript's
+**inter-rater reliability** (`tab:irr_v05`, κ values) and **annotation-reuse fidelity**
+validations. **v0.5 ships only `annotations/lidc_majority_vote/` from the inherited LIDC XML
+(no campaign needed); its inter-rater table reports the inherited LIDC four-reader κ values.**
 
 ## 8. Risks & mitigations
 - **Reader availability / throughput** → 2-reader minimum + rolling schedule; start calibration early.

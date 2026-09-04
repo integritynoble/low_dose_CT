@@ -1,0 +1,105 @@
+{
+  "rose_criterion": 3.0,
+  "dose_ratios": [
+    0.1,
+    0.25,
+    0.5
+  ],
+  "task": "SKE-Gaussian20HU-s2px",
+  "n_per_dose": 764,
+  "seeds": [
+    42,
+    2023,
+    7,
+    12345,
+    999
+  ],
+  "note": "n=764 test slices per dose level per seed, 5-seed aggregate; LEARN CNR is the slice median (mean undefined: inf); knee below_r010 means the r010 point already exceeds Rose (not extrapolated)",
+  "per_model": {
+    "blur": {
+      "dose_ratios": [
+        0.1,
+        0.25,
+        0.5
+      ],
+      "cnr": [
+        5.74552887334026,
+        9.383903757497647,
+        13.04470551337729
+      ],
+      "knee": {
+        "label": "at-or-below-r010 (0.100)",
+        "rose_crossing_ratio": 0.1,
+        "kind": "below_r010"
+      }
+    },
+    "red_cnn": {
+      "dose_ratios": [
+        0.1,
+        0.25,
+        0.5
+      ],
+      "cnr": [
+        5.1919247308056855,
+        8.052347933038154,
+        10.970394471729882
+      ],
+      "knee": {
+        "label": "at-or-below-r010 (0.100)",
+        "rose_crossing_ratio": 0.1,
+        "kind": "below_r010"
+      }
+    },
+    "learn": {
+      "dose_ratios": [
+        0.1,
+        0.25,
+        0.5
+      ],
+      "cnr": [
+        6.491361896080218,
+        12.212371871616991,
+        21.6212450739891
+      ],
+      "knee": {
+        "label": "at-or-below-r010 (0.100)",
+        "rose_crossing_ratio": 0.1,
+        "kind": "below_r010"
+      }
+    },
+    "ctformer": {
+      "dose_ratios": [
+        0.1,
+        0.25,
+        0.5
+      ],
+      "cnr": [
+        2.5744348619575876,
+        4.608439708189747,
+        6.85691874085334
+      ],
+      "knee": {
+        "label": "rose-crossing@0.131",
+        "rose_crossing_ratio": 0.13138378496226838,
+        "kind": "interp"
+      }
+    },
+    "corediff": {
+      "dose_ratios": [
+        0.1,
+        0.25,
+        0.5
+      ],
+      "cnr": [
+        5.34298422953716,
+        8.431432364856756,
+        11.540357159171828
+      ],
+      "knee": {
+        "label": "at-or-below-r010 (0.100)",
+        "rose_crossing_ratio": 0.1,
+        "kind": "below_r010"
+      }
+    }
+  }
+}

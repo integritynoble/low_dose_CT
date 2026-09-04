@@ -32,3 +32,15 @@ __pycache__/
 *.pyc
 .pytest_cache/
 *.egg-info/
+
+# Runtime data & model weights (too large for GitHub, >100MB)
+WS-1_dataset/pipelines/_runtime/
+WS-1_dataset/baselines/checkpoints/
+
+# Local backup of nested vendor .git metadata (removed from submodule tracking)
+**/.git_local_backup/
+
+*.log.err
+*.bak
+*.legacy
+*.flag

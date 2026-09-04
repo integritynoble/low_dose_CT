@@ -1,0 +1,70 @@
+{
+  "schema_version": "0.1.0",
+  "task": {
+    "label": "SKE-Gaussian20HU-s2px",
+    "signal": {
+      "sigma_px": 2.0,
+      "peak_contrast_hu": 20.0,
+      "location_known": true
+    },
+    "observer": {
+      "cnr": {
+        "rose_criterion": 3.0
+      },
+      "cho": {
+        "channels": "dog",
+        "n_channels": 4
+      },
+      "npwe": {
+        "eye_filter": "rho*exp(-rho/0.2)"
+      }
+    },
+    "noise_roi_hu_band": [
+      10.0,
+      120.0
+    ]
+  },
+  "entries": [
+    {
+      "id": "seed-blur",
+      "method": "gaussian-blur",
+      "kind": "seed-trap",
+      "permanent": true,
+      "trap": true,
+      "placeholder": true,
+      "config": {
+        "sigma_px": 1.0,
+        "kernel_size": 5,
+        "module": "pwm_ldct_recon.models.GaussianBlur (WS-3)"
+      },
+      "metrics": {
+        "psnr_db": 20.808,
+        "ssim": 0.6635,
+        "cnr_mean": 0.0115,
+        "cho_auc_mean": 1.0,
+        "npwe_mean": 44229.6,
+        "task": "SKE-Gaussian20HU-s2px"
+      },
+      "submitted_at": "2026-08-21T04:06:40.962067+00:00",
+      "notes": "Permanent Gaussian blur trap (sigma=1.0 px, 5x5). Placeholder numbers from WS-3 self-test structure; refresh from WS-3 emit before launch. PSNR high, CNR < Rose(3): high fidelity does not imply detectability."
+    },
+    {
+      "id": "seed-ws3-reference",
+      "method": "WS-3 reference (unrolled + deep-ensemble)",
+      "kind": "seed-reference",
+      "permanent": false,
+      "trap": false,
+      "placeholder": true,
+      "metrics": {
+        "psnr_db": 8.495,
+        "ssim": 5.1e-05,
+        "cnr_mean": null,
+        "cho_auc_mean": 0.5,
+        "npwe_mean": 0.0,
+        "task": "SKE-Gaussian20HU-s2px"
+      },
+      "submitted_at": "2026-08-21T04:06:40.962067+00:00",
+      "notes": "Seed entry from WS-3 reference method v1. Placeholder numbers from WS-3 self-test; refresh from the pinned RunBundle before launch."
+    }
+  ]
+}
