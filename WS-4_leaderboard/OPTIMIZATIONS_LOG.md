@@ -13,7 +13,68 @@ AIGC:
 
 > Workspace: `WS-4_leaderboard` — Permanent Leaderboard + Annual Review.
 > All changes are additive; the P0 prototype (paired §4 gate + permanent blur seed) is
-> preserved and extended. Tests: **34 passed** (`python -m pytest scoring/tests -q`).
+> preserved and extended. Tests: **55 passed / 10 skipped** (`python -m pytest scoring/tests -q`).
+
+---
+
+## P0-1b. Paired gate requires the discriminating index (`bander_roi`)
+
+**Status**: implemented + tested. **Changes what the gate admits — read before submitting.**
+
+**Defect.** `task_spec.DETECTABILITY_FIELDS` was `("cnr_mean", "cho_auc_mean", "npwe_mean")`
+and `verify.check_paired_submission` required *at least one* of them. `bander_roi` was
+absent, so the gate never required the only index that separates the permanent blur trap.
+This contradicted Rung 1, which already declares BandER discriminative and the
+insertion-based indices "non-discriminative on real anatomy ... reported as transparency".
+
+The consequence was not theoretical. On the simulated arm the trap's CNR **exceeds**
+RED-CNN by 1.11–1.19×, CoreDiff by 1.08–1.13× and CTformer by 1.90–2.23× at every dose
+level; on real anatomy CHO-AUC saturates at 1.000 for every method. A submission could
+therefore clear the gate on a metric the trap wins, while the index that catches it
+(ROI BandER: blur 0.432 vs models 3.854–6.735, blur last 4/4 in every vendor group) was
+optional.
+
+**Second defect, same root.** Because `bander_roi` was not in `DETECTABILITY_FIELDS`, it
+was silently dropped by `verify.extract_paired_methods`. That made
+`leaderboard.py::add_submission`'s `("bander_roi", "bander_full", "roi_tm_auc")`
+carry-through **unreachable**, and `compute_spread`'s `bander_roi_span` could never be
+populated from a submission — the Rung 5 dual-metric spread block was silently
+fidelity+CNR only.
+
+**Change.**
+
+- `task_spec.py` — split the fields by role:
+  - `DISCRIMINATING_FIELDS = ("bander_roi",)` — **required**.
+  - `TRANSPARENCY_FIELDS = ("cnr_mean", "cho_auc_mean", "npwe_mean")` — reported, never
+    sufficient alone.
+  - `DETECTABILITY_FIELDS = DISCRIMINATING_FIELDS + TRANSPARENCY_FIELDS` (recognised and
+    carried through).
+  - `FREQ_SUPPLEMENTARY_FIELDS = ("bander_full", "roi_tm_auc")` — carried, not gate criteria.
+- `verify.py` — `extract_paired_methods` now carries the frequency-domain fields in all
+  three input layouts; `check_paired_submission` adds a fourth violation when
+  detectability is present but the discriminating index is missing.
+
+**Migration.** A submission reporting only CNR/CHO-AUC/NPWE is now rejected with:
+
+> `detectability reports only insertion-based indices (cnr_mean/cho_auc_mean/npwe_mean);
+> the discriminating frequency-domain index bander_roi (detectability-freq-v1 ROI BandER)
+> is required`
+
+Add `detectability.bander_roi` (protocol `detectability-freq-v1`, 1-px Gaussian high-pass
+band-energy retention over the tissue noise ROI). Existing seed entries on the board are
+unaffected: the gate runs on incoming submissions, not on stored entries.
+
+**Tests** (`tests/test_scoring.py`, `tests/test_optimizations.py`):
+
+- `test_paired_gate_rejects_transparency_only_detectability` — the defect; asserts the
+  violation is the missing index, *not* a both-or-neither error.
+- `test_paired_gate_opens_when_bander_roi_present` — proves the gate still **opens**
+  (guards against a gate that refuses everything).
+- `test_paired_gate_accepts_bander_roi_without_transparency_indices` — BandER alone suffices.
+- `test_blur_trap_is_rejected_on_cnr_but_caught_by_bander` — the trap's measured AAPM
+  numbers: admissible, beats the model on CNR, separated by BandER.
+- `test_spread_by_vendor_and_dose` — now asserts `bander_roi_span`/`_std` reach the spread
+  block, covering the previously-unreachable carry-through.
 
 ---
 

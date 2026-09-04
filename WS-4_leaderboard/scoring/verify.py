@@ -1,9 +1,18 @@
-"""Paired submission gate for the WS-4 leaderboard (low-dose-ct.md §4).
+"""Paired submission gate for the WS-4 leaderboard (low-dose-ct.md §4, Rung 1).
 
 Every submission must report **both** a fidelity number (PSNR/SSIM) **and** a task
-detectability number (CNR / CHO-AUC / NPWE) measured on the WS-4 task specification
-(:mod:`task_spec`). "Both numbers or neither": a result that reports PSNR without
-detectability is not publishable and is rejected before it reaches the leaderboard.
+detectability number measured on the WS-4 task specification (:mod:`task_spec`).
+"Both numbers or neither": a result that reports PSNR without detectability is not
+publishable and is rejected before it reaches the leaderboard.
+
+The detectability side must include the **discriminating** index -- the
+frequency-domain ``detectability-freq-v1`` ROI BandER (``bander_roi``). The
+insertion-based observers (CNR / CHO-AUC / NPWE) are carried for transparency but
+do not satisfy the gate alone. This is what Rung 1 of ``RUNG_REGISTRY.md`` declares
+("insertion-based CNR/CHO/NPWE remain non-discriminative on real anatomy ...
+reported as transparency"), and until 2026-09-04 the code did not enforce it: any
+one of the three sufficed, so a submission could pass on a metric the permanent
+blur trap *wins*.
 
 This module is a dependency-free re-implementation of the paired gate semantics that
 WS-3 wired into its RunBundle entrypoint
@@ -15,7 +24,13 @@ from __future__ import annotations
 
 from typing import Any, Dict, List
 
-from .task_spec import DETECTABILITY_FIELDS, FIDELITY_FIELDS
+from .task_spec import (
+    DETECTABILITY_FIELDS,
+    DISCRIMINATING_FIELDS,
+    FIDELITY_FIELDS,
+    FREQ_SUPPLEMENTARY_FIELDS,
+    TRANSPARENCY_FIELDS,
+)
 
 
 def _as_dict(value: Any) -> Dict:
@@ -42,7 +57,7 @@ def extract_paired_methods(result: Dict) -> Dict[str, Dict]:
             for f in FIDELITY_FIELDS:
                 if f in block:
                     m[f] = block[f]
-            for f in DETECTABILITY_FIELDS:
+            for f in DETECTABILITY_FIELDS + FREQ_SUPPLEMENTARY_FIELDS:
                 if f in det:
                     m[f] = det[f]
             m["task"] = det.get("task") or det.get("task_label") or det.get("label")
@@ -57,14 +72,14 @@ def extract_paired_methods(result: Dict) -> Dict[str, Dict]:
         for f in FIDELITY_FIELDS:
             if f in validation:
                 m[f] = validation[f]
-        for f in DETECTABILITY_FIELDS:
+        for f in DETECTABILITY_FIELDS + FREQ_SUPPLEMENTARY_FIELDS:
             if f in det:
                 m[f] = det[f]
         m["task"] = det.get("task") or det.get("task_label") or det.get("label")
         return {"submission": m}
 
     m = {"name": result.get("method", "submission")}
-    for f in FIDELITY_FIELDS + DETECTABILITY_FIELDS:
+    for f in FIDELITY_FIELDS + DETECTABILITY_FIELDS + FREQ_SUPPLEMENTARY_FIELDS:
         if f in result:
             m[f] = result[f]
     m["task"] = result.get("task") or result.get("task_label") or result.get("label")
@@ -74,6 +89,17 @@ def extract_paired_methods(result: Dict) -> Dict[str, Dict]:
 def check_paired_submission(metrics: Dict) -> List[str]:
     """Enforce the §4 paired rule on one method's metrics.
 
+    Two conditions, both required:
+
+    1. **Paired** (§4 both-or-neither): a fidelity number *and* a detectability
+       number, never one alone.
+    2. **Discriminating** (Rung 1): the detectability side must include the
+       frequency-domain ROI BandER (``bander_roi``). The insertion-based indices
+       (CNR / CHO-AUC / NPWE) are transparency-only and do not satisfy the gate
+       by themselves -- the permanent blur trap *outscores* real methods on CNR
+       (1.08-2.23x on the simulated arm) and saturates CHO-AUC at 1.000 on real
+       anatomy, so a gate resting on them admits the cheat it exists to catch.
+
     Returns a list of violations; empty list = gate passes (publishable).
     """
     errors: List[str] = []
@@ -81,11 +107,13 @@ def check_paired_submission(metrics: Dict) -> List[str]:
         return ["metrics is not an object"]
 
     has_fidelity = any(metrics.get(f) is not None for f in FIDELITY_FIELDS)
-    has_detect = any(metrics.get(f) is not None for f in DETECTABILITY_FIELDS)
+    has_discriminating = any(metrics.get(f) is not None for f in DISCRIMINATING_FIELDS)
+    has_transparency = any(metrics.get(f) is not None for f in TRANSPARENCY_FIELDS)
+    has_detect = has_discriminating or has_transparency
 
     if not has_fidelity and not has_detect:
         errors.append("submission carries neither fidelity (psnr_db/ssim) nor "
-                      "detectability (cnr_mean/cho_auc_mean/npwe_mean)")
+                      "detectability (bander_roi/cnr_mean/cho_auc_mean/npwe_mean)")
         return errors
     if has_fidelity and not has_detect:
         errors.append("fidelity without detectability is not publishable "
@@ -93,6 +121,14 @@ def check_paired_submission(metrics: Dict) -> List[str]:
     if has_detect and not has_fidelity:
         errors.append("detectability without fidelity is not publishable "
                       "(§4: both numbers or neither)")
+    if has_detect and not has_discriminating:
+        errors.append(
+            "detectability reports only insertion-based indices "
+            "(" + "/".join(TRANSPARENCY_FIELDS) + "); the discriminating "
+            "frequency-domain index " + "/".join(DISCRIMINATING_FIELDS) +
+            " (detectability-freq-v1 ROI BandER) is required (Rung 1: the blur "
+            "trap outscores real methods on CNR and saturates CHO-AUC, so these "
+            "indices are transparency-only)")
     return errors
 
 
