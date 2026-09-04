@@ -15,7 +15,7 @@ The R6 recalculation is the strongest research-integrity artifact in this reposi
 
 | Waiting on | What you'll do once decided |
 |---|---|
-| **Tolerance route (a) or (b)** | §A below — the re-run |
+| ~~Tolerance route (a) or (b)~~ **decided: (a)** | §A below — the re-run, now unblocked (issue #5) |
 | **PhysioNet / Zenodo DOIs** | fill them into `manuscript.tex` + `physionet_listing/listing.md` |
 | **Authors / ORCID / CRediT / IRB no.** | fill the manuscript header and declarations |
 | **Vendor licensing + Mayo `.npy` decision** | remove or repoint the vendored files |
@@ -39,9 +39,9 @@ Verified against a clean checkout on 2026-09-04.
 
 ---
 
-## A. The R6 re-run — **as soon as the route is picked**
+## A. The R6 re-run — **route (a) DECIDED 2026-09-04, tracked in issue #5**
 
-If **route (a), deterministic re-run** (the recommendation):
+Route **(a)** was chosen. Run:
 
 ```python
 torch.backends.cudnn.deterministic = True

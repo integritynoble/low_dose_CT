@@ -52,20 +52,20 @@ For the Acknowledgements and the PhysioNet listing.
 
 ## 2. Decisions heyang is blocked on
 
-### 2.1 ⚠️ The R6 comparison verdict — **recommend route (a)**
+### 2.1 ✅ The R6 comparison verdict — **DECIDED 2026-09-04: route (a)**
 
-`R6_recalc/results/comparison_full764.json` ships `"overall": "FAIL"`; `R6_recalc_report.md` §8 says `PASS*`. The repo currently contains a machine-readable FAIL that only prose overrides. I did **not** resolve this — quietly relaxing the threshold would just move the prose `PASS*` into a script constant, which is the same post-hoc adjudication in a less visible place.
+`R6_recalc/results/comparison_full764.json` ships `"overall": "FAIL"`; `R6_recalc_report.md` §8 says `PASS*`. The repo contains a machine-readable FAIL that only prose overrides. It was deliberately left unresolved rather than fixed by loosening the threshold, which would have moved the prose `PASS*` into a script constant — the same post-hoc adjudication in a less visible place. **Now resolved by decision, not by adjustment.**
 
 | Route | What it costs | What it asks of a reviewer |
 |---|---|---|
-| **(a) Deterministic re-run** ← recommended | one GPU re-run of 3 models | nothing — the pre-registered rule passes as written |
+| **(a) Deterministic re-run** ← **CHOSEN** | one GPU re-run of 3 models | nothing — the pre-registered rule passes as written |
 | (b) Amend the guide | a dated amendment + re-run | accept a changed *kind* of test |
 
-Route (a) works because the differences are **non-deterministic kernel selection, not float64 limits** — a 764-term reduction accumulates ~1e-8 absolute at `npwe_mean` ≈ 9.7e5, two orders inside the 1e-6 budget. With determinism on, the runs should be bit-identical and your existing criterion passes untouched.
+Route (a) works because the differences are **non-deterministic kernel selection, not float64 limits** — a 764-term reduction accumulates ~1e-8 absolute at `npwe_mean` ≈ 9.7e5, two orders inside the 1e-6 budget. With determinism on, the runs should be bit-identical and your existing criterion passes untouched. If they come back *not* bit-identical, that is informative — heyang has been told to report it rather than loosen the threshold.
 
-- [ ] **Decide (a) or (b)** and tell heyang. One line from you closes the last technical open item.
+- [x] **Decided: route (a), the deterministic re-run.** Communicated to heyang in issue #5. No amendment to the guide is needed; the pre-registered absolute 1e-6 stands.
 
-> Independent of the route: the comparator applies **one absolute 1e-6 across metrics spanning five orders of magnitude** (~2e-7 relative on `cnr_mean`, ~1e-12 on `npwe_mean`). It will misfire again on the next submission even under perfect determinism. Worth fixing to a per-metric criterion whichever route you pick.
+> Still open regardless: the comparator applies **one absolute 1e-6 across metrics spanning five orders of magnitude** (~2e-7 relative on `cnr_mean`, ~1e-12 on `npwe_mean`). It will misfire again on the next submission even under perfect determinism. heyang has been asked to make it declare agreement per metric, and to commit `compare_full764.py`, which is not in the repo.
 
 ### 2.2 ⚠️ Rung 1's status in the registry
 
@@ -118,7 +118,7 @@ Worth doing now anyway: rebuild the stale `manuscript.pdf` (the committed PDF pr
 
 1. **Open the PhysioNet deposit** — the only item that cannot be compressed later.
 2. **Settle authorship + COI** — pure decisions, cost only your time, unblock the whole manuscript header.
-3. **Pick route (a) on the tolerance** — one line to heyang closes the last technical item.
+3. ~~Pick route (a) on the tolerance~~ ✅ **done 2026-09-04** — issue #5. Next-most-useful: **Rung 1's status** (§2.2) and the **vendored-content decision** (§2.3), which blocks going public.
 
 ---
 
