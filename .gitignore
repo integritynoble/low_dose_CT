@@ -44,3 +44,8 @@ WS-1_dataset/baselines/checkpoints/
 *.bak
 *.legacy
 *.flag
+
+# DUA-restricted AAPM/Mayo pixel derivatives are never tracked (deposit_procedure.md excludes them; removed from history 2026-09-05)
+WS-1_dataset/baselines/vendor/ctformer/test_img/
+**/L[0-9][0-9][0-9]_*.npy
+**/L[0-9][0-9][0-9]_*.npz
