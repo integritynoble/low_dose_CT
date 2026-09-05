@@ -14,6 +14,8 @@ from .heldout import (HeldOutSet, OWN_PRINCIPAL, SubmissionEnvelope,
 from .observer_sensitivity import (OBSERVER_A, OBSERVER_B, publish_observer_channels,
                                    rank_shift_report, report_observer_sensitivity)
 from .rung_registry import load_registry, render_markdown, update_status, validate_registry
+from .gates import (PROBES, check_dose_curve, check_pairing_validation, check_roi_protocol,
+                    exercise)
 
 __all__ = [
     "BLUR_ENTRY_ID", "REFERENCE_ENTRY_ID", "TASK_SPEC", "BLUR_SPEC",
@@ -29,4 +31,5 @@ __all__ = [
     "OBSERVER_A", "OBSERVER_B", "publish_observer_channels", "rank_shift_report",
     "report_observer_sensitivity",
     "load_registry", "render_markdown", "update_status", "validate_registry",
+    "PROBES", "check_dose_curve", "check_pairing_validation", "check_roi_protocol", "exercise",
 ]

@@ -27,7 +27,7 @@
       "status": "done",
       "reason": "10/10 geometric pairing validated (Pearson=1.0, 0 unmatched, 0 violations; WS-1 output/aapm_pairing_validation.json); complete held-out paired run executed on FD/QD pairs (train 3 / val 3 / test 4, 4 baselines + blur trap; WS-1 output/aapm_paired_baselines.json + _summary.md). Mayo LDCT-PD and prospective acquisition remain removed from v1.0 scope.",
       "workspace": "WS-1_dataset (v1.0)",
-      "gate": "WS-1 baselines dicom_pairing (run on AAPM 10)"
+      "gate": "scoring/gates.py::check_pairing_validation (executable, both-direction probes shipped, 2026-09-05); WS-1 baselines dicom_pairing (run on AAPM 10)"
     },
     {
       "rung": 3,
@@ -40,7 +40,7 @@
       "status": "done",
       "reason": "Full held-out test run complete on AAPM 4 test patients (aapm-0003/0005/0006/0009, 48 ROIs per patient per model, RED-CNN/CTformer/LEARN + blur trap; WS-1 output/aapm_r3_roi_detectability.json + _summary.md). Blur trap separation established on real tissue: ROI BandER blur 0.432 vs models 3.854-6.735 (9-15x) and full BandER blur 0.430 vs 1.514-2.197 (3.5-5.1x) while blur scores the highest SSIM (0.965) and top PSNR (41.6). Insertion-based CNR/CHO/NPWE remain non-discriminative on real anatomy (CHO AUC 1.000, CNR<0.4, Rose not reached) — reported as transparency. Remaining before full closure: independent recomputation by a domain verifier (Rung 2 routine).",
       "workspace": "WS-3_reference_method, WS-1_dataset",
-      "gate": "task_spec.py::TASK_SPEC.noise_roi_hu_band; WS-1 output/aapm_r3_roi_detectability.json"
+      "gate": "scoring/gates.py::check_roi_protocol (executable, both-direction probes shipped, 2026-09-05); task_spec.py::TASK_SPEC.noise_roi_hu_band; WS-1 output/aapm_r3_roi_detectability.json"
     },
     {
       "rung": 4,
@@ -52,7 +52,7 @@
       "status": "done",
       "reason": "Full curve on AAPM 4 test patients (3 dose points x 4 models + blur trap; WS-1 output/aapm_dose_detectability_curve.png + .json + _summary.md). Knee (first dose ratio where ROI BandER reaches tau=0.5): red_cnn/ctformer/learn = 0.500, blur not_reached (BandER stays 0.18-0.43). Real-data knee right-shifted vs LIDC simulated version (rose-crossing knee 0.33/0.29/0.25). Simulated dose points run on 48-slice detectability subset (full-volume projection simulation infeasible; trade-off declared).",
       "workspace": "WS-1_dataset (v0.5 dose points)",
-      "gate": "WS-1 output/aapm_dose_detectability_curve.png + .json + _summary.md"
+      "gate": "scoring/gates.py::check_dose_curve (executable, both-direction probes shipped, 2026-09-05); WS-1 output/aapm_dose_detectability_curve.png + .json + _summary.md"
     },
     {
       "rung": 5,

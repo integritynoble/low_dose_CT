@@ -326,6 +326,45 @@ Siemens, 9.67× GE, 12.80× Philips, 18.96× Toshiba; all ≥ 3×, matching the 
 assertion (`test_submit_accepts_paired_and_keeps_trap`) rewritten to `before + 1` so it
 tests submission rather than seeding. Suite: 93 tests, 83 passed / 10 skipped, up from 83 / 73.
 
+## P3-6b. Executable gates for Rungs 2, 3 and 4
+
+**Status**: implemented + tested.
+
+**Defect.** A rung-7 gate audit (run by the low-dose CT research agent, 2026-09-05) found three
+of six rungs marked *done* with no gate that could be executed: Rung 2's gate was a script named
+in prose ("WS-1 baselines dicom_pairing (run on AAPM 10)"), Rung 3's a constant
+(`TASK_SPEC.noise_roi_hu_band`) that nothing can exercise, Rung 4's a PNG, a JSON and a summary.
+Rung 1 had already shown what an unenforced gate costs (P0-1b). A status whose gate cannot run
+is a claim, not a fact.
+
+**Fix.** `scoring/gates.py`: one function per rung, reading the artifact the rung already cites
+and asserting the claim its reason makes, returning a violation list in the style of
+`check_paired_submission`.
+- `check_pairing_validation` (Rung 2): 10 patients, correlation ≥ 0.99 (the file's own target),
+  0 unpaired slices, 0 tolerance violations, per row — so a summary that disagrees with its rows
+  is itself a violation.
+- `check_roi_protocol` (Rung 3): the run's task is the WS-4 task (label, HU band, signal), 48
+  ROIs per patient per model, and the rung's separation claim: blur last on ROI BandER by ≥ 3×
+  while scoring the highest SSIM on the same run.
+- `check_dose_curve` (Rung 4): ≥ 3 dose points, every model measured at each, a knee named per
+  model (a ratio inside the measured range, or null for not reached), the trap's knee not
+  reached, the trap lowest on ROI BandER at every dose point.
+
+**Probes ship with the gate.** `PROBES[name] = (accept, reject)`: the accept factory loads the
+real WS-1 artifact, the reject factory breaks one thing in a copy. `exercise(name)` runs both.
+An auditor that finds the table can exercise a gate in both directions without knowing its
+semantics; the agent's rung-7 audit does exactly that. A gate that only ever refuses would pass
+a rejection-only suite and fail the project.
+
+**Registry.** Rungs 2, 3, 4 gate strings now lead with the executable gate and keep the
+artifact tokens. Statuses untouched.
+
+**Tests**: 13 in `scoring/tests/test_gates.py` — every gate both ways on the real artifact,
+plus targeted rejections (lying summary, wrong cohort size, lowered target, wrong task, weak
+separation, missing ROI count, two-point curve, missing dose point, knee out of range) and one
+test re-asserting the registry's numbers off the files. Suite: 106 tests, 96 passed / 10
+skipped, up from 93 / 83.
+
 ## Future wiring points
 
 - **P1-3**: attach real held-out DICOM records to `HeldOutSet` at launch; referee
