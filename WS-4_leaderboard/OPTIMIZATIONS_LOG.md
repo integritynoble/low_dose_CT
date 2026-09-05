@@ -189,6 +189,50 @@ Rejection path (P1-3 gate): a submission whose result references
 `../data/leaderboard.json` or carries a write-capable object is rejected with RC 1
 and a REJECT message before scoring.
 
+## P0-1c. Trap-rank gate: the blur trap must rank last on the discriminating index
+
+**Status**: implemented + tested. **Changes the board's ranking order — read before publishing.**
+
+**Defect.** P0-1b made `bander_roi` required, but nothing checked where the trap actually
+sat, and `sort_entries` still ranked by `cnr_mean` first. Rung 1, 3, 5 and 6 all rest on the
+trap ranking last on detectability (measured 8.9–19.0× separation, blur last 4/4 in every
+vendor group), yet that structural claim was enforced nowhere in code. Because the trap
+*wins* on CNR (1.11–2.23× over the learned baselines on the simulated arm), a CNR-led board
+displayed the deliberate cheat above real methods with every gate green.
+
+**Fix.** `leaderboard.trap_rank_report(entries, min_ratio=None)` returns a verdict block:
+PASS / FAIL / INDETERMINATE, the trap's value, the ranked comparable entries, the observed
+minimum separation ratio, and a violation string per offending entry. `check_trap_rank`
+returns the violations; `assert_trap_ranks_last` raises. `sort_entries` now leads with the
+discriminating index, and an entry that does not report it sorts below every entry that does.
+
+Three deliberate design choices, each of which could reasonably have gone the other way:
+
+- **Recorded, not raised, on ordinary mutation.** `add_submission` and `save` store the
+  verdict on the board instead of rejecting. A board on which the trap is not last is
+  evidence — either an entry smooths beyond a plain Gaussian blur, or the index has stopped
+  discriminating — and discarding it would let the leaderboard suppress a finding about
+  itself. `assert_trap_ranks_last` is the hard gate for whoever publishes.
+- **INDETERMINATE is distinct from FAIL.** If the trap carries no `bander_roi` while real
+  entries do, the board cannot be checked and says so. Folding that into PASS would make
+  "stop measuring the trap" the way to evade the gate. Note this fires on a fresh board as
+  soon as a real submission lands, because `seed_blur_entry` is a placeholder: the trap must
+  be refreshed from the WS-3 run before the board means anything.
+- **Rank and separation ratio are separate.** Rank alone is the gate; `min_ratio` is
+  optional and is the Rung 5/6 criterion (3×). A board can rank correctly and still fail a
+  separation requirement, and the report carries both numbers.
+
+**Tests**: 13 in `scoring/tests/test_trap_rank.py`, in both directions — a gate that only
+ever refuses would pass a rejection-only suite and fail the project. Includes a non-vacuity
+guard that reconstructs the pre-change CNR-led key and asserts it ranked the trap first on
+the measured Rung 1 board, and one test (`test_real_submissions_against_a_placeholder_trap_are_indeterminate`)
+written only because the suite failed first and the failure turned out to be correct
+behaviour. Suite: 78 tests, 68 passed / 10 skipped, up from 65 / 55.
+
+**Not done here**: the registry's Rung 1 status is untouched. Rung 1 has read `done` while
+its named gate did not enforce its own discriminative claim; whether that warrants re-closing
+with a dated note is the owner's judgement, not the gate's.
+
 ## Future wiring points
 
 - **P1-3**: attach real held-out DICOM records to `HeldOutSet` at launch; referee
