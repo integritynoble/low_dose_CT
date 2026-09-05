@@ -148,12 +148,7 @@ def test_the_board_records_the_verdict_on_submission_rather_than_hiding_it():
     The failure is evidence about the index or about the submission. Refusing to
     record it would let the leaderboard suppress a finding about itself.
     """
-    board = new_leaderboard()
-    # refresh the trap from the WS-3 run, as seed_blur_entry's own note requires
-    for e in board["entries"]:
-        if e["id"] == BLUR_ENTRY_ID:
-            e["metrics"]["bander_roi"] = 0.432
-            e["placeholder"] = False
+    board = new_leaderboard()          # the seed trap carries its measured numbers
     board["entries"].append(entry("real_model", bander_roi=3.854, cnr=5.19))
     result = {"validation": {"paired_methods": {"oversmoother": {
         "psnr_db": 41.6, "ssim": 0.965,
@@ -167,19 +162,32 @@ def test_the_board_records_the_verdict_on_submission_rather_than_hiding_it():
     assert any("oversmoother" in v.lower() for v in board["trap_rank"]["violations"])
 
 
-def test_real_submissions_against_a_placeholder_trap_are_indeterminate():
-    """Found by this suite failing first: a fresh board plus real entries.
+def test_an_unmeasured_trap_makes_a_real_board_indeterminate():
+    """A board whose trap has lost its discriminating number cannot be checked.
 
-    ``new_leaderboard`` seeds the trap with placeholder numbers and no BandER, so
-    once a real submission lands the board cannot be checked until the trap is
-    refreshed from the WS-3 run. That reads INDETERMINATE, never PASS: real
-    results must not accumulate against a trap nobody has measured.
+    This was the state of every board before 2026-09-05, when the seed trap
+    carried synthetic placeholders and no BandER: real submissions could
+    accumulate beside a trap nobody had measured. The seed is measured now, so
+    the case is reconstructed by stripping the value rather than by relying on
+    the seed being unmeasured.
     """
     board = new_leaderboard()
+    for e in board["entries"]:
+        if e["id"] == BLUR_ENTRY_ID:
+            e["metrics"].pop("bander_roi")
     board["entries"].append(entry("real_model", bander_roi=3.854, cnr=5.19))
     report = trap_rank_report(board["entries"])
     assert report["verdict"] == TRAP_RANK_INDETERMINATE
     assert "Refresh the trap" in report["violations"][0]
+
+
+def test_the_seeded_board_is_now_checkable_out_of_the_box():
+    """The refresh, from the gate's point of view: same board, real verdict."""
+    board = new_leaderboard()
+    board["entries"].append(entry("real_model", bander_roi=3.854, cnr=5.19))
+    report = trap_rank_report(board["entries"], min_ratio=3.0)
+    assert report["verdict"] == TRAP_RANK_PASS
+    assert report["min_ratio_observed"] > 8.0
 
 
 def test_saved_board_carries_a_fresh_verdict(tmp_path):

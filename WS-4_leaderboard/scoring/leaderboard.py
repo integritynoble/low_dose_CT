@@ -46,14 +46,65 @@ def _utcnow() -> str:
     return datetime.now(timezone.utc).isoformat()
 
 
-def seed_blur_entry() -> Dict:
-    """The permanent blur seed (placeholder numbers until WS-3's real run).
+#: Provenance of the permanent trap's measured numbers. Every metric in
+#: :func:`seed_blur_entry` is the per-patient mean over this one run; nothing is
+#: mixed across protocols. ``tests/test_trap_numbers.py`` re-reads the file and
+#: fails if the literals drift from it, so a re-run cannot silently move the
+#: board's trap.
+TRAP_SOURCE = {
+    "file": "WS-1_dataset/output/aapm_r3_roi_detectability.json",
+    "schema": "aapm-r3-roi-detectability/v1",
+    "sha256": "9987864a1d60bed445ba6f1a4c08a344e8ba5217666e954f6a544557a32d55fc",
+    "generated_at": "2026-08-22T19:36:01",
+    "corpus": ("AAPM 2016 LDCT grand challenge, held-out test (4 patients), 1mm B30, "
+               "FD vs QD real pairing"),
+    "patients": ["aapm-0003", "aapm-0005", "aapm-0006", "aapm-0009"],
+    "protocol": ("detectability-freq-v1 on find_tissue_roi patches (HU band [10,120], low "
+                 "Sobel gradient, low internal std, seed 42, 32x32 px), 48 ROIs per patient"),
+    "aggregation": "per-patient mean over the 4 held-out test patients",
+    "refreshed_at": "2026-09-05",
+}
 
-    Values below mirror the WS-3 self-test structure (synthetic; ``placeholder=True``
-    marks them as non-scientific). The key structural property already holds: PSNR is
-    high relative to a reference while CNR is far below the Rose criterion of 3.
-    Vendor/dose are deliberately left None: a trap is a method-level construct, not a
-    vendor/dose-specific measurement.
+
+def seed_blur_entry() -> Dict:
+    """The permanent blur trap, with its measured numbers from the held-out run.
+
+    Refreshed 2026-09-05 from :data:`TRAP_SOURCE`, replacing the synthetic
+    self-test placeholders. The refresh was not cosmetic: the trap-rank gate
+    reads INDETERMINATE, not PASS, once a real submission sits beside a trap
+    carrying no ``bander_roi``, so the board could not be checked until this
+    landed.
+
+    Every field is the per-patient mean from one run of one protocol. That
+    matters more than it sounds: the project holds two different band-energy
+    measurements, the Rung 1 whole-slice ``band_energy_ratio`` (blur 0.247) and
+    the Rung 3 ROI ``roi_band_energy_ratio`` (blur 0.432). The leaderboard's
+    discriminating field is ``bander_roi`` and its task specification carries
+    ``noise_roi_hu_band``, so the ROI protocol is the matching one. Taking the
+    fidelity numbers from one file and the ROI band energy from the other would
+    have produced an entry no run ever measured.
+
+    These numbers are the trap's whole point, stated as data rather than prose:
+    on this held-out test the blur takes the **highest** SSIM (0.965), the
+    **highest** PSNR (41.6) and the **highest** CNR (0.171) of the four methods
+    on the board, while ranking **last** on ROI band energy by 8.9x to 15.6x.
+    High fidelity does not imply detectability, and three of the four indices a
+    reader would reach for first rank the deliberate cheat top of the board.
+
+    ``vendor`` and ``dose`` stay None, and the measurement's real context lives
+    in ``source`` instead. These numbers *are* Siemens real quarter-dose, so
+    that looks like an omission and it is not: those two fields are the grouping
+    keys for :func:`compute_spread`, whose population is the submissions whose
+    variability is being characterised. The trap is the control against which a
+    group is judged, not a member of it, and putting a deliberate cheat inside
+    the span would change what the span measures. Rung 5 uses the trap as a
+    per-group separation check, which is a different operation from spread.
+
+    One real gap follows, and is better named than hidden: because the board
+    holds a single trap entry measured on Siemens, the Rung 5 requirement that
+    the trap separate in *every* vendor group is not yet checkable from the
+    board alone. Closing that needs a per-vendor trap measurement and a
+    per-group form of :func:`trap_rank_report`.
     """
     return {
         "id": BLUR_ENTRY_ID,
@@ -61,22 +112,28 @@ def seed_blur_entry() -> Dict:
         "kind": "seed-trap",
         "permanent": True,
         "trap": True,
-        "placeholder": True,
+        "placeholder": False,
         "vendor": None,
         "dose": None,
         "config": dict(BLUR_SPEC),
+        "source": dict(TRAP_SOURCE),
         "metrics": {
-            "psnr_db": 20.808,
-            "ssim": 0.6635,
-            "cnr_mean": 0.0115,
+            "psnr_db": 41.62701493902994,
+            "ssim": 0.9653218340698881,
+            "cnr_mean": 0.17063560072817718,
             "cho_auc_mean": 1.0,
-            "npwe_mean": 44229.6,
+            "npwe_mean": 220804.5630688496,
+            "bander_roi": 0.4315421991344855,
+            "bander_full": 0.42997330961502483,
+            "roi_tm_auc": 0.9895833333333334,
             "task": TASK_SPEC["label"],
         },
         "submitted_at": _utcnow(),
-        "notes": ("Permanent Gaussian blur trap (sigma=1.0 px, 5x5). Placeholder numbers "
-                  "from WS-3 self-test structure; refresh from WS-3 emit before launch. "
-                  "PSNR high, CNR < Rose(3): high fidelity does not imply detectability."),
+        "notes": ("Permanent Gaussian blur trap (sigma=1.0 px, 5x5), measured on the AAPM "
+                  "held-out test (4 patients, Siemens, real QD pairing) under "
+                  "detectability-freq-v1; see `source` for the file and its hash. Highest "
+                  "SSIM, highest PSNR and highest CNR on that run, last on ROI band energy "
+                  "by 8.9-15.6x: high fidelity does not imply detectability."),
     }
 
 

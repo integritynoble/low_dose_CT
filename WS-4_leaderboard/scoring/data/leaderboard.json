@@ -31,22 +31,43 @@
       "kind": "seed-trap",
       "permanent": true,
       "trap": true,
-      "placeholder": true,
+      "placeholder": false,
+      "vendor": null,
+      "dose": null,
       "config": {
         "sigma_px": 1.0,
         "kernel_size": 5,
         "module": "pwm_ldct_recon.models.GaussianBlur (WS-3)"
       },
+      "source": {
+        "file": "WS-1_dataset/output/aapm_r3_roi_detectability.json",
+        "schema": "aapm-r3-roi-detectability/v1",
+        "sha256": "9987864a1d60bed445ba6f1a4c08a344e8ba5217666e954f6a544557a32d55fc",
+        "generated_at": "2026-08-22T19:36:01",
+        "corpus": "AAPM 2016 LDCT grand challenge, held-out test (4 patients), 1mm B30, FD vs QD real pairing",
+        "patients": [
+          "aapm-0003",
+          "aapm-0005",
+          "aapm-0006",
+          "aapm-0009"
+        ],
+        "protocol": "detectability-freq-v1 on find_tissue_roi patches (HU band [10,120], low Sobel gradient, low internal std, seed 42, 32x32 px), 48 ROIs per patient",
+        "aggregation": "per-patient mean over the 4 held-out test patients",
+        "refreshed_at": "2026-09-05"
+      },
       "metrics": {
-        "psnr_db": 20.808,
-        "ssim": 0.6635,
-        "cnr_mean": 0.0115,
+        "psnr_db": 41.62701493902994,
+        "ssim": 0.9653218340698881,
+        "cnr_mean": 0.17063560072817718,
         "cho_auc_mean": 1.0,
-        "npwe_mean": 44229.6,
+        "npwe_mean": 220804.5630688496,
+        "bander_roi": 0.4315421991344855,
+        "bander_full": 0.42997330961502483,
+        "roi_tm_auc": 0.9895833333333334,
         "task": "SKE-Gaussian20HU-s2px"
       },
-      "submitted_at": "2026-08-21T04:06:40.962067+00:00",
-      "notes": "Permanent Gaussian blur trap (sigma=1.0 px, 5x5). Placeholder numbers from WS-3 self-test structure; refresh from WS-3 emit before launch. PSNR high, CNR < Rose(3): high fidelity does not imply detectability."
+      "submitted_at": "2026-09-05T13:13:38.853764+00:00",
+      "notes": "Permanent Gaussian blur trap (sigma=1.0 px, 5x5), measured on the AAPM held-out test (4 patients, Siemens, real QD pairing) under detectability-freq-v1; see `source` for the file and its hash. Highest SSIM, highest PSNR and highest CNR on that run, last on ROI band energy by 8.9-15.6x: high fidelity does not imply detectability."
     },
     {
       "id": "seed-ws3-reference",
@@ -55,6 +76,8 @@
       "permanent": false,
       "trap": false,
       "placeholder": true,
+      "vendor": null,
+      "dose": null,
       "metrics": {
         "psnr_db": 8.495,
         "ssim": 5.1e-05,
@@ -63,8 +86,21 @@
         "npwe_mean": 0.0,
         "task": "SKE-Gaussian20HU-s2px"
       },
-      "submitted_at": "2026-08-21T04:06:40.962067+00:00",
+      "submitted_at": "2026-09-05T13:13:38.853786+00:00",
       "notes": "Seed entry from WS-3 reference method v1. Placeholder numbers from WS-3 self-test; refresh from the pinned RunBundle before launch."
     }
-  ]
+  ],
+  "trap_rank": {
+    "index": "bander_roi",
+    "verdict": "PASS",
+    "trap_value": 0.4315421991344855,
+    "n_compared": 0,
+    "min_ratio_required": null,
+    "min_ratio_observed": null,
+    "ranked": [],
+    "violations": [],
+    "note": "no non-placeholder entry reports bander_roi; there is nothing to rank the trap against and the board makes no detectability claim",
+    "checked_at": "2026-09-05T13:13:38.853801+00:00"
+  },
+  "spread": {}
 }

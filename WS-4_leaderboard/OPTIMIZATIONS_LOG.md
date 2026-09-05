@@ -233,6 +233,58 @@ behaviour. Suite: 78 tests, 68 passed / 10 skipped, up from 65 / 55.
 its named gate did not enforce its own discriminative claim; whether that warrants re-closing
 with a dated note is the owner's judgement, not the gate's.
 
+## P0-1d. Trap refreshed from the measured run
+
+**Status**: implemented + tested.
+
+**Why it was blocking.** P0-1c made the trap's rank a gate, and the gate reads
+INDETERMINATE (not PASS) when the trap carries no `bander_roi` while real entries do.
+`seed_blur_entry` still held synthetic self-test placeholders, so the first real
+submission would have made every board uncheckable. The refresh moved from cosmetic to
+on the critical path the moment the gate landed.
+
+**Source**: `WS-1_dataset/output/aapm_r3_roi_detectability.json`, schema
+`aapm-r3-roi-detectability/v1`, generated 2026-08-22T19:36:01, SHA-256
+`9987864a…`, AAPM held-out test (aapm-0003/0005/0006/0009), detectability-freq-v1 on
+`find_tissue_roi` patches, 48 ROIs per patient, per-patient mean. Recorded in
+`leaderboard.TRAP_SOURCE` and in the entry's own `source` block.
+
+**One protocol, not two.** The project holds two different band-energy measurements: the
+Rung 1 whole-slice `band_energy_ratio` (blur 0.247, in `aapm_paired_baselines_v2.json`)
+and the Rung 3 ROI `roi_band_energy_ratio` (blur 0.432). The leaderboard's discriminating
+field is `bander_roi` and its task spec carries `noise_roi_hu_band`, so the ROI protocol
+is the matching one and **every** metric on the entry comes from that single run. Taking
+fidelity from the v2 file and ROI band energy from the r3 file would have produced an
+entry no run ever measured.
+
+**What the numbers say.** On this held-out test the trap takes the highest SSIM (0.9653),
+the highest PSNR (41.63) *and* the highest CNR (0.1706) of the four methods, while
+ranking last on `bander_roi` (0.4315) by 8.93x (LEARN), 8.98x (RED-CNN) and 15.61x
+(CTformer). Three of the four indices a reader reaches for first rank the deliberate
+cheat top of the board. That is the Rung 1 claim, now on real held-out data rather than
+the simulated arm.
+
+**`vendor` / `dose` stay None, and that is deliberate.** These numbers are Siemens real
+quarter-dose, so the null looks like an omission. Those two fields are `compute_spread`'s
+grouping keys, and the spread population is the submissions whose variability is being
+characterised; the trap is the control a group is judged against, not a member of it.
+Putting a deliberate cheat inside the span would change what the span measures. The
+measurement context lives in `source` instead. Four existing tests
+(`test_seed_entries_have_no_vendor_dose`, `test_spread_by_vendor_and_dose`,
+`test_submission_updates_board_spread_block`, `test_spread_empty_board_returns_empty`)
+caught an initial attempt to set them and were right to; they encode this decision.
+
+**Known gap, named rather than hidden.** The board holds one trap entry, measured on
+Siemens. Rung 5 requires the trap to separate in *every* vendor group, and that is not
+checkable from the board alone until there is a per-vendor trap measurement and a
+per-group form of `trap_rank_report`.
+
+**Tests**: 4 in `scoring/tests/test_trap_numbers.py`, plus one added to
+`test_trap_rank.py`. The provenance tests re-read the source file, verify its SHA-256 and
+compare all eight metrics, so a WS-1 re-run fails the suite instead of silently moving the
+board's trap; they skip if WS-1 is not checked out beside WS-4. `scoring/data/leaderboard.json`
+regenerated. Suite: 83 tests, 73 passed / 10 skipped, up from 78 / 68.
+
 ## Future wiring points
 
 - **P1-3**: attach real held-out DICOM records to `HeldOutSet` at launch; referee
