@@ -3,7 +3,7 @@
 > **2026-09-05, read first:** the repository's history was rewritten to remove DUA-restricted L506 pixel arrays. Your clone must be replaced, not pulled. See [`HEYANG_RECLONE_2026-09-05.md`](HEYANG_RECLONE_2026-09-05.md) for the steps and the old-to-new commit hash table.
 
 
-_Date: 2026-09-04 · against `main` @ `b557f8c`_
+_Date: 2026-09-04 · against `main` @ `86cce03`_
 _Diagnosis: [`REVIEW_FOR_HEYANG.md`](REVIEW_FOR_HEYANG.md) · Director's decisions: [`DIRECTOR_DECISIONS.md`](DIRECTOR_DECISIONS.md)_
 
 This page is **execution work only**. Anything needing a decision, a signature, or institutional access is on the Director's list, not here.

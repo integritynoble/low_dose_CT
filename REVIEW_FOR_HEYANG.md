@@ -1,6 +1,6 @@
 # Review for heyang — WS-1 … WS-4 status and what to do next
 
-_Date: 2026-09-04 · Round 4, over merge commit `92fbe4a` (`heyang` → `main`)._
+_Date: 2026-09-04 · Round 4, over merge commit `5bb0eb3` (`heyang` → `main`)._
 _Supersedes the 2026-07-20 review, which was written against `838d6a3` and is now materially out of date for WS-1._
 
 ## TL;DR
@@ -24,7 +24,7 @@ WS-1 is now the closest to submission, not WS-2. The remaining WS-1 blockers are
 - `WS-1_dataset/R6_recalc/` — an **independent recalculation** on a separate venv and toolchain: report, runbook, asset manifest, A3/A4 scripts, results, SHA256 manifests. `blur` and `learn` reproduce **bit-identically**.
 - The recalculation caught two real protocol errors *of its own accord* (a cached LIDC low-dose tree that silently changed the vendor KW result; a checkpoint/guide mismatch worth 9–13 dB) and documented both. That is exactly the discipline this project needs — keep it.
 
-Tests at `92fbe4a`: WS-4 scoring **51 passed / 10 skipped**, WS-3 method **65 passed**, WS-1 analysis extractors **4 passed**. WS-1's loader tests fail to *collect* (`No module named pwm_ldct_loader.schema`) — but that is an uninstalled `src/`-layout package, not a defect: with `PYTHONPATH=pwm_ldct_loader/src` it is **25 passed**.
+Tests at `5bb0eb3`: WS-4 scoring **51 passed / 10 skipped**, WS-3 method **65 passed**, WS-1 analysis extractors **4 passed**. WS-1's loader tests fail to *collect* (`No module named pwm_ldct_loader.schema`) — but that is an uninstalled `src/`-layout package, not a defect: with `PYTHONPATH=pwm_ldct_loader/src` it is **25 passed**.
 
 ---
 
