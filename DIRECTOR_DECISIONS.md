@@ -67,16 +67,29 @@ Route (a) works because the differences are **non-deterministic kernel selection
 
 > Still open regardless: the comparator applies **one absolute 1e-6 across metrics spanning five orders of magnitude** (~2e-7 relative on `cnr_mean`, ~1e-12 on `npwe_mean`). It will misfire again on the next submission even under perfect determinism. heyang has been asked to make it declare agreement per metric, and to commit `compare_full764.py`, which is not in the repo.
 
-### 2.2 ⚠️ Rung 1's status in the registry
+### 2.2 ⚠️ Rung statuses — it is three of six, not one
 
 Rung 1 is marked **done**, and its named gate is `scoring/verify.py::check_paired_submission`. Until 2026-09-04 that gate did not enforce what Rung 1 claims — it accepted a submission on a metric the blur trap *wins*. The gate now matches the claim.
 
 So the status is arguably *more* true than before. But a rung that sat at "done" against an unenforced gate is a fact about the ladder, not about one metric. The registry is a **public assertion about what has been verified**.
 
-- [ ] **Either** re-close Rung 1 with a dated note recording the 2026-09-04 alignment
-- [ ] **Or** leave it and record why that is right
+**This has since grown.** An audit of every rung's declared gate string (verified independently on 2026-09-05) finds that **three of the six rungs marked `done` name no gate that can be exercised**:
 
-Both are defensible. **Silence is not.** Same question applies to Rungs 5 and 6, whose `bander_roi` spread block could never populate from a submission.
+| Rung | Status | Declared gate | Executable? |
+|---|---|---|---|
+| 1 | done | `verify.py::check_paired_submission` + trap gates | ✅ now enforced both ways |
+| **2** | done | "WS-1 baselines dicom_pairing (run on AAPM 10)" | ❌ **no executable gate named** |
+| **3** | done | `TASK_SPEC.noise_roi_hu_band` | ⚠️ **a constant, not a callable** — nothing to exercise |
+| **4** | done | an output `.png` + `.json` + `_summary.md` | ❌ **an artifact, not a gate** |
+| 5 | done | `compute_spread`; `trap_rank_by_group` | ✅ enforced both ways |
+| 6 | done | `trap_rank_by_group` | ✅ enforced both ways |
+
+So Rung 1 was not an isolated slip — it is a pattern in how rungs were closed. A rung marked `done` against a gate that cannot be run is a claim, not a verified fact, and the registry is a **public assertion about what has been verified**.
+
+- [ ] **For rungs 2, 3, 4:** either **write the gate**, or **record explicitly that an artifact is the gate** and say what checks it
+- [ ] **For rung 1:** re-close with a dated note recording the 2026-09-04 alignment, or leave it and record why
+
+Both are defensible for any individual rung. **Silence is not.** This is the item I would put second after the deposit, because it is cheap to fix now and expensive to explain later if a reviewer or a competitor audits the ladder.
 
 ### 2.3 🔴 Vendored third-party content — legal, not engineering
 
