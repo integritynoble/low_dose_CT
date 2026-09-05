@@ -100,11 +100,11 @@ def seed_blur_entry() -> Dict:
     the span would change what the span measures. Rung 5 uses the trap as a
     per-group separation check, which is a different operation from spread.
 
-    One real gap follows, and is better named than hidden: because the board
-    holds a single trap entry measured on Siemens, the Rung 5 requirement that
-    the trap separate in *every* vendor group is not yet checkable from the
-    board alone. Closing that needs a per-vendor trap measurement and a
-    per-group form of :func:`trap_rank_report`.
+    The per-vendor requirement of Rung 5 is served separately, by
+    :func:`seed_vendor_trap_entries` and :func:`trap_rank_by_group`: those
+    traps *do* carry a vendor, because they exist to be judged inside a group,
+    and :func:`compute_spread` keeps every trap out of the span. This entry
+    stays the method-level trap the global :func:`trap_rank_report` uses.
     """
     return {
         "id": BLUR_ENTRY_ID,
@@ -137,6 +137,119 @@ def seed_blur_entry() -> Dict:
     }
 
 
+#: Provenance of the per-vendor trap measurements. A different run from
+#: :data:`TRAP_SOURCE`, on the same task and the same ROI protocol, covering the
+#: four LIDC vendors at simulated r=0.25 plus AAPM Siemens at real quarter dose.
+VENDOR_TRAP_SOURCE = {
+    "file": "WS-1_dataset/output/aapm_lidc_cross_vendor_spread.json",
+    "schema": "aapm-lidc-cross-vendor-spread/v1",
+    "sha256": "c436407412c6e419745bddf23aa10a0b8466015dd12a4ad104299c3aabe4f086",
+    "generated_at": "2026-08-22T21:01:52",
+    "dose_points": {"LIDC_sim": "r=0.25 (lowdose_sim projection-domain, seed 42)",
+                    "AAPM_real": "r=0.25 official real QD"},
+    "protocol": ("detectability-freq-v1 on find_tissue_roi patches (HU band [10,120], low "
+                 "Sobel gradient, low internal std, seed 42, 32x32 px)"),
+    "aggregation": "per-patient mean within each vendor group",
+    "added_at": "2026-09-05",
+}
+
+#: The permanent trap as measured in each vendor group, so Rung 5's requirement
+#: that it separate in **every** group is checkable from the board rather than
+#: only from a WS-1 output file. ``separation_ratio`` is the source file's own
+#: min-model-over-blur ratio, kept for cross-checking against what the board
+#: computes; the gate recomputes it rather than trusting it.
+#:
+#: The groups are not one corpus. GE, Philips, Siemens and Toshiba are LIDC at
+#: simulated quarter dose; AAPM-Siemens-real is AAPM at real quarter dose, and
+#: its numbers are the same measurement as :func:`seed_blur_entry`'s. Rung 6
+#: forbids averaging across these groups for exactly this reason, and the trap
+#: illustrates why: its own band energy ranges over an order of magnitude
+#: between vendors, 0.045 on GE to 0.432 on AAPM, while separating cleanly
+#: inside every one of them.
+VENDOR_TRAP_MEASUREMENTS = {
+    "GE": {
+        "corpus": "LIDC lowdose_sim r=0.25 (seed 42)", "n_patients": 2,
+        "separation_ratio": 9.674255870751027,
+        "metrics": {"psnr_db": 40.68572623027117, "ssim": 0.9209226369857788,
+                    "cnr_mean": 4.8088624181101896, "cho_auc_mean": 1.0,
+                    "bander_roi": 0.045245933213797, "bander_full": 0.2509224449453622,
+                    "roi_tm_auc": 0.9895833333333334},
+    },
+    "Philips": {
+        "corpus": "LIDC lowdose_sim r=0.25 (seed 42)", "n_patients": 2,
+        "separation_ratio": 12.803654465402388,
+        "metrics": {"psnr_db": 43.581771895681854, "ssim": 0.9869370975842078,
+                    "cnr_mean": 0.20756659662744237, "cho_auc_mean": 1.0,
+                    "bander_roi": 0.24936490377459875, "bander_full": 0.4166925496969569,
+                    "roi_tm_auc": 0.9895833333333334},
+    },
+    "Siemens": {
+        "corpus": "LIDC lowdose_sim r=0.25 (seed 42)", "n_patients": 2,
+        "separation_ratio": 9.461958071041304,
+        "metrics": {"psnr_db": 36.93872655591893, "ssim": 0.8405405518909295,
+                    "cnr_mean": 0.09848642185169176, "cho_auc_mean": 1.0,
+                    "bander_roi": 0.1223033657914374, "bander_full": 0.1914244989515192,
+                    "roi_tm_auc": 0.9895833333333334},
+    },
+    "Toshiba": {
+        "corpus": "LIDC lowdose_sim r=0.25 (seed 42)", "n_patients": 2,
+        "separation_ratio": 18.962875643689227,
+        "metrics": {"psnr_db": 40.36947279508346, "ssim": 0.9115665163844824,
+                    "cnr_mean": 3.459680516229598, "cho_auc_mean": 1.0,
+                    "bander_roi": 0.05920958469662685, "bander_full": 0.22311928788604293,
+                    "roi_tm_auc": 0.9895833333333334},
+    },
+    "AAPM-Siemens-real": {
+        "corpus": "AAPM 2016 real QD pairing", "n_patients": 4,
+        "separation_ratio": 8.930558159281748,
+        "metrics": {"psnr_db": 41.62701493902994, "ssim": 0.9653218340698881,
+                    "cnr_mean": 0.17063560072817718, "cho_auc_mean": 1.0,
+                    "bander_roi": 0.4315421991344855, "bander_full": 0.42997330961502483,
+                    "roi_tm_auc": 0.9895833333333334},
+    },
+}
+
+
+def vendor_trap_entry_id(vendor: str) -> str:
+    return "%s:%s" % (BLUR_ENTRY_ID, vendor)
+
+
+def seed_vendor_trap_entries() -> List[Dict]:
+    """One permanent trap per vendor group, from :data:`VENDOR_TRAP_SOURCE`.
+
+    These carry a ``vendor``, unlike the method-level :func:`seed_blur_entry`,
+    because they exist precisely to be judged inside a group. They are safe to
+    give a grouping key because :func:`compute_spread` excludes traps from the
+    population whose span it measures: the trap is the control for a group, not
+    a member of it.
+    """
+    entries = []
+    for vendor, block in VENDOR_TRAP_MEASUREMENTS.items():
+        metrics = dict(block["metrics"])
+        metrics["task"] = TASK_SPEC["label"]
+        entries.append({
+            "id": vendor_trap_entry_id(vendor),
+            "method": "gaussian-blur [%s]" % vendor,
+            "kind": "seed-trap",
+            "permanent": True,
+            "trap": True,
+            "placeholder": False,
+            "vendor": vendor,
+            "dose": "0.25",
+            "config": dict(BLUR_SPEC),
+            "source": dict(VENDOR_TRAP_SOURCE, corpus=block["corpus"],
+                           n_patients=block["n_patients"],
+                           reported_separation_ratio=block["separation_ratio"]),
+            "metrics": metrics,
+            "submitted_at": _utcnow(),
+            "notes": ("Permanent Gaussian blur trap as measured in the %s group (%s, %d "
+                      "patients). Present so the Rung 5 requirement that the trap separate "
+                      "in every vendor group can be checked from the board."
+                      % (vendor, block["corpus"], block["n_patients"])),
+        })
+    return entries
+
+
 def seed_reference_entry() -> Dict:
     """WS-3 reference method v1 seed (placeholder numbers until WS-3's real run)."""
     return {
@@ -164,12 +277,13 @@ def seed_reference_entry() -> Dict:
 
 def new_leaderboard() -> Dict:
     """Initialise the leaderboard with both seed entries (blur trap is permanent)."""
-    entries = [seed_blur_entry(), seed_reference_entry()]
+    entries = [seed_blur_entry()] + seed_vendor_trap_entries() + [seed_reference_entry()]
     return {
         "schema_version": SCHEMA_VERSION,
         "task": TASK_SPEC,
         "entries": entries,
         "trap_rank": trap_rank_report(entries),
+        "trap_rank_by_vendor": trap_rank_by_group(entries, by="vendor"),
         "spread": {},
     }
 
@@ -220,6 +334,21 @@ def blur_entry(entries: List[Dict]) -> Optional[Dict]:
     return None
 
 
+def _trap_in(entries: List[Dict]) -> Optional[Dict]:
+    """The trap governing this list: the canonical seed, else any permanent trap.
+
+    The fallback is what lets a single vendor group be checked on its own, since
+    a group holds ``seed-blur:<vendor>`` rather than ``seed-blur``.
+    """
+    exact = blur_entry(entries)
+    if exact is not None:
+        return exact
+    for e in entries:
+        if e.get("trap") and e.get("permanent"):
+            return e
+    return None
+
+
 def assert_trap_present(entries: List[Dict]) -> None:
     """The blur trap must always be on the board (Rung 1.3: it never leaves)."""
     if not any(e.get("id") == BLUR_ENTRY_ID and e.get("permanent") for e in entries):
@@ -266,7 +395,7 @@ def trap_rank_report(entries: List[Dict], *, min_ratio: Optional[float] = None) 
             "the trap cannot be ranked")
         return report
 
-    trap = blur_entry(entries)
+    trap = _trap_in(entries)
     if trap is None or not trap.get("permanent"):
         report["verdict"] = TRAP_RANK_FAIL
         report["violations"].append("permanent Gaussian blur trap missing from leaderboard")
@@ -343,6 +472,92 @@ def assert_trap_ranks_last(entries: List[Dict], *, min_ratio: Optional[float] = 
         raise ValueError("trap-rank gate: " + "; ".join(violations))
 
 
+def trap_rank_by_group(entries: List[Dict], *, by: str = "vendor",
+                       min_ratio: Optional[float] = None) -> Dict:
+    """Rung 5/6: the trap must separate **inside every group**, never averaged across.
+
+    A global rank check is weaker than what Rung 5 claims. The trap's own band
+    energy ranges over an order of magnitude between vendors (0.045 on GE to
+    0.432 on AAPM), so a board could rank the trap last overall while a single
+    vendor group had it above a real method. This checks each group on its own
+    terms and never compares a value in one group against a value in another,
+    which is the same constraint Rung 6 puts on spread.
+
+    A group holding real entries but no trap measurement is INDETERMINATE, not
+    FAIL: nothing is demonstrably wrong, the group simply cannot be certified.
+    A group with a trap and nothing to rank it against passes vacuously and says
+    so. The overall verdict is the worst across groups, FAIL over INDETERMINATE
+    over PASS.
+    """
+    groups: Dict[str, List[Dict]] = {}
+    for e in entries:
+        key = e.get(by)
+        if isinstance(key, str):
+            groups.setdefault(key, []).append(e)
+
+    report: Dict[str, Any] = {
+        "by": by,
+        "verdict": TRAP_RANK_PASS,
+        "min_ratio_required": min_ratio,
+        "n_groups": len(groups),
+        "groups": {},
+        "violations": [],
+        "note": "",
+        "checked_at": _utcnow(),
+    }
+    if not groups:
+        report["note"] = "no entry carries a %s, so there is nothing to check per group" % by
+        return report
+
+    rank = {TRAP_RANK_PASS: 0, TRAP_RANK_INDETERMINATE: 1, TRAP_RANK_FAIL: 2}
+    worst = TRAP_RANK_PASS
+    for key in sorted(groups):
+        members = groups[key]
+        if _trap_in(members) is None:
+            comparable = [e for e in members
+                          if not e.get("trap") and not e.get("placeholder")
+                          and discriminating_value(e) is not None]
+            block: Dict[str, Any] = {
+                "verdict": TRAP_RANK_INDETERMINATE if comparable else TRAP_RANK_PASS,
+                "trap_value": None,
+                "n_compared": len(comparable),
+                "min_ratio_observed": None,
+                "violations": [],
+                "note": "",
+            }
+            if comparable:
+                block["violations"].append(
+                    "no trap measured in this group, so its %d entr%s cannot be certified; "
+                    "add the trap's measurement for this %s"
+                    % (len(comparable), "y" if len(comparable) == 1 else "ies", by))
+            else:
+                block["note"] = "no trap and nothing to rank; the group makes no claim"
+            report["groups"][key] = block
+        else:
+            report["groups"][key] = trap_rank_report(members, min_ratio=min_ratio)
+
+        block = report["groups"][key]
+        for v in block["violations"]:
+            report["violations"].append("%s=%s: %s" % (by, key, v))
+        if rank[block["verdict"]] > rank[worst]:
+            worst = block["verdict"]
+
+    report["verdict"] = worst
+    checked = [k for k, b in report["groups"].items() if b["n_compared"]]
+    report["note"] = report["note"] or (
+        "%d of %d %s groups had entries to rank the trap against"
+        % (len(checked), len(groups), by))
+    return report
+
+
+def assert_trap_separates_in_every_group(entries: List[Dict], *, by: str = "vendor",
+                                         min_ratio: Optional[float] = None) -> None:
+    """Hard gate for the Rung 5/6 per-group requirement."""
+    report = trap_rank_by_group(entries, by=by, min_ratio=min_ratio)
+    if report["violations"]:
+        raise ValueError("trap-rank gate (%s): " % by + "; ".join(report["violations"]))
+
+
 def add_submission(leaderboard: Dict, result: Dict, method: str,
                    submitted_at: Optional[str] = None,
                    vendor: Optional[str] = None,
@@ -396,6 +611,7 @@ def add_submission(leaderboard: Dict, result: Dict, method: str,
     # not last is evidence, and discarding it would let the board hide a failure
     # of its own index. `assert_trap_ranks_last` is the gate for publishing.
     leaderboard["trap_rank"] = trap_rank_report(leaderboard["entries"])
+    leaderboard["trap_rank_by_vendor"] = trap_rank_by_group(leaderboard["entries"], by="vendor")
     return created
 
 
@@ -439,6 +655,12 @@ def compute_spread(entries: List[Dict], by: str = "vendor") -> Dict:
         key = e.get(by)
         if key is None or not isinstance(key, str):
             continue
+        # The permanent trap is the control a group is judged against, not a
+        # member of the population whose variability the span describes. It
+        # carries a vendor so `trap_rank_by_group` can find it; including it
+        # here would let a deliberate cheat set the span.
+        if e.get("trap"):
+            continue
         groups.setdefault(key, []).append(e)
 
     spread: Dict[str, Any] = {}
@@ -467,5 +689,6 @@ def save(board: Dict, path: str | Path) -> None:
     # Refresh the trap-rank verdict so no board is written without one. This
     # records a FAIL rather than refusing to write it: the failure is the finding.
     board["trap_rank"] = trap_rank_report(board.get("entries", []))
+    board["trap_rank_by_vendor"] = trap_rank_by_group(board.get("entries", []), by="vendor")
     Path(path).write_text(json.dumps(board, indent=2, ensure_ascii=False) + "\n",
                           encoding="utf-8")

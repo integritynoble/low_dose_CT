@@ -114,3 +114,68 @@ def test_the_trap_is_no_longer_marked_placeholder_and_carries_its_provenance():
     assert entry["vendor"] is None and entry["dose"] is None
     assert "Siemens" not in json.dumps(entry["metrics"])
     assert "AAPM" in entry["source"]["corpus"]
+
+
+# ------------------------------------------------- per-vendor traps
+
+from scoring.leaderboard import (VENDOR_TRAP_MEASUREMENTS, VENDOR_TRAP_SOURCE,  # noqa: E402
+                                 seed_vendor_trap_entries, trap_rank_by_group)
+
+VENDOR_SOURCE = REPO_ROOT / VENDOR_TRAP_SOURCE["file"]
+VENDOR_FIELDS = {"psnr_db": "psnr", "ssim": "ssim", "cnr_mean": "cnr_mean",
+                 "cho_auc_mean": "cho_auc_mean", "bander_roi": "roi_band_energy_ratio",
+                 "bander_full": "band_energy_ratio_full", "roi_tm_auc": "roi_tm_auc"}
+needs_vendor_file = pytest.mark.skipif(not VENDOR_SOURCE.exists(),
+                                       reason="WS-1_dataset/output not present beside WS-4")
+
+
+@needs_vendor_file
+def test_vendor_trap_metrics_still_match_their_source_run():
+    raw = VENDOR_SOURCE.read_bytes()
+    assert hashlib.sha256(raw).hexdigest() == VENDOR_TRAP_SOURCE["sha256"], (
+        "the cross-vendor run has changed on disk; re-read it and refresh the "
+        "per-vendor traps deliberately rather than updating this hash")
+    doc = json.loads(raw)
+    assert doc["schema"] == VENDOR_TRAP_SOURCE["schema"]
+    assert doc["updated_at"] == VENDOR_TRAP_SOURCE["generated_at"]
+    assert doc["task"]["task"] == TASK_SPEC["label"]
+    assert set(doc["agg_by_vendor"]) == set(VENDOR_TRAP_MEASUREMENTS)
+    for vendor, block in VENDOR_TRAP_MEASUREMENTS.items():
+        blur = doc["agg_by_vendor"][vendor]["blur"]
+        for field, name in VENDOR_FIELDS.items():
+            assert block["metrics"][field] == blur[name]["mean"], (vendor, field)
+        assert block["n_patients"] == blur["n_patients"]
+        assert block["separation_ratio"] == doc["separation"][vendor]["ratio_min_model_over_blur"]
+
+
+@needs_vendor_file
+def test_the_board_recomputes_the_separation_the_source_reports():
+    """The gate must not trust the file's own ratio; it recomputes and must agree."""
+    doc = json.loads(VENDOR_SOURCE.read_bytes())
+    entries = seed_vendor_trap_entries()
+    for vendor in VENDOR_TRAP_MEASUREMENTS:
+        agg = doc["agg_by_vendor"][vendor]
+        for model in doc["models"]:
+            if model == "blur":
+                continue
+            entries.append({"id": "%s-%s" % (vendor, model), "method": model, "trap": False,
+                            "placeholder": False, "vendor": vendor,
+                            "metrics": {"bander_roi": agg[model]["roi_band_energy_ratio"]["mean"]}})
+    report = trap_rank_by_group(entries, by="vendor", min_ratio=3.0)
+    assert report["verdict"] == "PASS"
+    assert doc["gate"]["verdict"] == "PASS"
+    for vendor in VENDOR_TRAP_MEASUREMENTS:
+        block = report["groups"][vendor]
+        assert block["n_compared"] == 3
+        assert block["min_ratio_observed"] == pytest.approx(
+            doc["separation"][vendor]["ratio_min_model_over_blur"], rel=1e-9), vendor
+    assert min(b["min_ratio_observed"] for b in report["groups"].values()) == pytest.approx(8.93, abs=0.01)
+    assert max(b["min_ratio_observed"] for b in report["groups"].values()) == pytest.approx(18.96, abs=0.01)
+
+
+def test_the_aapm_vendor_trap_is_the_same_measurement_as_the_canonical_trap():
+    """Two files, one run: the AAPM-real group must agree with seed_blur_entry exactly."""
+    canonical = seed_blur_entry()["metrics"]
+    aapm = VENDOR_TRAP_MEASUREMENTS["AAPM-Siemens-real"]["metrics"]
+    for field in ("psnr_db", "ssim", "cnr_mean", "cho_auc_mean", "bander_roi", "bander_full", "roi_tm_auc"):
+        assert aapm[field] == canonical[field], field

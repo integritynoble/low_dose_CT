@@ -227,3 +227,118 @@ def test_the_old_cnr_led_ranking_put_the_trap_first_on_these_numbers():
 def test_an_entry_without_the_index_sorts_below_every_entry_that_has_it():
     entries = healthy_board() + [entry("no_bander", cnr=99.0, psnr=99.0)]
     assert sort_entries(entries)[-1]["id"] == "no_bander"
+
+
+# ------------------------------------------------- per-group (Rung 5/6)
+
+from scoring import (assert_trap_separates_in_every_group,  # noqa: E402
+                     trap_rank_by_group)
+from scoring.leaderboard import VENDOR_TRAP_MEASUREMENTS  # noqa: E402
+
+#: the weakest real model in each vendor group, from
+#: aapm_lidc_cross_vendor_spread.json's `separation.min_model_roi_ber`
+MIN_MODEL = {"GE": 0.4377207350211846, "Philips": 3.192782063728278,
+             "Siemens": 1.157229319065808, "Toshiba": 1.1227839915166196,
+             "AAPM-Siemens-real": 3.853913}
+
+
+def multi_vendor_board():
+    """A seeded board plus the weakest real model in each vendor group."""
+    board = new_leaderboard()
+    for vendor, value in MIN_MODEL.items():
+        board["entries"].append({
+            "id": "sub-%s" % vendor, "method": "weakest-model", "trap": False,
+            "placeholder": False, "vendor": vendor, "dose": "0.25",
+            "metrics": {"psnr_db": 40.0, "ssim": 0.95, "bander_roi": value},
+        })
+    return board
+
+
+def test_every_vendor_group_carries_its_own_trap():
+    groups = trap_rank_by_group(new_leaderboard()["entries"], by="vendor")
+    assert set(groups["groups"]) == set(VENDOR_TRAP_MEASUREMENTS)
+    assert groups["n_groups"] == 5
+    assert groups["verdict"] == TRAP_RANK_PASS      # seeded, nothing to rank yet
+
+
+def test_multi_vendor_board_separates_in_all_five_groups():
+    board = multi_vendor_board()
+    report = trap_rank_by_group(board["entries"], by="vendor", min_ratio=3.0)
+    assert report["verdict"] == TRAP_RANK_PASS
+    assert report["violations"] == []
+    for vendor in VENDOR_TRAP_MEASUREMENTS:
+        block = report["groups"][vendor]
+        assert block["n_compared"] == 1
+        assert block["min_ratio_observed"] >= 3.0, vendor
+    assert_trap_separates_in_every_group(board["entries"], min_ratio=3.0)
+
+
+def test_the_global_check_would_wrongly_fail_a_low_band_energy_vendor():
+    """Why the per-group check is not merely a stronger global check.
+
+    The trap's own band energy spans an order of magnitude between vendors,
+    0.0452 on GE to 0.4315 on AAPM. Judging a GE submission against the AAPM
+    trap is the cross-group comparison Rung 6 forbids, and it gives the wrong
+    answer: a GE entry at 0.40 sits 8.8x above the GE trap, a clean separation,
+    while falling below the global trap and reading FAIL.
+    """
+    board = new_leaderboard()
+    board["entries"].append({
+        "id": "sub-ge", "method": "a-real-ge-model", "trap": False, "placeholder": False,
+        "vendor": "GE", "dose": "0.25",
+        "metrics": {"psnr_db": 40.0, "ssim": 0.95, "bander_roi": 0.40},
+    })
+    assert trap_rank_report(board["entries"])["verdict"] == TRAP_RANK_FAIL   # spurious
+    per_group = trap_rank_by_group(board["entries"], by="vendor", min_ratio=3.0)
+    assert per_group["verdict"] == TRAP_RANK_PASS                            # correct
+    assert per_group["groups"]["GE"]["min_ratio_observed"] > 8.0
+
+
+def test_an_entry_below_its_own_group_trap_fails_and_names_the_group():
+    board = new_leaderboard()
+    board["entries"].append({
+        "id": "sub-ge-oversmooth", "method": "oversmoother", "trap": False,
+        "placeholder": False, "vendor": "GE", "dose": "0.25",
+        "metrics": {"psnr_db": 44.0, "ssim": 0.99, "bander_roi": 0.03},
+    })
+    report = trap_rank_by_group(board["entries"], by="vendor")
+    assert report["verdict"] == TRAP_RANK_FAIL
+    assert report["groups"]["GE"]["verdict"] == TRAP_RANK_FAIL
+    assert any("vendor=GE" in v and "sub-ge-oversmooth" in v for v in report["violations"])
+    with pytest.raises(ValueError, match="trap-rank gate \\(vendor\\)"):
+        assert_trap_separates_in_every_group(board["entries"])
+
+
+def test_a_group_with_no_trap_is_indeterminate_not_pass():
+    """A vendor nobody has measured the trap on cannot be certified."""
+    board = new_leaderboard()
+    board["entries"].append({
+        "id": "sub-canon", "method": "m", "trap": False, "placeholder": False,
+        "vendor": "Canon", "dose": "0.25",
+        "metrics": {"psnr_db": 40.0, "ssim": 0.95, "bander_roi": 2.0},
+    })
+    report = trap_rank_by_group(board["entries"], by="vendor")
+    assert report["verdict"] == TRAP_RANK_INDETERMINATE
+    assert report["groups"]["Canon"]["verdict"] == TRAP_RANK_INDETERMINATE
+    assert "no trap measured in this group" in report["violations"][0]
+
+
+def test_a_failing_group_outranks_an_indeterminate_one():
+    board = new_leaderboard()
+    board["entries"] += [
+        {"id": "sub-canon", "method": "m", "trap": False, "placeholder": False,
+         "vendor": "Canon", "metrics": {"bander_roi": 2.0}},
+        {"id": "sub-ge-bad", "method": "m", "trap": False, "placeholder": False,
+         "vendor": "GE", "metrics": {"bander_roi": 0.01}},
+    ]
+    assert trap_rank_by_group(board["entries"], by="vendor")["verdict"] == TRAP_RANK_FAIL
+
+
+def test_traps_are_kept_out_of_the_spread_they_would_otherwise_set():
+    """Vendored traps carry a grouping key; the span must still be the submissions'."""
+    from scoring import compute_spread
+    board = multi_vendor_board()
+    spread = compute_spread(board["entries"], by="vendor")
+    for vendor in MIN_MODEL:
+        assert spread[vendor]["n_entries"] == 1          # the submission, not the trap
+        assert spread[vendor]["bander_roi_span"] == 0.0  # one value, no span

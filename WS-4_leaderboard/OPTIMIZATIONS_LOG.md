@@ -285,6 +285,47 @@ compare all eight metrics, so a WS-1 re-run fails the suite instead of silently 
 board's trap; they skip if WS-1 is not checked out beside WS-4. `scoring/data/leaderboard.json`
 regenerated. Suite: 83 tests, 73 passed / 10 skipped, up from 78 / 68.
 
+## P0-1e. Per-vendor trap measurements; Rung 5 separation checked from the board
+
+**Status**: implemented + tested.
+
+**Gap closed.** P0-1d left one trap entry, measured on AAPM Siemens. Rung 5 requires the trap
+to separate in *every* vendor group, and Rung 6 forbids comparing across groups, so a single
+trap could not certify a multi-vendor board; the check lived only in a WS-1 output file.
+
+**Source**: `WS-1_dataset/output/aapm_lidc_cross_vendor_spread.json`, schema
+`aapm-lidc-cross-vendor-spread/v1`, generated 2026-08-22T21:01:52, SHA-256 `c4364074…`.
+Five groups on the same task and ROI protocol: GE / Philips / Siemens / Toshiba (LIDC,
+lowdose_sim r=0.25, 2 patients each) and AAPM-Siemens-real (real QD, 4 patients). The
+AAPM group is byte-identical to `seed_blur_entry` (asserted), so the two sources agree.
+
+**Fix.** `seed_vendor_trap_entries()` adds `seed-blur:<vendor>` permanent traps to every
+fresh board (7 seeds now, was 2). `trap_rank_by_group(entries, by="vendor", min_ratio=None)`
+runs the P0-1c check inside each group and never across them; overall verdict is the worst
+group, FAIL over INDETERMINATE over PASS. A group with real entries and no trap is
+INDETERMINATE (cannot be certified), not FAIL. `compute_spread` now excludes traps, which is
+what makes it safe for a trap to carry a vendor at all. Recorded under
+`board["trap_rank_by_vendor"]` on every mutation; `assert_trap_separates_in_every_group`
+is the hard gate.
+
+**Why per-group is not merely "global but stricter".** The trap's own band energy spans an
+order of magnitude between vendors, 0.045 on GE to 0.432 on AAPM. Judging a GE submission
+against the AAPM trap is the cross-group comparison Rung 6 forbids, and it gives the wrong
+answer: a GE entry at 0.40 sits 8.8× above the GE trap and *fails* the global check. On the
+measured data GE's weakest real model (0.4377) clears the global trap (0.4315) by 1.4% while
+clearing its own trap by 9.7×. The global check is not a conservative approximation of the
+per-group one; on a multi-vendor board it is wrong in both directions. This is asserted by
+`test_the_global_check_would_wrongly_fail_a_low_band_energy_vendor`.
+
+**Cross-check.** The gate recomputes separation from the entries rather than trusting the
+file's `separation` block, and the two agree to 1e-9 in all five groups (8.93× AAPM, 9.46×
+Siemens, 9.67× GE, 12.80× Philips, 18.96× Toshiba; all ≥ 3×, matching the file's own
+`gate.verdict = PASS`).
+
+**Tests**: 7 in `test_trap_rank.py`, 3 in `test_trap_numbers.py`; one existing count
+assertion (`test_submit_accepts_paired_and_keeps_trap`) rewritten to `before + 1` so it
+tests submission rather than seeding. Suite: 93 tests, 83 passed / 10 skipped, up from 83 / 73.
+
 ## Future wiring points
 
 - **P1-3**: attach real held-out DICOM records to `HeldOutSet` at launch; referee
