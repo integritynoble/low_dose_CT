@@ -67,29 +67,30 @@ Route (a) works because the differences are **non-deterministic kernel selection
 
 > Still open regardless: the comparator applies **one absolute 1e-6 across metrics spanning five orders of magnitude** (~2e-7 relative on `cnr_mean`, ~1e-12 on `npwe_mean`). It will misfire again on the next submission even under perfect determinism. heyang has been asked to make it declare agreement per metric, and to commit `compare_full764.py`, which is not in the repo.
 
-### 2.2 ⚠️ Rung statuses — it is three of six, not one
+### 2.2 ⚠️ Rung statuses — gates now written; one question left
 
 Rung 1 is marked **done**, and its named gate is `scoring/verify.py::check_paired_submission`. Until 2026-09-04 that gate did not enforce what Rung 1 claims — it accepted a submission on a metric the blur trap *wins*. The gate now matches the claim.
 
 So the status is arguably *more* true than before. But a rung that sat at "done" against an unenforced gate is a fact about the ladder, not about one metric. The registry is a **public assertion about what has been verified**.
 
-**This has since grown.** An audit of every rung's declared gate string (verified independently on 2026-09-05) finds that **three of the six rungs marked `done` name no gate that can be exercised**:
+**Resolved in code on 2026-09-05, except one question.** The audit found three of six rungs marked `done` with no gate that could be exercised. Executable gates have since been written for all three, and I verified each one independently — every gate accepts the real WS-1 artifact and **catches a deliberately broken copy**, so none is vacuous:
 
-| Rung | Status | Declared gate | Executable? |
-|---|---|---|---|
-| 1 | done | `verify.py::check_paired_submission` + trap gates | ✅ now enforced both ways |
-| **2** | done | "WS-1 baselines dicom_pairing (run on AAPM 10)" | ❌ **no executable gate named** |
-| **3** | done | `TASK_SPEC.noise_roi_hu_band` | ⚠️ **a constant, not a callable** — nothing to exercise |
-| **4** | done | an output `.png` + `.json` + `_summary.md` | ❌ **an artifact, not a gate** |
-| 5 | done | `compute_spread`; `trap_rank_by_group` | ✅ enforced both ways |
-| 6 | done | `trap_rank_by_group` | ✅ enforced both ways |
+| Rung | Gate | Verified both ways |
+|---|---|---|
+| 1 | `verify.py::check_paired_submission` + trap gates | ✅ |
+| 2 | `gates.py::check_pairing_validation` | ✅ catches a 0.97 correlation against the 0.99 target |
+| 3 | `gates.py::check_roi_protocol` | ✅ catches a trap that is not last on ROI BandER |
+| 4 | `gates.py::check_dose_curve` | ✅ catches a trap whose knee is reported as reached |
+| 5 | `compute_spread`; `trap_rank_by_group` | ✅ |
+| 6 | `trap_rank_by_group` | ✅ |
 
-So Rung 1 was not an isolated slip — it is a pattern in how rungs were closed. A rung marked `done` against a gate that cannot be run is a claim, not a verified fact, and the registry is a **public assertion about what has been verified**.
+All six now name an executable gate in the registry, and the suite is **96 passed / 10 skipped**. Each gate also ships accept/reject probes, so any gate added later is audited automatically rather than by hand.
 
-- [ ] **For rungs 2, 3, 4:** either **write the gate**, or **record explicitly that an artifact is the gate** and say what checks it
-- [ ] **For rung 1:** re-close with a dated note recording the 2026-09-04 alignment, or leave it and record why
+**What is still yours to decide** — one question, much narrower than before:
 
-Both are defensible for any individual rung. **Silence is not.** This is the item I would put second after the deposit, because it is cheap to fix now and expensive to explain later if a reviewer or a competitor audits the ladder.
+- [ ] **Rung 1 (and by extension 2, 3, 4): re-close with a dated note, or leave the status?** These rungs were marked `done` while their gates were unenforced or unwritten. The gates now match the claims, so the statuses are more true than when they were set — but they were set before the evidence existed. Either re-close them with a dated note recording the 2026-09-05 alignment, or leave them and record why.
+
+Both are defensible. **Silence is not** — the registry is a public assertion about what has been verified. This is cheap now and expensive to explain if someone audits the ladder later.
 
 ### 2.3 🔴 Vendored third-party content — legal, not engineering
 
