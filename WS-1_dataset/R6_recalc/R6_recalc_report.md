@@ -54,18 +54,18 @@
 
 - 固定 seed 集 `42, 2023, 7, 12345, 999`，双 GPU 后台执行（GPU0 串行 blur→red_cnn→ctformer，GPU1 串行 learn→corediff），每模型一次 `--seeds 42,2023,7,12345,999`，输出 `<model>_det_full764.json`，支持断点续跑。全部 5 模型于 2026-09-03 03:49（corediff）完成。
 - **ctformer 权重修正**：on-board `ctformer_results_det_full764.json` 的 model 字段为 `ctformer_small`（由 `ctformer_small_retrain.pt` 产出），而复算指南步骤4命令写的是 `--checkpoint ctformer.pt`（标准模型）→ 首轮 psnr 差 9-13 dB。按 on-board 实际协议改用 `ctformer_small_retrain.pt` 重跑后一致（详见 §7.3）。
-- **比对方案**：`compare_full764.py` 逐 seed、逐 dose 比对 `psnr / ssim / cnr_mean / cho_auc_mean / npwe_mean / n`，容差 1e-6（同硬件 bit-identical）；on-board 目录可用 `R6_ONBOARD_RESULTS` 环境变量覆盖。
-- **比对结果**（`comparison_full764.json`，每模型 75 项检查 = 5 seeds × 3 doses × 5 指标）：
+- **比对方案**：`compare_full764.py` 逐 seed、逐 dose 比对 `psnr / ssim / cnr_mean / cho_auc_mean / npwe_mean / n`；判定容差已于 2026-09-06 按 route b 修订为**逐指标相对 1e-4**（详见 §9 节末闭环记录与指南 dated amendment），blur/learn 仍按 bit-identical 口径；on-board 目录可用 `R6_ONBOARD_RESULTS` 环境变量覆盖。
+- **比对结果**（`comparison_full764.json`，每模型 75 项检查 = 5 seeds × 3 doses × 5 指标；`overall: PASS`）：
 
 | 模型 | 状态 | 差异数 | 最大相对差异 | 判定 |
 |---|---|---|---|---|
 | blur | PASS | 0 / 75 | 0 | **bit-identical** |
 | learn | PASS | 0 / 75 | 0 | **bit-identical** |
-| red_cnn | PASS* | 45 / 75 | 6.4e-5 | GPU 非确定性数值噪声（≤1e-4） |
-| corediff | PASS* | 45 / 75 | 2.5e-5 | GPU 非确定性数值噪声（≤1e-4） |
-| ctformer (ctformer_small) | PASS* | 25 / 75 | 4.4e-7 | GPU 非确定性数值噪声（≤1e-4） |
+| red_cnn | PASS | 0 / 75* | 6.4e-5 | route b：相对 1e-4 通过 |
+| corediff | PASS | 0 / 75* | 2.5e-5 | route b：相对 1e-4 通过 |
+| ctformer (ctformer_small) | PASS | 0 / 75* | 4.4e-7 | route b：相对 1e-4 通过 |
 
-> \* red_cnn / corediff / ctformer 的差异项（psnr ~1.6e-5、cnr ~1e-4~1e-6、npwe reldiff ≤6.4e-5）经**实测定位为 GPU/cuDNN 非确定性**：同一 GPU 上两次完全相同的推理，逐像素最大差达 1.19e-7（`torch.backends.cudnn.deterministic=False` 默认非确定），累计到全量指标即产生 1e-5~1e-4 级差异。这是深度学习框架在默认配置下不可消除的数值噪声，**非数据/协议/权重不一致**。blur 与 learn 的计算路径完全确定性 → bit-identical，证明数据/源码/权重/环境全链路可精确复现。所有差异 ≤1e-4，远低于指南为硬件差异放宽的 1e-3 阈值。
+> * 差异数按现行（route b）判据——逐指标相对 1e-4——统计，超限项为 0。早期统一**绝对** 1e-6 口径下 red_cnn / corediff / ctformer 分别有 45 / 45 / 25 项超限（psnr ~1.6e-5、cnr ~1e-4~1e-6、npwe reldiff ≤6.4e-5）。route a 确定性内核重跑证明复算自身 bit-identical（重跑前后 SHA-256 完全一致），与 on-board 的残留差异为**跨环境 float 系统性偏差**而非内核非确定性；据此 2026-09-06 修订指南（dated amendment）并按逐指标相对 1e-4 判定，全部通过。blur/learn 计算路径完全确定 → bit-identical，证明数据/源码/权重/环境全链路可精确复现。证据链见 §9 节末与 `comparison_full764.json` 的 `tolerance_audit` 块。
 
 ## 5. 步骤 5 · 频域检测性复算（A3）— PASS
 
@@ -124,12 +124,12 @@
 | ② vendor 效应 permutation KW 各模型 p<0.05 且方向一致 | **PASS**（red_cnn 0.0038 / ctformer 0.0088 / learn 0.0045 / blur 0.0080，逐位一致） |
 | ③ dose 效应 exact Friedman 3/4 p≈0.0417、CTformer p≈0.1250 | **PASS**（逐位一致） |
 | 步骤 3 冒烟（blur seed42 全指标） | **PASS**（bit-identical） |
-| 步骤 4 全量 5×5 fidelity+detectability | **PASS**（blur/learn bit-identical；red_cnn/corediff/ctformer 仅 ≤1e-4 级 GPU 数值噪声，实测为 cuDNN 非确定性，非真实不一致） |
+| 步骤 4 全量 5×5 fidelity+detectability | **PASS**（blur/learn bit-identical；red_cnn/corediff/ctformer 按 2026-09-06 route b 修订的逐指标相对 1e-4 判据全部通过；残留差异为跨环境 float 系统性偏差，最差 reldiff 6.4e-5） |
 
 **总体判定：PASS（一致，可复现）**。
 
 - **全部 3 项手稿声明在独立复算下逐位复现**（分离度、vendor KW p、dose Friedman p 均与手稿一致）。
-- 步骤 4 的 5 模型 × 5 seeds 全量 fidelity+detectability 与 on-board 一致：blur、learn **bit-identical**（0/75 差异），red_cnn、corediff、ctformer 差异全部 ≤1e-4 相对水平——经同机两次相同推理实测（逐像素差 1.19e-7）定位为 GPU/cuDNN 非确定性数值噪声，**无需定位的差异项**。
+- 步骤 4 的 5 模型 × 5 seeds 全量 fidelity+detectability 与 on-board 一致：blur、learn **bit-identical**（0/75 差异）；red_cnn、corediff、ctformer 经 2026-09-06 route b 修订的逐指标相对 1e-4 判据全部 **PASS**（机器 `overall: PASS`）。route a 确定性内核重跑（重跑前后 SHA-256 完全一致）证明复算自身 bit-identical，与 on-board 的残留差异为跨环境 float 系统性偏差（最差 reldiff 6.4e-5），**无真实不一致项**。
 - 复算中定位并修复的两处数据/协议问题（LIDC 频域 ld 数据源、ctformer 权重与指南不一致）均属**复算方或作者资产的自身修正项**，修复后全部一致，不构成 FAIL。
 
 **对作者的反馈建议**：① 指南步骤4 的 ctformer 命令应改为 `--checkpoint ctformer_small_retrain.pt`（on-board 结果实际由 ctformer_small 产出）；② ASSET_MANIFEST.md 的 SHA256 栏为空占位，建议补填以便校验。
@@ -205,6 +205,13 @@
 是同一种事后追认，只是更不可见。
 
 复现：`python3 R6_recalc/tolerance_audit.py`（加 `--write` 写回审计块）。
+
+**route (b) 闭环（2026-09-06）**：上节两条路线均已执行，结论如下。
+
+- **route (a) 执行结果**：确定性内核重跑 red_cnn / corediff / ctformer（`CUBLAS_WORKSPACE_CONFIG` + `cudnn.deterministic` + `use_deterministic_algorithms`）全部落盘后重跑比对，`comparison_full764.json` 在绝对 1e-6 口径下**仍 FAIL**（red_cnn 45 / ctformer 25 / corediff 45 项超限）；核验 det 新结果与 route a 前旧复算 SHA-256 **完全一致**。结论：差异**不是内核非确定性**，而是复算环境与 on-board 间的系统性 float 偏差——route (a) 无法在不改变判据的前提下闭环。
+- **route (b) 执行（作者选定）**：指南写入 dated amendment（2026-09-06），GPU 推理路径按**逐指标相对 1e-4** 比对并记录原因；`compare_full764.py` 判定改为相对 1e-4（保留绝对下界防除零），重跑后五模型全 PASS、`overall: PASS`。
+- **同步与审计**：新 `comparison_full764.json`（含相对判据元信息 `tolerance_kind` / `criterion_note`）及更新后的 `compare_full764.py` 已同步入仓库；`tolerance_audit.py --write` 重写审计块，记录 route b 判据、route a 证据链与闭环结论。
+- **本报告相应更新**：§4 表格与脚注、§8 结论已按 route b 判据改写；论文侧需在方法/复现章节说明修订后的容差口径并引用 SHA 证据链（已在 HEYANG_NEXT_STEPS.md §A 勾选并留待投稿前核对论文正文）。
 
 ---
 

@@ -41,23 +41,15 @@ Verified against a clean checkout on 2026-09-04.
 
 ## A. The R6 re-run — **as soon as the route is picked**
 
-If **route (a), deterministic re-run** (the recommendation):
+**DONE — closed 2026-09-06 via route (b).**
 
-```python
-torch.backends.cudnn.deterministic = True
-torch.backends.cudnn.benchmark = False
-torch.use_deterministic_algorithms(True)
-```
-
-- [ ] Re-run step 4 for `red_cnn`, `corediff`, `ctformer` (blur and learn are already bit-identical)
-- [ ] Regenerate `comparison_full764.json` — expect `absdiff == 0` and `overall: PASS`
-- [ ] Re-run `python3 R6_recalc/tolerance_audit.py --write` so the audit block reflects the new run
-
-If **route (b)**: write the dated guide amendment first, then re-run the comparison against the declared relative criterion.
-
-**Either way** — fix the comparator to declare agreement **per metric in that metric's own units**. One absolute 1e-6 is ~2e-7 relative on `cnr_mean` and ~1e-12 on `npwe_mean`; it will misfire again on the next submission even under perfect determinism.
-
-> `compare_full764.py` is **not committed** — only its output is. Please commit it with this change, the same way `analysis/bootstrap_lidc_sim.py` now is. An artifact whose generator is missing cannot be re-derived.
+- [x] Route (a) run to completion for `red_cnn` / `corediff` / `ctformer` with deterministic kernels. Verdict: re-runs are **bit-identical to the earlier recalc** (SHA-256 unchanged), so determinism does NOT remove the differences vs on-board → route (a) cannot close the absolute-1e-6 FAIL.
+- [x] Route (b) selected by heyang. Dated guide amendment written into `R6独立复算操作指南.md` (2026-09-06): GPU inference paths compare at **per-metric RELATIVE 1e-4**, with the *why* recorded (cross-environment float bias, worst reldiff 6.4e-5; an absolute 1e-6 is ~1e-12 relative on `npwe_mean` and is not reproducible across GPU environments).
+- [x] Comparator fixed to declare agreement **per metric in that metric's own units**: `compare_full764.py` now judges on relative 1e-4 (blur/learn remain bit-identical).
+- [x] Regenerated `comparison_full764.json` → `overall: PASS`, all five models PASS.
+- [x] Re-ran `python3 R6_recalc/tolerance_audit.py --write`; the audit block was rewritten to record the route-b criterion, the route-a SHA evidence chain and the resolution.
+- [x] `compare_full764.py` committed with this change (it was previously uncommitted — an artifact whose generator is missing cannot be re-derived).
+- [ ] Before submission: state the amended criterion + SHA evidence chain in the manuscript (report §4/§8 tables and the §9 close-out are already updated).
 
 ---
 
