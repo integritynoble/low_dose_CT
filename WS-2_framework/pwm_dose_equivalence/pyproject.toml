@@ -28,8 +28,13 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-test = ["pytest>=7", "pytest-cov>=4"]
-lint = ["ruff>=0.5", "mypy>=1.8"]
+test = ["pytest>=7", "pytest-cov>=4", "jsonschema>=4"]
+# ruff is pinned to a compatible release, not floored. An open `>=` floor made
+# CI's verdict a property of the day rather than of the tree: the same commit
+# reported 7 findings under ruff 0.16.6 and 19 under 0.5.7, because the rule
+# set moves between minor versions. Bump this deliberately, with the findings
+# the new version brings fixed in the same change.
+lint = ["ruff~=0.16.6", "mypy>=1.8"]
 
 [project.scripts]
 pwm-audit = "pwm_dose_equivalence.cli:main"
@@ -67,4 +72,21 @@ files = ["src/pwm_dose_equivalence"]
 
 [[tool.mypy.overrides]]
 module = "scipy.*"
+ignore_missing_imports = true
+
+# numpy's published stubs use PEP 695 `type` statements, which mypy will only
+# parse when python_version is 3.12 or later. This package still declares and
+# tests 3.10, so raising python_version to satisfy the stubs would stop mypy
+# checking the version range CI actually runs. Skipping the stubs keeps the
+# 3.10 target honest at the cost of numpy expressions typing as Any. Revisit
+# when the floor moves to 3.12: delete this block rather than keeping it.
+# "numpy.*" alone does not match the top-level `numpy` module, and
+# numpy/__init__.pyi is exactly where the unparseable statement is, so both
+# patterns are needed.
+[[tool.mypy.overrides]]
+module = ["numpy", "numpy.*"]
+follow_imports = "skip"
+# follow_imports does not apply to .pyi files unless this is set, and the
+# unparseable statement is in a stub, so without it the skip has no effect.
+follow_imports_for_stubs = true
 ignore_missing_imports = true
