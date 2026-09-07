@@ -70,8 +70,11 @@ strict = true
 python_version = "3.10"
 files = ["src/pwm_dose_equivalence"]
 
+# Both patterns, for the reason spelled out in the numpy block below:
+# "scipy.*" does not match the top-level `scipy` module. Latent rather than
+# broken today, since the code imports scipy.stats, but the same shape.
 [[tool.mypy.overrides]]
-module = "scipy.*"
+module = ["scipy", "scipy.*"]
 ignore_missing_imports = true
 
 # numpy's published stubs use PEP 695 `type` statements, which mypy will only
