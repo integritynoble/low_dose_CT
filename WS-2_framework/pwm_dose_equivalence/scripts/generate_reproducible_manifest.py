@@ -50,7 +50,8 @@ REPRODUCE_COMMANDS = [
     "cd pwm_dose_equivalence && pytest -q            # 140/140 tests",
     "cd pwm_dose_equivalence && python examples/regenerate.py   # re-issue examples",
     "cd pwm_dose_equivalence && python scripts/generate_reproducible_manifest.py",
-    "cd experiments/cross_modality_consistency && python cross_modality_consistency.py  # 6-credential demo (seed=42)",
+    "cd experiments/cross_modality_consistency && python cross_modality_consistency.py"
+    "  # 6-credential demo (seed=42)",
 ]
 
 
@@ -69,10 +70,13 @@ def main() -> int:
     # Framework hash from the library itself (content-addressed L2 spec).
     sys.path.insert(0, str(PACKAGE_ROOT / "src"))
     try:
-        from pwm_dose_equivalence.framework_hash import framework_hash
         from pwm_dose_equivalence.credential_schema import CREDENTIAL_JSON_SCHEMA
+        from pwm_dose_equivalence.framework_hash import framework_hash
     except ImportError:
-        print("error: run from WS-2_framework root or with pwm_dose_equivalence installed", file=sys.stderr)
+        print(
+            "error: run from WS-2_framework root or with pwm_dose_equivalence installed",
+            file=sys.stderr,
+        )
         return 2
 
     schema_version = CREDENTIAL_JSON_SCHEMA.get("$id", "unknown")

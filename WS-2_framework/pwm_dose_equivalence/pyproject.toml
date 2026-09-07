@@ -29,7 +29,12 @@ dependencies = [
 
 [project.optional-dependencies]
 test = ["pytest>=7", "pytest-cov>=4"]
-lint = ["ruff>=0.5", "mypy>=1.8"]
+# ruff is pinned to a compatible release, not floored. An open `>=` floor made
+# CI's verdict a property of the day rather than of the tree: the same commit
+# reported 7 findings under ruff 0.16.6 and 19 under 0.5.7, because the rule
+# set moves between minor versions. Bump this deliberately, with the findings
+# the new version brings fixed in the same change.
+lint = ["ruff~=0.16.6", "mypy>=1.8"]
 
 [project.scripts]
 pwm-audit = "pwm_dose_equivalence.cli:main"
