@@ -17,6 +17,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
@@ -66,6 +67,21 @@ def sha256_of(relpath: str) -> str:
     return f"sha256:{h.hexdigest()}"
 
 
+def _generated_at_utc() -> str:
+    """The manifest's timestamp: SOURCE_DATE_EPOCH when set, else the clock.
+
+    Honouring SOURCE_DATE_EPOCH is what lets a regeneration be compared against
+    a committed manifest byte for byte. Without it the stamp differs on every
+    run, so the drift check has to exclude the field and stops guarding it --
+    which is how a stale manifest could hide. The convention is the one from
+    reproducible-builds.org, so other tooling reads it the same way.
+    """
+    epoch = os.environ.get("SOURCE_DATE_EPOCH")
+    if epoch:
+        return datetime.fromtimestamp(int(epoch), timezone.utc).isoformat(timespec="seconds")
+    return datetime.now(timezone.utc).isoformat(timespec="seconds")
+
+
 def main() -> int:
     # Framework hash from the library itself (content-addressed L2 spec).
     sys.path.insert(0, str(PACKAGE_ROOT / "src"))
@@ -86,7 +102,7 @@ def main() -> int:
 
     manifest = {
         "schema_version": "pwm-reproducible-artifact/v0.1",
-        "generated_at_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        "generated_at_utc": _generated_at_utc(),
         "library": {
             "name": "pwm_dose_equivalence",
             "version": "0.2.2",
