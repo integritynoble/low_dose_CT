@@ -253,12 +253,26 @@ def source_identity() -> dict[str, Any]:
 
 
 def runtime_versions() -> dict[str, str | None]:
+    """Record the versions the packet must carry.
+
+    Distribution metadata is the primary source, but it only exists when the
+    package was installed. A dependency put on ``PYTHONPATH`` instead — which is
+    how a host without ``pip`` has to do it — is importable yet has no metadata,
+    and recording ``None`` there would leave the evidence packet incomplete for
+    a run that was otherwise fine. So fall back to the module's own
+    ``__version__`` before giving up.
+    """
     out: dict[str, str | None] = {"python": platform.python_version(), "platform": platform.platform()}
     from importlib.metadata import PackageNotFoundError, version
     for mod in ("numpy", "scipy", "nibabel", "jsonschema", "pwm_dose_equivalence"):
         try:
             out[mod] = version(mod)
+            continue
         except PackageNotFoundError:
+            pass
+        try:                                        # importable but not installed
+            out[mod] = getattr(importlib.import_module(mod), "__version__", None)
+        except ImportError:                         # genuinely absent
             out[mod] = None
     return out
 
