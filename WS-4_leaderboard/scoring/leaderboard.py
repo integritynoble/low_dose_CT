@@ -126,6 +126,63 @@ def assert_trap_present(entries: List[Dict]) -> None:
         raise ValueError("permanent Gaussian blur trap missing from leaderboard")
 
 
+TRAP_MIN_SEPARATION = 3.0  # Rung 5/6 declared minimum; measured blur separation 8.9-19.0x
+
+
+def assert_trap_ranks_last(entries: List[Dict], metric: str = "bander_roi",
+                           by: str = "vendor",
+                           min_separation: float = TRAP_MIN_SEPARATION) -> None:
+    """Refuse a board where the permanent blur trap does not rank last on ``metric``.
+
+    The trap is a method-level construct (``vendor``/``dose`` are None), so it belongs
+    to no group; each non-empty group's members are therefore compared against the
+    single trap value. Every member of every group must carry ``metric`` and exceed
+    the trap by at least ``min_separation`` (the ``>=3x`` ratio enforced throughout
+    Rungs 5/6). A board with no groups (seed placeholders) has nothing to check and
+    passes. A board with groups but a trap whose ``metric`` is not a number is refused:
+    a trap that has not been refreshed cannot prove it ranks last.
+
+    Raises ``ValueError`` naming the offending entry and group. Grouping is by the
+    given context key (``vendor`` or ``dose``); call once per dimension to enforce both.
+    """
+    assert_trap_present(entries)
+    trap = blur_entry(entries)
+    assert trap is not None
+
+    groups: Dict[str, List[Dict]] = {}
+    for e in entries:
+        key = e.get(by)
+        if key is None or e.get("id") == BLUR_ENTRY_ID:
+            continue
+        groups.setdefault(str(key), []).append(e)
+
+    if not groups:
+        return  # nothing to rank: seed board or no measured submissions
+
+    trap_val = trap.get("metrics", {}).get(metric)
+    if not isinstance(trap_val, (int, float)):
+        raise ValueError(
+            f"trap has no numeric {metric}; refresh the trap before ranking "
+            f"it against {len(groups)} group(s)")
+
+    for key in sorted(groups):
+        for m in groups[key]:
+            v = m.get("metrics", {}).get(metric)
+            if not isinstance(v, (int, float)):
+                raise ValueError(
+                    f"{m.get('id')}: no numeric {metric}; cannot verify trap-last "
+                    f"in group '{key}'")
+            if v <= trap_val:
+                raise ValueError(
+                    f"{m.get('id')} in group '{key}': {metric}={v:g} <= trap "
+                    f"{trap_val:g}; the blur trap does not rank last")
+            if trap_val > 0 and v < trap_val * min_separation:
+                raise ValueError(
+                    f"{m.get('id')} in group '{key}': {metric}={v:g} is only "
+                    f"{v / trap_val:.2f}x the trap ({trap_val:g}); below the "
+                    f"declared >= {min_separation:g}x separation")
+
+
 def add_submission(leaderboard: Dict, result: Dict, method: str,
                    submitted_at: Optional[str] = None,
                    vendor: Optional[str] = None,
@@ -243,5 +300,9 @@ def load(path: str | Path) -> Dict:
 
 def save(board: Dict, path: str | Path) -> None:
     assert_trap_present(board.get("entries", []))
+    # Rung 5/6 gate: a board whose blur trap is not last (or cannot prove it is
+    # last) on BandER within a vendor group must never be persisted. Seed boards
+    # have no vendor groups and pass unchanged.
+    assert_trap_ranks_last(board.get("entries", []), by="vendor")
     Path(path).write_text(json.dumps(board, indent=2, ensure_ascii=False) + "\n",
                           encoding="utf-8")

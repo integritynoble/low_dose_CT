@@ -67,6 +67,8 @@ pip install -e .[dev,torch]
 pytest
 ```
 
+From the repository root the equivalent editable install is `pip install -e WS-1_dataset/pwm_ldct_loader` — the standard way to install a `src/`-layout package and the prerequisite for the loader test suite (25 passed; without the install the outer directory shadows the package and collection fails with `No module named pwm_ldct_loader.schema`).
+
 The test suite builds a tiny synthetic conformant tree and asserts the schema invariants, the
 sample contract, split determinism, annotation consolidation, and `validate()` behavior — no
 network or real data required.

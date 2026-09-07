@@ -30,8 +30,8 @@ Verified against a clean checkout on 2026-09-04.
 | Task | Runs from a clean clone? | Needs |
 |---|---|---|
 | **A.** R6 re-run | ❌ | **Your machine only.** Checkpoints are gitignored (`*.pt`), and the LIDC/AAPM trees live on your `D:\ZHY\...` paths. Nobody else can reproduce this without your assets — which is exactly why `ASSET_MANIFEST.md` matters. |
-| **B.** Patient-level bootstrap | ⚠️ partly | The bootstrap script itself runs anywhere (numpy + the 5 committed `*_det_full764.json`). But emitting `patient_id` means re-running `eval.py` over the data → your machine. |
-| **C.** Trap-rank gate | ✅ | Nothing. `WS-4_leaderboard/scoring/` is **stdlib-only** (no numpy, no torch). `python3 -m pytest scoring/tests` → 55 passed / 10 skipped. |
+| **B.** Patient-level bootstrap | ⚠️ code done (2026-09-06) | Code complete: `PairedSlices` carries `patient_id`, `eval.py` per_slice emits it, `bootstrap_lidc_sim.py --unit patient` does block bootstrap (slice behaviour unchanged; `.bak` kept). Remaining: re-run `eval.py` on your machine to regenerate the 5 `*_det_full764.json` with `patient_id`, then bootstrap reports both units. |
+| **C.** Trap-rank gate | ✅ | **Done 2026-09-06.** `assert_trap_ranks_last` (trap last on `bander_roi` in every vendor group, ≥3× separation) + 12 bidirectional tests; enforced at `save()`. `scoring/tests` → **77 passed**. |
 | **D.** Consistency items | ✅ | Repo only, except the 5-vs-8 dose-track recalculation, which needs your data. |
 | **E.** WS-2 prose | ✅ | LaTeX (`compile_manuscript.bat` is already in the repo). |
 
@@ -57,9 +57,9 @@ Verified against a clean checkout on 2026-09-04.
 
 The corrected slice-level bootstrap covers **slice-sampling uncertainty only**. Slices within a patient are correlated, so even the corrected CI is optimistic about inter-patient heterogeneity. The blocker is that the committed result JSONs carry no slice → patient map.
 
-- [ ] Emit `patient_id` per slice in `eval.py` alongside the existing `per_slice` arrays
-- [ ] Add `--unit patient` to `WS-1_dataset/analysis/bootstrap_lidc_sim.py`
-- [ ] Report both units; the AAPM arm already has its patient-level bootstrap
+- [x] Emit `patient_id` per slice in `eval.py` alongside the existing `per_slice` arrays — code done 2026-09-06; JSON regeneration pending data-machine rerun
+- [x] Add `--unit patient` to `WS-1_dataset/analysis/bootstrap_lidc_sim.py` — done 2026-09-06 (slice mode byte-identical to previous)
+- [ ] Report both units; the AAPM arm already has its patient-level bootstrap (needs the regenerated JSONs first)
 
 Cheapest remaining strengthening of the simulated arm.
 
@@ -75,11 +75,13 @@ Requiring `bander_roi` fixed **which numbers** a submission must carry. It did n
 
 So a board where the blur outranks a real method on BandER is accepted silently today.
 
-- [ ] `assert_trap_ranks_last(entries, metric="bander_roi", by=vendor|dose)` — refuse a board where the trap is not last in **every** group
-- [ ] Enforce the declared separation ratio (the ≥3× used throughout Rungs 5/6)
-- [ ] Test in **both** directions: a compliant board passes, a board with the trap ranked above a method is refused
+- [x] `assert_trap_ranks_last(entries, metric="bander_roi", by=vendor|dose)` — refuse a board where the trap is not last in **every** group
+- [x] Enforce the declared separation ratio (the ≥3× used throughout Rungs 5/6)
+- [x] Test in **both** directions: a compliant board passes, a board with the trap ranked above a method is refused
 
 > A gate that only ever refuses passes its own test suite and fails the project. Prove it opens.
+
+**DONE 2026-09-06.** `scoring/leaderboard.py` now has `assert_trap_ranks_last` + `TRAP_MIN_SEPARATION = 3.0`; `save()` refuses a persisted board whose trap is not last (or cannot prove it is last) on `bander_roi` within any vendor group. `scoring/tests/test_trap_rank_gate.py` adds 12 bidirectional cases (pass: clean groups / no groups; refuse: trap above a method, <3× separation, unrefreshed trap, missing member metric, per-dose grouping). `scoring/tests` → **77 passed**.
 
 ---
 

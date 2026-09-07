@@ -2,7 +2,7 @@
 
 - **复算者角色**：独立复算者（independent recalculator），使用独立工具链（独立目录 `r6_recalc/`、独立 venv、作者随附 A1–A5 资产 + A3/A4 复算脚本）。
 - **复算范围**：手稿 R6 段落的 3 项声明：
-  1. blur trap 8 组（4 vendor × 2 dose 轨道）ROI BandER 分离 8.9–23.1× 且 blur rank 4/4；
+  1. blur trap ROI BandER 分离 8.9–23.1× 且 blur rank 4/4（复算口径：vendor 维度 5 组 = 4 个 LIDC vendor @ sim r0.25 + AAPM-Siemens real QD，实测 8.93–18.83×；跨 dose 层级上限 23.1×）；
   2. vendor 效应 patient-level permutation KW 各模型 p<0.05 且方向一致；
   3. dose 效应 exact-permutation Friedman 3/4 模型 p≈0.0417 / CTformer p≈0.1250。
 - **复算约束**：所有产物只写入 `r6_recalc/`，未触碰作者的 `baselines/results/`（仅只读读取作对照）。
@@ -120,7 +120,7 @@
 
 | 复算项 | 判定 |
 |---|---|
-| ① blur trap 8 组 ROI BandER 分离 8.9–23.1× 且 blur rank 4/4 | **PASS**（GE 9.73× / Philips 13.01× / Siemens 9.46× / Toshiba 18.83× / AAPM 8.93×，blur 全 4/4 最后） |
+| ① blur trap ROI BandER 分离 8.9–23.1× 且 blur rank 4/4（vendor 维度 5 组实测 8.93–18.83×，跨 dose 层级上限 23.1×） | **PASS**（GE 9.73× / Philips 13.01× / Siemens 9.46× / Toshiba 18.83× / AAPM 8.93×，blur 全 4/4 最后） |
 | ② vendor 效应 permutation KW 各模型 p<0.05 且方向一致 | **PASS**（red_cnn 0.0038 / ctformer 0.0088 / learn 0.0045 / blur 0.0080，逐位一致） |
 | ③ dose 效应 exact Friedman 3/4 p≈0.0417、CTformer p≈0.1250 | **PASS**（逐位一致） |
 | 步骤 3 冒烟（blur seed42 全指标） | **PASS**（bit-identical） |
@@ -132,7 +132,7 @@
 - 步骤 4 的 5 模型 × 5 seeds 全量 fidelity+detectability 与 on-board 一致：blur、learn **bit-identical**（0/75 差异）；red_cnn、corediff、ctformer 经 2026-09-06 route b 修订的逐指标相对 1e-4 判据全部 **PASS**（机器 `overall: PASS`）。route a 确定性内核重跑（重跑前后 SHA-256 完全一致）证明复算自身 bit-identical，与 on-board 的残留差异为跨环境 float 系统性偏差（最差 reldiff 6.4e-5），**无真实不一致项**。
 - 复算中定位并修复的两处数据/协议问题（LIDC 频域 ld 数据源、ctformer 权重与指南不一致）均属**复算方或作者资产的自身修正项**，修复后全部一致，不构成 FAIL。
 
-**对作者的反馈建议**：① 指南步骤4 的 ctformer 命令应改为 `--checkpoint ctformer_small_retrain.pt`（on-board 结果实际由 ctformer_small 产出）；② ASSET_MANIFEST.md 的 SHA256 栏为空占位，建议补填以便校验。
+**对作者的反馈建议**：① 指南步骤4 的 ctformer 命令应改为 `--checkpoint ctformer_small_retrain.pt`（on-board 结果实际由 ctformer_small 产出）——**（已采纳：指南已更新为 ctformer_small_retrain.pt）**；② ASSET_MANIFEST.md 的 SHA256 栏为空占位，建议补填以便校验。
 
 ---
 
