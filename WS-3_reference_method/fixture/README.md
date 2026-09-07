@@ -51,7 +51,7 @@ doesn't verify, or the metadata isn't schema-valid. What it builds (default):
 ## Tests
 
 ```
-cd fixture && PYTHONPATH=. ../../.venv/bin/python -m pytest -q   # 11 passed
+cd fixture && PYTHONPATH=. ../../.venv/bin/python -m pytest -q   # 14 passed
 ```
 
 Covers the NIfTI round-trip, full-build green report, directory structure,
