@@ -89,3 +89,40 @@ def test_refuses_a_non_empty_output_directory(tmp_path):
     (tmp_path / "x").write_text("occupied")
     with pytest.raises(SystemExit):
         dv.run_demo(tmp_path, seed=1, log=lambda *a, **k: None)
+
+
+def test_runtime_versions_falls_back_when_a_dependency_is_not_installed(monkeypatch):
+    """A dependency on PYTHONPATH is importable but carries no distribution metadata.
+
+    A host without ``pip`` can only supply dependencies that way, and before this
+    fallback the packet recorded ``None`` for them, leaving the evidence packet
+    incomplete for a run that was otherwise fine. Metadata still wins where it exists.
+    """
+    import importlib.metadata as md
+
+    import pwm_dose_equivalence
+
+    real_version = md.version
+
+    def no_metadata(name):
+        if name == "pwm_dose_equivalence":
+            raise md.PackageNotFoundError(name)
+        return real_version(name)
+
+    monkeypatch.setattr(md, "version", no_metadata)
+
+    out = dv.runtime_versions()
+    assert out["pwm_dose_equivalence"] == pwm_dose_equivalence.__version__
+    assert out["numpy"], "metadata must still be preferred where it exists"
+
+
+def test_runtime_versions_records_none_for_a_genuinely_absent_module(monkeypatch):
+    """Absent is still absent: the fallback must not invent a version."""
+    import importlib.metadata as md
+
+    monkeypatch.setattr(md, "version", lambda name: (_ for _ in ()).throw(md.PackageNotFoundError(name)))
+    monkeypatch.setattr(dv.importlib, "import_module", lambda name: (_ for _ in ()).throw(ImportError(name)))
+
+    out = dv.runtime_versions()
+    assert out["numpy"] is None and out["pwm_dose_equivalence"] is None
+    assert out["python"], "python and platform are not looked up this way"
