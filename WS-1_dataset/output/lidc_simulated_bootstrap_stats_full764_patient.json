@@ -1,0 +1,308 @@
+{
+  "rose": 3.0,
+  "doses": [
+    "sim_r010",
+    "sim_r025",
+    "sim_r050"
+  ],
+  "pooling": "distinct",
+  "n_per_dose": 764,
+  "B": 4000,
+  "seed": 20260831,
+  "seed_grid_is_degenerate": true,
+  "note": "Patient-level block bootstrap: patients are drawn with replacement and every slice of a drawn patient enters the resampled pool (blocks = patients), characterising inter-patient heterogeneity. Requires per_slice.patient_id emitted by the \u00a7B eval.py; pooling is fixed to distinct. unit=slice remains the published slice-level bootstrap.",
+  "models": {
+    "blur": {
+      "use_median": false,
+      "n_per_dose": 764,
+      "n_distinct_slices": 764,
+      "seeds_identical": true,
+      "observed_rep_cnr": {
+        "sim_r010": 5.74552887334026,
+        "sim_r025": 9.383903757497647,
+        "sim_r050": 13.04470551337729
+      },
+      "observed_knee": 0.1,
+      "observed_kind": "below_r010",
+      "knee_95ci": [
+        0.1,
+        0.1
+      ],
+      "draw_kinds": {
+        "below_r010": 3839,
+        "interp": 161,
+        "not_reached": 0,
+        "nan": 0
+      },
+      "per_dose_rep_95ci": {
+        "sim_r010": [
+          2.832816320773323,
+          8.405142456036463
+        ],
+        "sim_r025": [
+          4.489391831077218,
+          13.725947964793107
+        ],
+        "sim_r050": [
+          6.29350064113187,
+          18.738889459155807
+        ]
+      }
+    },
+    "corediff": {
+      "use_median": false,
+      "n_per_dose": 764,
+      "n_distinct_slices": 764,
+      "seeds_identical": true,
+      "observed_rep_cnr": {
+        "sim_r010": 5.34298422953716,
+        "sim_r025": 8.431432364856756,
+        "sim_r050": 11.540357159171828
+      },
+      "observed_knee": 0.1,
+      "observed_kind": "below_r010",
+      "knee_95ci": [
+        0.1,
+        0.1
+      ],
+      "draw_kinds": {
+        "below_r010": 3852,
+        "interp": 148,
+        "not_reached": 0,
+        "nan": 0
+      },
+      "per_dose_rep_95ci": {
+        "sim_r010": [
+          2.6962089119644914,
+          7.637796424219213
+        ],
+        "sim_r025": [
+          4.331297904099527,
+          12.03495059561796
+        ],
+        "sim_r050": [
+          5.930747050718349,
+          16.3613081198585
+        ]
+      }
+    },
+    "ctformer_small": {
+      "use_median": false,
+      "n_per_dose": 764,
+      "n_distinct_slices": 764,
+      "seeds_identical": true,
+      "observed_rep_cnr": {
+        "sim_r010": 2.5744348619575876,
+        "sim_r025": 4.608439708189747,
+        "sim_r050": 6.856918740853339
+      },
+      "observed_knee": 0.13138378496226838,
+      "observed_kind": "interp",
+      "knee_95ci": [
+        0.1,
+        0.2875809356798359
+      ],
+      "draw_kinds": {
+        "below_r010": 1033,
+        "interp": 2967,
+        "not_reached": 0,
+        "nan": 0
+      },
+      "per_dose_rep_95ci": {
+        "sim_r010": [
+          1.027972723896829,
+          3.8379703916115697
+        ],
+        "sim_r025": [
+          2.037057960372625,
+          6.407873447507838
+        ],
+        "sim_r050": [
+          3.351886132203462,
+          8.61904193909713
+        ]
+      }
+    },
+    "learn": {
+      "use_median": true,
+      "n_per_dose": 764,
+      "n_distinct_slices": 764,
+      "seeds_identical": true,
+      "observed_rep_cnr": {
+        "sim_r010": 6.491361896080218,
+        "sim_r025": 12.212371871616991,
+        "sim_r050": 21.6212450739891
+      },
+      "observed_knee": 0.1,
+      "observed_kind": "below_r010",
+      "knee_95ci": [
+        0.1,
+        0.1
+      ],
+      "draw_kinds": {
+        "below_r010": 3851,
+        "interp": 149,
+        "not_reached": 0,
+        "nan": 0
+      },
+      "per_dose_rep_95ci": {
+        "sim_r010": [
+          2.523693859737775,
+          11.840879476347682
+        ],
+        "sim_r025": [
+          4.988907799745563,
+          25.541255824167028
+        ],
+        "sim_r050": [
+          7.883212666572927,
+          48.28518695948017
+        ]
+      }
+    },
+    "red_cnn": {
+      "use_median": false,
+      "n_per_dose": 764,
+      "n_distinct_slices": 764,
+      "seeds_identical": true,
+      "observed_rep_cnr": {
+        "sim_r010": 5.1919247308056855,
+        "sim_r025": 8.052347933038154,
+        "sim_r050": 10.970394471729882
+      },
+      "observed_knee": 0.1,
+      "observed_kind": "below_r010",
+      "knee_95ci": [
+        0.1,
+        0.1
+      ],
+      "draw_kinds": {
+        "below_r010": 3852,
+        "interp": 148,
+        "not_reached": 0,
+        "nan": 0
+      },
+      "per_dose_rep_95ci": {
+        "sim_r010": [
+          2.661472143474933,
+          7.364310504208721
+        ],
+        "sim_r025": [
+          4.150140684929196,
+          11.45810635720637
+        ],
+        "sim_r050": [
+          5.575112522236197,
+          15.42886605846025
+        ]
+      }
+    }
+  },
+  "separation_blur_vs_model": {
+    "blur_vs_corediff": {
+      "sim_r010": {
+        "observed_ratio": 1.0753407883140935,
+        "ci95": [
+          1.050613232499694,
+          1.1004669395722593
+        ],
+        "n_pairs": 764
+      },
+      "sim_r025": {
+        "observed_ratio": 1.1129667358313766,
+        "ci95": [
+          1.0365003586634058,
+          1.1405072131987692
+        ],
+        "n_pairs": 764
+      },
+      "sim_r050": {
+        "observed_ratio": 1.1303554416433172,
+        "ci95": [
+          1.0611649067666076,
+          1.145317313376155
+        ],
+        "n_pairs": 764
+      }
+    },
+    "blur_vs_ctformer_small": {
+      "sim_r010": {
+        "observed_ratio": 2.2317631563501235,
+        "ci95": [
+          2.1102092270055044,
+          2.7557310178763403
+        ],
+        "n_pairs": 764
+      },
+      "sim_r025": {
+        "observed_ratio": 2.036243143383504,
+        "ci95": [
+          1.8412245041124535,
+          2.203860625672136
+        ],
+        "n_pairs": 764
+      },
+      "sim_r050": {
+        "observed_ratio": 1.9024150651891618,
+        "ci95": [
+          1.6238633791555577,
+          2.1741267291151805
+        ],
+        "n_pairs": 764
+      }
+    },
+    "blur_vs_learn": {
+      "sim_r010": {
+        "observed_ratio": 0.8851037679488604,
+        "ci95": [
+          0.7098410614537416,
+          1.1502737905215612
+        ],
+        "n_pairs": 764
+      },
+      "sim_r025": {
+        "observed_ratio": 0.7683932209194316,
+        "ci95": [
+          0.5374030180538607,
+          0.921204146579948
+        ],
+        "n_pairs": 764
+      },
+      "sim_r050": {
+        "observed_ratio": 0.6033281371511022,
+        "ci95": [
+          0.3880877477989483,
+          0.7996979101907765
+        ],
+        "n_pairs": 764
+      }
+    },
+    "blur_vs_red_cnn": {
+      "sim_r010": {
+        "observed_ratio": 1.1066279214815709,
+        "ci95": [
+          1.0643794742388981,
+          1.1413346098365766
+        ],
+        "n_pairs": 764
+      },
+      "sim_r025": {
+        "observed_ratio": 1.1653624303783774,
+        "ci95": [
+          1.0817444929951354,
+          1.1979246427713963
+        ],
+        "n_pairs": 764
+      },
+      "sim_r050": {
+        "observed_ratio": 1.1890826302548003,
+        "ci95": [
+          1.1288562546550227,
+          1.2145344569169128
+        ],
+        "n_pairs": 764
+      }
+    }
+  },
+  "unit": "patient"
+}
