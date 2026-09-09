@@ -1,5 +1,11 @@
 # What to do next — heyang
 
+> **SUPERSEDED, 8 September 2026.** The current list is
+> [`HEYANG_NEXT_2026-09-08.md`](HEYANG_NEXT_2026-09-08.md). This page is kept because the later one cites it,
+> and because its diagnosis and its "what each task needs" table are still good. Its ordering is not: several
+> items are done, and its note on the R6 re-run has been corrected there. Do not work from this page alone.
+
+
 > **2026-09-05, read first:** the repository's history was rewritten to remove DUA-restricted L506 pixel arrays. Your clone must be replaced, not pulled. See [`HEYANG_RECLONE_2026-09-05.md`](HEYANG_RECLONE_2026-09-05.md) for the steps and the old-to-new commit hash table.
 
 

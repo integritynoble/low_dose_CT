@@ -1,8 +1,9 @@
 # Review and next steps — heyang, 8 September 2026
 
 Supersedes the ordered list in [`HEYANG_NEXT_STEPS.md`](HEYANG_NEXT_STEPS.md), which was written against
-`86cce03`. **Main is now `ee0c6a6`, thirty-four commits and about 3,700 lines later**, so several items on that
-page are done and one of its assumptions has changed. Read this first and that page second.
+`86cce03`. **This was written against `ee0c6a6`, thirty-four commits and about 3,700 lines after that page**, so several
+of its items are done and one of its assumptions has changed. Read this first and that page second. Main will
+have moved again by the time you read this; the claims below name the commit they were checked at.
 
 ---
 
@@ -71,10 +72,15 @@ Either make the seven tests degrade gracefully without pytest, or state the requ
 Either is acceptable; silence is not. **Done when** a reader who follows the published steps gets a passing
 suite or a clear message naming what to install.
 
-### 5. Issue #5 — the R6 re-run, and read this before starting
-Route (a) was decided, and there is now a further ruling that route (a) is **original-machine-only**. If you are
-not on that machine, this is not yours to start, and the honest move is to say so on the issue rather than
-approximate it elsewhere.
+### 5. Issue #5 — the R6 re-run
+
+**Correction to an earlier draft of this page, which said this was "original-machine-only" and might be read as
+telling you not to start it. That was wrong.** Issue #5 says the opposite: route (a) was decided, you are
+unblocked, and it "needs your machine" for a practical reason, namely that the checkpoints are gitignored and
+the data trees are on your local paths. It is yours, and it can only run where those files are.
+
+So: run it where the data is. If you are away from that machine, the honest move is to say so on the issue and
+wait, rather than approximate it somewhere the inputs are not.
 
 ## Not yours yet
 
@@ -90,3 +96,17 @@ not yours.
 *Written after an independent review of the repository at `ee0c6a6`. Every claim above is checkable: the gate
 bypass is commit `015295d4`, the reproduction figures came from a machine that did not write them, and the
 seven import failures are reproducible on any clean clone.*
+
+
+---
+
+## Where to put your answers, and what to do if you disagree
+
+Progress goes on the issue it belongs to, not in a new document: #21, #4 and #5 all exist and are the right
+place. A task with no issue gets a comment on #3.
+
+**If something here is wrong, say so and stop rather than working around it.** This page already contains one
+correction to itself, on task 5, because a claim was taken secondhand and misread in a way that would have
+told you not to do work that is yours. Assume there may be another. The three claims most worth checking
+before you rely on them: that the gate bypass is genuinely closed, that the results table cannot be filled,
+and that seven scoring tests fail without pytest. Each is reproducible, and each is cited above so you can.
