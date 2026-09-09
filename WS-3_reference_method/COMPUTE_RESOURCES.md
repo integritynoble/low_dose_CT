@@ -109,7 +109,7 @@ reviewer requests. Reserve **+25% headroom** in the booking.
 
 | Item | Status |
 |---|---|
-| Method scaffold + CPU tests | ✅ done — 19 CPU tests pass; `pwm-recon smoke` runs the full Phase-3 pipeline on synthetic data (CI, 3 Python versions) |
+| Method scaffold + CPU tests | ✅ done — 65 tests pass; `pwm-recon smoke` runs the full Phase-3 pipeline on synthetic data (CI, 3 Python versions) |
 | Real training data tree | ❌ blocked — WS-1 v0.5 harmonized tree (LIDC + AAPM + Mayo) not yet landed locally; GCS staging (`gs://low-dose-ct/...`) pending WS-1 pipeline runs |
 | GPU | ❌ blocked — current workstation has only RTX 4060 Laptop 8 GB (see §2); no data-center GPU booked |
 | Production training (v1 ensemble) | ⛔ **NOT STARTED** — all PSNR/SSIM/UQ numbers in `manuscript.tex` remain `\todo{}` / synthetic-only until §2–§4 resources are available |

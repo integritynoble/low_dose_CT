@@ -76,8 +76,14 @@ def test_gate_refuses_below_declared_minimum_separation():
 
 
 def test_gate_refuses_group_present_but_trap_unmeasured():
-    """A vendor group with an unrefreshed trap cannot prove trap-last: refused."""
-    board = new_leaderboard()  # seed blur has no bander_roi yet
+    """A vendor group with an unrefreshed trap cannot prove trap-last: refused.
+
+    The seed blur carries its measured numbers now (2026-09-05 refresh), so the
+    pre-refresh unmeasured state is reconstructed by stripping the value,
+    exactly as the board before the refresh would have been.
+    """
+    board = new_leaderboard()
+    blur_entry(board["entries"])["metrics"].pop("bander_roi", None)
     _add_vendor(board, "A", 5.0)
     with pytest.raises(ValueError, match="trap has no numeric bander_roi"):
         assert_trap_ranks_last(board["entries"])

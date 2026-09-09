@@ -175,17 +175,22 @@ def test_hole_b_is_independent_of_hole_a():
 # end-to-end through the CLI (`scoring.cli submit`)
 # --------------------------------------------------------------------------- #
 
-def _cli_submit(tmp_path: Path, result: dict, method: str):
+def _cli_submit(tmp_path: Path, result: dict, method: str,
+                vendor: str | None = None, dose: str | None = None):
     result_file = tmp_path / "result.json"
     result_file.write_text(json.dumps(result), encoding="utf-8")
     env = dict(os.environ,
                PYTHONPATH=str(WS4_ROOT),
                PYTHONDONTWRITEBYTECODE="1")
-    return subprocess.run(
-        [sys.executable, "-m", "scoring.cli", "submit",
-         "--result", str(result_file), "--method", method,
-         "--out", str(tmp_path / "board.json")],
-        cwd=str(tmp_path), env=env, capture_output=True, text=True)
+    cmd = [sys.executable, "-m", "scoring.cli", "submit",
+           "--result", str(result_file), "--method", method,
+           "--out", str(tmp_path / "board.json")]
+    if vendor is not None:
+        cmd += ["--vendor", vendor]
+    if dose is not None:
+        cmd += ["--dose", dose]
+    return subprocess.run(cmd, cwd=str(tmp_path), env=env,
+                          capture_output=True, text=True)
 
 
 def test_cli_accepts_a_clean_submission(tmp_path):
@@ -213,6 +218,69 @@ def test_cli_hole_b_rejects_referee_path_method_name(tmp_path):
         + r.stdout + r.stderr)
     assert "REJECT" in r.stdout
     assert not (tmp_path / "board.json").exists(), "a rejected submission was written to the board"
+
+
+# --------------------------------------------------------------------------- #
+# Hole C -- the metadata fields beside method_name are never scanned
+# --------------------------------------------------------------------------- #
+#
+# Hole B was fixed for ``method_name`` only. ``vendor`` and ``dose`` are the
+# same shape: submitter-controlled strings recorded verbatim on the board
+# (as group keys for spread / per-group trap rank). They never travel inside
+# ``submission.result``, so the result-tree scan cannot see them, and the
+# envelope does not carry them, so nothing scans them at all. A referee-owned
+# file name smuggled through ``--vendor`` / ``--dose`` is accepted and written
+# to the board today.
+
+
+def test_hole_c_referee_path_as_vendor_is_rejected():
+    bad = H.SubmissionEnvelope(method_name="ok", result=_valid_payload(),
+                               vendor=f"../data/{LEADERBOARD}")
+    violations = H.check_submission_cannot_write_back(bad)
+    assert _paths_flagged(violations), (
+        "a referee-owned path used as the VENDOR was accepted; "
+        "the envelope carries no vendor/dose and the metadata fields are unscanned")
+
+
+def test_hole_c_referee_path_as_dose_is_rejected():
+    bad = H.SubmissionEnvelope(method_name="ok", result=_valid_payload(),
+                               dose=f"../data/{HELDOUT}")
+    assert _paths_flagged(H.check_submission_cannot_write_back(bad))
+
+
+def test_hole_c_is_independent_of_holes_a_and_b():
+    """Vendor poisoned, payload and method name entirely clean: hole C alone."""
+    bad = H.SubmissionEnvelope(method_name="ok", result={},
+                               vendor=f"./{LEADERBOARD}")
+    assert H.assert_no_referee_paths(bad.result) == []          # payload is clean
+    assert H.assert_no_referee_paths(bad.method_name) == []     # method is clean
+    assert _paths_flagged(H.check_submission_cannot_write_back(bad))
+
+
+def test_cli_hole_c_rejects_referee_path_vendor(tmp_path):
+    r = _cli_submit(tmp_path, _valid_payload(), "Attacker",
+                    vendor=f"../scoring/data/{LEADERBOARD}")
+    assert r.returncode == 1, (
+        "CLI accepted a referee-owned path as the vendor\n" + r.stdout + r.stderr)
+    assert "REJECT" in r.stdout
+    assert not (tmp_path / "board.json").exists(), "a rejected submission was written to the board"
+
+
+def test_cli_hole_c_rejects_referee_path_dose(tmp_path):
+    r = _cli_submit(tmp_path, _valid_payload(), "Attacker",
+                    dose=f"../scoring/data/{HELDOUT}")
+    assert r.returncode == 1, (
+        "CLI accepted a referee-owned path as the dose\n" + r.stdout + r.stderr)
+    assert "REJECT" in r.stdout
+    assert not (tmp_path / "board.json").exists(), "a rejected submission was written to the board"
+
+
+def test_cli_hole_c_control_clean_vendor_and_dose_still_accepted(tmp_path):
+    """The fix must not start refusing honest metadata."""
+    r = _cli_submit(tmp_path, _valid_payload(), "HonestMethod",
+                    vendor="Siemens", dose="0.25")
+    assert r.returncode == 0, r.stdout + r.stderr
+    assert "accepted" in r.stdout
 
 
 if __name__ == "__main__":  # pragma: no cover

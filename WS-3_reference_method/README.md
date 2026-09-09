@@ -112,9 +112,9 @@ Three baselines reproduced inside this folder under `baselines/`. They serve thr
 | Path | Purpose | Status |
 |---|---|---|
 | `corpus_emit/` | Credential-emission step: turns cohort task scores into deposit-ready `credential.json` records + `all_credentials.jsonl` index, via the WS-2 library | **wired + tested** (18 tests pass on synthetic scores; real scores arrive Phase 3) |
-| `fixture/` | Synthetic end-to-end corpus generator (`make_synthetic_corpus.py`): valid NIfTI records + emitted credentials + packaged manifest/metadata, exercising emit → package → verify | **runnable + tested** (11 tests; one-command CI / reviewer demo, no Phase-3 data needed) |
-| `deposit/` | *Scientific Data* deposit kit: checklist + `dataset_metadata.json` schema/template + `package_corpus.py` (fills metadata counts + writes/verifies `MANIFEST.sha256`) | **ready + tested** (13 tests; corpus + DOI gated on Phase 3) |
-| `method/` | **The reference method** (`pwm_ldct_recon`): unrolled iterative recon + differentiable Radon + deep-ensemble UQ + single-model **baseline emission** (`FBPBaseline`/`ModelBaseline`) + the `emit_corpus` Phase-3 run that drives `corpus_emit`/`deposit`. Mirrors Methods + Supp. Table S1 cell-for-cell. | **scaffolded + tested** (19 CPU tests; `pwm-recon smoke` runs the whole Phase-3 pipeline incl. a baseline on synthetic data; real run is GPU- + data-gated) |
+| `fixture/` | Synthetic end-to-end corpus generator (`make_synthetic_corpus.py`): valid NIfTI records + emitted credentials + packaged manifest/metadata, exercising emit → package → verify | **runnable + tested** (23 tests; one-command CI / reviewer demo, no Phase-3 data needed) |
+| `deposit/` | *Scientific Data* deposit kit: checklist + `dataset_metadata.json` schema/template + `package_corpus.py` (fills metadata counts + writes/verifies `MANIFEST.sha256`) | **ready + tested** (17 tests; corpus + DOI gated on Phase 3) |
+| `method/` | **The reference method** (`pwm_ldct_recon`): unrolled iterative recon + differentiable Radon + deep-ensemble UQ + single-model **baseline emission** (`FBPBaseline`/`ModelBaseline`) + the `emit_corpus` Phase-3 run that drives `corpus_emit`/`deposit`. Mirrors Methods + Supp. Table S1 cell-for-cell. | **scaffolded + tested** (65 tests; `pwm-recon smoke` runs the whole Phase-3 pipeline incl. a baseline on synthetic data; real run is GPU- + data-gated) |
 | `runbundle/` | PWM RunBundle for L4 cert + local regeneration: pinned `Dockerfile` + `run.py` (`--self-test` / `--emit`) + `results.schema.json`. `docker run` reproduces the corpus + validation numbers. | **scaffolded + CI-exercised** (self-test runs in `ws3-method`; real `--emit` GPU- + data-gated) |
 | `baselines/` | RED-CNN + transformer + diffusion + comparison harness | record emission wired in `method/` (`baselines/<method>/...`); training the 5 baselines is Phase 1, GPU-gated |
 | `v0.1/` | Phase 2 prototype | folded into `method/` (config = single member) |
@@ -129,7 +129,7 @@ Three baselines reproduced inside this folder under `baselines/`. They serve thr
 [`../.github/workflows/ws3-ci.yml`](../.github/workflows/ws3-ci.yml) runs on every
 push to `main` / `heyang` (and PRs to `main`) that touches WS-3 or the WS-2
 library, on Python 3.10 / 3.11 / 3.12. It installs the WS-2 library, runs all
-three suites (`corpus_emit` 18 + `deposit` 13 + `fixture` 11 tests), builds the
+three suites (`corpus_emit` 18 + `deposit` 17 + `fixture` 23 tests), builds the
 synthetic corpus end-to-end and confirms its `MANIFEST.sha256` with
 `sha256sum -c`, and asserts a cross-workstream invariant: a WS-3-emitted
 credential carries the same `FRAMEWORK_SPEC` hash the installed WS-2 library

@@ -12,7 +12,7 @@ The manuscript is `paper_draft/manuscript.tex` v0.3 (24 pp incl. Supplementary S
 git clone git@github.com:integritynoble/low_dose_CT.git
 cd low_dose_CT/WS-2_framework/pwm_dose_equivalence
 pip install -e ".[test]"
-pytest                               # expect: 81 passed, 100% coverage
+pytest                               # expect: 157 passed, 100% coverage
 ```
 
 Requires Python 3.10+, NumPy ≥ 1.24, SciPy ≥ 1.10.

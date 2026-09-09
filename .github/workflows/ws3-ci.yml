@@ -7,8 +7,8 @@ name: WS-3 CI
 #
 # Three suites + one end-to-end build:
 #   corpus_emit/  -> credential-emission step (18 tests)
-#   deposit/      -> MANIFEST + dataset_metadata writer (13 tests)
-#   fixture/      -> synthetic end-to-end generator (11 tests)
+#   deposit/      -> MANIFEST + dataset_metadata writer (17 tests)
+#   fixture/      -> synthetic end-to-end generator (23 tests)
 #   fixture build -> emit -> package -> verify, then `sha256sum -c`
 
 "on":
@@ -105,7 +105,7 @@ jobs:
 
   # Separate job: the reference method (method/) depends on torch (~190 MB), so it
   # runs once on a single Python rather than across the deposit matrix above. Covers
-  # the 16 CPU tests (physics / model / train / ensemble / emit->deposit) and the
+  # the full method suite (65 tests: physics / model / train / ensemble / emit->deposit) and the
   # `pwm-recon smoke` end-to-end (train tiny ensemble -> emit -> deposit-verify).
   ws3-method:
     name: method (pwm_ldct_recon) / ubuntu-latest
@@ -132,7 +132,7 @@ jobs:
           pip install numpy nibabel jsonschema pytest
           pip install -e WS-3_reference_method/method --no-deps
 
-      - name: method test suite (16 CPU tests)
+      - name: method test suite (65 tests)
         working-directory: WS-3_reference_method/method
         env:
           PYTHONPATH: src
