@@ -203,3 +203,48 @@ def test_package_metadata_is_schema_valid(tmp_path: Path):
     _fake_corpus(tmp_path)
     report = package(tmp_path, SEED, schema_path=SCHEMA, require_schema_valid=True)
     assert report["schema_errors"] == []
+
+
+# --------------------------------------------------------------------------- #
+# detector provenance in the deposit
+# --------------------------------------------------------------------------- #
+def _add_detector(root: Path, name: str, version: str, *, only_first: bool = False) -> None:
+    """Stamp a detector onto the corpus's scan_meta.json records, as emit_corpus does."""
+    for i, meta in enumerate(sorted(root.glob("reconstructions/*/*/r*/scan_meta.json"))):
+        if only_first and i:
+            continue
+        d = json.loads(meta.read_text(encoding="utf-8"))
+        d["detector"] = {"name": name, "version": version}
+        meta.write_text(json.dumps(d), encoding="utf-8")
+
+
+def test_metadata_records_the_detector_that_scored_the_task_maps(tmp_path: Path):
+    _fake_corpus(tmp_path)
+    _add_detector(tmp_path, "nndetection", "luna16-pin-1")
+    md = fill_metadata(json.loads(SEED.read_text()), tmp_path)
+    assert md["generating_pipeline"]["task_detector"] == {
+        "name": "nndetection", "version": "luna16-pin-1"}
+
+
+def test_a_stub_scored_corpus_says_so_in_its_metadata(tmp_path: Path):
+    """The point of the field: a stub-scored deposit must not look real."""
+    _fake_corpus(tmp_path)
+    _add_detector(tmp_path, "stub_local_contrast", "stub-0")
+    md = fill_metadata(json.loads(SEED.read_text()), tmp_path)
+    assert md["generating_pipeline"]["task_detector"]["name"] == "stub_local_contrast"
+
+
+def test_task_detector_is_omitted_when_the_corpus_records_none(tmp_path: Path):
+    """The field is optional: the synthetic fixture writes no detector and must still pass."""
+    _fake_corpus(tmp_path)
+    md = fill_metadata(json.loads(SEED.read_text()), tmp_path)
+    assert "task_detector" not in md.get("generating_pipeline", {})
+
+
+def test_two_detectors_in_one_corpus_is_refused(tmp_path: Path):
+    """Silently picking one, or dropping both, would hide exactly what the field is for."""
+    _fake_corpus(tmp_path)
+    _add_detector(tmp_path, "nndetection", "luna16-pin-1")
+    _add_detector(tmp_path, "stub_local_contrast", "stub-0", only_first=True)
+    with pytest.raises(ValueError, match="more than one task detector"):
+        fill_metadata(json.loads(SEED.read_text()), tmp_path)

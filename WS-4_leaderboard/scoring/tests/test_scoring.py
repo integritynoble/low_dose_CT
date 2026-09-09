@@ -136,13 +136,17 @@ def test_ws3_runbundle_format_accepted(tmp_path):
 
 def test_submit_accepts_paired_and_keeps_trap(tmp_path):
     board = new_leaderboard()
+    before = len(board["entries"])
     result = {"validation": {"paired_methods": {
         "mymethod": {"psnr_db": 17.0, "ssim": 0.9,
                      "detectability": paired_metrics(cnr=5.1, auc=0.97)}}}}
     created = add_submission(board, result, method="MyMethod")
     assert len(created) == 1
     assert blur_entry(board["entries"]) is not None  # trap still present
-    assert len(board["entries"]) == 3
+    # one entry added, none displaced. The seed count is not asserted directly:
+    # it grew from 2 to 7 on 2026-09-05 when the per-vendor traps landed, and
+    # pinning it here would make this test about seeding rather than submission.
+    assert len(board["entries"]) == before + 1
 
 
 def test_submit_rejects_unpaired(tmp_path):

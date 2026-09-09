@@ -17,6 +17,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
@@ -50,7 +51,8 @@ REPRODUCE_COMMANDS = [
     "cd pwm_dose_equivalence && pytest -q            # 140/140 tests",
     "cd pwm_dose_equivalence && python examples/regenerate.py   # re-issue examples",
     "cd pwm_dose_equivalence && python scripts/generate_reproducible_manifest.py",
-    "cd experiments/cross_modality_consistency && python cross_modality_consistency.py  # 6-credential demo (seed=42)",
+    "cd experiments/cross_modality_consistency && python cross_modality_consistency.py"
+    "  # 6-credential demo (seed=42)",
 ]
 
 
@@ -65,14 +67,32 @@ def sha256_of(relpath: str) -> str:
     return f"sha256:{h.hexdigest()}"
 
 
+def _generated_at_utc() -> str:
+    """The manifest's timestamp: SOURCE_DATE_EPOCH when set, else the clock.
+
+    Honouring SOURCE_DATE_EPOCH is what lets a regeneration be compared against
+    a committed manifest byte for byte. Without it the stamp differs on every
+    run, so the drift check has to exclude the field and stops guarding it --
+    which is how a stale manifest could hide. The convention is the one from
+    reproducible-builds.org, so other tooling reads it the same way.
+    """
+    epoch = os.environ.get("SOURCE_DATE_EPOCH")
+    if epoch:
+        return datetime.fromtimestamp(int(epoch), timezone.utc).isoformat(timespec="seconds")
+    return datetime.now(timezone.utc).isoformat(timespec="seconds")
+
+
 def main() -> int:
     # Framework hash from the library itself (content-addressed L2 spec).
     sys.path.insert(0, str(PACKAGE_ROOT / "src"))
     try:
-        from pwm_dose_equivalence.framework_hash import framework_hash
         from pwm_dose_equivalence.credential_schema import CREDENTIAL_JSON_SCHEMA
+        from pwm_dose_equivalence.framework_hash import framework_hash
     except ImportError:
-        print("error: run from WS-2_framework root or with pwm_dose_equivalence installed", file=sys.stderr)
+        print(
+            "error: run from WS-2_framework root or with pwm_dose_equivalence installed",
+            file=sys.stderr,
+        )
         return 2
 
     schema_version = CREDENTIAL_JSON_SCHEMA.get("$id", "unknown")
@@ -82,7 +102,7 @@ def main() -> int:
 
     manifest = {
         "schema_version": "pwm-reproducible-artifact/v0.1",
-        "generated_at_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        "generated_at_utc": _generated_at_utc(),
         "library": {
             "name": "pwm_dose_equivalence",
             "version": "0.2.2",

@@ -20,9 +20,15 @@ and emits per-dose-level **PSNR / SSIM / LPIPS**.
 ## Install / test
 
 ```bash
-pip install -e .[dev]          # needs pwm_ldct_loader on the path
-pytest                         # synthetic-data harness tests (train a step -> eval -> results.json)
+pip install -e ../pwm_ldct_loader   # the sibling loader package, first (src/ layout)
+pip install -e .[dev]
+pytest                              # synthetic-data harness tests (train a step -> eval -> results.json)
 ```
+
+`pwm_ldct_loader` must be installed, not merely present on disk: it is a `src/`-layout
+package, so an uninstalled checkout is shadowed by its own outer directory and
+`pwm_ldct_loader.schema` will not import. See
+[`../pwm_ldct_loader/README.md`](../pwm_ldct_loader/README.md) ("Troubleshooting").
 
 ## Use (GPU)
 

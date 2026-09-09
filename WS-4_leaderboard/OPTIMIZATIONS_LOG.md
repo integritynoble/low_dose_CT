@@ -189,6 +189,182 @@ Rejection path (P1-3 gate): a submission whose result references
 `../data/leaderboard.json` or carries a write-capable object is rejected with RC 1
 and a REJECT message before scoring.
 
+## P0-1c. Trap-rank gate: the blur trap must rank last on the discriminating index
+
+**Status**: implemented + tested. **Changes the board's ranking order — read before publishing.**
+
+**Defect.** P0-1b made `bander_roi` required, but nothing checked where the trap actually
+sat, and `sort_entries` still ranked by `cnr_mean` first. Rung 1, 3, 5 and 6 all rest on the
+trap ranking last on detectability (measured 8.9–19.0× separation, blur last 4/4 in every
+vendor group), yet that structural claim was enforced nowhere in code. Because the trap
+*wins* on CNR (1.11–2.23× over the learned baselines on the simulated arm), a CNR-led board
+displayed the deliberate cheat above real methods with every gate green.
+
+**Fix.** `leaderboard.trap_rank_report(entries, min_ratio=None)` returns a verdict block:
+PASS / FAIL / INDETERMINATE, the trap's value, the ranked comparable entries, the observed
+minimum separation ratio, and a violation string per offending entry. `check_trap_rank`
+returns the violations; `assert_trap_ranks_last` raises. `sort_entries` now leads with the
+discriminating index, and an entry that does not report it sorts below every entry that does.
+
+Three deliberate design choices, each of which could reasonably have gone the other way:
+
+- **Recorded, not raised, on ordinary mutation.** `add_submission` and `save` store the
+  verdict on the board instead of rejecting. A board on which the trap is not last is
+  evidence — either an entry smooths beyond a plain Gaussian blur, or the index has stopped
+  discriminating — and discarding it would let the leaderboard suppress a finding about
+  itself. `assert_trap_ranks_last` is the hard gate for whoever publishes.
+- **INDETERMINATE is distinct from FAIL.** If the trap carries no `bander_roi` while real
+  entries do, the board cannot be checked and says so. Folding that into PASS would make
+  "stop measuring the trap" the way to evade the gate. Note this fires on a fresh board as
+  soon as a real submission lands, because `seed_blur_entry` is a placeholder: the trap must
+  be refreshed from the WS-3 run before the board means anything.
+- **Rank and separation ratio are separate.** Rank alone is the gate; `min_ratio` is
+  optional and is the Rung 5/6 criterion (3×). A board can rank correctly and still fail a
+  separation requirement, and the report carries both numbers.
+
+**Tests**: 13 in `scoring/tests/test_trap_rank.py`, in both directions — a gate that only
+ever refuses would pass a rejection-only suite and fail the project. Includes a non-vacuity
+guard that reconstructs the pre-change CNR-led key and asserts it ranked the trap first on
+the measured Rung 1 board, and one test (`test_real_submissions_against_a_placeholder_trap_are_indeterminate`)
+written only because the suite failed first and the failure turned out to be correct
+behaviour. Suite: 78 tests, 68 passed / 10 skipped, up from 65 / 55.
+
+**Not done here**: the registry's Rung 1 status is untouched. Rung 1 has read `done` while
+its named gate did not enforce its own discriminative claim; whether that warrants re-closing
+with a dated note is the owner's judgement, not the gate's.
+
+## P0-1d. Trap refreshed from the measured run
+
+**Status**: implemented + tested.
+
+**Why it was blocking.** P0-1c made the trap's rank a gate, and the gate reads
+INDETERMINATE (not PASS) when the trap carries no `bander_roi` while real entries do.
+`seed_blur_entry` still held synthetic self-test placeholders, so the first real
+submission would have made every board uncheckable. The refresh moved from cosmetic to
+on the critical path the moment the gate landed.
+
+**Source**: `WS-1_dataset/output/aapm_r3_roi_detectability.json`, schema
+`aapm-r3-roi-detectability/v1`, generated 2026-08-22T19:36:01, SHA-256
+`9987864a…`, AAPM held-out test (aapm-0003/0005/0006/0009), detectability-freq-v1 on
+`find_tissue_roi` patches, 48 ROIs per patient, per-patient mean. Recorded in
+`leaderboard.TRAP_SOURCE` and in the entry's own `source` block.
+
+**One protocol, not two.** The project holds two different band-energy measurements: the
+Rung 1 whole-slice `band_energy_ratio` (blur 0.247, in `aapm_paired_baselines_v2.json`)
+and the Rung 3 ROI `roi_band_energy_ratio` (blur 0.432). The leaderboard's discriminating
+field is `bander_roi` and its task spec carries `noise_roi_hu_band`, so the ROI protocol
+is the matching one and **every** metric on the entry comes from that single run. Taking
+fidelity from the v2 file and ROI band energy from the r3 file would have produced an
+entry no run ever measured.
+
+**What the numbers say.** On this held-out test the trap takes the highest SSIM (0.9653),
+the highest PSNR (41.63) *and* the highest CNR (0.1706) of the four methods, while
+ranking last on `bander_roi` (0.4315) by 8.93x (LEARN), 8.98x (RED-CNN) and 15.61x
+(CTformer). Three of the four indices a reader reaches for first rank the deliberate
+cheat top of the board. That is the Rung 1 claim, now on real held-out data rather than
+the simulated arm.
+
+**`vendor` / `dose` stay None, and that is deliberate.** These numbers are Siemens real
+quarter-dose, so the null looks like an omission. Those two fields are `compute_spread`'s
+grouping keys, and the spread population is the submissions whose variability is being
+characterised; the trap is the control a group is judged against, not a member of it.
+Putting a deliberate cheat inside the span would change what the span measures. The
+measurement context lives in `source` instead. Four existing tests
+(`test_seed_entries_have_no_vendor_dose`, `test_spread_by_vendor_and_dose`,
+`test_submission_updates_board_spread_block`, `test_spread_empty_board_returns_empty`)
+caught an initial attempt to set them and were right to; they encode this decision.
+
+**Known gap, named rather than hidden.** The board holds one trap entry, measured on
+Siemens. Rung 5 requires the trap to separate in *every* vendor group, and that is not
+checkable from the board alone until there is a per-vendor trap measurement and a
+per-group form of `trap_rank_report`.
+
+**Tests**: 4 in `scoring/tests/test_trap_numbers.py`, plus one added to
+`test_trap_rank.py`. The provenance tests re-read the source file, verify its SHA-256 and
+compare all eight metrics, so a WS-1 re-run fails the suite instead of silently moving the
+board's trap; they skip if WS-1 is not checked out beside WS-4. `scoring/data/leaderboard.json`
+regenerated. Suite: 83 tests, 73 passed / 10 skipped, up from 78 / 68.
+
+## P0-1e. Per-vendor trap measurements; Rung 5 separation checked from the board
+
+**Status**: implemented + tested.
+
+**Gap closed.** P0-1d left one trap entry, measured on AAPM Siemens. Rung 5 requires the trap
+to separate in *every* vendor group, and Rung 6 forbids comparing across groups, so a single
+trap could not certify a multi-vendor board; the check lived only in a WS-1 output file.
+
+**Source**: `WS-1_dataset/output/aapm_lidc_cross_vendor_spread.json`, schema
+`aapm-lidc-cross-vendor-spread/v1`, generated 2026-08-22T21:01:52, SHA-256 `c4364074…`.
+Five groups on the same task and ROI protocol: GE / Philips / Siemens / Toshiba (LIDC,
+lowdose_sim r=0.25, 2 patients each) and AAPM-Siemens-real (real QD, 4 patients). The
+AAPM group is byte-identical to `seed_blur_entry` (asserted), so the two sources agree.
+
+**Fix.** `seed_vendor_trap_entries()` adds `seed-blur:<vendor>` permanent traps to every
+fresh board (7 seeds now, was 2). `trap_rank_by_group(entries, by="vendor", min_ratio=None)`
+runs the P0-1c check inside each group and never across them; overall verdict is the worst
+group, FAIL over INDETERMINATE over PASS. A group with real entries and no trap is
+INDETERMINATE (cannot be certified), not FAIL. `compute_spread` now excludes traps, which is
+what makes it safe for a trap to carry a vendor at all. Recorded under
+`board["trap_rank_by_vendor"]` on every mutation; `assert_trap_separates_in_every_group`
+is the hard gate.
+
+**Why per-group is not merely "global but stricter".** The trap's own band energy spans an
+order of magnitude between vendors, 0.045 on GE to 0.432 on AAPM. Judging a GE submission
+against the AAPM trap is the cross-group comparison Rung 6 forbids, and it gives the wrong
+answer: a GE entry at 0.40 sits 8.8× above the GE trap and *fails* the global check. On the
+measured data GE's weakest real model (0.4377) clears the global trap (0.4315) by 1.4% while
+clearing its own trap by 9.7×. The global check is not a conservative approximation of the
+per-group one; on a multi-vendor board it is wrong in both directions. This is asserted by
+`test_the_global_check_would_wrongly_fail_a_low_band_energy_vendor`.
+
+**Cross-check.** The gate recomputes separation from the entries rather than trusting the
+file's `separation` block, and the two agree to 1e-9 in all five groups (8.93× AAPM, 9.46×
+Siemens, 9.67× GE, 12.80× Philips, 18.96× Toshiba; all ≥ 3×, matching the file's own
+`gate.verdict = PASS`).
+
+**Tests**: 7 in `test_trap_rank.py`, 3 in `test_trap_numbers.py`; one existing count
+assertion (`test_submit_accepts_paired_and_keeps_trap`) rewritten to `before + 1` so it
+tests submission rather than seeding. Suite: 93 tests, 83 passed / 10 skipped, up from 83 / 73.
+
+## P3-6b. Executable gates for Rungs 2, 3 and 4
+
+**Status**: implemented + tested.
+
+**Defect.** A rung-7 gate audit (run by the low-dose CT research agent, 2026-09-05) found three
+of six rungs marked *done* with no gate that could be executed: Rung 2's gate was a script named
+in prose ("WS-1 baselines dicom_pairing (run on AAPM 10)"), Rung 3's a constant
+(`TASK_SPEC.noise_roi_hu_band`) that nothing can exercise, Rung 4's a PNG, a JSON and a summary.
+Rung 1 had already shown what an unenforced gate costs (P0-1b). A status whose gate cannot run
+is a claim, not a fact.
+
+**Fix.** `scoring/gates.py`: one function per rung, reading the artifact the rung already cites
+and asserting the claim its reason makes, returning a violation list in the style of
+`check_paired_submission`.
+- `check_pairing_validation` (Rung 2): 10 patients, correlation ≥ 0.99 (the file's own target),
+  0 unpaired slices, 0 tolerance violations, per row — so a summary that disagrees with its rows
+  is itself a violation.
+- `check_roi_protocol` (Rung 3): the run's task is the WS-4 task (label, HU band, signal), 48
+  ROIs per patient per model, and the rung's separation claim: blur last on ROI BandER by ≥ 3×
+  while scoring the highest SSIM on the same run.
+- `check_dose_curve` (Rung 4): ≥ 3 dose points, every model measured at each, a knee named per
+  model (a ratio inside the measured range, or null for not reached), the trap's knee not
+  reached, the trap lowest on ROI BandER at every dose point.
+
+**Probes ship with the gate.** `PROBES[name] = (accept, reject)`: the accept factory loads the
+real WS-1 artifact, the reject factory breaks one thing in a copy. `exercise(name)` runs both.
+An auditor that finds the table can exercise a gate in both directions without knowing its
+semantics; the agent's rung-7 audit does exactly that. A gate that only ever refuses would pass
+a rejection-only suite and fail the project.
+
+**Registry.** Rungs 2, 3, 4 gate strings now lead with the executable gate and keep the
+artifact tokens. Statuses untouched.
+
+**Tests**: 13 in `scoring/tests/test_gates.py` — every gate both ways on the real artifact,
+plus targeted rejections (lying summary, wrong cohort size, lowered target, wrong task, weak
+separation, missing ROI count, two-point curve, missing dose point, knee out of range) and one
+test re-asserting the registry's numbers off the files. Suite: 106 tests, 96 passed / 10
+skipped, up from 93 / 83.
+
 ## Future wiring points
 
 - **P1-3**: attach real held-out DICOM records to `HeldOutSet` at launch; referee

@@ -1,6 +1,6 @@
 # Director's list — decisions and institutional access
 
-_Date: 2026-09-04 · against `main` @ `b557f8c` · counterpart: [`HEYANG_NEXT_STEPS.md`](HEYANG_NEXT_STEPS.md)_
+_Date: 2026-09-04 · against `main` @ `86cce03` · counterpart: [`HEYANG_NEXT_STEPS.md`](HEYANG_NEXT_STEPS.md)_
 
 Everything here needs a decision, a signature, or an institutional relationship. None of it can be delegated to heyang, and most of it is what the rest of the project is waiting on.
 
@@ -52,31 +52,45 @@ For the Acknowledgements and the PhysioNet listing.
 
 ## 2. Decisions heyang is blocked on
 
-### 2.1 ⚠️ The R6 comparison verdict — **recommend route (a)**
+### 2.1 ✅ The R6 comparison verdict — **DECIDED 2026-09-04: route (a)**
 
-`R6_recalc/results/comparison_full764.json` ships `"overall": "FAIL"`; `R6_recalc_report.md` §8 says `PASS*`. The repo currently contains a machine-readable FAIL that only prose overrides. I did **not** resolve this — quietly relaxing the threshold would just move the prose `PASS*` into a script constant, which is the same post-hoc adjudication in a less visible place.
+`R6_recalc/results/comparison_full764.json` ships `"overall": "FAIL"`; `R6_recalc_report.md` §8 says `PASS*`. The repo contains a machine-readable FAIL that only prose overrides. It was deliberately left unresolved rather than fixed by loosening the threshold, which would have moved the prose `PASS*` into a script constant — the same post-hoc adjudication in a less visible place. **Now resolved by decision, not by adjustment.**
 
 | Route | What it costs | What it asks of a reviewer |
 |---|---|---|
-| **(a) Deterministic re-run** ← recommended | one GPU re-run of 3 models | nothing — the pre-registered rule passes as written |
+| **(a) Deterministic re-run** ← **CHOSEN** | one GPU re-run of 3 models | nothing — the pre-registered rule passes as written |
 | (b) Amend the guide | a dated amendment + re-run | accept a changed *kind* of test |
 
-Route (a) works because the differences are **non-deterministic kernel selection, not float64 limits** — a 764-term reduction accumulates ~1e-8 absolute at `npwe_mean` ≈ 9.7e5, two orders inside the 1e-6 budget. With determinism on, the runs should be bit-identical and your existing criterion passes untouched.
+Route (a) works because the differences are **non-deterministic kernel selection, not float64 limits** — a 764-term reduction accumulates ~1e-8 absolute at `npwe_mean` ≈ 9.7e5, two orders inside the 1e-6 budget. With determinism on, the runs should be bit-identical and your existing criterion passes untouched. If they come back *not* bit-identical, that is informative — heyang has been told to report it rather than loosen the threshold.
 
-- [ ] **Decide (a) or (b)** and tell heyang. One line from you closes the last technical open item.
+- [x] **Decided: route (a), the deterministic re-run.** Communicated to heyang in issue #5. No amendment to the guide is needed; the pre-registered absolute 1e-6 stands.
 
-> Independent of the route: the comparator applies **one absolute 1e-6 across metrics spanning five orders of magnitude** (~2e-7 relative on `cnr_mean`, ~1e-12 on `npwe_mean`). It will misfire again on the next submission even under perfect determinism. Worth fixing to a per-metric criterion whichever route you pick.
+> Still open regardless: the comparator applies **one absolute 1e-6 across metrics spanning five orders of magnitude** (~2e-7 relative on `cnr_mean`, ~1e-12 on `npwe_mean`). It will misfire again on the next submission even under perfect determinism. heyang has been asked to make it declare agreement per metric, and to commit `compare_full764.py`, which is not in the repo.
 
-### 2.2 ⚠️ Rung 1's status in the registry
+### 2.2 ⚠️ Rung statuses — gates now written; one question left
 
 Rung 1 is marked **done**, and its named gate is `scoring/verify.py::check_paired_submission`. Until 2026-09-04 that gate did not enforce what Rung 1 claims — it accepted a submission on a metric the blur trap *wins*. The gate now matches the claim.
 
 So the status is arguably *more* true than before. But a rung that sat at "done" against an unenforced gate is a fact about the ladder, not about one metric. The registry is a **public assertion about what has been verified**.
 
-- [ ] **Either** re-close Rung 1 with a dated note recording the 2026-09-04 alignment
-- [ ] **Or** leave it and record why that is right
+**Resolved in code on 2026-09-05, except one question.** The audit found three of six rungs marked `done` with no gate that could be exercised. Executable gates have since been written for all three, and I verified each one independently — every gate accepts the real WS-1 artifact and **catches a deliberately broken copy**, so none is vacuous:
 
-Both are defensible. **Silence is not.** Same question applies to Rungs 5 and 6, whose `bander_roi` spread block could never populate from a submission.
+| Rung | Gate | Verified both ways |
+|---|---|---|
+| 1 | `verify.py::check_paired_submission` + trap gates | ✅ |
+| 2 | `gates.py::check_pairing_validation` | ✅ catches a 0.97 correlation against the 0.99 target |
+| 3 | `gates.py::check_roi_protocol` | ✅ catches a trap that is not last on ROI BandER |
+| 4 | `gates.py::check_dose_curve` | ✅ catches a trap whose knee is reported as reached |
+| 5 | `compute_spread`; `trap_rank_by_group` | ✅ |
+| 6 | `trap_rank_by_group` | ✅ |
+
+All six now name an executable gate in the registry, and the suite is **96 passed / 10 skipped**. Each gate also ships accept/reject probes, so any gate added later is audited automatically rather than by hand.
+
+**What is still yours to decide** — one question, much narrower than before:
+
+- [ ] **Rung 1 (and by extension 2, 3, 4): re-close with a dated note, or leave the status?** These rungs were marked `done` while their gates were unenforced or unwritten. The gates now match the claims, so the statuses are more true than when they were set — but they were set before the evidence existed. Either re-close them with a dated note recording the 2026-09-05 alignment, or leave them and record why.
+
+Both are defensible. **Silence is not** — the registry is a public assertion about what has been verified. This is cheap now and expensive to explain if someone audits the ladder later.
 
 ### 2.3 🔴 Vendored third-party content — legal, not engineering
 
@@ -118,7 +132,7 @@ Worth doing now anyway: rebuild the stale `manuscript.pdf` (the committed PDF pr
 
 1. **Open the PhysioNet deposit** — the only item that cannot be compressed later.
 2. **Settle authorship + COI** — pure decisions, cost only your time, unblock the whole manuscript header.
-3. **Pick route (a) on the tolerance** — one line to heyang closes the last technical item.
+3. ~~Pick route (a) on the tolerance~~ ✅ **done 2026-09-04** — issue #5. Next-most-useful: **Rung 1's status** (§2.2) and the **vendored-content decision** (§2.3), which blocks going public.
 
 ---
 
