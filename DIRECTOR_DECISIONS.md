@@ -17,9 +17,30 @@ Everything here needs a decision, a signature, or an institutional relationship.
 
 **This has the longest lead time of anything in the project and nothing else can absorb the delay.** Every other task below can finish in days once decided; a deposit queue cannot be compressed.
 
+- [ ] **Get an off-machine copy of the v0.5 records first — see the finding below.**
 - [ ] Open the submission, reserve the accession / DOI
 - [ ] Zenodo mirror for code + derived artifacts
 - [ ] Hand the identifiers to heyang to fill into `manuscript.tex` and `physionet_listing/listing.md`
+
+> ### 🔴 Finding, 2026-09-11: the deposit exists on one machine and nowhere else
+>
+> `deposit_procedure.md` named `gs://low-dose-ct/pwm_ldct_v0_5` as the source of the built records.
+> **That path does not exist.** The entire `gs://low-dose-ct/` bucket is 96.8 KiB — one `.dcm` file.
+> I checked all three visible buckets (`low-dose-ct`, `pwm-benchmark-datasets`, `pwm-backups`): none
+> holds `annotations/`, `sim_lowdose/lidc/`, `metadata/`, `splits/` or `deident_audit.jsonl`.
+>
+> The v0.5 records exist only on the workstation that built them (`D:\ZHY\...`). **A disk failure
+> there loses the release**, and with it the dataset paper's entire substrate. That risk is
+> currently larger than any of the submission blockers on this page, and it is cheap to remove.
+>
+> Procedure corrected to point at the real location and to use `stage_deposit.py`. heyang asked to
+> run a dry run and report the counts, which also tells us whether the deposit is assemblable at all
+> before a submission date is promised.
+>
+> Separately: the lone `.dcm` sitting in `gs://low-dose-ct/` is DUA-restricted AAPM/Mayo pixel data
+> and should not be there — same class as the L506 files, different location. Worth deleting once
+> you confirm it is not the sole copy of something.
+
 
 ### 1.2 🔴 IRB determination number
 

@@ -24,8 +24,38 @@ pwm_ldct_v0_5_deposit/
 ├── manifest.sha256
 └── LICENSE/  README   (point to the paper + repo)
 ```
-Pull the data records from `gs://low-dose-ct/pwm_ldct_v0_5` (built records) + the campaign outputs;
-the code from the repo. Exclude `*.pyc`, `__pycache__`, `*.egg-info`, the harmonized AAPM/Mayo HDF5.
+**Use [`stage_deposit.py`](stage_deposit.py)** — it stages exactly the tree above, writes
+`manifest.sha256`, and mints the `CONTENT_HASH` (Steps 1 and 2 in one run):
+
+```bash
+python3 stage_deposit.py --source <built-records-root> --out pwm_ldct_v0_5_deposit --dry-run
+python3 stage_deposit.py --source <built-records-root> --out pwm_ldct_v0_5_deposit
+```
+
+It takes the code half from the repository automatically and skips build cruft
+(`*.pyc`, `__pycache__`, `*.egg-info`). If a DUA-restricted path is present it **refuses and stages
+nothing**, listing every offender: the deposit excludes the AAPM/Mayo DICOM and their pixel
+derivatives, and a silent skip would leave a breach with no trace in the log.
+
+> ### ⚠️ Where the built records actually are
+>
+> **Not in Google Cloud Storage.** An earlier version of this step said to pull them from
+> `gs://low-dose-ct/pwm_ldct_v0_5`. **That path does not exist**, and the whole `gs://low-dose-ct/`
+> bucket holds 96.8 KiB — a single `.dcm` file. Checked 2026-09-11 against all three visible
+> buckets (`low-dose-ct`, `pwm-benchmark-datasets`, `pwm-backups`); none holds `annotations/`,
+> `sim_lowdose/lidc/`, `metadata/`, `splits/` or `deident_audit.jsonl`.
+>
+> The v0.5 records live on **the workstation that built them** — the R6 artifacts and
+> `ASSET_MANIFEST.md` point at `D:\ZHY\LIDC3DDataSet\output_gpu` and
+> `D:\ZHY\low_dose_CT-heyang\...`. So `stage_deposit.py` is run **there**, not on the server; it is
+> stdlib-only and portable for that reason.
+>
+> **This is a single point of failure.** The deposit currently exists on one machine with no
+> off-machine copy. Until it is deposited or mirrored, a disk failure loses the v0.5 release. Making
+> that copy is the first thing worth doing, ahead of the deposit itself.
+>
+> _(The lone `.dcm` in `gs://low-dose-ct/` is DUA-restricted AAPM/Mayo pixel data and should not be
+> sitting there either — see `DIRECTOR_DECISIONS.md` 2.3.)_
 
 ## Step 2 — Manifest + content hash (the citable identifier)
 Regenerate the manifest over the complete deposit (sha256sum format, which `validate` parses):
