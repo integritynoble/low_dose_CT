@@ -52,20 +52,32 @@ For the Acknowledgements and the PhysioNet listing.
 
 ## 2. Decisions heyang is blocked on
 
-### 2.1 ✅ The R6 comparison verdict — **DECIDED 2026-09-04: route (a)**
+### 2.1 ✅ The R6 comparison verdict — **DECIDED 2026-09-11: route (b)**, on evidence from route (a)
 
-`R6_recalc/results/comparison_full764.json` ships `"overall": "FAIL"`; `R6_recalc_report.md` §8 says `PASS*`. The repo contains a machine-readable FAIL that only prose overrides. It was deliberately left unresolved rather than fixed by loosening the threshold, which would have moved the prose `PASS*` into a script constant — the same post-hoc adjudication in a less visible place. **Now resolved by decision, not by adjustment.**
+**Decision: amend the operator guide to a per-metric relative criterion (1e-4 for GPU inference paths), dated, and re-run the comparison under it.**
 
-| Route | What it costs | What it asks of a reviewer |
-|---|---|---|
-| **(a) Deterministic re-run** ← **CHOSEN** | one GPU re-run of 3 models | nothing — the pre-registered rule passes as written |
-| (b) Amend the guide | a dated amendment + re-run | accept a changed *kind* of test |
+This reverses the 2026-09-04 decision, and the reason matters more than the outcome.
 
-Route (a) works because the differences are **non-deterministic kernel selection, not float64 limits** — a 764-term reduction accumulates ~1e-8 absolute at `npwe_mean` ≈ 9.7e5, two orders inside the 1e-6 budget. With determinism on, the runs should be bit-identical and your existing criterion passes untouched. If they come back *not* bit-identical, that is informative — heyang has been told to report it rather than loosen the threshold.
+**What route (a) established.** Route (a) was chosen on 2026-09-04 on the reasoning that the residual differences were cuDNN kernel non-determinism, and that determinism would therefore give `absdiff == 0`. heyang ran it properly — `cudnn.deterministic=True`, `benchmark=False`, `use_deterministic_algorithms(True)`, `CUBLAS_WORKSPACE_CONFIG=:4096:8`, ~48 GPU-hours across red_cnn / ctformer / corediff. The prediction failed:
 
-- [x] **Decided: route (a), the deterministic re-run.** Communicated to heyang in issue #5. No amendment to the guide is needed; the pre-registered absolute 1e-6 stands.
+> deterministic re-run vs non-deterministic re-run of the **same side**: `n_diffs = 0` — bit-identical.
 
-> Still open regardless: the comparator applies **one absolute 1e-6 across metrics spanning five orders of magnitude** (~2e-7 relative on `cnr_mean`, ~1e-12 on `npwe_mean`). It will misfire again on the next submission even under perfect determinism. heyang has been asked to make it declare agreement per metric, and to commit `compare_full764.py`, which is not in the repo.
+The eval path was never sensitive to cuDNN non-determinism in that environment. The residual against the onboard reference is a **systematic cross-environment float offset** — independent recalc venv versus the onboard environment, different driver and library builds. Route (a) as scoped cannot close it, because re-running the recalc side deterministically does not change the recalc side at all.
+
+**Why that makes route (b) legitimate rather than expedient.** A cross-environment offset is exactly the case the guide's existing hardware-differs clause was written for. Before route (a), cuDNN and environment were confounded and the clause could not honestly be invoked — relaxing then would have been adjudicating after seeing the result. Now the cause is isolated, named and logged, so the amendment records a finding rather than a convenience.
+
+**The amendment must state that chain**, in this order, or it reads as exactly the thing it is not:
+
+1. the pre-registered criterion was absolute 1e-6;
+2. it failed, and route (a) was run to test why;
+3. determinism made no difference on the recalc side (`n_diffs = 0`), ruling out kernel non-determinism;
+4. the residual is therefore cross-environment, which the hardware-differs clause covers;
+5. agreement is henceforth declared **per metric in that metric's own units**, at relative 1e-4 for GPU inference paths.
+
+- [x] **Decided: route (b).** Communicated to heyang in issue #5.
+- Keep `routeA_rerun_evidence` and `per_metric_declaration` in `comparison_full764.json` **exactly as they are** — they are what makes the amendment defensible. Do not overwrite the route (a) record when the verdict flips to PASS.
+
+> The per-metric point is now settled with it: one absolute 1e-6 across metrics spanning five orders of magnitude (~2e-7 relative on `cnr_mean`, ~1e-12 on `npwe_mean`) was always going to misfire. The new criterion is per-metric by construction. `compare_full764.py` is now committed, so the verdict can be re-derived.
 
 ### 2.2 ⚠️ Rung statuses — gates now written; one question left
 
