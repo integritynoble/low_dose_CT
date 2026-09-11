@@ -124,4 +124,3 @@ python -m pwm_ldct_baselines eval \
 - 数据树：使用本地已落柄的 LIDC 合成树还是 v1.0 全量 GIS 树（RUN_PLAN 指出 v0.5 树未落地，本地为合成树）。
 - 超参组：优先尝试「patch_n=4 × patch_size=64 + lr=1e-5 + 增长步数」或「整图 512 + lr=1e-4 + 大 batch + 多 epochs」两条路线之一，跑 pilot 对比后定全量。
 - 种子集全量评估安排在收敛后（每模型 5 seeds × 3 dose）。
-*（内容由AI生成，仅供参考）*

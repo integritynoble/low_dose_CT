@@ -125,4 +125,3 @@ only in structure, not in numbers.
 or secure academic cluster time; (3) execute a 1–2 epoch pilot (`--max_steps` in `train.py`) to
 calibrate §3 per-step numbers; (4) re-update this section with measured timings and the
 `\todo{epochs}`/`\todo{lr}` back-fill into `supplementary.tex` Table S1.
-*（内容由AI生成，仅供参考）*

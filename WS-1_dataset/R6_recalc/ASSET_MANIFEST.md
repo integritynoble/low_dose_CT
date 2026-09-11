@@ -122,6 +122,3 @@ python statistical_tests_recalc.py dose-friedman \
 | §4 全量复算（5 模型 × 5 seeds × 3 dose） | A1（blur 除外） |
 | §5 频域检测性复算 | A3、A5、A2 |
 | §6 统计检验复算 | A4 |
-
-*（内容由AI生成，仅供参考）*
-*（内容由AI生成，仅供参考）*

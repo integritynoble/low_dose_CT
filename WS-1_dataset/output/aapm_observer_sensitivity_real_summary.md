@@ -56,4 +56,3 @@ AIGC:
 ## Comparison vs synthetic version (WS-4 observer_sensitivity.py)
 - Synthetic: channel-response perturbation on CHO observer channels, rank shifts estimated from synthetic noise
 - Real: actual per-slice ROI BandER on AAPM paired tissue; ranking stability under slice-level observer variance
-*（内容由AI生成，仅供参考）*

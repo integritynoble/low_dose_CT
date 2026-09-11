@@ -58,4 +58,3 @@ blur trap). ... A larger paired cohort is a clear direction for future work.
 
 - 手稿为英文稿，按语种一致性要求仅插入英文版论证，未插入中文对照（中文版保留在来源 md 供返修沟通用）。
 - 未改动手稿其他任何部分；本摘要即任务要求的变更记录，作为产出物供备案与后续 SCI 补强步骤引用。
-*（内容由AI生成，仅供参考）*

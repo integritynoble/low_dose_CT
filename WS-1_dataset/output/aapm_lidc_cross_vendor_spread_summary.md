@@ -79,4 +79,3 @@ blur vs model (patient-level Mann-Whitney, pooled LIDC): not re-computed in the 
 | vendor effect significant (Kruskal-Wallis p < 0.05) | PASS (all 4 models p<0.001 on ROI BandER) |
 | never average across vendors | PASS (per-vendor groups reported; significant vendor effect) |
 | **verdict** | **PASS** |
-*（内容由AI生成，仅供参考）*

@@ -122,4 +122,3 @@ domain.
   and is the calibrated discriminative index for real anatomy; the insertion task version
   is kept at v1 because its signal/insertion parameters are unchanged (calibration note in
   `task_spec.json` records the negative result of the contrast/sigma grid).
-*（内容由AI生成，仅供参考）*
