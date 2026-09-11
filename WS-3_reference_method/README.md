@@ -21,7 +21,7 @@ A successful WS-3 means: an external reviewer pulls the RunBundle CID from PWMRe
 | Component | Choice | Rationale |
 |---|---|---|
 | Backbone | Unrolled iterative reconstruction (10-20 iterations) | Combines physical priors (Radon) + learned priors (CNN denoiser per iter); interpretable; differentiable |
-| Forward model | Reuse `packages/pwm_core/contrib/modalities/ct_radon.py` | Already validated against PWM's 172-modality test suite; single source of truth |
+| Forward model | In-repo differentiable parallel-beam Radon operator (`method/src/pwm_ldct_recon/physics.py`), a drop-in stand-in for `pwm_core.contrib.modalities.ct_radon` (not vendored here) | Differentiable; adjoint exact by autograd through `forward`; pinned by the RunBundle image digest, so regeneration is bit-identical |
 | Denoiser at each iteration | Trainable U-Net-style CNN, weights shared across iterations | Compact (< 5M params); avoids over-parameterization |
 | Warm start | TV regularization | Stable initialization; replace as training matures |
 | Uncertainty quantification | Deep ensembles (5 models) — primary; MC dropout fallback | Ensembles outperform dropout on calibration |
@@ -120,7 +120,7 @@ Three baselines reproduced inside this folder under `baselines/`. They serve thr
 | `v0.1/` | Phase 2 prototype | folded into `method/` (config = single member) |
 | `v1/` | Phase 3 production version | `method/` ensemble; **training run** GPU- + data-gated |
 | `runbundle/` | PWM-format RunBundle for L4 cert | pending Phase 3 |
-| `paper_draft/` | *Scientific Data* **Data Descriptor** (`manuscript.tex`, 8 pp, compiles clean) + preserved MICCAI method draft (`manuscript_method_miccai.tex`) | reframed; validation tables gated on Phase 3 data + deposit |
+| `paper_draft/` | *Scientific Data* **Data Descriptor** (`manuscript.tex`, 12 pp, compiles clean) + preserved MICCAI method draft (`manuscript_method_miccai.tex`) | reframed; validation tables gated on Phase 3 data + deposit |
 
 ---
 

@@ -34,7 +34,7 @@ funder, or the engineer who will book the GPU. All figures are D9-anchored
 | Inference target | < 5 s/slice on a single A100 (operational claim) | README architecture table |
 
 The unrolled loop runs the differentiable Radon forward/back-projection operator
-`packages/pwm_core/contrib/modalities/ct_radon.py` at every iteration **in the training
+`method/src/pwm_ldct_recon/physics.py` at every iteration **in the training
 graph**, so the per-step cost is dominated by K×(projection pair + denoiser forward/backward)
 rather than by a single U-Net pass. Do not size the cluster from plain-2D-U-Net rules of thumb.
 

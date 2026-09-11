@@ -30,7 +30,7 @@ scans, and is deliberately distinct from WS-1 (which releases the raw paired CT)
 |---|---|
 | `manuscript.tex` | **Data Descriptor** manuscript (current primary) |
 | `manuscript_method_miccai.tex` | Prior MICCAI/TMI **method** draft, preserved as a fallback should the venue strategy change |
-| `manuscript.pdf` | Compiled Data Descriptor (8 pp) |
+| `manuscript.pdf` | Compiled Data Descriptor (12 pp) |
 | `supplementary.tex` / `.pdf` | Supplementary Information (3 pp): Table S1 hyperparameters, S2 determinism + software pins + framework hash, S3 training-compute disclosure (values `\todo` until Phase-3 training) |
 | `reviewer_simulation.md` | Pre-submission dry run of *Scientific Data*'s review (editor + 2 referees); maps every gap to its closing action + a submission gate |
 | `cover_letter.md` | **Submission cover letter** (draft template): declares the companion WS-1/WS-2 submissions, states disjointness, foregrounds repository/DOI + licensing for the editorial pre-screen (closes E4) |
@@ -43,20 +43,27 @@ scans, and is deliberately distinct from WS-1 (which releases the raw paired CT)
 pdflatex manuscript && bibtex manuscript && pdflatex manuscript && pdflatex manuscript
 ```
 
-Compiles clean under vanilla `article` (8 pp). At submission, reformat to the
+Compiles clean under vanilla `article` (12 pp). At submission, reformat to the
 *Scientific Data* LaTeX template (the journal also accepts Word); the section
 order below is mandatory and already matches.
 
-> **Note (2026-07-06):** `manuscript.pdf` is now **stale** relative to
+> **Note (2026-07-06):** `manuscript.pdf` was **stale** relative to
 > `manuscript.tex` — the author block, the new Author Contributions / Competing
 > Interests / Funding declarations, the ethics IRB slot, and the
-> `fig:example_records` placeholder were added after the last PDF build. Re-run
-> the build command above to regenerate the PDF before circulating.
+> `fig:example_records` placeholder were added after the last PDF build.
+>
+> **Rebuilt 2026-09-11:** `manuscript.pdf` and `supplementary.pdf` are back in
+> sync with their sources, which now also carry the forward-model provenance
+> correction — the pipeline ships its own in-repo parallel-beam Radon operator
+> (`method/src/pwm_ldct_recon/physics.py`) instead of claiming the upstream
+> `pwm_core.contrib.modalities.ct_radon`. `\todo{}` markers are still present
+> and render as `[TODO: ...]` in both PDFs: they are Phase-3 data markers
+> filled at deposit, not build artefacts.
 
 ## Mandatory *Scientific Data* section order (already in the draft)
 
 1. **Background & Summary** — why the derived-data layer is missing; what the corpus enables.
-2. **Methods** — the generating pipeline (unrolled iterative + 5-model deep ensemble + `ct_radon` forward model), framed as data provenance.
+2. **Methods** — the generating pipeline (unrolled iterative + 5-model deep ensemble + the in-repo parallel-beam Radon forward model), framed as data provenance.
 3. **Data Records** — file-level manifest, directory tree, formats, per-record fields, counts/sizes, repository DOI.
 4. **Technical Validation** — fidelity (PSNR/SSIM/LPIPS), cross-vendor consistency, **uncertainty↔error agreement (Spearman ρ — the central reuse validation)**, downstream-task validity, credential audit, regeneration reproducibility.
 5. **Usage Notes** — loading, intended reuses, reuse cautions, licensing.

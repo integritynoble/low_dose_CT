@@ -92,13 +92,19 @@ acceptance.
   so do it within a full regeneration). The eventual run picks up `I0_REF=1e8` automatically.
 
 ## 5. Technical Validation & Data Records numbers 🔴 (v0.5 LIDC numbers; v1.0 items marked)
-- [ ] **Baseline method selection** — choose the 3 non-RED-CNN baselines: `manuscript.tex`
-  `\todo{select published method...}` (transformer e.g. CTformer/TransCT; diffusion; unrolled e.g.
-  LEARN). Register them in `baselines/.../models/__init__.py`.
-- [ ] **Baseline results** `tab:baselines_v05` (PSNR/SSIM/LPIPS per dose) — run `pwm_ldct_baselines`
-  on a **GPU** per `baselines/RUN_PLAN.md` (method candidates, compute ~50–120 GPU-h, protocol,
-  data-quality prereq: calibrated-sim regen or real-LD-only subset). **v0.5 trains on the LIDC-only
-  split**; AAPM/Mayo data are v1.0 roadmap inputs.
+- [x] **Baseline method selection** — **closed, re-verified 2026-09-11 at HEAD `cb88439`:** the three
+  non-RED-CNN baselines are chosen and registered in
+  `baselines/src/pwm_ldct_baselines/models/__init__.py` (`_REGISTRY` = `ctformer` / `corediff` /
+  `learn`, plus the standing `blur` trap) — transformer (CTformer), diffusion (CoreDiff),
+  unrolled-iterative (LEARN). The `\todo{select published method...}` placeholder no longer exists in
+  `manuscript.tex` (0 `\todo{`).
+- [x] **Baseline results** `tab:baselines_v05` (PSNR/SSIM/LPIPS per dose) — **filled, re-verified
+  2026-09-11:** the four methods plus the blur trap were evaluated on the same **n = 764** test slices
+  at every dose level, and `tab:baselines_v05` / `tab:detectability_v05` are regenerated from the
+  committed harness results by the committed `analysis/extract_baselines_tables.py` (build provenance:
+  5 result files, combined SHA-256
+  `14bd54f64b3004d6726d00c395f85bf42878d9392be54111db067b9b9774472d`); the per-model JSONs ship in
+  `baselines/results/`. **v0.5 trains on the LIDC-only split**; AAPM/Mayo data are v1.0 roadmap inputs.
 - [x] **Harmonization validation** `tab:harmonization_v05` — v0.5: LIDC single-source consistency
   (per-scan Reconstruction-sanity + HU-histogram checks); **Wasserstein threshold** set to **150 HU**
   (smallest round bound above the worst observed vendor pair, 144.9 HU, Philips-Toshiba), values
@@ -107,13 +113,25 @@ acceptance.
   `42d8803c11df8850cca117654cc2d2a7b3c06d8576bdf41b423a3013c00c5738`). The previously published
   200 HU threshold and its 199.3 HU worst pair traced to an uncommitted `hv_fast.py` and were replaced.
   (Cross-source comparison is a v1.0 item when AAPM/Mayo join.)
-- [ ] **Annotation-reuse fidelity** Supplementary table — `manuscript.tex` `\todo{ref}`.
-- [ ] **Reconstruction-sanity FP tolerance** `\todo{FP tolerance}` — harness in
-  `pipelines/pwm_ldct_prep/recon_sanity.py` (helical FBP still needs calibrated geometry).
-- [ ] **(v1.0) Sim-vs-reference figure** `fig:sim_vs_real_v05` — the sim is first-order calibrated
-  (≈24 HU vs 18.9 HU reference on Mayo L004); the v1.0 figure needs the per-anatomy runs (chest via
-  r=0.10, abdomen via r=0.25) and ideally per-scanner `I0`/`σ_e` refinement. v0.5 reports the
-  simulated low-dose records with calibration provenance, not a real-reference comparison.
+- [x] **Annotation-reuse fidelity** Supplementary table — **float reference in place, re-verified
+  2026-09-11:** `manuscript.tex` §Annotation-reuse fidelity (L373) cites
+  `Supplementary Table~\ref{tab:mv_reconciliation_supp}` (label at L403) and enumerates the 17
+  attribute-level discrepancies; the `\todo{ref}` placeholder is gone. Sourcing the LIDC nodule XMLs
+  (§3 of this checklist) remains the open prerequisite for the underlying check itself.
+- [x] **Reconstruction-sanity FP tolerance** — **resolved, re-verified 2026-09-11:** the released
+  tolerance is **$\leq$ 0.5 HU at every voxel**. `manuscript.tex` §Reconstruction sanity reports the
+  per-voxel comparison completed for all **1{,}008** non-simulated LIDC scans (maximum per-voxel
+  absolute difference 0.344 HU; maximum mean absolute error 0.167 HU; 100% of voxels within 1 HU), and
+  the `\todo{FP tolerance}` placeholder is gone. Harness:
+  `pipelines/pwm_ldct_prep/recon_sanity.py` (the AAPM 2016 helical-FBP sinogram path stays v1.0).
+- [ ] **(v1.0) Sim-vs-reference figure** `fig:sim_vs_real_v05` — **partly realised, superseded as of
+  2026-09-11:** `manuscript.tex` now carries the AAPM 2016 validation-subset subsection
+  "Simulation vs. reference noise-inserted low-dose" (L409–417) with
+  `figures/fig_sim_vs_real_v05.png` included and a simulation/reference noise ratio of
+  0.982 ± 0.017 over 10 patients — i.e. the real-reference comparison **is** now reported, so the
+  earlier "v0.5 reports ... not a real-reference comparison" wording is no longer accurate. Still open:
+  the per-anatomy runs (chest via r=0.10, abdomen via r=0.25) and the per-scanner `I0`/`σ_e`
+  refinement (see §0's "Refinement still advised" note).
 - [x] **Inter-rater reliability** `tab:irr_v05` — **filled with real LIDC results** (see
   `annotation_qa_protocol.md` §5): anon group (677 cases) detection Cohen's κ 0.926–0.997 (all six
   pairs ≥ 0.60 gate); texture linearly-weighted κ 0.330–0.471 (disclosed as low); reader1–4 (21
@@ -125,18 +143,27 @@ acceptance.
   (§3) remains open for the annotation-reuse-fidelity check.
 - [ ] **(Supplementary, optional) credentials** `tab:credentials_v05` — depends on the companion
   WS-2 framework; severable.
-- [ ] **Demographics table** — age med(IQR)/range, sex m/f(%), BMI, scan-date (LIDC row; v1.0 adds
-  AAPM/Mayo rows; `\todo` ×~20) — extract from source DICOM headers.
-- [ ] **Acquisition table** — v0.5 keeps the LIDC row; AAPM/Mayo rows are marked v1.0 roadmap
-  (`\todo{varies}` ×4). ⚠️ **Provenance flag (found 2026-07):** the *already-filled* cells
-  (demographics LIDC 61 yr / 140-141; acquisition LIDC manufacturer 669/201/74/66, mAs medians) are
-  **not reproduced from any committed artifact**, and the acquisition caption claims they are
-  "extracted from the deposited `metadata.json`". Regenerate every filled cell from a committed
-  extraction script before submission, or mark provisional. Flagged inline with `\todo` in both
-  captions.
-- [ ] **Cohort table** — v0.5: LIDC-only rows (train 589 / val 216 / test 205 / total 1,010);
-  AAPM/Mayo rows are v1.0 roadmap (`\todo{$\sim$…}`).
-- [ ] **Source maintenance-status date** `\todo{date}`; **errata triage SLA** `\todo{N}` business days.
+- [x] **Demographics table** — **regenerated from a committed artifact, re-verified 2026-09-11:** the
+  LIDC row of `tab:demographics_v05` is produced by the committed `analysis/extract_demographics.py`
+  from `metadata.json` (build provenance: 1,010 files, combined SHA-256
+  `20476a8105319e6192eebf233e274a4f6f5f787a574bd605809963f3160df870`), so the cells previously flagged
+  as "not reproduced from any committed artifact" now are; the `\todo` ×~20 placeholders are gone.
+  (v1.0 adds the AAPM/Mayo rows.)
+- [x] **Acquisition table** — **provenance flag closed, re-verified 2026-09-11:** the LIDC row of
+  `tab:acquisition_v05` is regenerated by the committed `analysis/extract_acquisition.py` from
+  `metadata.json` (build provenance: 1,010 files, combined SHA-256
+  `20476a8105319e6192eebf233e274a4f6f5f787a574bd605809963f3160df870`); the 2026-07 provenance flag
+  ("already-filled cells not reproduced from any committed artifact") is therefore closed and the
+  caption `\todo`s are gone. (v1.0 keeps AAPM/Mayo as roadmap rows.)
+- [x] **Cohort table** — **filled, re-verified 2026-09-11:** `tab:cohort_v05` in `manuscript.tex`
+  carries the LIDC rows (train 589 / val 216 / test 205 / total 1,010, with the caption's provenance
+  "1,018 canonical LIDC patients, 8 unavailable in the public distribution used here"), marks the
+  AAPM 2016 row (4 / 2 / 4 / 10) as the v1.0 validation subset, and records Mayo LDCT-PD as out of
+  scope; the `\todo{$\sim$…}` placeholder is gone.
+- [ ] **Errata triage SLA** — **maintenance date closed, SLA still open (re-verified 2026-09-11):**
+  `manuscript.tex` now states the source maintenance status "as of 2026-06", so the `\todo{date}` is
+  gone, and the errata policy is described (GitHub issues with an `errata-v0.5` label, batched PATCH
+  releases) — but it still names **no numeric triage SLA**, so this line stays open for that decision.
 
 ## 6. Schema pre-registered parameters 🟠 (ratify; the manuscript and specs must agree)
 - [ ] **Per-source HU offsets** — `pipelines/pwm_ldct_prep/harmonize.py` `HU_OFFSET` `[CONFIRM]`
@@ -162,9 +189,25 @@ acceptance.
 Reproduce with: `grep -rn '\\todo{' WS-1_dataset/paper_draft/manuscript.tex` and
 `grep -rn '\[CONFIRM' WS-1_dataset`.
 
-**Manuscript `\todo`:** 53 `\todo{` occurrences across 29 lines; 3 are non-fillable (1 status
-comment + the `\todotable`/`\todofig` macro defs) → **50 fillable placeholders** (RESULTS
-tables/figures + the §1–§6 fields above).
+**Manuscript `\todo` (2026-05-27 sweep — retained as history, superseded):** 53 `\todo{` occurrences
+across 29 lines; 3 are non-fillable (1 status comment + the `\todotable`/`\todofig` macro defs) →
+**50 fillable placeholders** (RESULTS tables/figures + the §1–§6 fields above).
+
+> **Dated amendment 2026-09-11 — placeholder index re-swept at HEAD `cb88439`.** The **submission**
+> manuscript `paper_draft/manuscript.tex` (757 lines) now contains **0 `\todo{`** and **0
+> `\todotable` / `\todofig`** — the 53/50 above is the 2026-05-27 state and is kept only as history.
+> Two consequences for reading this appendix:
+> 1. The §1/§2 fields that are still open (author list, CRediT, COI, IRB number, funding; PhysioNet /
+>    Zenodo DOIs) are carried in the manuscript as **natural-language placeholders**, not `\todo{}`
+>    macros — e.g. `\textit{Authors to be confirmed at submission}`, "DOI (to be assigned at
+>    submission)" ×2, "To be completed at submission using the CRediT taxonomy". A `\todo`-only sweep
+>    therefore **under-reports** the paper's open fields; the §1–§6 tracking items in this checklist
+>    remain the authoritative open list.
+> 2. Non-submitted drafts still carry `\todo`s and are unaffected (deliberately preserved, not in the
+>    submission package): `manuscript_tex_pre_ctformer_retrain.tex` (pre-retrain archive) and
+>    `manuscript_v1.tex` (v1.0 target).
+> The `[CONFIRM]` index below is unchanged from the 2026-05-27 sweep and was **not** re-derived in this
+> refresh; the `\todo` counts in this block supersede the numbers above.
 
 **`[CONFIRM]` markers — three classes** (raw `grep -o` counts; each deliverable also has ~1
 convention-header mention that is descriptive, not fillable):
