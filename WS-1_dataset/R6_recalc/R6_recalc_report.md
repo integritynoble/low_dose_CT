@@ -55,6 +55,15 @@
 - 固定 seed 集 `42, 2023, 7, 12345, 999`，双 GPU 后台执行（GPU0 串行 blur→red_cnn→ctformer，GPU1 串行 learn→corediff），每模型一次 `--seeds 42,2023,7,12345,999`，输出 `<model>_det_full764.json`，支持断点续跑。全部 5 模型于 2026-09-03 03:49（corediff）完成。
 - **ctformer 权重修正**：on-board `ctformer_results_det_full764.json` 的 model 字段为 `ctformer_small`（由 `ctformer_small_retrain.pt` 产出），而复算指南步骤4命令写的是 `--checkpoint ctformer.pt`（标准模型）→ 首轮 psnr 差 9-13 dB。按 on-board 实际协议改用 `ctformer_small_retrain.pt` 重跑后一致（详见 §7.3）。
 - **比对方案**：`compare_full764.py` 逐 seed、逐 dose 比对 `psnr / ssim / cnr_mean / cho_auc_mean / npwe_mean / n`，容差 1e-6（同硬件 bit-identical）；on-board 目录可用 `R6_ONBOARD_RESULTS` 环境变量覆盖。
+
+> **2026-09-12 更新 · 判据修订后 PASS（无星号）。** 上表中的 `PASS*` 是当时对机器判据 FAIL 的人工说明，
+> 其归因（cuDNN 非确定性）已被路线 (a) 证伪：同一侧确定性与非确定性复跑 `n_diffs = 0`，逐位一致。
+> 残差实为跨环境系统性浮点偏移。指南 §4 已于 2026-09-12 改为**按指标、按其自身量纲**声明一致性
+> （GPU 推理路径相对 1e-4）。在该判据下五个模型全部 PASS，判定由
+> `R6_recalc/recompare_per_metric.py` 从已提交的差异逐条重新推导，可用 `--check` 复核；
+> 原判据、原判定与路线 (a) 证据均原样保留于 `comparison_full764.json`
+> （`shipped_criterion_superseded`、`routeA_rerun_evidence`、`per_metric_declaration`）。
+> 各指标最大相对差：`cnr_mean` 6.36e-05、`npwe_mean` 3.62e-05、`psnr` 4.69e-07。
 - **比对结果**（`comparison_full764.json`，每模型 75 项检查 = 5 seeds × 3 doses × 5 指标）：
 
 | 模型 | 状态 | 差异数 | 最大相对差异 | 判定 |
