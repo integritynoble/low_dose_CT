@@ -22,8 +22,23 @@ _VENDOR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".
 if _VENDOR not in sys.path:
     sys.path.insert(0, _VENDOR)
 
-from models.corediff.corediff_wrapper import Network  # noqa: E402
-from models.corediff.diffusion_modules import Diffusion  # noqa: E402
+try:  # noqa: E402
+    from models.corediff.corediff_wrapper import Network
+    from models.corediff.diffusion_modules import Diffusion
+except ModuleNotFoundError as _exc:  # pragma: no cover - depends on the fetch
+    # CoreDiff is fetched, not vendored: upstream carries no licence, so this
+    # project does not redistribute it. Say that plainly instead of surfacing a
+    # bare ModuleNotFoundError that looks like a broken install.
+    raise ModuleNotFoundError(
+        "CoreDiff is not present. It is fetched rather than vendored, because "
+        "upstream (https://github.com/qgao21/CoreDiff) carries no licence and "
+        "this project does not redistribute it.\n"
+        "    run: %s\n"
+        "See %s for why, and record the commit you fetch alongside any results.\n"
+        "Every other baseline (RED-CNN, LEARN, CTformer, the blur trap) is "
+        "unaffected."
+        % (os.path.join(_VENDOR, "fetch.sh"), os.path.join(_VENDOR, "README.md"))
+    ) from _exc
 
 
 class CoreDiffWrapper(nn.Module):

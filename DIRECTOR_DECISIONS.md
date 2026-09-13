@@ -130,7 +130,7 @@ Both are defensible. **Silence is not** — the registry is a public assertion a
 **This blocks making the repo public**, and Code Availability points readers at it.
 
 - [ ] **`vendor/ctformer/test_img/*.npy` are Mayo-derived** (`L506_*`) — **DUA-restricted data, currently redistributed in-repo.** This is the urgent one: a data-use question, not a licensing preference.
-- [ ] **CoreDiff ships no license file** (LEARN has Apache-2.0, CTformer has a LICENSE, CoreDiff has neither)
+- [x] **CoreDiff un-vendored 2026-09-13.** Upstream carries no licence and no copyright notice, so the vendored copy was all-rights-reserved third-party source. Replaced with a `fetch.sh` + README pinning `github.com/qgao21/CoreDiff`; the wrapper now raises an actionable error naming the fetch script. Nothing reproducible is lost. **Note the gap it exposed:** the vendored copy never recorded the upstream commit, so the v0.5 CoreDiff numbers cannot be tied to a revision — whoever produced them should add the SHA.
 - [ ] **Third-party pretrained weights** redistributed — `T2T_vit_530000iter.ckpt`, `LEARN_MODEL.mat`, the 85 MB `proMatrix_64.mat`
 
 ### 2.4 When the repo goes public

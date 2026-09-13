@@ -1,62 +1,30 @@
-# CoreDiff: Contextual Error-Modulated Generalized Diffusion Model for Low-Dose CT Denoising and Generalization
-This is the official implementation of the paper "CoreDiff: Contextual Error-Modulated Generalized Diffusion Model for Low-Dose CT Denoising and Generalization". The pre-print version can be found in [arxiv](https://arxiv.org/abs/2304.01814); the published version can be found in [TMI](https://ieeexplore.ieee.org/document/10268250).
+# CoreDiff — fetched, not vendored
 
-## Updates
-- Jan, 2025: Updated the code for simulating low-dose CT data.
-- Oct, 2024: Uploaded the pre-trained model on the original Mayo 2016 'DICOM' format data (25% dose): [ema_model-150000](https://drive.google.com/drive/folders/1rGb34H_6ktP79vMYYJOLSoCE3579TDZ5?usp=drive_link).
-- Dec, 2023: Updated the code for preprocessing the original Mayo 2016 "DICOM" format data (`data_preporcess/prep_mayo2016.py`) and its corresponding training demo (`train_mayo2016.sh`).
-- Oct, 2023: initial commit.
+CoreDiff (Gao et al., *IEEE TMI* 2023; arXiv:2304.01814) is **not** redistributed here.
 
+Its upstream repository carries **no licence and no copyright notice**, which under
+default copyright means all rights reserved. A copy was vendored into this tree until
+2026-09-13 and was removed before this repository was made public: redistributing a
+third party's source without a licence grant is not ours to do, and the right affected
+belongs to the CoreDiff authors rather than to this project.
 
-## Data Preparation
-- The AAPM-Mayo dataset can be found from: [Mayo 2016](https://ctcicblog.mayo.edu/2016-low-dose-ct-grand-challenge/). 
-- The "Low Dose CT Image and Projection Data" can be found from [Mayo 2020](https://wiki.cancerimagingarchive.net/pages/viewpage.action?pageId=52758026#527580262a84e4aa87794b6583c78dccf041269f).
-- The Piglet Dataset can be found from: [SAGAN](https://github.com/xinario/SAGAN).
-- The Phantom Dataset can be found from: [XNAT](https://xnat.bmia.nl/app/template/XDATScreen_report_xnat_projectData.vm/search_element/xnat:projectData/search_field/xnat:projectData.ID/search_value/stwstrategyps4).
+Nothing reproducible is lost. Fetch it yourself:
 
+    ./fetch.sh                       # clones upstream into this directory
+    ./fetch.sh <commit-sha>          # pin a specific revision
 
-## Training & Inference
-Please check `train.sh` for training script (or `test.sh` for inference script) once the data is well prepared. Specify the setting in the script, and simply run it in the terminal.
+Upstream: https://github.com/qgao21/CoreDiff
 
-For one-shot learning framework，please check `train_osl_framework_training.sh` for training script (or `test_osl_framework.sh` for inference script)
+## Which revision?
 
-## Training loss and evaluation metrics. 
-These curves are calculated based on our simulated 5% dose data.
-![Image text](https://github.com/qgao21/CoreDiff/blob/main/figs/loss_and_metrics.png)
+The vendored copy did not record the upstream commit it was taken from, so this
+project cannot pin one honestly. If you are reproducing the v0.5 CoreDiff numbers,
+record the SHA you fetched alongside your results — and if you are the author of those
+numbers, add the SHA here so the next person does not have the same gap.
 
-## Requirements
-```
-- Linux Platform
-- python==3.8.13
-- cuda==10.2
-- torch==1.10.1
-- torchvision=0.11.2
-- numpy=1.23.1
-- scipy==1.10.1
-- h5py=3.7.0
-- pydicom=2.3.1
-- natsort=8.2.0
-- scikit-image=0.21.0
-- einops=0.4.1
-- tqdm=4.64.1
-- wandb=0.13.3
-```
+## What depends on this
 
-## Acknowledge
-- Our codebase builds heavily on [DU-GAN](https://github.com/Hzzone/DU-GAN) and [Cold Diffusion](https://github.com/arpitbansal297/Cold-Diffusion-Models). Thanks for open-sourcing!
-- Low-dose CT data simulation refers to [LD-CT-simulation](https://github.com/smuzd/LD-CT-simulation). Thanks for open-sourcing!
-
-
-## Citation
-If you find our work and code helpful, please kindly cite the corresponding paper:
-```
-@article{gao2023corediff,
-  title={CoreDiff: Contextual Error-Modulated Generalized Diffusion Model for Low-Dose CT Denoising and Generalization},
-  author={Gao, Qi and Li, Zilong and Zhang, Junping and Zhang, Yi and Shan, Hongming},
-  journal={IEEE Transactions on Medical Imaging},
-  volume={43},
-  number={2},
-  pages={745--759},
-  year={2024}
-}
-```
+`baselines/src/pwm_ldct_baselines/models/corediff_wrapper.py` adds this directory to
+`sys.path` and imports `models.corediff.*` from it. Without the fetch, constructing the
+CoreDiff baseline raises a `ModuleNotFoundError` naming this file. Every other baseline
+— RED-CNN, LEARN, CTformer, and the Gaussian-blur trap — is unaffected.
