@@ -55,8 +55,14 @@ it; the failure is the mechanism working, not misfiring.
 
 ## 2. Rebase onto `main` in the same pass
 
-`heyang` is **19 ahead** of a `main` that has moved **10** since your merge base (`dd8e395`). Four
-files conflict, all R6:
+`heyang` is **19 ahead** of a `main` that has moved **10+** since your merge base (`dd8e395`) — the
+exact count keeps rising, so check it rather than trusting this line:
+
+```bash
+git fetch origin && git rev-list --left-right --count origin/main...origin/heyang
+```
+
+Four files conflict, all R6:
 
 ```
 DIRECTOR_DECISIONS.md
