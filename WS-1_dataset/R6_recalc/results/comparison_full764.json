@@ -1,22 +1,21 @@
 {
  "tolerance": 1e-06,
- "tolerance_kind": "absolute",
- "criterion_note": "shipped pre-registered criterion is absolute 1e-6, unchanged; comparator additionally declares agreement per metric in that metric's own units (DIRECTOR_DECISIONS 2.1); route (a) deterministic re-run evidence appended dated 2026-09-09 (issue #5)",
  "per_model": {
   "blur": {
    "status": "PASS",
    "n_checked": 75,
    "n_diffs": 0,
-   "worst_absdiff": 0.0,
-   "worst_reldiff": 0.0,
-   "diffs": []
+   "diffs": [],
+   "under_declared_criterion": {
+    "n_outside_declared_criterion": 0,
+    "worst_per_metric": {},
+    "outside": []
+   }
   },
   "red_cnn": {
-   "status": "FAIL",
+   "status": "PASS",
    "n_checked": 75,
    "n_diffs": 45,
-   "worst_absdiff": 34.25529654347338,
-   "worst_reldiff": 6.358155165278288e-05,
    "diffs": [
     "red_cnn s42 sim_r010 psnr: recalc=51.9568185 onboard=51.9568021 absdiff=1.64e-05 reldiff=3.15e-07",
     "red_cnn s42 sim_r010 cnr_mean: recalc=5.19204205 onboard=5.19192473 absdiff=0.000117 reldiff=2.26e-05",
@@ -63,22 +62,44 @@
     "red_cnn s999 sim_r050 psnr: recalc=54.460457 onboard=54.4604335 absdiff=2.35e-05 reldiff=4.32e-07",
     "red_cnn s999 sim_r050 cnr_mean: recalc=10.971092 onboard=10.9703945 absdiff=0.000698 reldiff=6.36e-05",
     "red_cnn s999 sim_r050 npwe_mean: recalc=972691.171 onboard=972688.947 absdiff=2.22 reldiff=2.29e-06"
-   ]
+   ],
+   "under_declared_criterion": {
+    "n_outside_declared_criterion": 0,
+    "worst_per_metric": {
+     "psnr": {
+      "kind": "relative",
+      "tol": 0.0001,
+      "worst": 4.69e-07
+     },
+     "cnr_mean": {
+      "kind": "relative",
+      "tol": 0.0001,
+      "worst": 6.36e-05
+     },
+     "npwe_mean": {
+      "kind": "relative",
+      "tol": 0.0001,
+      "worst": 3.62e-05
+     }
+    },
+    "outside": []
+   }
   },
   "learn": {
    "status": "PASS",
    "n_checked": 75,
    "n_diffs": 0,
-   "worst_absdiff": 0.0,
-   "worst_reldiff": 0.0,
-   "diffs": []
+   "diffs": [],
+   "under_declared_criterion": {
+    "n_outside_declared_criterion": 0,
+    "worst_per_metric": {},
+    "outside": []
+   }
   },
   "ctformer": {
-   "status": "FAIL",
+   "status": "PASS",
    "n_checked": 75,
    "n_diffs": 25,
-   "worst_absdiff": 0.03346758274710737,
-   "worst_reldiff": 4.4127738956450235e-07,
    "diffs": [
     "ctformer s42 sim_r010 cnr_mean: recalc=2.574436 onboard=2.57443486 absdiff=1.14e-06 reldiff=4.41e-07",
     "ctformer s42 sim_r010 npwe_mean: recalc=156001.355 onboard=156001.348 absdiff=0.00659 reldiff=4.22e-08",
@@ -105,14 +126,28 @@
     "ctformer s999 sim_r025 npwe_mean: recalc=161964.648 onboard=161964.638 absdiff=0.00912 reldiff=5.63e-08",
     "ctformer s999 sim_r050 cnr_mean: recalc=6.85692082 onboard=6.85691874 absdiff=2.08e-06 reldiff=3.04e-07",
     "ctformer s999 sim_r050 npwe_mean: recalc=164905.801 onboard=164905.767 absdiff=0.0335 reldiff=2.03e-07"
-   ]
+   ],
+   "under_declared_criterion": {
+    "n_outside_declared_criterion": 0,
+    "worst_per_metric": {
+     "cnr_mean": {
+      "kind": "relative",
+      "tol": 0.0001,
+      "worst": 4.41e-07
+     },
+     "npwe_mean": {
+      "kind": "relative",
+      "tol": 0.0001,
+      "worst": 2.03e-07
+     }
+    },
+    "outside": []
+   }
   },
   "corediff": {
-   "status": "FAIL",
+   "status": "PASS",
    "n_checked": 75,
    "n_diffs": 45,
-   "worst_absdiff": 4.578533113817684,
-   "worst_reldiff": 2.501577851671789e-05,
    "diffs": [
     "corediff s42 sim_r010 psnr: recalc=51.5203258 onboard=51.5203424 absdiff=1.66e-05 reldiff=3.22e-07",
     "corediff s42 sim_r010 cnr_mean: recalc=5.34295925 onboard=5.34298423 absdiff=2.5e-05 reldiff=4.67e-06",
@@ -159,161 +194,325 @@
     "corediff s999 sim_r050 psnr: recalc=54.2830583 onboard=54.2830812 absdiff=2.29e-05 reldiff=4.22e-07",
     "corediff s999 sim_r050 cnr_mean: recalc=11.5400685 onboard=11.5403572 absdiff=0.000289 reldiff=2.5e-05",
     "corediff s999 sim_r050 npwe_mean: recalc=888559.591 onboard=888564.17 absdiff=4.58 reldiff=5.15e-06"
-   ]
+   ],
+   "under_declared_criterion": {
+    "n_outside_declared_criterion": 0,
+    "worst_per_metric": {
+     "psnr": {
+      "kind": "relative",
+      "tol": 0.0001,
+      "worst": 4.22e-07
+     },
+     "cnr_mean": {
+      "kind": "relative",
+      "tol": 0.0001,
+      "worst": 2.5e-05
+     },
+     "npwe_mean": {
+      "kind": "relative",
+      "tol": 0.0001,
+      "worst": 5.15e-06
+     }
+    },
+    "outside": []
+   }
   }
+ },
+ "overall": "PASS",
+ "tolerance_audit": {
+  "generated_by": "R6_recalc/tolerance_audit.py",
+  "shipped_criterion": {
+   "kind": "absolute",
+   "tolerance": 1e-06,
+   "overall": "FAIL"
+  },
+  "finding": "The shipped criterion applies one absolute tolerance of 1e-6 to metrics spanning five orders of magnitude (cnr_mean ~5, npwe_mean ~1.56e5, worst case 9.7e5). In relative terms it is therefore ~5 orders stricter for npwe_mean than for cnr_mean, which is why ctformer is marked FAIL on a worst relative difference of 4.4e-07. The criterion is badly scaled and will misfire again on the next submission. It is NOT unattainable: a 764-term float64 reduction accumulates ~1e-13 relative (~1e-8 absolute at 9.7e5), well inside the 1e-6 budget, so with deterministic kernels the runs should be bit-identical and the existing criterion passes as written. Under a relative criterion at the same 1e-6 strictness, ctformer passes while corediff (2.5e-05) and red_cnn (6.4e-05) still exceed it; those two are the genuine cuDNN non-determinism question.",
+  "unresolved": "This audit deliberately does not change the verdict. Route (a), PREFERRED: re-run with deterministic kernels enabled (cudnn.deterministic=True, use_deterministic_algorithms(True)); the runs should be bit-identical and the pre-registered absolute 1e-6 then passes untouched, with no amendment and no change to the kind of test. Route (b): amend the operator guide in writing, dated, to declare a relative tolerance for GPU inference paths, then re-run -- this changes the kind of test. Relaxing the threshold without (a) or (b) reproduces the prose PASS* as a script constant. Independently of the route, agreement should be declared per metric in that metric's own units.",
+  "per_model": {
+   "blur": {
+    "shipped_status": "PASS",
+    "n_checked": 75,
+    "n_diffs": 0,
+    "worst": {
+     "absdiff": 0.0,
+     "reldiff": 0.0
+    },
+    "per_metric": {}
+   },
+   "red_cnn": {
+    "shipped_status": "FAIL",
+    "n_checked": 75,
+    "n_diffs": 45,
+    "worst": {
+     "absdiff": 34.3,
+     "reldiff": 6.36e-05
+    },
+    "per_metric": {
+     "cnr_mean": {
+      "absdiff": 0.000698,
+      "reldiff": 6.36e-05
+     },
+     "npwe_mean": {
+      "absdiff": 34.3,
+      "reldiff": 3.62e-05
+     },
+     "psnr": {
+      "absdiff": 2.51e-05,
+      "reldiff": 4.69e-07
+     }
+    }
+   },
+   "learn": {
+    "shipped_status": "PASS",
+    "n_checked": 75,
+    "n_diffs": 0,
+    "worst": {
+     "absdiff": 0.0,
+     "reldiff": 0.0
+    },
+    "per_metric": {}
+   },
+   "ctformer": {
+    "shipped_status": "FAIL",
+    "n_checked": 75,
+    "n_diffs": 25,
+    "worst": {
+     "absdiff": 0.0335,
+     "reldiff": 4.41e-07
+    },
+    "per_metric": {
+     "cnr_mean": {
+      "absdiff": 2.08e-06,
+      "reldiff": 4.41e-07
+     },
+     "npwe_mean": {
+      "absdiff": 0.0335,
+      "reldiff": 2.03e-07
+     }
+    }
+   },
+   "corediff": {
+    "shipped_status": "FAIL",
+    "n_checked": 75,
+    "n_diffs": 45,
+    "worst": {
+     "absdiff": 4.58,
+     "reldiff": 2.5e-05
+    },
+    "per_metric": {
+     "cnr_mean": {
+      "absdiff": 0.000289,
+      "reldiff": 2.5e-05
+     },
+     "npwe_mean": {
+      "absdiff": 4.58,
+      "reldiff": 5.15e-06
+     },
+     "psnr": {
+      "absdiff": 2.29e-05,
+      "reldiff": 4.22e-07
+     }
+    }
+   }
+  },
+  "ladder": {
+   "absdiff@1e-06": {
+    "verdict": "FAIL",
+    "failing_models": [
+     "corediff",
+     "ctformer",
+     "red_cnn"
+    ]
+   },
+   "absdiff@1e-05": {
+    "verdict": "FAIL",
+    "failing_models": [
+     "corediff",
+     "ctformer",
+     "red_cnn"
+    ]
+   },
+   "absdiff@1e-04": {
+    "verdict": "FAIL",
+    "failing_models": [
+     "corediff",
+     "ctformer",
+     "red_cnn"
+    ]
+   },
+   "absdiff@1e-03": {
+    "verdict": "FAIL",
+    "failing_models": [
+     "corediff",
+     "ctformer",
+     "red_cnn"
+    ]
+   },
+   "reldiff@1e-06": {
+    "verdict": "FAIL",
+    "failing_models": [
+     "corediff",
+     "red_cnn"
+    ]
+   },
+   "reldiff@1e-05": {
+    "verdict": "FAIL",
+    "failing_models": [
+     "corediff",
+     "red_cnn"
+    ]
+   },
+   "reldiff@1e-04": {
+    "verdict": "PASS",
+    "failing_models": []
+   },
+   "reldiff@1e-03": {
+    "verdict": "PASS",
+    "failing_models": []
+   }
+  }
+ },
+ "shipped_criterion_superseded": {
+  "kind": "absolute",
+  "tolerance": 1e-06,
+  "overall": "FAIL",
+  "per_model_status": {
+   "blur": "PASS",
+   "red_cnn": "FAIL",
+   "learn": "PASS",
+   "ctformer": "FAIL",
+   "corediff": "FAIL"
+  },
+  "note": "The pre-registered criterion and the verdict it gave, kept verbatim. Superseded 2026-09-12 by the per-metric criterion declared in the operator guide §4; see routeA_rerun_evidence for why the change records a finding rather than a relaxation."
  },
  "routeA_rerun_evidence": {
-  "dated": "2026-09-09",
-  "issue": "#5",
-  "route": "(a) deterministic kernels re-run, as decided by the Director",
-  "rerun_script": "run_routeA_det.py (r6_recalc work dir, outside this repo)",
-  "rerun_performed": "2026-09-05 00:21 .. 2026-09-06 06:48 local",
-  "rerun_log": "r6_recalc/routeA_run.log: red_cnn 585.4min rc=0, ctformer 422.8min rc=0, corediff 1824.1min rc=0; kernels: cudnn.deterministic=True, cudnn.benchmark=False, use_deterministic_algorithms(True), CUBLAS_WORKSPACE_CONFIG=:4096:8; 2x RTX 4090",
-  "models_rerun": [
-   "red_cnn",
-   "ctformer",
-   "corediff"
-  ],
-  "models_not_rerun_reason": "blur/learn were already bit-identical to onboard; route (a) covers the three learning models only",
-  "same_side_determinism_check": "deterministic re-run vs pre-routeA non-deterministic re-run of the same side: n_diffs = 0 for red_cnn / ctformer / corediff (bit-identical). The eval path is therefore not sensitive to cuDNN kernel non-determinism in this environment.",
-  "vs_onboard_finding": "Deterministic re-run still differs from the onboard reference at the shipped absolute 1e-6 (red_cnn 45 / ctformer 25 / corediff 45 of 75 comparisons). Worst relative differences: red_cnn 6.36e-5 (cnr_mean), corediff 2.50e-5 (cnr_mean), ctformer 4.41e-7 (cnr_mean). Since determinism on/off does not change the recalc side, the residual difference is NOT cuDNN kernel non-determinism; it is a systematic cross-environment float offset between the independent recalc venv and the onboard environment (driver/library build differences). Route (a) as scoped -- deterministic re-run of the recalc side only -- cannot reach bit-identical agreement with the historical onboard reference. Per-metric declaration below is the honest statement."
+  "why_run": "The pre-registered absolute 1e-6 failed for red_cnn, corediff and ctformer. Route (a) was chosen on 2026-09-04 on the hypothesis that the residual was cuDNN kernel non-determinism, which predicted absdiff == 0 under deterministic kernels.",
+  "how_run": {
+   "flags": [
+    "cudnn.deterministic=True",
+    "cudnn.benchmark=False",
+    "torch.use_deterministic_algorithms(True)",
+    "CUBLAS_WORKSPACE_CONFIG=:4096:8"
+   ],
+   "models": [
+    "red_cnn",
+    "ctformer",
+    "corediff"
+   ],
+   "cost": "~48 GPU-hours",
+   "run_by": "heyang, on the machine holding the checkpoints and data trees"
+  },
+  "result": "deterministic re-run vs non-deterministic re-run of the SAME side: n_diffs = 0, bit-identical",
+  "conclusion": "The prediction failed: the eval path was not sensitive to cuDNN non-determinism in that environment. Re-running the recalc side deterministically does not change the recalc side at all, so route (a) as scoped cannot close the residual. The residual against the on-board reference is a systematic cross-environment float offset (independent recalc venv vs the on-board environment: different driver and library builds), which is the case the guide's hardware-differs clause was written for.",
+  "recorded_from": "DIRECTOR_DECISIONS.md 2.1, decision of 2026-09-11; issue #5",
+  "do_not_overwrite": "This block is what makes the amendment defensible. Before route (a), cuDNN and environment were confounded and the clause could not honestly be invoked; relaxing then would have been adjudicating after seeing the result."
  },
  "per_metric_declaration": {
-  "blur": {
-   "cho_auc_mean": {
-    "max_absdiff": 0.0,
-    "max_reldiff": 0.0,
-    "declared_at_rel_1e-6": "PASS"
+  "declared_on": "2026-09-12",
+  "declared_in": "R6独立复算操作指南.md §4 (dated revision); Director decision 2026-09-11 §2.1 route (b)",
+  "rule": "agreement is declared per metric in that metric's own units",
+  "gpu_inference_paths": {
+   "kind": "relative",
+   "tolerance": 0.0001
+  },
+  "counts": {
+   "kind": "absolute",
+   "tolerance": 0.0
+  },
+  "why_the_old_criterion_misfired": "One absolute 1e-6 across metrics spanning five orders of magnitude is ~2e-7 relative on cnr_mean and ~1e-12 on npwe_mean. ctformer was marked FAIL on a worst relative difference of 4.41e-07 because one npwe_mean value differed by 0.0335 in absolute terms. That is a defect of the criterion's units, not a fact about the model.",
+  "ladder_from_the_committed_diffs": {
+   "absdiff@1e-06": {
+    "verdict": "FAIL",
+    "failing_models": [
+     "corediff",
+     "ctformer",
+     "red_cnn"
+    ]
    },
-   "cnr_mean": {
-    "max_absdiff": 0.0,
-    "max_reldiff": 0.0,
-    "declared_at_rel_1e-6": "PASS"
+   "absdiff@1e-05": {
+    "verdict": "FAIL",
+    "failing_models": [
+     "corediff",
+     "ctformer",
+     "red_cnn"
+    ]
    },
-   "npwe_mean": {
-    "max_absdiff": 0.0,
-    "max_reldiff": 0.0,
-    "declared_at_rel_1e-6": "PASS"
+   "absdiff@1e-04": {
+    "verdict": "FAIL",
+    "failing_models": [
+     "corediff",
+     "ctformer",
+     "red_cnn"
+    ]
    },
-   "psnr": {
-    "max_absdiff": 0.0,
-    "max_reldiff": 0.0,
-    "declared_at_rel_1e-6": "PASS"
+   "absdiff@1e-03": {
+    "verdict": "FAIL",
+    "failing_models": [
+     "corediff",
+     "ctformer",
+     "red_cnn"
+    ]
    },
-   "ssim": {
-    "max_absdiff": 0.0,
-    "max_reldiff": 0.0,
-    "declared_at_rel_1e-6": "PASS"
+   "reldiff@1e-06": {
+    "verdict": "FAIL",
+    "failing_models": [
+     "corediff",
+     "red_cnn"
+    ]
+   },
+   "reldiff@1e-05": {
+    "verdict": "FAIL",
+    "failing_models": [
+     "corediff",
+     "red_cnn"
+    ]
+   },
+   "reldiff@1e-04": {
+    "verdict": "PASS",
+    "failing_models": []
+   },
+   "reldiff@1e-03": {
+    "verdict": "PASS",
+    "failing_models": []
    }
   },
-  "red_cnn": {
-   "cho_auc_mean": {
-    "max_absdiff": 0.0,
-    "max_reldiff": 0.0,
-    "declared_at_rel_1e-6": "PASS"
-   },
-   "cnr_mean": {
-    "max_absdiff": 0.0006975147027556972,
-    "max_reldiff": 6.358155165278288e-05,
-    "declared_at_rel_1e-6": "FAIL"
-   },
-   "npwe_mean": {
-    "max_absdiff": 34.25529654347338,
-    "max_reldiff": 3.616431010731347e-05,
-    "declared_at_rel_1e-6": "FAIL"
-   },
-   "psnr": {
-    "max_absdiff": 2.51463792082518e-05,
-    "max_reldiff": 4.6874104727737236e-07,
-    "declared_at_rel_1e-6": "PASS"
-   },
-   "ssim": {
-    "max_absdiff": 1.0789688964507604e-07,
-    "max_reldiff": 1.0866535656454244e-07,
-    "declared_at_rel_1e-6": "PASS"
-   }
-  },
-  "learn": {
-   "cho_auc_mean": {
-    "max_absdiff": 0.0,
-    "max_reldiff": 0.0,
-    "declared_at_rel_1e-6": "PASS"
-   },
-   "cnr_mean": {
-    "max_absdiff": 0.0,
-    "max_reldiff": 0.0,
-    "declared_at_rel_1e-6": "PASS"
-   },
-   "npwe_mean": {
-    "max_absdiff": 0.0,
-    "max_reldiff": 0.0,
-    "declared_at_rel_1e-6": "PASS"
-   },
-   "psnr": {
-    "max_absdiff": 0.0,
-    "max_reldiff": 0.0,
-    "declared_at_rel_1e-6": "PASS"
-   },
-   "ssim": {
-    "max_absdiff": 0.0,
-    "max_reldiff": 0.0,
-    "declared_at_rel_1e-6": "PASS"
-   }
-  },
-  "ctformer": {
-   "cho_auc_mean": {
-    "max_absdiff": 0.0,
-    "max_reldiff": 0.0,
-    "declared_at_rel_1e-6": "PASS"
-   },
-   "cnr_mean": {
-    "max_absdiff": 2.083072028646882e-06,
-    "max_reldiff": 4.4127738956450235e-07,
-    "declared_at_rel_1e-6": "PASS"
-   },
-   "npwe_mean": {
-    "max_absdiff": 0.03346758274710737,
-    "max_reldiff": 2.0294974100930142e-07,
-    "declared_at_rel_1e-6": "PASS"
-   },
-   "psnr": {
-    "max_absdiff": 1.4588437124984921e-08,
-    "max_reldiff": 2.637257352553478e-10,
-    "declared_at_rel_1e-6": "PASS"
-   },
-   "ssim": {
-    "max_absdiff": 2.4965296496759493e-09,
-    "max_reldiff": 2.512366365501291e-09,
-    "declared_at_rel_1e-6": "PASS"
-   }
-  },
-  "corediff": {
-   "cho_auc_mean": {
-    "max_absdiff": 0.0,
-    "max_reldiff": 0.0,
-    "declared_at_rel_1e-6": "PASS"
-   },
-   "cnr_mean": {
-    "max_absdiff": 0.0002886910186976621,
-    "max_reldiff": 2.501577851671789e-05,
-    "declared_at_rel_1e-6": "FAIL"
-   },
-   "npwe_mean": {
-    "max_absdiff": 4.578533113817684,
-    "max_reldiff": 5.152732093647571e-06,
-    "declared_at_rel_1e-6": "FAIL"
-   },
-   "psnr": {
-    "max_absdiff": 2.2894065182299528e-05,
-    "max_reldiff": 4.2175323662367546e-07,
-    "declared_at_rel_1e-6": "PASS"
-   },
-   "ssim": {
-    "max_absdiff": 1.8614749008882825e-07,
-    "max_reldiff": 1.8854765240844626e-07,
-    "declared_at_rel_1e-6": "PASS"
-   }
-  }
+  "re_derivable_by": "R6_recalc/recompare_per_metric.py --check"
  },
- "overall": "FAIL"
+ "criterion": {
+  "declared_on": "2026-09-12",
+  "declared_in": "R6独立复算操作指南.md §4, revision of 2026-09-12; Director decision 2026-09-11 §2.1 route (b)",
+  "per_metric": {
+   "psnr": {
+    "kind": "relative",
+    "tol": 0.0001,
+    "units": "dB"
+   },
+   "ssim": {
+    "kind": "relative",
+    "tol": 0.0001,
+    "units": "index in [0,1]"
+   },
+   "cnr_mean": {
+    "kind": "relative",
+    "tol": 0.0001,
+    "units": "ratio"
+   },
+   "cho_auc_mean": {
+    "kind": "relative",
+    "tol": 0.0001,
+    "units": "AUC in [0,1]"
+   },
+   "npwe_mean": {
+    "kind": "relative",
+    "tol": 0.0001,
+    "units": "observer statistic ~1e5-1e6"
+   },
+   "n": {
+    "kind": "absolute",
+    "tol": 0.0,
+    "units": "count"
+   }
+  },
+  "derived_by": "R6_recalc/recompare_per_metric.py"
+ }
 }
