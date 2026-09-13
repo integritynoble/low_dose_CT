@@ -159,6 +159,90 @@ rule out in a sentence. Reply in a commit message, a file, or however suits you.
 
 ---
 
+## 3b. Two measurements only your machine can do — BANDER-2 and BANDER-6
+
+**Added 13 September, after the RTX 5090 handed this back.** The assignment originally went there on
+the assumption that the AAPM and LIDC trees were on that workstation. They are not — the R3
+artifact's own `tree` field and all 25 lines of `WS-1_dataset/R6_recalc/hashes/aapm_hashes.txt` point
+at `D:\ZHY\low_dose_CT-heyang\WS-1_dataset\pipelines\_runtime\aapm_tree_v1`, which is **your
+machine**. That was our error, caught by the operator. So these two land with you, because the data
+is with you.
+
+Both are **CPU work** — deterministic image operations and a few lines of numpy. If you find yourself
+waiting on a GPU, something is mis-scoped.
+
+### Start from the branch — do not rewrite it
+
+```bash
+git fetch origin && git checkout bander/control-matrix    # a42ad27, off main @ 72ba063
+```
+
+`scripts/bander_controls.py` already implements the five controls as pure functions of the full-dose
+image — blur, additive Gaussian noise at a fixed seed, unsharp oversharpening, truncated-frequency
+ringing, and lesion erasure inside a disc — with 10 passing unit tests. **BANDER-1 is done. Do not
+redo it.**
+
+### BANDER-2 — the controls on the real slices
+
+Compute ROI BandER for every control on the **same slices and the same tissue ROIs** the committed R3
+artifact used, with the protocol code unmodified. The point is a table of control-vs-BandER that is
+directly comparable to the committed real-method values. Then repeat on the LIDC four-vendor slices
+(that part is BANDER-4) so the answer is not one cohort.
+
+**What is already known, on a phantom rather than your slices:** no scalar function of whole-ROI
+BandER separates all five controls. Raw descending *rewards* every noise arm and oversharpening;
+`|log B|` and `|B-1|` catch everything **except lesion erasure**, which scores 0.999 against an ideal
+of 1.000. The diagnosis is sharper than the negative — lesion erasure is 317 px of 65,536, **0.48% of
+the slice**, so the failure is in the **spatial aggregation**, not the transform. The same statistic
+measured *inside* the lesion moves from 0.9992 to 0.0997.
+
+Your job is to confirm or refute that on real anatomy. A negative result is the expected outcome and
+is fully acceptable work.
+
+### BANDER-6 — is the excess high-frequency energy a simulator artefact?
+
+This one may matter more, and it came out of a question about why CTformer's PSNR is lower than
+everyone else's. PSNR at dose ratio 0.25, in-domain versus out-of-domain:
+
+| method | LIDC simulated | AAPM real | drop | BandER on AAPM |
+|---|---:|---:|---:|---:|
+| **blur (the trap)** | 41.65 | 41.63 | **0.02 dB** | 0.432 |
+| RED-CNN | 53.65 | 41.20 | **12.45 dB** | 3.876 |
+| LEARN | 57.06 | 41.61 | **15.45 dB** | 3.854 |
+| CTformer | 55.32 | 39.59 | **15.73 dB** | 6.735 |
+
+**The blur trap is the only method that transfers.** It loses 0.02 dB going from simulated to real,
+because it learned nothing there was anything to lose. Every learned method loses 12–16 dB, and the
+one that loses most is also the one furthest above the reference on BandER.
+
+That is consistent with the learned methods having fitted **the release's own projection-domain
+simulator** and emitting simulator-shaped texture on real data. If so, the excess high-frequency
+energy is neither "residual noise" nor "sharpening" — it is in-domain behaviour applied
+out-of-domain, and no rescoring of BandER would identify it.
+
+**Measure BandER per method on LIDC-simulated and AAPM-real slices side by side, one protocol.** If
+the excess is a transfer effect it should be small or absent in-domain and large out-of-domain. If
+BandER is similarly elevated on LIDC too, the hypothesis is wrong and one of the other explanations
+stands.
+
+Report it either way. **Concluding that the benchmark's large cohort largely measures the simulator
+rather than the reconstruction problem is within what this work should be willing to say** — it would
+be a significant finding, not a failure.
+
+### Rules
+
+Do **not** tune a control until it fails, drop one because it is inconvenient, or search over scores
+until one passes and report only that. And separation from a cheat is not evidence the index tracks
+diagnostic content — BandER has still never been checked against a reader.
+
+**Do not change any scoring rule, gate, tolerance or registry status.** This produces evidence for a
+decision the Director has not taken. Code belongs on the branch; keep raw logs, images and data on
+your machine.
+
+**This is lower priority than §1 and §2.** The merge comes first.
+
+---
+
 ## 4. The deposit exists on one machine — please make a copy
 
 `deposit_procedure.md` said to pull the built records from `gs://low-dose-ct/pwm_ldct_v0_5`. **That
