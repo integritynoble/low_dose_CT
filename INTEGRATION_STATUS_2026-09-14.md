@@ -4,7 +4,7 @@ This is a review branch, not a merged release or scientific acceptance record.
 The owner asked that work continue with a fresh status/Heyang check each time;
 the repository [working instructions](AGENTS.md) preserve that requirement.
 
-## Checked source state
+## Starting source state
 
 | Source | Checked head | Visible state |
 |---|---|---|
@@ -23,6 +23,20 @@ R6 comparison. Only the comparison JSON had a Git conflict in this merge;
 automatically merged prose still required review. The historical route-(a)
 report is retained with a note distinguishing its causal interpretation from
 what the rerun establishes. No tolerance or recorded R6 verdict was changed.
+
+**Status refresh, 13:26 UTC:** `main` advanced to `b67024f` while this work was
+being reviewed; Heyang remained at `929c21e`. The branch incorporates the new
+reproduction-paper proposal (`d1f96a2`), removal of WS-1 R5/R6 inferential group
+statistics (`24e2883`), and venue register (`b67024f`). The numerical/software
+repairs in `ec45f62` are unchanged by that merge. GitHub metadata still reports
+this repository public at this check.
+
+The paper proposal and venue register are preserved as collaborator proposals,
+not accepted scientific claims. In particular, the reproduction proposal's
+private-visibility statement and its claims of uniquely established causality
+and prospective tolerance justification need reconciliation with the current
+metadata and the dated R6 review. Writing or launching that paper is a separate
+work item; no new submission or research commitment is made here.
 
 ## Work completed on the review branch
 

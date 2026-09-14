@@ -46,6 +46,11 @@ off-machine copy/deposit receipt, native Windows checks and source metadata
 confirmation still need the data holder's evidence. Check newer commits before
 starting any of those tasks.
 
+**Refresh at 13:26 UTC:** `main` advanced to `b67024f`; those three newer commits
+(reproduction-paper proposal, descriptive R5/R6 manuscript revision and venue
+register) are incorporated on the review branch. Heyang remains at `929c21e`.
+The new paper is a proposal, not a replacement for the remaining P0 tasks.
+
 | Priority | Work | Lead and review | What comes back |
 |---|---|---|---|
 | P0 | Existing merge/rebase repairs (§§1–2) | Heyang; independent Linux check | Exact commits, current test results and preserved R6 amendment history |
