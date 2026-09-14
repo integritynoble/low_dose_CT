@@ -59,7 +59,9 @@ Two further limits, both already established elsewhere in this repository and no
 
 ## 6. Venue
 
-Technical note at *Journal of Medical Imaging* or *Medical Physics*; ReScience C; or a MICCAI/MIDL reproducibility workshop. Modest by construction — that is the point, not a shortcoming.
+**Medical Physics**, as a Technical Note, is the primary recommendation — it is AAPM's journal and the AAPM 2016 challenge was published there, so the readership is the one that cares whether these numbers reproduce. **Scientific Reports** is the alternative if this paper should sit in Nature Portfolio with the rest of the plan. *Physics in Medicine & Biology* and *Journal of Medical Imaging* also fit.
+
+ReScience C appeared in this file's first draft and is withdrawn: it is for independent third-party replication, and this is self-reproduction within the project. See [`PAPER_TARGET_JOURNALS.md`](PAPER_TARGET_JOURNALS.md) for the full register and the reasoning. Modest by construction — that is the point, not a shortcoming.
 
 ## 7. Two decisions for the owner, before it starts
 
