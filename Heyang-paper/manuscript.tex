@@ -132,10 +132,17 @@ selection. This hypothesis is testable and it makes a sharp prediction: with det
 enabled, a re-run of the same side must be bit-identical, and any residual against the reference
 must therefore come from somewhere else.
 
-We re-ran the three methods outside the pre-registered criterion with
-\texttt{cudnn.deterministic=True}, \texttt{cudnn.benchmark=False},
-\texttt{torch.use\_deterministic\_algorithms(True)}, and
-\texttt{CUBLAS\_WORKSPACE\_CONFIG=:4096:8}, at a cost of approximately 48 GPU-hours.
+We re-ran the three methods outside the pre-registered criterion under the following settings, at a
+cost of approximately 48 GPU-hours:
+
+\begin{quote}
+\begin{tabular}{@{}l@{}}
+\texttt{cudnn.deterministic = True} \\
+\texttt{cudnn.benchmark = False} \\
+\texttt{torch.use\_deterministic\_algorithms(True)} \\
+\texttt{CUBLAS\_WORKSPACE\_CONFIG = :4096:8} \\
+\end{tabular}
+\end{quote}
 
 \subsection{The criterion audit}
 \label{sec:ladder}
@@ -258,9 +265,9 @@ tolerance. Benchmarks that ship an agreement criterion should declare it per met
 metric's own units, and should treat its failure as the beginning of an investigation.
 
 \section*{Data and code availability}
-\todo{Point at the released artifact, the comparison JSON, the re-derivation script
-(\texttt{recompare\_per\_metric.py}), and this note's table generator, once the repository's public
-release decision is made.}
+\todo{Point at the released artifact, the comparison JSON, the re-derivation
+script, and this note's table generator, once the repository's public release
+decision is made.}
 
 \section*{Author contributions}
 \todo{CRediT statement.}

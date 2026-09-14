@@ -63,9 +63,23 @@ treat a criterion failure as the start of an investigation rather than a formali
 
 ## Building
 
+There is no TeX installation on the Linux workstation's PATH, but a self-contained `tectonic`
+binary is present and is what built the committed PDF. It resolves packages itself, so no TeX
+distribution is needed:
+
+```bash
+python3 make_tables.py
+~/biohpc/tools/bin/tectonic manuscript.tex     # -> manuscript.pdf
+```
+
+With an ordinary TeX installation:
+
 ```bash
 python3 make_tables.py && pdflatex manuscript && bibtex manuscript && pdflatex manuscript && pdflatex manuscript
 ```
+
+`manuscript.pdf` is committed so the current draft can be read without a build. Regenerate it in the
+same commit as any change to the text or tables, or it goes stale silently.
 
 ## Provenance
 
