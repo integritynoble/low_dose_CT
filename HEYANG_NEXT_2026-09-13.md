@@ -268,6 +268,43 @@ pass silently.
 
 ---
 
+## 4b. Where to put the copy — the OneDrive folder, 14 September
+
+The owner has shared a OneDrive folder with you over Teams for exactly the copy section 4 asks for.
+The link is in that Teams message and deliberately **not** written here, because this repository is
+public and the share token would be readable by anyone.
+
+**What should go in it.** The v0.5 substrate that currently exists only on your workstation:
+
+    annotations/          including lidc_majority_vote/ and raw_per_reader/
+    sim_lowdose/lidc/
+    metadata/
+    splits/
+    deident_audit.jsonl
+
+That is 364 files by the R6 manifest — 50 `.h5`, 300 json, 8 logs, 4 txt — and it is the thing a disk
+failure would cost us.
+
+**What should not go in it.** The harmonized AAPM/Mayo HDF5 under `aapm_tree_v1` — the ten
+`aapm-00NN_*_fd.h5` full-dose arrays — along with any DICOM or `LNNN_*.npy/npz`. Those are the same
+three classes `stage_deposit.py` refuses to stage, and the refusal is deliberate so that a DUA breach
+cannot pass silently. A folder shared by link is a redistribution channel, so putting them there does
+by hand what the deposit tool is written to prevent. This repository already rewrote its own history
+in September to remove DUA-restricted Mayo arrays; the copy should not reintroduce the problem in a
+different place.
+
+If the owner decides the AAPM tree must travel anyway, that is his call to make explicitly, and the
+share should be restricted to named people rather than anyone-with-the-link before it does.
+
+**For BANDER-2 and BANDER-6, nothing needs to travel at all.** Both run on your machine against the
+slices already there, and what the repository needs back is a table of numbers, not pixels. Upload the
+results and a short note on what you found; a negative result is a full answer. That keeps the
+restricted arrays where they are and still closes the gap in
+[`FIELD_COLLAPSE_PROBLEMS.md`](FIELD_COLLAPSE_PROBLEMS.md) §1, which asks for a versioned control
+matrix and held-out results with uncertainty — not for the data to move.
+
+---
+
 ## 5. Things that changed under you
 
 - **The repository is public** as of 13 September. If you have a clone from before **5 September**,
