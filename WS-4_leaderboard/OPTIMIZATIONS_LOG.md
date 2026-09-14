@@ -376,4 +376,3 @@ skipped, up from 93 / 83.
   (real runs) lands; update `rung_registry.json` via `update_status`.
 - **P1-4**: real vendor/dose tags come from WS-1 corpus provenance when submissions
   arrive with full RunBundle provenance.
-*（内容由AI生成，仅供参考）*

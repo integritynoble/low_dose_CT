@@ -217,6 +217,66 @@
 
 ---
 
+## 10. issue #5 实证答复：route (a) 确定性内核重跑（2026-09-09 追加）
+
+> 对应 issue #5（route (a) DECIDED）。本节是重跑之后的**实证报告**，不改动
+> §8/§9 的历史文字，也不放松 shipped 的 absolute 1e-6 判据。
+
+### 10.1 执行记录
+
+在本机（数据树与 gitignore 权重所在机器）以确定性内核重跑三个学习模型全量
+（5 seeds × 3 dose，n=764，det-trials 64）：
+
+| 模型 | GPU | 内核设置 | 耗时 | 退出 |
+|---|---|---|---|---|
+| red_cnn | cuda:0 | deterministic | 585.4 min | rc=0, json 完整 |
+| ctformer (ctformer_small_retrain.pt) | cuda:0 | deterministic | 422.8 min | rc=0, json 完整 |
+| corediff | cuda:1 | deterministic | 1824.1 min | rc=0, json 完整 |
+
+内核设置：`torch.backends.cudnn.deterministic=True`、`cudnn.benchmark=False`、
+`torch.use_deterministic_algorithms(True)`、`CUBLAS_WORKSPACE_CONFIG=:4096:8`。
+运行日志在复算工作目录 `r6_recalc/routeA_run.log`（双 4090，2×RTX 4090）。
+blur / learn 不重跑：它们在原复算中已与 onboard bit-identical，route (a) 只覆盖
+学习类模型。重跑产物（`results/*_det_full764.json`）与复算工作目录逐字节一致。
+
+### 10.2 两个比对，两个结论
+
+**比对 A — 同侧：确定性重跑 vs pre-routeA 非确定性复算（同为复算环境）。**
+n_diffs = 0（red_cnn / ctformer / corediff 全部逐位一致）。即：开不开确定性内核，
+复算侧结果完全相同。**该 eval 管线在本环境下对 cuDNN kernel 非确定性不敏感。**
+
+**比对 B — 跨侧：确定性重跑 vs onboard reference（shipped absolute 1e-6）。**
+仍 FAIL：red_cnn 45 / ctformer 25 / corediff 45（各 75 项）。逐指标相对最差：
+
+| 模型 | 最差 reldiff（指标） | per-metric rel 1e-6 |
+|---|---|---|
+| red_cnn | 6.36e-5（cnr_mean） | cnr_mean / npwe_mean FAIL，其余 PASS |
+| corediff | 2.50e-5（cnr_mean） | cnr_mean / npwe_mean FAIL，其余 PASS |
+| ctformer | 4.41e-7（cnr_mean） | **全部 PASS** |
+
+### 10.3 对 §9 未决事项的答复
+
+§9 曾推断：red_cnn / corediff 的差异是"真正的 cuDNN 非确定性问题"，开启确定性
+内核后两次运行应逐位一致、现行绝对 1e-6 原样通过。**该推断被比对 A 证伪**：
+确定性重跑没有改变复算侧任何数值（同侧 n_diffs=0），因此复算与 onboard 的残留
+差异并非 kernel 非确定性所致，而是**复算环境与 onboard 环境之间的系统性
+float 偏差**（独立 venv / 驱动 / 库构建差异），最差 reldiff 6.4e-5。
+
+route (a) 按"仅复算侧重跑"的口径执行后，**达不到与历史 onboard reference 的
+bit-identical**；若要求 bit-identical，需要在同一环境（同 venv / 驱动）下把两侧
+一并重跑，但那已超出复算协议的"独立环境"设定。诚实口径是逐指标声明（见
+`results/comparison_full764.json` 的 `per_metric_declaration` 与
+`routeA_rerun_evidence` 块）：ctformer 在相对 1e-6 下全指标 PASS；red_cnn /
+corediff 仅 cnr_mean 与 npwe_mean 超出（最差 6.4e-5 / 2.5e-5），其余指标 PASS。
+
+### 10.4 产物变更（dated 2026-09-09）
+
+- `compare_full764.py`：改为 route (a) 实证后版本 —— shipped absolute 1e-6 判据
+  原样保留，新增 per-metric 声明与 `routeA_rerun_evidence` 块；
+- `results/comparison_full764.json`：按上述版本重跑生成。
+
+---
+
 *附：复算产物清单（均在 `r6_recalc/`）*
 - `smoke_blur_seed42.json`、`{blur,red_cnn,learn,ctformer,corediff}_det_full764.json`（步骤4，已完成）
 - `comparison_full764.json`（步骤4 逐 seed×dose 比对结果）

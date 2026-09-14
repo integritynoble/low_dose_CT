@@ -57,7 +57,7 @@ one verifier failure reported as UNVERIFIED, the valid package proven untouched,
 ## Tests
 
 ```
-cd fixture && PYTHONPATH=. ../../.venv/bin/python -m pytest -q   # 14 passed
+cd fixture && PYTHONPATH=. ../../.venv/bin/python -m pytest -q   # 23 passed
 ```
 
 Covers the NIfTI round-trip, full-build green report, directory structure,

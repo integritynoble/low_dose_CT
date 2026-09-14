@@ -134,4 +134,3 @@ python -m pwm_ldct_baselines eval --dataset <harmonized_tree|本地合成树> \
 | 评估（计算+落盘） | `baselines/src/.../eval.py` | 逐 slice 已计算、落盘时聚合 → **改动点** |
 | 逐 slice 检测计算 | `baselines/src/.../observers.py` | 已返回 `cnr_values`，无需改 |
 | 剂量曲线 | `baselines/src/.../dose_curve.py` | 读聚合，输出 `dose_detectability_stats.json`（仅聚合，与既往一致） |
-*（内容由AI生成，仅供参考）*

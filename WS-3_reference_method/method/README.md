@@ -33,7 +33,7 @@ downstream tools it drives.
 pip install -e .            # needs torch (CPU is fine for the smoke run)
 pwm-recon info             # resolved S1 config + parameter counts
 pwm-recon smoke /tmp/corpus  # synthetic end-to-end: train tiny ensemble → emit → deposit-verify
-pytest                     # 16 CPU tests (physics, model, train, ensemble, emit→deposit)
+pytest                     # 65 tests (physics, model, train, ensemble, emit→deposit)
 ```
 
 `smoke` is the one-command reproduction that runs anywhere with no Phase-3 data: it trains a

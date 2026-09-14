@@ -31,7 +31,7 @@ This file is about *how to change* the library.
 git clone https://github.com/integritynoble/low_dose_CT
 cd low_dose_CT/WS-2_framework/pwm_dose_equivalence
 pip install -e ".[test]"
-pytest                               # expect: 139 passed, 100% coverage
+pytest                               # expect: 157 passed, 100% coverage
 ```
 
 The library requires Python ≥ 3.10, NumPy ≥ 1.24, SciPy ≥ 1.10. No

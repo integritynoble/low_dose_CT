@@ -54,7 +54,7 @@ def _utcnow() -> str:
 TRAP_SOURCE = {
     "file": "WS-1_dataset/output/aapm_r3_roi_detectability.json",
     "schema": "aapm-r3-roi-detectability/v1",
-    "sha256": "9987864a1d60bed445ba6f1a4c08a344e8ba5217666e954f6a544557a32d55fc",
+    "sha256": "49dddf9dbc405d2f5040361e052042c1e0f8e59542fda5a652a287b3bc000973",
     "generated_at": "2026-08-22T19:36:01",
     "corpus": ("AAPM 2016 LDCT grand challenge, held-out test (4 patients), 1mm B30, "
                "FD vs QD real pairing"),
@@ -63,6 +63,7 @@ TRAP_SOURCE = {
                  "Sobel gradient, low internal std, seed 42, 32x32 px), 48 ROIs per patient"),
     "aggregation": "per-patient mean over the 4 held-out test patients",
     "refreshed_at": "2026-09-05",
+    "re_verified_at": "2026-09-09",
 }
 
 
@@ -143,7 +144,7 @@ def seed_blur_entry() -> Dict:
 VENDOR_TRAP_SOURCE = {
     "file": "WS-1_dataset/output/aapm_lidc_cross_vendor_spread.json",
     "schema": "aapm-lidc-cross-vendor-spread/v1",
-    "sha256": "c436407412c6e419745bddf23aa10a0b8466015dd12a4ad104299c3aabe4f086",
+    "sha256": "5b67f1f9b835eda2e4283442b3bd3bace9be059a5eab89ee2e712ca9eb6c3588",
     "generated_at": "2026-08-22T21:01:52",
     "dose_points": {"LIDC_sim": "r=0.25 (lowdose_sim projection-domain, seed 42)",
                     "AAPM_real": "r=0.25 official real QD"},
@@ -151,6 +152,7 @@ VENDOR_TRAP_SOURCE = {
                  "Sobel gradient, low internal std, seed 42, 32x32 px)"),
     "aggregation": "per-patient mean within each vendor group",
     "added_at": "2026-09-05",
+    "re_verified_at": "2026-09-09",
 }
 
 #: The permanent trap as measured in each vendor group, so Rung 5's requirement
@@ -460,14 +462,105 @@ def check_trap_rank(entries: List[Dict], *, min_ratio: Optional[float] = None) -
     return list(trap_rank_report(entries, min_ratio=min_ratio)["violations"])
 
 
-def assert_trap_ranks_last(entries: List[Dict], *, min_ratio: Optional[float] = None) -> None:
-    """Hard gate: raise unless the permanent trap ranks last on the discriminating index.
+def assert_trap_ranks_last(entries: List[Dict], *, by: Optional[str] = None,
+                           min_separation: float = 3.0) -> None:
+    """Hard gate: raise unless the trap ranks last with >= min_separation inside every group.
 
-    Use this on a publishing path. Ordinary mutation records the verdict on the
-    board instead of raising, so that a board which fails this check is still
-    written down with its failure attached rather than discarded.
+    Rung 5/6 puts the 3x separation requirement on the group, not on the whole
+    board: the trap's own band energy ranges over an order of magnitude between
+    vendors (0.045 on GE to 0.432 on AAPM), so a group must be judged against
+    its own numbers. A submission that carries a group key (``vendor`` by
+    default, or whatever ``by`` names) is therefore checked inside its group,
+    against the group's own trap when the board carries one (``seed-blur:<key>``)
+    and otherwise against the canonical seed blur. Entries with no group key are
+    checked globally, rank-only: the seed/reference boards predate vendor groups
+    and publish measured separations as low as 2.55x (Rung 1), so requiring 3x
+    of an ungrouped board would refuse boards the project already stands behind.
+
+    Use this on a publishing path (``save`` refuses to write a board that fails
+    it). Ordinary mutation still records the verdict on the board instead of
+    raising, so a failing board is written down failing before the publish gate
+    has its say.
     """
-    violations = check_trap_rank(entries, min_ratio=min_ratio)
+    canonical = _trap_in(entries)
+    if canonical is None or not canonical.get("permanent"):
+        raise ValueError("trap-rank gate: permanent Gaussian blur trap missing from leaderboard")
+
+    index = DISCRIMINATING_FIELDS[0] if DISCRIMINATING_FIELDS else None
+    if index is None:
+        raise ValueError("trap-rank gate: no discriminating index is declared in "
+                         "task_spec.DISCRIMINATING_FIELDS; the trap cannot be ranked")
+    group_field = by if by is not None else "vendor"
+
+    grouped: Dict[str, List[Dict]] = {}
+    ungrouped: List[Dict] = []
+    for e in entries:
+        if e.get("trap") or e.get("placeholder"):
+            continue
+        key = e.get(group_field)
+        if isinstance(key, str):
+            grouped.setdefault(key, []).append(e)
+        else:
+            ungrouped.append(e)
+
+    violations: List[str] = []
+
+    # Each group is judged against its own permanent trap when the board has one
+    # for that key, else against the canonical seed blur. A member with no
+    # number cannot be ranked; a group whose trap has no number cannot be
+    # checked at all (INDETERMINATE is the evasion route, never read as PASS).
+    for key in sorted(grouped):
+        members = grouped[key]
+        g_trap = _trap_in(members)
+        if g_trap is None:
+            for e in entries:
+                if (e.get("trap") and e.get("permanent")
+                        and e.get(group_field) == key):
+                    g_trap = e
+                    break
+        if g_trap is None:
+            g_trap = canonical
+        trap_value = discriminating_value(g_trap)
+
+        for e in members:
+            if discriminating_value(e) is None:
+                violations.append(
+                    "entry '%s' in %s group '%s' reports no numeric %s, so the "
+                    "group cannot be ranked against the trap"
+                    % (e.get("id"), group_field, key, index))
+        if trap_value is None:
+            violations.append(
+                "trap has no numeric %s while %s group '%s' holds %d entr%s; the "
+                "board cannot be checked: a trap with no discriminating number "
+                "would let any board pass. Refresh the trap's numbers before "
+                "publishing" % (index, group_field, key, len(members),
+                                "y" if len(members) == 1 else "ies"))
+            continue
+
+        for e in members:
+            value = discriminating_value(e)
+            if value is None:
+                continue
+            if value <= trap_value:
+                violations.append(
+                    "entry '%s' scores %s=%.6g, at or below the permanent blur "
+                    "trap (%.6g) in %s group '%s', so it does not rank last. "
+                    "Either that entry smooths beyond a plain Gaussian blur, or "
+                    "%s has stopped discriminating on this board"
+                    % (e.get("id"), index, value, trap_value, group_field, key, index))
+            elif trap_value > 0 and value / trap_value < min_separation:
+                violations.append(
+                    "entry '%s' in %s group '%s' separates only %.3gx from the "
+                    "blur trap, below the declared >= %gx separation (Rung 5/6 "
+                    "uses 3x)" % (e.get("id"), group_field, key,
+                                  value / trap_value, min_separation))
+
+    # Ungrouped entries (seed-era boards, no vendor/dose context) keep the
+    # historical rank-only check: the trap must rank last, with no 3x demand.
+    if ungrouped:
+        ungr_report = trap_rank_report([canonical] + ungrouped)
+        violations.extend(ungr_report["violations"])
+
     if violations:
         raise ValueError("trap-rank gate: " + "; ".join(violations))
 
@@ -571,6 +664,14 @@ def add_submission(leaderboard: Dict, result: Dict, method: str,
 
     ``vendor`` / ``dose`` are the measurement context of the submission; they are kept
     per-entry so rankings can report spread without averaging across vendors (Rung 6).
+
+    This is the **paired-metrics gate only**. The referee-path / write-surface gate
+    lives in :func:`heldout.check_submission_cannot_write_back` and applies to the
+    whole :class:`heldout.SubmissionEnvelope` (method name, vendor, dose and the
+    result payload); the CLI's ``submit`` command assembles that envelope before
+    calling this function. Callers that invoke this function directly must run the
+    envelope gate first -- ``method`` / ``vendor`` / ``dose`` are recorded verbatim
+    on the board and are submitter-controlled.
     """
     methods = extract_paired_methods(result)
     if not methods:
@@ -686,8 +787,15 @@ def load(path: str | Path) -> Dict:
 
 def save(board: Dict, path: str | Path) -> None:
     assert_trap_present(board.get("entries", []))
-    # Refresh the trap-rank verdict so no board is written without one. This
-    # records a FAIL rather than refusing to write it: the failure is the finding.
+    # Publish gate: refuse to write a board whose trap does not rank last with
+    # >= 3x separation in every vendor group. Refusing beats recording here: the
+    # CLI is the write surface for submissions, and a submitter must not be able
+    # to persist a board that makes no detectability claim. Ordinary mutation
+    # still records the verdict on the in-memory board (``add_submission``), so
+    # a failing board is written down as evidence before this gate has its say.
+    assert_trap_ranks_last(board.get("entries", []))
+    # Refresh the trap-rank verdict so no board is written without one. The
+    # publish gate above has already passed, so these record the sound state.
     board["trap_rank"] = trap_rank_report(board.get("entries", []))
     board["trap_rank_by_vendor"] = trap_rank_by_group(board.get("entries", []), by="vendor")
     Path(path).write_text(json.dumps(board, indent=2, ensure_ascii=False) + "\n",

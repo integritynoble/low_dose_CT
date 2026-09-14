@@ -63,4 +63,3 @@ python -m pwm_ldct_recon.cli uq-report --markdown # human-readable Markdown summ
 ## Test status
 
 `python -m pytest method/tests -q` → **65 passed** (was 38 before this round).
-*（内容由AI生成，仅供参考）*

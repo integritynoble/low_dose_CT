@@ -63,7 +63,7 @@ the corpus is deposited.
     & Warm start                           & TV-regularized FBP (TV-FBP) \\
     & Data-consistency step size $\tau$    & learned scalar, init $0.5/\|\mathcal{R}\|_2^2$ \\
     & Reconstruction loss                  & mean absolute error (L1) on HU \\
-    & Forward / adjoint operator           & \texttt{pwm\_core ct\_radon} (version in Table~S2) \\
+    & Forward / adjoint operator           & in-repo \texttt{pwm\_ldct\_recon.physics} (parallel beam; interface-compatible with \texttt{pwm\_core ct\_radon}; version in Table~S2) \\
     & Projection geometry ($n_\text{views}$, $n_\text{dets}$) & \todo{geometry} \\
     & FBP filter                           & \todo{filter (e.g.\ Ram-Lak / Hann)} \\
     \midrule
@@ -126,7 +126,7 @@ the corpus is deposited.
     & CUDA / cuDNN            & \todo{x.y / x.y} \\
     & NumPy                   & \todo{x.y.z} \\
     & SciPy                   & \todo{x.y.z} \\
-    & \texttt{pwm\_core} (\texttt{ct\_radon}) & \todo{commit / version} \\
+    & \texttt{pwm\_ldct\_recon} (in-repo Radon operator) & \todo{repository commit / image digest} \\
     & \texttt{pwm\_dose\_equivalence}         & \texttt{0.2.2} \\
     & \texttt{nnDetection} (frozen task detector) & \todo{release / commit} \\
     & \texttt{nibabel}        & \todo{x.y.z} \\

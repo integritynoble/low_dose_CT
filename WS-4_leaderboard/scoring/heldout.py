@@ -63,10 +63,16 @@ class SubmissionEnvelope:
     Deliberately minimal: it carries no reference to the leaderboard file, the
     held-out file, or any write surface. Gate code must verify this by calling
     :func:`assert_no_write_path` and :func:`assert_no_referee_paths`.
+
+    ``vendor`` and ``dose`` are optional metadata the submitter may declare; they
+    are recorded verbatim on the board (as group keys for spread / per-group trap
+    rank), so the write-back gate scans them exactly like ``method_name``.
     """
 
     method_name: str
     result: Dict[str, Any]
+    vendor: str | None = None
+    dose: str | None = None
 
 
 def make_heldout_set(id: str, records: Iterable[Any],
@@ -156,7 +162,10 @@ def check_submission_cannot_write_back(submission: SubmissionEnvelope) -> List[s
     ``append`` attribute or a referee-owned path string anywhere inside the result
     dict, so both the envelope itself and every nested key and value are inspected.
     ``method_name`` is submitter-controlled and is recorded verbatim on the board,
-    so it is scanned for referee-owned paths too, not just the payload.
+    so it is scanned for referee-owned paths too, not just the payload. The same
+    applies to the optional ``vendor`` and ``dose`` metadata fields: they are
+    recorded verbatim as group keys, so a referee-owned file name smuggled through
+    them must be rejected exactly like one in the method name.
     """
     violations: List[str] = []
     write_surface = assert_no_write_path(submission)
@@ -169,10 +178,16 @@ def check_submission_cannot_write_back(submission: SubmissionEnvelope) -> List[s
     if referee_paths:
         violations.append(
             f"submission references referee-owned files: {referee_paths}")
-    name_paths = assert_no_referee_paths(submission.method_name)
-    if name_paths:
-        violations.append(
-            f"submission method name references referee-owned files: {name_paths}")
+    for field_name, field_value in (("method name", submission.method_name),
+                                    ("vendor", submission.vendor),
+                                    ("dose", submission.dose)):
+        if field_value is None:
+            continue
+        field_paths = assert_no_referee_paths(field_value)
+        if field_paths:
+            violations.append(
+                f"submission {field_name} references referee-owned files: "
+                f"{field_paths}")
     return violations
 
 

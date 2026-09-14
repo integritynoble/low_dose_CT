@@ -59,8 +59,12 @@ def cmd_validate(args) -> int:
 def cmd_submit(args) -> int:
     board = load(args.out) if Path(args.out).exists() else new_leaderboard()
     result = _load_result(args.result)
-    # P1-3: every submission travels in a write-path-free envelope.
-    envelope = SubmissionEnvelope(method_name=args.method, result=result)
+    # P1-3: every submission travels in a write-path-free envelope. vendor/dose
+    # are submitter-controlled metadata recorded verbatim on the board (group
+    # keys), so they ride inside the envelope and hit the same write-back gate
+    # as the method name and the result payload.
+    envelope = SubmissionEnvelope(method_name=args.method, result=result,
+                                  vendor=args.vendor, dose=args.dose)
     violations = check_submission_cannot_write_back(envelope)
     if violations:
         print("REJECT: submission is structurally able to write back to the board/data:")

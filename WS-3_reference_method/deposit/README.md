@@ -8,7 +8,7 @@ submitting the *Scientific Data* Data Descriptor (`../paper_draft/manuscript.tex
 | [`DEPOSIT_CHECKLIST.md`](DEPOSIT_CHECKLIST.md) | End-to-end gating checklist: generate → validate → package → deposit (DOI) → fill manuscript → submit. Hard-gated on Phase-3 data existing and on a minted figshare/Zenodo DOI. |
 | [`dataset_metadata.schema.json`](dataset_metadata.schema.json) | JSON Schema (draft-07) for the `dataset_metadata.json` that ships at the corpus archive root. Pins record types, licences, source-dataset relation, credential framework hash, integrity manifest. |
 | [`dataset_metadata.example.json`](dataset_metadata.example.json) | Seed template with descriptive fields + deposit-time placeholders. The human fills the descriptive fields; `package_corpus.py` overlays the counts/sizes. Validates against the schema today. |
-| [`package_corpus.py`](package_corpus.py) | Writes `dataset_metadata.json` (counts/sizes filled from disk) **then** `MANIFEST.sha256` (covers the metadata). `verify` recomputes hashes vs the manifest; `verify-error-maps` recomputes `\|recon − full_dose ref\|` and checks it equals the released `error_abs` (reviewer-sim V4). CLI + importable API; 13 tests. |
+| [`package_corpus.py`](package_corpus.py) | Writes `dataset_metadata.json` (counts/sizes filled from disk) **then** `MANIFEST.sha256` (covers the metadata). `verify` recomputes hashes vs the manifest; `verify-error-maps` recomputes `\|recon − full_dose ref\|` and checks it equals the released `error_abs` (reviewer-sim V4). CLI + importable API; 17 tests. |
 
 ## Package + verify the corpus
 

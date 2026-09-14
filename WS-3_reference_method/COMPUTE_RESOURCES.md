@@ -34,7 +34,7 @@ funder, or the engineer who will book the GPU. All figures are D9-anchored
 | Inference target | < 5 s/slice on a single A100 (operational claim) | README architecture table |
 
 The unrolled loop runs the differentiable Radon forward/back-projection operator
-`packages/pwm_core/contrib/modalities/ct_radon.py` at every iteration **in the training
+`method/src/pwm_ldct_recon/physics.py` at every iteration **in the training
 graph**, so the per-step cost is dominated by K×(projection pair + denoiser forward/backward)
 rather than by a single U-Net pass. Do not size the cluster from plain-2D-U-Net rules of thumb.
 
@@ -109,7 +109,7 @@ reviewer requests. Reserve **+25% headroom** in the booking.
 
 | Item | Status |
 |---|---|
-| Method scaffold + CPU tests | ✅ done — 19 CPU tests pass; `pwm-recon smoke` runs the full Phase-3 pipeline on synthetic data (CI, 3 Python versions) |
+| Method scaffold + CPU tests | ✅ done — 65 tests pass; `pwm-recon smoke` runs the full Phase-3 pipeline on synthetic data (CI, 3 Python versions) |
 | Real training data tree | ❌ blocked — WS-1 v0.5 harmonized tree (LIDC + AAPM + Mayo) not yet landed locally; GCS staging (`gs://low-dose-ct/...`) pending WS-1 pipeline runs |
 | GPU | ❌ blocked — current workstation has only RTX 4060 Laptop 8 GB (see §2); no data-center GPU booked |
 | Production training (v1 ensemble) | ⛔ **NOT STARTED** — all PSNR/SSIM/UQ numbers in `manuscript.tex` remain `\todo{}` / synthetic-only until §2–§4 resources are available |
@@ -125,4 +125,3 @@ only in structure, not in numbers.
 or secure academic cluster time; (3) execute a 1–2 epoch pilot (`--max_steps` in `train.py`) to
 calibrate §3 per-step numbers; (4) re-update this section with measured timings and the
 `\todo{epochs}`/`\todo{lr}` back-fill into `supplementary.tex` Table S1.
-*（内容由AI生成，仅供参考）*

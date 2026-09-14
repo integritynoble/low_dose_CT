@@ -162,4 +162,3 @@ The clinical framing of dose-equivalence ("at what dose ratio can we still confi
 - [`../WS-3_reference_method/`](../WS-3_reference_method/) — provides one of the seed entries
 - [`../pwm_integration/l3_spec.md`](../pwm_integration/l3_spec.md) — submission contract format
 - [`../pwm_integration/l2_spec.md`](../pwm_integration/l2_spec.md) — credential requirement for submissions
-*（内容由AI生成，仅供参考）*

@@ -35,4 +35,3 @@ Overall: **10/10 patients passed** (ALL PASSED)
 - Data source: AAPM 2016 Low-Dose CT Grand Challenge, 10 training patients, 1mm B30 kernel, staged at `E:\AAPM_staged\`.
 - Pairing is geometric only (never file-name / InstanceNumber order); unpaired counts should be 0 and violations 0 for a clean pass.
 - Full JSON: `aapm_pairing_validation.json` (same directory).
-*（内容由AI生成，仅供参考）*

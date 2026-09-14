@@ -43,4 +43,3 @@ To address the concern that the AAPM evaluation rests on ten patients, we note t
 | 10 例规模小 | 配对扫描稀缺性 → 定位为独立外部验证集；逐 ROI/逐患者配对检验有统计效力 | 英语段落第 1/2/3 句 |
 | 一般性 | 不以规模论，以跨域一致性（模拟 vs 真实同向）+ 内部显著性（分离比 CI >1、P 值）支撑 | 第 4/5 句 |
 | 佐证数字 | 分离比 9.17 / 15.59 / 9.13×、B=4000、患者级 bootstrap | 第 3 句末尾 |
-*（内容由AI生成，仅供参考）*

@@ -1,0 +1,179 @@
+{
+  "per_model": {
+    "corediff": {
+      "display": "CoreDiff",
+      "per_dose": {
+        "sim_r010": {
+          "cho_auc": 1.0,
+          "cnr": 5.34298422953716,
+          "cnr_statistic": "slice_mean",
+          "lpips": 0.006039415940313834,
+          "n": 5,
+          "psnr": 51.520342405244165,
+          "ssim": 0.9872702614487153
+        },
+        "sim_r025": {
+          "cho_auc": 1.0,
+          "cnr": 8.431432364856756,
+          "cnr_statistic": "slice_mean",
+          "lpips": 0.0025959537531089535,
+          "n": 5,
+          "psnr": 53.35691003525288,
+          "ssim": 0.9920295539326693
+        },
+        "sim_r050": {
+          "cho_auc": 1.0,
+          "cnr": 11.540357159171828,
+          "cnr_statistic": "slice_mean",
+          "lpips": 0.0017455550911127777,
+          "n": 5,
+          "psnr": 54.283081181728036,
+          "ssim": 0.9935796701627252
+        }
+      },
+      "rule": "all seeds reported; mean and interval (min/max) are the evaluation statement",
+      "seeds": [
+        "12345",
+        "2023",
+        "42",
+        "7",
+        "999"
+      ],
+      "split": "test"
+    },
+    "ctformer": {
+      "display": "CTformer",
+      "per_dose": {
+        "sim_r010": {
+          "cho_auc": 1.0,
+          "cnr": 2.5744348619575876,
+          "cnr_statistic": "slice_mean",
+          "lpips": 0.006311272907223801,
+          "n": 5,
+          "psnr": 52.93163266185653,
+          "ssim": 0.9898235035660379
+        },
+        "sim_r025": {
+          "cho_auc": 1.0,
+          "cnr": 4.608439708189747,
+          "cnr_statistic": "slice_mean",
+          "lpips": 0.002911919859269663,
+          "n": 5,
+          "psnr": 55.316699035306215,
+          "ssim": 0.9936964942522698
+        },
+        "sim_r050": {
+          "cho_auc": 1.0,
+          "cnr": 6.85691874085334,
+          "cnr_statistic": "slice_mean",
+          "lpips": 0.002045893524416859,
+          "n": 5,
+          "psnr": 56.6311129340162,
+          "ssim": 0.9949487163758401
+        }
+      },
+      "rule": "all seeds reported; mean and interval (min/max) are the evaluation statement",
+      "seeds": [
+        "12345",
+        "2023",
+        "42",
+        "7",
+        "999"
+      ],
+      "split": "test"
+    },
+    "learn": {
+      "display": "LEARN",
+      "per_dose": {
+        "sim_r010": {
+          "cho_auc": 1.0,
+          "cnr": 6.496631500866306,
+          "cnr_statistic": "slice_median",
+          "lpips": 0.005314054316917254,
+          "n": 5,
+          "psnr": 53.993128998163364,
+          "ssim": 0.9912020736495861
+        },
+        "sim_r025": {
+          "cho_auc": 1.0,
+          "cnr": 12.236881756652721,
+          "cnr_statistic": "slice_median",
+          "lpips": 0.0024463534866004367,
+          "n": 5,
+          "psnr": 57.06221141853389,
+          "ssim": 0.9958128209045419
+        },
+        "sim_r050": {
+          "cho_auc": 1.0,
+          "cnr": 22.21445175343806,
+          "cnr_statistic": "slice_median",
+          "lpips": 0.0018014736378782416,
+          "n": 5,
+          "psnr": 58.96262390374162,
+          "ssim": 0.9973506909546428
+        }
+      },
+      "rule": "all seeds reported; mean and interval (min/max) are the evaluation statement",
+      "seeds": [
+        "12345",
+        "2023",
+        "42",
+        "7",
+        "999"
+      ],
+      "split": "test"
+    },
+    "red_cnn": {
+      "display": "RED-CNN",
+      "per_dose": {
+        "sim_r010": {
+          "cho_auc": 1.0,
+          "cnr": 5.1919247308056855,
+          "cnr_statistic": "slice_mean",
+          "lpips": 0.005349008334085652,
+          "n": 5,
+          "psnr": 51.95680212585123,
+          "ssim": 0.9893481276578304
+        },
+        "sim_r025": {
+          "cho_auc": 1.0,
+          "cnr": 8.052347933038154,
+          "cnr_statistic": "slice_mean",
+          "lpips": 0.0026544689393421896,
+          "n": 5,
+          "psnr": 53.6466335822553,
+          "ssim": 0.992928133273
+        },
+        "sim_r050": {
+          "cho_auc": 1.0,
+          "cnr": 10.970394471729882,
+          "cnr_statistic": "slice_mean",
+          "lpips": 0.002038376281572462,
+          "n": 5,
+          "psnr": 54.46043349844488,
+          "ssim": 0.9940779983841311
+        }
+      },
+      "rule": "all seeds reported; mean and interval (min/max) are the evaluation statement",
+      "seeds": [
+        "12345",
+        "2023",
+        "42",
+        "7",
+        "999"
+      ],
+      "split": "test"
+    }
+  },
+  "provenance": {
+    "combined_sha256": "14bd54f64b3004d6726d00c395f85bf42878d9392be54111db067b9b9774472d",
+    "n_files": 5
+  },
+  "source_files": [
+    "blur_results_det_full764.json",
+    "corediff_results_det_full764.json",
+    "ctformer_results_det_full764.json",
+    "learn_results_det_full764.json",
+    "red_cnn_results_det_full764.json"
+  ]
+}

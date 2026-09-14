@@ -125,5 +125,3 @@ anywhere in the result, or referencing referee-owned files (`leaderboard.json` /
   both are placeholder numbers from the WS-3 self-test structure and must be refreshed
   from the pinned WS-3 RunBundle before launch.
 - `web/`, `submission_contract/` — still pending Phase 1.
-*（内容由AI生成，仅供参考）*
-*（内容由AI生成，仅供参考）*
