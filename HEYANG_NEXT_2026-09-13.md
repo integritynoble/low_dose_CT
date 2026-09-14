@@ -25,6 +25,27 @@ commitment is made here.
 
 ## Priority and responsibility
 
+**Integration update, 2026-09-14.** Remote `heyang` was checked at `929c21e`
+(11 September); no later commit or posted measurement/backup receipt was found.
+`main` was `e7efa20`, with divergence `main...heyang = 17 / 19`. This is a check of
+repository evidence, not a claim about activity on the workstation.
+
+The review branch `codex/heyang-integration-2026-09-14` integrates that work,
+preserves `main`'s R6 comparison and Director decision file, and fixes both trap
+hash mismatches with LF/CRLF checks. Linux scoring now has **130 passed / 10 skipped**;
+native Windows verification remains outstanding. Do not repeat the patient-ID
+plumbing: it is already present in Heyang's commits. Its block bootstrap had a
+replacement-multiplicity defect, now repaired on the review branch with paired-dose
+draws and a separately versioned numeric rerun. The 764-slice evaluation contains
+**three distinct patient identifiers**, so those intervals remain exploratory.
+
+See [the integration status](INTEGRATION_STATUS_2026-09-14.md) for the test commands,
+corrected artifacts and review blockers. The branch is not a scientific
+certification or approval to merge all manuscript claims. BANDER-2/4/6, the
+off-machine copy/deposit receipt, native Windows checks and source metadata
+confirmation still need the data holder's evidence. Check newer commits before
+starting any of those tasks.
+
 | Priority | Work | Lead and review | What comes back |
 |---|---|---|---|
 | P0 | Existing merge/rebase repairs (§§1–2) | Heyang; independent Linux check | Exact commits, current test results and preserved R6 amendment history |

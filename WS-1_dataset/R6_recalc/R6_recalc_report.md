@@ -219,6 +219,14 @@
 
 ## 10. issue #5 实证答复：route (a) 确定性内核重跑（2026-09-09 追加）
 
+> **Integration note, 2026-09-14.** Section 10 is the historical 9 September
+> report under the original criterion. The current committed comparison uses
+> the later per-metric amendment and retains its original failure and route-(a)
+> evidence. The amendment followed observation of the mismatch. The causal
+> explanation in §10.3 is the operator's interpretation at that time; a same-side
+> no-difference rerun does not uniquely establish the cause of a reference
+> mismatch. Rechecking committed difference logs is not a fresh prediction run.
+
 > 对应 issue #5（route (a) DECIDED）。本节是重跑之后的**实证报告**，不改动
 > §8/§9 的历史文字，也不放松 shipped 的 absolute 1e-6 判据。
 
