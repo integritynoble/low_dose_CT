@@ -37,6 +37,19 @@ FIELD_PATHS = {
     "roi_tm_auc": ("freq_roi", "roi_tm_auc"),
 }
 
+
+def _source_sha256(raw: bytes) -> str:
+    """The source run's digest, line-ending-proof.
+
+    The hash recorded in ``leaderboard.TRAP_SOURCE`` is the file's LF form: that
+    is what the index holds and what a Linux/CI checkout writes. Hashing the raw
+    on-disk bytes made the constant platform-dependent -- a Windows checkout with
+    ``core.autocrlf`` wrote CRLF and no LF machine could ever reproduce it.
+    Normalising the bytes first makes the constant mean the same thing on both.
+    """
+    return hashlib.sha256(raw.replace(b"\r\n", b"\n").replace(b"\r", b"\n")).hexdigest()
+
+
 needs_ws1 = pytest.mark.skipif(not SOURCE.exists(),
                                reason="WS-1_dataset/output not present beside WS-4")
 
@@ -44,7 +57,7 @@ needs_ws1 = pytest.mark.skipif(not SOURCE.exists(),
 @needs_ws1
 def test_trap_metrics_still_match_their_source_run():
     raw = SOURCE.read_bytes()
-    assert hashlib.sha256(raw).hexdigest() == TRAP_SOURCE["sha256"], (
+    assert _source_sha256(raw) == TRAP_SOURCE["sha256"], (
         "the source run has changed on disk; re-read it and refresh the trap "
         "deliberately rather than updating this hash")
     doc = json.loads(raw)
@@ -132,7 +145,7 @@ needs_vendor_file = pytest.mark.skipif(not VENDOR_SOURCE.exists(),
 @needs_vendor_file
 def test_vendor_trap_metrics_still_match_their_source_run():
     raw = VENDOR_SOURCE.read_bytes()
-    assert hashlib.sha256(raw).hexdigest() == VENDOR_TRAP_SOURCE["sha256"], (
+    assert _source_sha256(raw) == VENDOR_TRAP_SOURCE["sha256"], (
         "the cross-vendor run has changed on disk; re-read it and refresh the "
         "per-vendor traps deliberately rather than updating this hash")
     doc = json.loads(raw)

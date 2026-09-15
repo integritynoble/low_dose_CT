@@ -54,7 +54,7 @@ def _utcnow() -> str:
 TRAP_SOURCE = {
     "file": "WS-1_dataset/output/aapm_r3_roi_detectability.json",
     "schema": "aapm-r3-roi-detectability/v1",
-    "sha256": "49dddf9dbc405d2f5040361e052042c1e0f8e59542fda5a652a287b3bc000973",
+    "sha256": "9987864a1d60bed445ba6f1a4c08a344e8ba5217666e954f6a544557a32d55fc",
     "generated_at": "2026-08-22T19:36:01",
     "corpus": ("AAPM 2016 LDCT grand challenge, held-out test (4 patients), 1mm B30, "
                "FD vs QD real pairing"),
@@ -144,7 +144,7 @@ def seed_blur_entry() -> Dict:
 VENDOR_TRAP_SOURCE = {
     "file": "WS-1_dataset/output/aapm_lidc_cross_vendor_spread.json",
     "schema": "aapm-lidc-cross-vendor-spread/v1",
-    "sha256": "5b67f1f9b835eda2e4283442b3bd3bace9be059a5eab89ee2e712ca9eb6c3588",
+    "sha256": "c436407412c6e419745bddf23aa10a0b8466015dd12a4ad104299c3aabe4f086",
     "generated_at": "2026-08-22T21:01:52",
     "dose_points": {"LIDC_sim": "r=0.25 (lowdose_sim projection-domain, seed 42)",
                     "AAPM_real": "r=0.25 official real QD"},
