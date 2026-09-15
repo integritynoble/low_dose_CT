@@ -43,7 +43,7 @@ rng = np.random.default_rng(seed=42)
 # segmentation in the literature.
 
 # %%
-n_patients = 200          # the WS-1 v0.5-comparable cohort size
+n_patients = 200          # the WS-1 1.0-comparable cohort size
 sigma_delta = 0.05        # typical per-patient Dice-difference SD
 
 # Anchor the reference around realistic clinical Dice ≈ 0.82 ± noise
@@ -118,14 +118,14 @@ for k, v in sample_check.items():
 # %% [markdown]
 # ## 5. Cohort-sizing comparison: Dice vs AUC
 #
-# At n = 200 (the WS-1 v0.5-comparable cohort):
+# At n = 200 (the WS-1 1.0-comparable cohort):
 #
 # | Metric    | σ_Δ-relative-to-ε | P(`PASS`) under null |
 # |-----------|-------------------|----------------------|
 # | AUC = 0.92 | placement-s 0.15 / ε 0.05 | ≈ 0.40 |
 # | **Dice** | σ_Δ 0.05 / ε 0.02 | **= 1.000** |
 #
-# Dice tasks are *substantively easier* to certify at the WS-1 v0.5
+# Dice tasks are *substantively easier* to certify at the WS-1 1.0
 # cohort size than AUC tasks, because the variance-relative-to-margin
 # ratio is much narrower. A downstream researcher computing a Dice
 # credential on n = 200 patients should expect `PASS` under the null,

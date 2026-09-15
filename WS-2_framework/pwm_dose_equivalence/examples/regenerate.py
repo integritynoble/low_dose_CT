@@ -32,7 +32,7 @@ FAILURES = HERE / "failures"
 
 
 def _issue_clean_ct_lung_nodule_credential() -> dict:
-    """A clean PASS credential — paired AUC at the WS-1 v0.5 lung-nodule
+    """A clean PASS credential — paired AUC at the WS-1 1.0 lung-nodule
     operating point. Seed is fixed; n_test is set to 500 (above the formula
     prescription) so the verdict lands cleanly on PASS rather than
     INDETERMINATE.
@@ -59,7 +59,7 @@ def _issue_clean_ct_lung_nodule_credential() -> dict:
     # noise std (0.02) is tight enough that the paired AUC delta lands
     # comfortably inside (-epsilon, +epsilon) for epsilon = 0.05 — clean
     # PASS verdict. Increasing the noise to 0.05 would push the credential
-    # into the INDETERMINATE regime the WS-1 v0.5 cohort lives in.
+    # into the INDETERMINATE regime the WS-1 1.0 cohort lives in.
     cand_pos = ref_pos + rng.normal(0.0, 0.02, size=n_pos)
     cand_neg = ref_neg + rng.normal(0.0, 0.02, size=n_neg)
 

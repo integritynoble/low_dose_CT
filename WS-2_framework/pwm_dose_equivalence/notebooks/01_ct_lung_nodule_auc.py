@@ -140,10 +140,10 @@ print(f"framework_hash verified: {cred.framework_hash}")
 # | n   | P(`PASS`) under the null |
 # |-----|--------------------------|
 # | 100 | ≈ 0.05  (cohort too small) |
-# | 200 | ≈ 0.40  (the WS-1 v0.5 cohort) |
+# | 200 | ≈ 0.40  (the WS-1 1.0 cohort) |
 # | 500 | ≈ 0.94  (close to nominal 1 − α) |
 #
-# The WS-1 v0.5 cohort of 208 unique paired patients sits in the
+# The WS-1 1.0 cohort of 208 unique paired patients sits in the
 # INDETERMINATE-dominated regime even when methods are *truly* equivalent.
 # Absence of a `PASS` verdict on the WS-1 cohort is therefore **not
 # evidence of non-equivalence** — only of insufficient n.

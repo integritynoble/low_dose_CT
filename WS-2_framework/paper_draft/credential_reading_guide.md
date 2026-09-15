@@ -121,7 +121,7 @@ A research group publishing many `INDETERMINATE` credentials on small cohorts is
 
 If the credential carries a `sample_size_check` field with `"ok": false`, the cohort was below the formula prescription at the chosen `(ε, α)`. A `PASS` verdict in that regime should be read with caution: the verdict is more likely to be a fluke than a reliable equivalence claim. Specifically:
 
-* For AUC tasks at the v0.3 default `ε = 0.05`, the WS-1 PWM-LDCT v0.5 cohort of n ≈ 208 patients is *exactly* in the regime where INDETERMINATE-but-truly-equivalent is the modal outcome. P(`PASS`) under the null is approximately **0.40** at n = 200, lifting to 0.94 at n = 500. This means: **on a cohort of ≈ 208 patients, *absence* of a `PASS` verdict is not evidence of non-equivalence** — only of insufficient n.
+* For AUC tasks at the v0.3 default `ε = 0.05`, the WS-1 PWM-LDCT 1.0 cohort of n ≈ 208 patients is *exactly* in the regime where INDETERMINATE-but-truly-equivalent is the modal outcome. P(`PASS`) under the null is approximately **0.40** at n = 200, lifting to 0.94 at n = 500. This means: **on a cohort of ≈ 208 patients, *absence* of a `PASS` verdict is not evidence of non-equivalence** — only of insufficient n.
 * For Dice / MAE / contrast-recovery tasks at the v0.3 default `ε = 0.02`, the same cohort is comfortably above the formula prescription at typical variability values. A `PASS` on these tasks is more meaningful at the same n.
 
 Numerical anchors for these claims are in [`theory/proofs/sample_size.md`](../theory/proofs/sample_size.md) §3 and [`theory/proofs/estimator.md`](../theory/proofs/estimator.md) §§4a / 4b / 4c.
@@ -222,7 +222,7 @@ The library ships a small `examples/` directory with one clean credential and si
 
 | File | Demonstrates | Expected exit |
 |---|---|---|
-| `examples/valid_ct_lung_nodule.json` | Clean PASS credential at the WS-1 v0.5 lung-nodule operating point | `0` (OK, no warnings) |
+| `examples/valid_ct_lung_nodule.json` | Clean PASS credential at the WS-1 1.0 lung-nodule operating point | `0` (OK, no warnings) |
 | `examples/failures/tampered_verdict.json` | `verdict` flipped to FAIL on a PASSing CI | `1` (hard issue: `verdict_self_consistent = False`) |
 | `examples/failures/inverted_ci.json` | `delta_ci_low > delta_ci_high` | `1` (hard issue: empty CI) |
 | `examples/failures/missing_field.json` | Required `verdict` field removed | `1` (hard issue: schema invalid) |
