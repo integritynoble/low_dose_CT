@@ -67,8 +67,12 @@ def cmd_submit(args) -> int:
         for v in violations:
             print(f"  - {v}")
         return 1
-    created = add_submission(board, result, method=args.method,
-                             vendor=args.vendor, dose=args.dose)
+    try:
+        created = add_submission(board, result, method=args.method,
+                                 vendor=args.vendor, dose=args.dose)
+    except ValueError as exc:
+        print(f"REJECT: {exc}")
+        return 1
     save(board, args.out)
     for e in created:
         m = e["metrics"]

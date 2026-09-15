@@ -22,6 +22,7 @@ the WS-3 package (the leaderboard is the referee, not a contestant).
 """
 from __future__ import annotations
 
+import math
 from typing import Any, Dict, List
 
 from .task_spec import (
@@ -100,11 +101,24 @@ def check_paired_submission(metrics: Dict) -> List[str]:
        (1.08-2.23x on the simulated arm) and saturates CHO-AUC at 1.000 on real
        anatomy, so a gate resting on them admits the cheat it exists to catch.
 
-    Returns a list of violations; empty list = gate passes (publishable).
+    Reported metrics must be finite numbers, never booleans or strings.
+    Null optional metrics remain absent. A valid alternative fidelity metric
+    does not excuse an invalid value supplied for another metric.
+
+    Returns a list of violations; empty list = this paired gate passes.
+    Other publication checks still apply.
     """
     errors: List[str] = []
     if not isinstance(metrics, dict):
         return ["metrics is not an object"]
+
+    for field in FIDELITY_FIELDS + DETECTABILITY_FIELDS + FREQ_SUPPLEMENTARY_FIELDS:
+        value = metrics.get(field)
+        if value is None:
+            continue
+        if (isinstance(value, bool) or not isinstance(value, (int, float))
+                or (isinstance(value, float) and not math.isfinite(value))):
+            errors.append(f"{field} must be a finite number (not a boolean or string)")
 
     has_fidelity = any(metrics.get(f) is not None for f in FIDELITY_FIELDS)
     has_discriminating = any(metrics.get(f) is not None for f in DISCRIMINATING_FIELDS)

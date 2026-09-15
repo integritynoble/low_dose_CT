@@ -576,12 +576,16 @@ def add_submission(leaderboard: Dict, result: Dict, method: str,
     if not methods:
         raise ValueError("submission contains no paired fidelity+detectability block")
 
-    created: List[Dict] = []
-    now = submitted_at or _utcnow()
+    # Validate the complete submission before appending any method. A later
+    # invalid block must not leave earlier blocks in the caller's board.
     for name, m in methods.items():
         violations = check_paired_submission(m)
         if violations:
             raise ValueError(f"method '{name}' not publishable: {'; '.join(violations)}")
+
+    created: List[Dict] = []
+    now = submitted_at or _utcnow()
+    for name, m in methods.items():
         metrics = {k: m[k] for k in ("psnr_db", "ssim", "cnr_mean", "cho_auc_mean",
                                      "npwe_mean", "task") if k in m}
         # frequency-domain detectability (detectability-freq-v1) is carried when
