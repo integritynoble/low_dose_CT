@@ -1,0 +1,281 @@
+%% =====================================================================
+%% Cross-environment reproduction of a low-dose CT benchmark
+%%
+%% Target venue: Medical Physics (Technical Note)
+%% Alternative:  Scientific Reports (if Nature Portfolio is preferred)
+%% See ../PAPER_TARGET_JOURNALS.md row H.
+%%
+%% Every number in this manuscript comes from
+%%   ../WS-1_dataset/R6_recalc/results/comparison_full764.json
+%% via make_tables.py. Do not type numbers into the text; add them to the
+%% generator. `python3 make_tables.py --check` fails when a table is stale.
+%% =====================================================================
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{booktabs,amsmath,graphicx,hyperref,xcolor}
+\usepackage[numbers,sort&compress]{natbib}
+\newcommand{\todo}[1]{\textcolor{red}{[\textbf{TODO:} #1]}}
+
+\title{\textbf{What agreement criterion does a reconstruction benchmark need?\\
+A cross-environment reproduction of a low-dose CT evaluation}}
+
+\author{\todo{author list, affiliations, ORCIDs, corresponding author}}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+\noindent\textbf{Purpose:} Benchmarks in low-dose CT reconstruction increasingly ship a numerical
+agreement criterion so that a third party can verify a reported result. We asked what such a
+criterion must look like to survive a reproduction in a different computing environment, and whether
+a criterion that fails should be read as a failed reproduction.
+
+\noindent\textbf{Methods:} An evaluation of five reconstruction methods over 764 held-out slices at
+three dose levels was recomputed by an independent operator, in a separate environment differing in
+operating system, CUDA build, and deep-learning framework version, from checkpoints and data
+verified by hash. Agreement was assessed against the benchmark's pre-registered criterion, an
+absolute difference of $10^{-6}$. Because that criterion failed, we tested the leading explanation
+--- non-deterministic GPU kernels --- by re-running the affected methods with deterministic kernels
+enabled, and separately audited the criterion itself across a ladder of absolute and relative
+tolerances.
+
+\noindent\textbf{Results:} The pre-registered criterion failed for three of five methods. The
+determinism hypothesis was falsified: re-running the same side with deterministic kernels reproduced
+the original bit-for-bit, leaving the residual attributable to the environment rather than to kernel
+non-determinism. The criterion audit showed that no absolute tolerance resolves the comparison ---
+it fails at $10^{-6}$ and equally at $10^{-3}$ --- because the reported quantities span from a
+dimensionless index near 0.9 to an observer statistic near $10^{6}$. A relative criterion at
+$10^{-4}$, declared per metric in that metric's own units, admits every method, with a worst
+observed relative difference of $6.36\times10^{-5}$.
+
+\noindent\textbf{Conclusions:} A single absolute tolerance cannot express agreement across metrics of
+differing scale, and loosening it does not repair it; only changing its kind does. We recommend that
+benchmarks declare agreement per metric in that metric's own units, and that a criterion failure be
+investigated before it is either accepted as a discrepancy or relaxed.
+\end{abstract}
+
+\noindent\textbf{Keywords:} low-dose CT, reproducibility, benchmark, numerical agreement, detectability
+
+\section{Introduction}
+
+A benchmark that publishes a leaderboard implicitly promises that its numbers can be recomputed.
+Increasingly that promise is made explicit: a released evaluation ships a tolerance, and a
+recomputation that lands inside it is called a reproduction. The tolerance is rarely justified, and
+it is usually a single number.
+
+We report a reproduction in which that construction failed, and in which the failure was informative
+rather than terminal. The pre-registered criterion of the benchmark under study was an absolute
+difference of $10^{-6}$ applied uniformly. Three of five methods fell outside it. The obvious
+reading --- that the recomputation disagreed with the release --- turned out to be wrong twice over:
+the difference was not caused by the mechanism everyone expects, and the criterion could not have
+been satisfied by any absolute threshold worth declaring.
+
+The contribution of this note is not the verdict. It is the demonstration that a criterion's
+\emph{kind} matters more than its magnitude, and a worked procedure for establishing that by
+experiment rather than by preference.
+
+\section{Methods}
+
+\subsection{The evaluation under reproduction}
+
+The benchmark evaluates five reconstruction methods --- RED-CNN~\citep{chen2017redcnn},
+CTformer~\citep{ctformer2023}, LEARN~\citep{learn2018}, CoreDiff~\citep{corediff2023}, and a
+Gaussian blur control included deliberately as a smoothing baseline --- over 764 held-out slices at
+three simulated dose levels. Each run reports fidelity (PSNR, SSIM) and task-based detectability
+(a channelized Hotelling observer AUC, a contrast-to-noise ratio, and a non-prewhitening observer
+with an eye filter). Summary statistics and the number of contributing slices give
+\todo{state the count: 5 methods $\times$ 3 dose levels $\times$ 5 reported quantities = 75 comparisons per method}
+per method, 375 in total.
+
+The five quantities differ in scale by roughly six orders of magnitude, which is the crux of what
+follows (Table~\ref{tab:scale}).
+
+\begin{table}[ht]
+\centering
+\input{tables/scale}
+\caption{\textbf{The reported quantities and their natural scales.} A single absolute tolerance is
+simultaneously far too loose for a bounded index and far too tight for an observer statistic of
+order $10^{5}$--$10^{6}$. The declared criterion in the right-hand column is the one adopted after
+the audit in Section~\ref{sec:ladder}.}
+\label{tab:scale}
+\end{table}
+
+\subsection{The two environments}
+
+The reproduction was performed by an operator independent of the original run, using a separate
+checkout, a separate virtual environment, and a separate output tree; no artifact of the original
+run was overwritten. The recomputation environment was Python 3.12.10 with PyTorch 2.3.0+cu121 and
+NumPy 1.26.4, on Windows with two NVIDIA RTX 4090 GPUs (driver 591.86). The reference environment
+differed in operating system, CUDA build, and framework version.
+\todo{Record the reference environment exactly --- OS, driver, CUDA, torch, numpy. The recalculation
+report characterises it only as ``the author's environment'', which is not enough for a paper whose
+subject is cross-environment agreement. This is the single most important gap to close before
+submission.}
+
+This is a reproduction across environments, not a re-seed within one. That distinction is the point:
+a re-seed tests the pipeline's internal determinism, whereas a different library stack tests whether
+the published number is a property of the method or of the machine.
+
+\subsection{Provenance control}
+
+Inputs were pinned by hash rather than by description: the source commit, with per-file SHA-256
+verification of the six files carrying evaluation logic; the task specification; the five model
+checkpoints; and every file of both data trees (364 and 25 entries). The recomputation environment
+is recorded as a complete dependency freeze.
+
+\subsection{The determinism ablation}
+\label{sec:determinism}
+
+The standard explanation for small cross-run differences on GPU is non-deterministic kernel
+selection. This hypothesis is testable and it makes a sharp prediction: with deterministic kernels
+enabled, a re-run of the same side must be bit-identical, and any residual against the reference
+must therefore come from somewhere else.
+
+We re-ran the three methods outside the pre-registered criterion under the following settings, at a
+cost of approximately 48 GPU-hours:
+
+\begin{quote}
+\begin{tabular}{@{}l@{}}
+\texttt{cudnn.deterministic = True} \\
+\texttt{cudnn.benchmark = False} \\
+\texttt{torch.use\_deterministic\_algorithms(True)} \\
+\texttt{CUBLAS\_WORKSPACE\_CONFIG = :4096:8} \\
+\end{tabular}
+\end{quote}
+
+\subsection{The criterion audit}
+\label{sec:ladder}
+
+Independently of the verdict, we evaluated the comparison against a ladder of criteria: absolute and
+relative, each at $10^{-6}$ through $10^{-3}$. The audit changes no measurement; it asks only which
+criteria the \emph{same} recorded differences would satisfy.
+
+\section{Results}
+
+\subsection{Agreement}
+
+Table~\ref{tab:agreement} reports the comparison. Under the pre-registered absolute criterion, 115
+of 375 comparisons differed. The blur control and LEARN reproduced bit-for-bit; RED-CNN, CTformer
+and CoreDiff did not.
+
+\begin{table}[ht]
+\centering
+\input{tables/agreement}
+\caption{\textbf{Agreement by method.} $n_{\ne}$ counts comparisons differing at all under the
+pre-registered absolute $10^{-6}$ criterion. The worst relative difference and its metric are given
+for each method; the final column counts comparisons outside the declared per-metric relative
+criterion of $10^{-4}$, which is zero everywhere. That two methods reproduce exactly establishes
+that the pipeline, data and code snapshot are capable of bit-identical reproduction, so the
+differences in the other three are a property of those computations rather than of the harness.}
+\label{tab:agreement}
+\end{table}
+
+The largest single disagreement is instructive. For RED-CNN the worst absolute difference is 34.3,
+which sounds disqualifying until one notes that it occurs in a quantity of magnitude
+$\sim9\times10^{5}$ --- a relative difference of $6.36\times10^{-5}$.
+
+\subsection{The determinism hypothesis is false here}
+
+The prediction of Section~\ref{sec:determinism} failed. Re-running the recomputation side with
+deterministic kernels reproduced the non-deterministic run exactly: zero differing comparisons,
+bit-identical. The evaluation path was not sensitive to kernel non-determinism in this environment,
+so route (a) as scoped could not close the residual, and the difference against the reference is a
+systematic cross-environment offset.
+
+This is the result that makes the rest of the note interpretable. Before it, environment and kernel
+non-determinism were confounded, and any change to the criterion would have been an adjudication
+made after seeing the outcome.
+
+\subsection{No absolute tolerance resolves the comparison}
+
+Table~\ref{tab:ladder} is the central result. The pre-registered criterion fails at $10^{-6}$; it
+also fails at $10^{-5}$, $10^{-4}$ and $10^{-3}$, with the same three methods outside at every
+level. Loosening an absolute tolerance by three orders of magnitude changes nothing, because the
+binding comparison is on a quantity of order $10^{5}$--$10^{6}$, where an absolute budget of
+$10^{-3}$ is still a relative demand of order $10^{-9}$.
+
+A relative criterion behaves differently. It excludes two methods at $10^{-6}$ and $10^{-5}$ and
+admits all five at $10^{-4}$.
+
+\begin{table}[ht]
+\centering
+\input{tables/ladder}
+\caption{\textbf{The criterion ladder.} Applied to the same recorded differences, with no
+measurement changed. An absolute criterion cannot be repaired by loosening it; only changing its
+kind resolves the comparison.}
+\label{tab:ladder}
+\end{table}
+
+We note what the audit also establishes in the other direction: the pre-registered criterion was not
+unattainable in principle. A 764-term float64 reduction accumulates a relative error of order
+$10^{-13}$, so within a single environment the absolute $10^{-6}$ budget is comfortable. The
+criterion was not too strict; it was the wrong kind.
+
+\subsection{A provenance failure that numerical agreement would not have caught}
+
+The first reproduction attempt disagreed with the reference by 9--13~dB in PSNR for CTformer. The
+cause was not numerical: the operator guide named one checkpoint while the released run had used
+another, a retrained variant. Re-running with the checkpoint the release actually used restored
+agreement.
+
+We report this because it is the failure mode a tolerance cannot detect. A criterion answers whether
+two numbers agree; it is silent on whether they are numbers about the same thing. Hash-level
+pinning of checkpoints, not their names, is what caught it.
+
+\section{Discussion}
+
+\subsection{Declare agreement per metric, in that metric's own units}
+
+The recommendation follows from Table~\ref{tab:ladder} rather than from taste. A benchmark reporting
+quantities of differing scale should declare, for each, whether agreement is absolute or relative
+and at what tolerance, with counts required to match exactly. A single number applied across all of
+them is a statement about the largest-magnitude quantity and is vacuous for the rest.
+
+\subsection{A criterion failure is a finding, not a formality}
+
+The sequence matters, and we would put it forward as a procedure. The criterion failed; the leading
+explanation was stated as a falsifiable prediction; the prediction was tested at real cost and
+falsified; only then was the criterion amended, and the superseded criterion and its verdict were
+retained verbatim beside the new one. Had the criterion been relaxed at the first failure, the
+amendment would have been indistinguishable from adjusting a threshold until the result passed.
+
+\subsection{Limitations}
+
+Cross-environment agreement of a metric computation is not agreement of the underlying science.
+What reproduces here is a computation, on fixed inputs, under declared hashes. Nothing in this note
+speaks to whether the methods compared are clinically preferable, whether the detectability
+surrogate used measures diagnostic content, or whether the dose levels are attainable in practice.
+
+The comparison involves two environments. A third would establish whether the offset is systematic
+across environments or particular to this pair, and this remains the clearest extension.
+\todo{Decide whether to add a third environment; the constraint is moving checkpoints and data under
+their use agreement, not compute.}
+
+The dose levels are simulated rather than separately acquired, and the patient counts of the
+underlying cohort are small; both limit what the reproduced numbers mean, though neither affects
+whether they reproduce.
+
+\section{Conclusions}
+
+A reproduction that fails its pre-registered criterion has not necessarily failed. In the case
+reported here the criterion was badly scaled, the mechanism usually blamed was absent, and the
+residual was a cross-environment offset four orders of magnitude inside a defensible relative
+tolerance. Benchmarks that ship an agreement criterion should declare it per metric, in that
+metric's own units, and should treat its failure as the beginning of an investigation.
+
+\section*{Data and code availability}
+\todo{Point at the released artifact, the comparison JSON, the re-derivation
+script, and this note's table generator, once the repository's public release
+decision is made.}
+
+\section*{Author contributions}
+\todo{CRediT statement.}
+
+\section*{Competing interests}
+\todo{Per-author declaration.}
+
+\bibliographystyle{unsrtnat}
+\bibliography{references}
+
+\end{document}
