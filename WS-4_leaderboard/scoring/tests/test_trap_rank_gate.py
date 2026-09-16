@@ -3,15 +3,31 @@
 The trap's CNR *outscores* real methods (1.08-2.23x) and CHO-AUC saturates at 1.000
 on real anatomy; BandER is what separates it (measured 8.9-19.0x, blur last 4/4 in
 every vendor group). This gate refuses a board where the trap is not last -- or
-cannot prove it is last -- on the discriminating metric within every vendor/dose
-group.
+cannot prove it is last -- on the discriminating metric.
+
+Main-baseline API (adapted from the heyang `by=` / `min_separation=` signature):
+
+* :func:`assert_trap_ranks_last(entries, *, min_ratio=None)` -- the publishing
+  gate. Raises ValueError on any trap-rank violation; ``min_ratio`` is the
+  required **separation ratio** (Rung 5/6 uses 3x), checked separately from
+  "ranks last".
+* :func:`save` -- never refuses on trap rank. It **records** the fresh verdict on
+  the board (a board that fails is written down failing, so the failure is
+  evidence rather than a silently discarded board). It only raises if the
+  permanent trap is missing entirely.
+* per-group checking (Rung 5/6: never average across groups) is
+  :func:`trap_rank_by_group` / :func:`assert_trap_separates_in_every_group`,
+  not a `by=` argument on the global gate.
 """
 from __future__ import annotations
 
 import pytest
 
-from scoring import (BLUR_ENTRY_ID, assert_trap_ranks_last, blur_entry,
-                     load, new_leaderboard, save)
+from scoring import (BLUR_ENTRY_ID, TRAP_RANK_FAIL, TRAP_RANK_INDETERMINATE,
+                     TRAP_RANK_PASS, assert_trap_ranks_last,
+                     assert_trap_separates_in_every_group, blur_entry, load,
+                     new_leaderboard, save, sort_entries, trap_rank_by_group,
+                     trap_rank_report)
 
 
 def _trap_bander(board, value):
@@ -41,7 +57,7 @@ def _add_vendor(board, vid, bander, dose="1.0mGy"):
 
 
 def test_gate_passes_seed_board_without_groups():
-    """Seed placeholders (no vendor groups) have nothing to rank: must pass."""
+    """Seed placeholders (no real groups) have nothing to rank: must pass."""
     assert_trap_ranks_last(new_leaderboard()["entries"])
 
 
@@ -50,6 +66,7 @@ def test_gate_passes_when_trap_last_with_separation():
     board = _trap_bander(new_leaderboard(), 0.43)
     _add_vendor(board, "A", 4.0)
     assert_trap_ranks_last(board["entries"])  # ratio ~9.3x -> pass
+    assert trap_rank_report(board["entries"])["min_ratio_observed"] == pytest.approx(4.0 / 0.43)
 
 
 def test_gate_passes_multiple_clean_vendor_groups():
@@ -63,68 +80,118 @@ def test_gate_refuses_when_trap_not_last():
     """A vendor below the trap means the blur does not rank last."""
     board = _trap_bander(new_leaderboard(), 0.43)
     _add_vendor(board, "A", 0.20)
-    with pytest.raises(ValueError, match="does not rank last"):
+    with pytest.raises(ValueError, match="trap is not last"):
         assert_trap_ranks_last(board["entries"])
 
 
-def test_gate_refuses_below_declared_minimum_separation():
-    """Ratio 2.3x clears 'trap last' but not the declared >=3x separation."""
+def test_gate_refuses_below_declared_min_ratio():
+    """Ratio 2.3x clears 'trap last' but not the declared >=3x separation
+    (Rung 5/6). The rank and the separation ratio are checked separately."""
     board = _trap_bander(new_leaderboard(), 0.43)
     _add_vendor(board, "A", 1.0)
-    with pytest.raises(ValueError, match="below the declared >= 3x separation"):
-        assert_trap_ranks_last(board["entries"])
+    assert_trap_ranks_last(board["entries"])              # ranks last: passes
+    with pytest.raises(ValueError, match="below the required 3x"):
+        assert_trap_ranks_last(board["entries"], min_ratio=3.0)
 
 
-def test_gate_refuses_group_present_but_trap_unmeasured():
-    """A vendor group with an unrefreshed trap cannot prove trap-last: refused.
+def test_gate_refuses_tighter_custom_min_ratio():
+    """A stricter publishing requirement than the 3x default."""
+    board = _trap_bander(new_leaderboard(), 0.43)
+    _add_vendor(board, "A", 4.0)  # 9.3x passes the 3x default, fails a stricter 10x
+    with pytest.raises(ValueError, match="below the required 10x"):
+        assert_trap_ranks_last(board["entries"], min_ratio=10.0)
+    assert_trap_ranks_last(board["entries"])  # default (no min_ratio) still passes
 
-    The seed blur carries its measured numbers now (2026-09-05 refresh), so the
-    pre-refresh unmeasured state is reconstructed by stripping the value,
-    exactly as the board before the refresh would have been.
+
+def test_gate_refuses_when_trap_unmeasured():
+    """A board whose trap has lost its discriminating number cannot prove
+    trap-last: INDETERMINATE, and the gate refuses it. The seed carries its
+    measured numbers now, so the state is reconstructed by stripping the value.
+
+    Note: this must never read as a sound board, or the way to beat the gate is
+    to stop measuring the trap.
     """
     board = new_leaderboard()
     blur_entry(board["entries"])["metrics"].pop("bander_roi", None)
     _add_vendor(board, "A", 5.0)
-    with pytest.raises(ValueError, match="trap has no numeric bander_roi"):
+    report = trap_rank_report(board["entries"])
+    assert report["verdict"] == TRAP_RANK_INDETERMINATE
+    with pytest.raises(ValueError, match="reports no bander_roi"):
         assert_trap_ranks_last(board["entries"])
 
 
-def test_gate_refuses_member_without_metric():
+def test_gate_member_without_metric_is_excluded_not_failed():
+    """A member reporting no numeric discriminating value is excluded from the
+    comparison rather than failing it: there is nothing to rank it against."""
     board = _trap_bander(new_leaderboard(), 0.43)
     _add_vendor(board, "A", None)
-    with pytest.raises(ValueError, match="no numeric bander_roi"):
-        assert_trap_ranks_last(board["entries"])
+    assert trap_rank_report(board["entries"])["n_compared"] == 0
+    assert_trap_ranks_last(board["entries"])                    # no raise
+    assert_trap_ranks_last(board["entries"], min_ratio=3.0)     # no ratio -> no fail
 
 
 def test_gate_names_offending_group():
-    board = _trap_bander(new_leaderboard(), 0.43)
-    _add_vendor(board, "A", 5.0)      # clean
-    _add_vendor(board, "B", 0.10)     # trap wins on BandER here
-    with pytest.raises(ValueError, match="sub-B.*group 'B'"):
-        assert_trap_ranks_last(board["entries"])
+    """Per-group gate (Rung 5/6): a vendor group whose member scores below its
+    own group's trap is refused and the offending group is named."""
+    board = new_leaderboard()   # seeds include a GE trap at bander_roi=0.0452
+    board["entries"].append({
+        "id": "sub-ge", "method": "oversmoother", "trap": False,
+        "placeholder": False, "vendor": "GE", "dose": "0.25",
+        "metrics": {"psnr_db": 44.0, "ssim": 0.99, "bander_roi": 0.03},
+    })
+    with pytest.raises(ValueError, match=r"vendor=GE: entry 'sub-ge'"):
+        assert_trap_separates_in_every_group(board["entries"], by="vendor")
 
 
-def test_gate_can_group_by_dose():
+def test_gate_by_dose_requires_a_trap_in_every_group():
+    """Per-dose grouping: a dose group holding real entries but no trap
+    measurement is INDETERMINATE, and the gate refuses to certify it."""
     board = _trap_bander(new_leaderboard(), 0.43)
     _add_vendor(board, "A", 5.0, dose="0.5mGy")
-    _add_vendor(board, "B", 0.20, dose="0.25mGy")  # fine per-vendor, bad per-dose
-    with pytest.raises(ValueError, match="group '0.25mGy'"):
-        assert_trap_ranks_last(board["entries"], by="dose")
+    report = trap_rank_by_group(board["entries"], by="dose")
+    assert report["verdict"] == TRAP_RANK_INDETERMINATE
+    assert report["groups"]["0.5mGy"]["verdict"] == TRAP_RANK_INDETERMINATE
+    with pytest.raises(ValueError, match="no trap measured in this group"):
+        assert_trap_separates_in_every_group(board["entries"], by="dose")
 
 
-def test_gate_honours_custom_min_separation():
-    board = _trap_bander(new_leaderboard(), 0.43)
-    _add_vendor(board, "A", 4.0)  # 9.3x passes the 3x default, fails a stricter 10x
-    with pytest.raises(ValueError, match="below the declared >= 10x separation"):
-        assert_trap_ranks_last(board["entries"], min_separation=10.0)
-    assert_trap_ranks_last(board["entries"])  # default 3x still passes
+def test_gate_handles_zero_and_negative_trap_values():
+    """Extreme input: a trap at 0 (or below) has no defined separation ratio --
+    rank is still checked, and anything at or below the trap still fails."""
+    def board_with(trap_value, member_value):
+        return [
+            {"id": BLUR_ENTRY_ID, "method": "gaussian-blur", "permanent": True,
+             "trap": True, "placeholder": False,
+             "metrics": {"bander_roi": trap_value}},
+            {"id": "m", "method": "m", "trap": False, "placeholder": False,
+             "metrics": {"bander_roi": member_value}},
+        ]
+
+    report = trap_rank_report(board_with(0.0, 0.5))
+    assert report["verdict"] == TRAP_RANK_PASS                 # 0.5 > 0: rank is fine
+    assert report["min_ratio_observed"] is None                # ratio undefined
+    assert_trap_ranks_last(board_with(0.0, 0.5))
+
+    with pytest.raises(ValueError, match="at or below"):
+        assert_trap_ranks_last(board_with(0.0, -0.1))          # <= trap: not last
 
 
-def test_save_refuses_board_without_trap_last(tmp_path):
-    board = _trap_bander(new_leaderboard(), 0.43)
-    _add_vendor(board, "A", 0.20)  # below the trap
-    with pytest.raises(ValueError, match="does not rank last"):
-        save(board, tmp_path / "board.json")
+def test_gate_sorts_board_detectability_descending():
+    """The board's ranking leads with the discriminating index, descending; an
+    entry without the index sorts below every entry that has it."""
+    board = _trap_bander(new_leaderboard(), 0.4315421991344855)
+    _add_vendor(board, "A", 4.0)
+    _add_vendor(board, "B", 6.7)
+    board["entries"].append({
+        "id": "no-bander", "method": "m", "trap": False, "placeholder": False,
+        "metrics": {"cnr_mean": 99.0, "psnr_db": 99.0},
+    })
+    ranked = sort_entries(board["entries"])
+    ranked_ids = [e["id"] for e in ranked]
+    assert ranked_ids.index("sub-B") < ranked_ids.index("sub-A")
+    assert ranked_ids.index("sub-A") < ranked_ids.index(BLUR_ENTRY_ID)
+    assert ranked_ids.index(BLUR_ENTRY_ID) < ranked_ids.index("no-bander")
+    assert ranked_ids[-1] == "seed-ws3-reference"  # placeholders sort at the very bottom
 
 
 def test_save_persists_clean_vendor_board(tmp_path):
@@ -135,3 +202,20 @@ def test_save_persists_clean_vendor_board(tmp_path):
     loaded = load(p)
     assert any(e["id"] == BLUR_ENTRY_ID for e in loaded["entries"])
     assert any(e["id"] == "sub-A" for e in loaded["entries"])
+
+
+def test_save_records_failed_verdict_instead_of_refusing(tmp_path):
+    """save() does not refuse a board whose trap is not last: it records the
+    fresh FAIL verdict on the board, because a board that fails the gate is
+    evidence, not something to discard."""
+    board = _trap_bander(new_leaderboard(), 0.43)
+    _add_vendor(board, "A", 0.20)  # below the trap
+    p = tmp_path / "board.json"
+    save(board, p)                                  # must not raise
+    loaded = load(p)
+    assert loaded["trap_rank"]["verdict"] == TRAP_RANK_FAIL
+    assert any("not last" in v for v in loaded["trap_rank"]["violations"])
+
+
+if __name__ == "__main__":  # pragma: no cover
+    raise SystemExit(pytest.main([__file__, "-v"]))

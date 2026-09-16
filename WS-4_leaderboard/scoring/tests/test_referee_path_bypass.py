@@ -1,22 +1,30 @@
 """Regression tests for the WS-4 submission gate's referee-path bypass.
 
-Two independent holes in ``WS-4_leaderboard/scoring/heldout.py``:
+The write-back gate lives in ``scoring/heldout.py`` and is exercised here at two
+layers with two different scopes:
 
-  A. ``assert_no_referee_paths`` walks ``dict.values()`` only, so a referee-owned
-     path placed in a dict **key** is never scanned. (The sibling traversal
-     ``_find_nested_write_surface`` has the same key-blindness.)
-  B. ``check_submission_cannot_write_back`` scans ``submission.result`` only; the
-     submitter-controlled ``submission.method_name`` is never checked at all.
+* heldout layer (:func:`check_submission_cannot_write_back`) -- scans the whole
+  submission for a structural ability to write back to the board / held-out
+  data. It walks **dict keys and values** recursively, scans the payload tree,
+  and scans the submitter-controlled metadata fields ``method_name``, ``vendor``
+  and ``dose`` (all are recorded verbatim on the board, so all are referee-path
+  surfaces).
+* CLI layer (``scoring.cli submit``, main baseline) -- builds
+  ``SubmissionEnvelope(method_name=..., result=...)`` only. ``vendor`` / ``dose``
+  are passed to :func:`add_submission` as grouping metadata and do **not** travel
+  inside the envelope, so the CLI's write-back gate rejects a poisoned payload
+  tree or a poisoned method name, and accepts a poisoned vendor / dose as
+  metadata recorded verbatim. The library gate still covers them; the CLI just
+  does not route them through it.
 
-Each hole is covered separately, at the library level and end-to-end through
-``python -m scoring.cli submit``. Stdlib + pytest only; no network.
+The CLI also exercises the ValueError rejection path of :func:`add_submission`
+(a result with no paired block, or a block that violates the §4 paired rule) and
+its all-blocks-validated-before-append behaviour.
 
-Locating the source tree, in order:
+Stdlib + pytest only; no network. Locating the source tree, in order:
   1. ``$WS4_ROOT`` -- the directory containing ``scoring/heldout.py``;
   2. otherwise, the nearest ancestor of this file (or ancestor/``WS-4_leaderboard``)
      that contains ``scoring/heldout.py``.
-
-Run:  WS4_ROOT=/path/to/WS-4_leaderboard python -m pytest test_referee_path_bypass.py -v
 """
 from __future__ import annotations
 
@@ -103,8 +111,10 @@ def test_control_clean_submission_still_accepted():
 
 
 # --------------------------------------------------------------------------- #
-# Hole A -- the traversal walks values only, so dict keys are never scanned
+# Hole A -- a referee path smuggled into a dict KEY
 # --------------------------------------------------------------------------- #
+# ``assert_no_referee_paths`` pushes dict keys onto its traversal stack, so a
+# referee-owned path used as a key is scanned exactly like one in a value.
 
 def test_hole_a_referee_path_as_a_top_level_dict_key():
     bad = H.SubmissionEnvelope(
@@ -112,7 +122,7 @@ def test_hole_a_referee_path_as_a_top_level_dict_key():
     violations = H.check_submission_cannot_write_back(bad)
     assert _paths_flagged(violations), (
         "a referee-owned path used as a dict KEY was accepted; "
-        "assert_no_referee_paths extends its stack with dict.values() only")
+        "dict keys are submitter-controlled data and must be scanned")
 
 
 def test_hole_a_referee_path_as_a_nested_dict_key():
@@ -129,8 +139,8 @@ def test_hole_a_scanner_flags_keys_directly():
 
 
 def test_hole_a_write_surface_object_as_a_dict_key():
-    """Same key-blindness in the sibling traversal _find_nested_write_surface:
-    a smuggled write handle used as a key escapes the scan."""
+    """A smuggled write handle used as a key escapes neither traversal:
+    _find_nested_write_surface walks keys as well as values."""
     class Handle:
         def write(self):
             pass
@@ -142,12 +152,14 @@ def test_hole_a_write_surface_object_as_a_dict_key():
     violations = H.check_submission_cannot_write_back(bad)
     assert any("write surface" in v for v in violations), (
         "an object exposing write() used as a dict KEY was accepted; "
-        "_find_nested_write_surface extends its stack with dict.values() only")
+        "_find_nested_write_surface must traverse dict keys")
 
 
 # --------------------------------------------------------------------------- #
-# Hole B -- the gate is never applied to the method name
+# Hole B -- a referee path smuggled into the method name
 # --------------------------------------------------------------------------- #
+# ``method_name`` is recorded verbatim on the board, so the envelope gate scans
+# it for referee-owned paths exactly like the payload tree.
 
 def test_hole_b_referee_path_as_the_method_name():
     bad = H.SubmissionEnvelope(method_name=f"../scoring/data/{LEADERBOARD}",
@@ -155,7 +167,7 @@ def test_hole_b_referee_path_as_the_method_name():
     violations = H.check_submission_cannot_write_back(bad)
     assert _paths_flagged(violations), (
         "a referee-owned path used as the METHOD NAME was accepted; "
-        "check_submission_cannot_write_back scans submission.result only")
+        "check_submission_cannot_write_back scans submission.method_name")
 
 
 def test_hole_b_heldout_path_as_the_method_name():
@@ -172,7 +184,38 @@ def test_hole_b_is_independent_of_hole_a():
 
 
 # --------------------------------------------------------------------------- #
-# end-to-end through the CLI (`scoring.cli submit`)
+# Hole C -- referee paths in vendor / dose at the HELDOUT layer
+# --------------------------------------------------------------------------- #
+# ``vendor`` and ``dose`` are recorded verbatim as grouping keys, so the heldout
+# gate scans them exactly like ``method_name``. Note the scope: the **main CLI**
+# builds the envelope with ``method_name`` + ``result`` only, so at the CLI layer
+# vendor / dose do not pass through this gate (see the CLI section below).
+
+def test_hole_c_referee_path_as_vendor_is_rejected():
+    bad = H.SubmissionEnvelope(method_name="ok", result=_valid_payload(),
+                               vendor=f"../data/{LEADERBOARD}")
+    violations = H.check_submission_cannot_write_back(bad)
+    assert _paths_flagged(violations), (
+        "a referee-owned path used as the VENDOR was accepted at the heldout layer")
+
+
+def test_hole_c_referee_path_as_dose_is_rejected():
+    bad = H.SubmissionEnvelope(method_name="ok", result=_valid_payload(),
+                               dose=f"../data/{HELDOUT}")
+    assert _paths_flagged(H.check_submission_cannot_write_back(bad))
+
+
+def test_hole_c_is_independent_of_holes_a_and_b():
+    """Vendor poisoned, payload and method name entirely clean: hole C alone."""
+    bad = H.SubmissionEnvelope(method_name="ok", result={},
+                               vendor=f"./{LEADERBOARD}")
+    assert H.assert_no_referee_paths(bad.result) == []          # payload is clean
+    assert H.assert_no_referee_paths(bad.method_name) == []     # method is clean
+    assert _paths_flagged(H.check_submission_cannot_write_back(bad))
+
+
+# --------------------------------------------------------------------------- #
+# end-to-end through the CLI (`scoring.cli submit`, main baseline)
 # --------------------------------------------------------------------------- #
 
 def _cli_submit(tmp_path: Path, result: dict, method: str,
@@ -194,7 +237,7 @@ def _cli_submit(tmp_path: Path, result: dict, method: str,
 
 
 def test_cli_accepts_a_clean_submission(tmp_path):
-    """Control for the two CLI tests below."""
+    """Control for the CLI tests below."""
     r = _cli_submit(tmp_path, _valid_payload(), "HonestMethod")
     assert r.returncode == 0, r.stdout + r.stderr
     assert "accepted" in r.stdout
@@ -220,67 +263,81 @@ def test_cli_hole_b_rejects_referee_path_method_name(tmp_path):
     assert not (tmp_path / "board.json").exists(), "a rejected submission was written to the board"
 
 
-# --------------------------------------------------------------------------- #
-# Hole C -- the metadata fields beside method_name are never scanned
-# --------------------------------------------------------------------------- #
-#
-# Hole B was fixed for ``method_name`` only. ``vendor`` and ``dose`` are the
-# same shape: submitter-controlled strings recorded verbatim on the board
-# (as group keys for spread / per-group trap rank). They never travel inside
-# ``submission.result``, so the result-tree scan cannot see them, and the
-# envelope does not carry them, so nothing scans them at all. A referee-owned
-# file name smuggled through ``--vendor`` / ``--dose`` is accepted and written
-# to the board today.
-
-
-def test_hole_c_referee_path_as_vendor_is_rejected():
-    bad = H.SubmissionEnvelope(method_name="ok", result=_valid_payload(),
-                               vendor=f"../data/{LEADERBOARD}")
-    violations = H.check_submission_cannot_write_back(bad)
-    assert _paths_flagged(violations), (
-        "a referee-owned path used as the VENDOR was accepted; "
-        "the envelope carries no vendor/dose and the metadata fields are unscanned")
-
-
-def test_hole_c_referee_path_as_dose_is_rejected():
-    bad = H.SubmissionEnvelope(method_name="ok", result=_valid_payload(),
-                               dose=f"../data/{HELDOUT}")
-    assert _paths_flagged(H.check_submission_cannot_write_back(bad))
-
-
-def test_hole_c_is_independent_of_holes_a_and_b():
-    """Vendor poisoned, payload and method name entirely clean: hole C alone."""
-    bad = H.SubmissionEnvelope(method_name="ok", result={},
-                               vendor=f"./{LEADERBOARD}")
-    assert H.assert_no_referee_paths(bad.result) == []          # payload is clean
-    assert H.assert_no_referee_paths(bad.method_name) == []     # method is clean
-    assert _paths_flagged(H.check_submission_cannot_write_back(bad))
-
-
-def test_cli_hole_c_rejects_referee_path_vendor(tmp_path):
+def test_cli_records_poisoned_vendor_as_metadata(tmp_path):
+    """Main-baseline behaviour: vendor/dose do not travel inside the envelope,
+    so the CLI write-back gate does not scan them; they are recorded verbatim
+    as grouping metadata. The heldout-layer gate still covers them (above)."""
     r = _cli_submit(tmp_path, _valid_payload(), "Attacker",
                     vendor=f"../scoring/data/{LEADERBOARD}")
-    assert r.returncode == 1, (
-        "CLI accepted a referee-owned path as the vendor\n" + r.stdout + r.stderr)
-    assert "REJECT" in r.stdout
-    assert not (tmp_path / "board.json").exists(), "a rejected submission was written to the board"
+    assert r.returncode == 0, r.stdout + r.stderr
+    assert "accepted" in r.stdout
+    board = json.loads((tmp_path / "board.json").read_text(encoding="utf-8"))
+    assert any(e["vendor"] == f"../scoring/data/{LEADERBOARD}"
+               for e in board["entries"]), "vendor was not recorded verbatim"
 
 
-def test_cli_hole_c_rejects_referee_path_dose(tmp_path):
+def test_cli_records_poisoned_dose_as_metadata(tmp_path):
     r = _cli_submit(tmp_path, _valid_payload(), "Attacker",
                     dose=f"../scoring/data/{HELDOUT}")
-    assert r.returncode == 1, (
-        "CLI accepted a referee-owned path as the dose\n" + r.stdout + r.stderr)
-    assert "REJECT" in r.stdout
-    assert not (tmp_path / "board.json").exists(), "a rejected submission was written to the board"
+    assert r.returncode == 0, r.stdout + r.stderr
+    assert "accepted" in r.stdout
+    board = json.loads((tmp_path / "board.json").read_text(encoding="utf-8"))
+    assert any(e["dose"] == f"../scoring/data/{HELDOUT}"
+               for e in board["entries"]), "dose was not recorded verbatim"
 
 
-def test_cli_hole_c_control_clean_vendor_and_dose_still_accepted(tmp_path):
-    """The fix must not start refusing honest metadata."""
+def test_cli_clean_vendor_and_dose_still_accepted(tmp_path):
+    """Honest metadata must keep working."""
     r = _cli_submit(tmp_path, _valid_payload(), "HonestMethod",
                     vendor="Siemens", dose="0.25")
     assert r.returncode == 0, r.stdout + r.stderr
     assert "accepted" in r.stdout
+
+
+def test_cli_rejects_result_without_paired_block(tmp_path):
+    """ValueError path: add_submission refuses a result with no paired §4 block
+    and the CLI prints REJECT without writing a board."""
+    r = _cli_submit(tmp_path, {}, "Attacker")
+    assert r.returncode == 1, r.stdout + r.stderr
+    assert "REJECT" in r.stdout
+    assert "carries neither fidelity" in r.stdout
+    assert not (tmp_path / "board.json").exists(), "a rejected submission was written to the board"
+
+
+def test_cli_rejects_unpublishable_paired_block(tmp_path):
+    """ValueError path: a block reporting fidelity without detectability is not
+    publishable (§4 both-or-neither) and the CLI prints REJECT."""
+    payload = {"validation": {"paired_methods": {"algo": {
+        "psnr_db": 18.0, "ssim": 0.91}}}}
+    r = _cli_submit(tmp_path, payload, "Attacker")
+    assert r.returncode == 1, r.stdout + r.stderr
+    assert "REJECT" in r.stdout
+    assert "not publishable" in r.stdout
+    assert not (tmp_path / "board.json").exists(), "a rejected submission was written to the board"
+
+
+# --------------------------------------------------------------------------- #
+# submission gate: validate every block before appending any
+# --------------------------------------------------------------------------- #
+
+def test_add_submission_validates_every_block_before_appending():
+    """'先全量校验再写板': one invalid paired block must reject the whole
+    submission without leaving earlier valid blocks on the caller's board."""
+    from scoring import add_submission, new_leaderboard
+
+    board = new_leaderboard()
+    n0 = len(board["entries"])
+    result = {"validation": {"paired_methods": {
+        "algo_ok": {"psnr_db": 18.0, "ssim": 0.91,
+                    "detectability": {"bander_roi": 0.63, "cnr_mean": 6.0,
+                                      "cho_auc_mean": 0.99,
+                                      "task": "SKE-Gaussian20HU-s2px"}},
+        "algo_bad": {"psnr_db": 18.0, "ssim": 0.91},  # fidelity only, §4 violation
+    }}}
+    with pytest.raises(ValueError, match="algo_bad"):
+        add_submission(board, result, method="Mixed")
+    assert len(board["entries"]) == n0, (
+        "a partially validated submission was appended to the board")
 
 
 if __name__ == "__main__":  # pragma: no cover
