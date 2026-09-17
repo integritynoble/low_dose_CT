@@ -17,9 +17,18 @@ STATUS_VALUES = ("done", "partial", "blocked")
 
 
 def load_registry(path: str | Path = DEFAULT_REGISTRY) -> Dict[str, Any]:
+    """Load the registry, raising on an invalid registry instead of returning it.
+
+    §2-E: a well-formed JSON file with a broken registry (missing rung, bad
+    status, missing gate) must not be silently returned as though the checks had
+    run and passed.
+    """
     with open(path, encoding="utf-8") as f:
         reg = json.load(f)
-    validate_registry(reg)
+    errors = validate_registry(reg)
+    if errors:
+        raise ValueError("invalid rung registry loaded from %s: %s"
+                         % (path, "; ".join(errors)))
     return reg
 
 
@@ -60,9 +69,17 @@ def render_markdown(reg: Dict[str, Any]) -> str:
 
 def update_status(reg: Dict[str, Any], rung: int, status: str,
                   reason: str | None = None) -> Dict[str, Any]:
-    """Update one Rung's status (validated); returns the registry."""
+    """Update one Rung's status (validated); returns the registry.
+
+    §2-E: the whole registry is validated before the update is applied, so a
+    broken registry cannot be silently mutated and then saved as though its
+    checks had passed.
+    """
     if status not in STATUS_VALUES:
         raise ValueError(f"invalid status '{status}'")
+    errors = validate_registry(reg)
+    if errors:
+        raise ValueError("invalid rung registry: " + "; ".join(errors))
     for r in reg["rungs"]:
         if r["rung"] == rung:
             r["status"] = status
@@ -73,6 +90,14 @@ def update_status(reg: Dict[str, Any], rung: int, status: str,
 
 
 def save_registry(reg: Dict[str, Any], path: str | Path = DEFAULT_REGISTRY) -> None:
-    validate_registry(reg)
+    """Save the registry, raising on an invalid registry instead of writing it.
+
+    §2-E: persisting a broken registry would make the well-formed file the
+    "evidence" that the checks had run, so save refuses to write one.
+    """
+    errors = validate_registry(reg)
+    if errors:
+        raise ValueError("refusing to save invalid rung registry: %s"
+                         % "; ".join(errors))
     Path(path).write_text(json.dumps(reg, indent=2, ensure_ascii=False) + "\n",
                           encoding="utf-8")

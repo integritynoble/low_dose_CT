@@ -11,15 +11,19 @@ Main-baseline API (adapted from the heyang `by=` / `min_separation=` signature):
   gate. Raises ValueError on any trap-rank violation; ``min_ratio`` is the
   required **separation ratio** (Rung 5/6 uses 3x), checked separately from
   "ranks last".
-* :func:`save` -- never refuses on trap rank. It **records** the fresh verdict on
-  the board (a board that fails is written down failing, so the failure is
-  evidence rather than a silently discarded board). It only raises if the
-  permanent trap is missing entirely.
+* :func:`save` -- runs the full gate chain (§2-C: paired gate, task identity,
+  trap-rank, required strata). It refuses to write a board that fails any of
+  them and keeps a failed diagnostic record at ``<path>.failed.json``; a board
+  that passes is written with a receipt and a ``publication`` field defaulting
+  to ``pending``. A NO_CLAIM board (nothing to rank) is writable but makes no
+  publishable claim.
 * per-group checking (Rung 5/6: never average across groups) is
   :func:`trap_rank_by_group` / :func:`assert_trap_separates_in_every_group`,
   not a `by=` argument on the global gate.
 """
 from __future__ import annotations
+
+import json
 
 import pytest
 
@@ -195,26 +199,39 @@ def test_gate_sorts_board_detectability_descending():
 
 
 def test_save_persists_clean_vendor_board(tmp_path):
+    """§2-C: save() runs the full gate chain, including the required-strata
+    check (§2-B). A board covering every REQUIRED_VENDOR_GROUPS stratum with the
+    trap last in each group is writable."""
     board = _trap_bander(new_leaderboard(), 0.43)
-    _add_vendor(board, "A", 4.0)
+    # weakest real model in each REQUIRED vendor group (aapm_lidc_cross_vendor_spread)
+    for vid, bander in (("GE", 0.4377), ("Philips", 3.1928),
+                        ("Siemens", 1.1572), ("Toshiba", 1.1228)):
+        _add_vendor(board, vid, bander)
     p = tmp_path / "board.json"
     save(board, p)
     loaded = load(p)
     assert any(e["id"] == BLUR_ENTRY_ID for e in loaded["entries"])
-    assert any(e["id"] == "sub-A" for e in loaded["entries"])
+    for vid in ("GE", "Philips", "Siemens", "Toshiba"):
+        assert any(e["id"] == f"sub-{vid}" for e in loaded["entries"]), vid
+    assert loaded["receipt"]["gate"]["strata"] == TRAP_RANK_PASS
+    assert loaded["publication"]["status"] == "pending"
 
 
-def test_save_records_failed_verdict_instead_of_refusing(tmp_path):
-    """save() does not refuse a board whose trap is not last: it records the
-    fresh FAIL verdict on the board, because a board that fails the gate is
-    evidence, not something to discard."""
+def test_save_refuses_failed_board_and_keeps_diagnostics(tmp_path):
+    """§2-C: save() refuses to write a board whose trap is not last, instead of
+    recording the FAIL and writing it anyway, and keeps a failed diagnostic
+    record at ``<path>.failed.json`` so the failure is evidence rather than a
+    silently discarded board."""
     board = _trap_bander(new_leaderboard(), 0.43)
     _add_vendor(board, "A", 0.20)  # below the trap
     p = tmp_path / "board.json"
-    save(board, p)                                  # must not raise
-    loaded = load(p)
-    assert loaded["trap_rank"]["verdict"] == TRAP_RANK_FAIL
-    assert any("not last" in v for v in loaded["trap_rank"]["violations"])
+    with pytest.raises(ValueError, match="board not publishable"):
+        save(board, p)
+    failed = tmp_path / "board.json.failed.json"
+    assert failed.is_file(), "failed diagnostic record was not written"
+    diag = json.loads(failed.read_text(encoding="utf-8"))
+    assert any("not last" in v for v in diag["gate_violations"])
+    assert not p.exists(), "a board that fails the gate was written anyway"
 
 
 if __name__ == "__main__":  # pragma: no cover

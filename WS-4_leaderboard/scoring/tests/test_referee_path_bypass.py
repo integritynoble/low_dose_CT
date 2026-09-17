@@ -37,6 +37,9 @@ from pathlib import Path
 
 import pytest
 
+from scoring.task_spec import TASK_LABEL
+from scoring.verify import provenance_sha256
+
 
 # --------------------------------------------------------------------------- #
 # locating and loading the module under test
@@ -84,12 +87,21 @@ def _paths_flagged(violations) -> bool:
 
 def _valid_payload() -> dict:
     """A submission body that passes the §4 paired gate, so the CLI reaches the
-    write-back gate and any rejection is attributable to it alone."""
+    write-back gate and any rejection is attributable to it alone. Carries a
+    §2-D claim block so the submission also clears the provenance gate."""
+    manifest = {"corpus": "LIDC lowdose_sim", "r": 0.25, "seed": 42, "n_patients": 2}
+    weights = {"arch": "conv", "params": 1000}
     return {"validation": {"paired_methods": {"algo": {
         "psnr_db": 18.0, "ssim": 0.91,
         "detectability": {"bander_roi": 0.63, "cnr_mean": 6.0,
                           "cho_auc_mean": 0.99,
-                          "task": "SKE-Gaussian20HU-s2px"}}}}}
+                          "task": "SKE-Gaussian20HU-s2px"}}}},
+        "claim": {"task_id": TASK_LABEL,
+                  "protocol_id": "detectability-freq-v1",
+                  "data_manifest_sha256": provenance_sha256(manifest),
+                  "model_sha256": provenance_sha256(weights),
+                  "evaluator_version": "pwm_ldct_recon-2026-09-14"},
+        "evidence": {"data_manifest": manifest, "model_weights": weights}}
 
 
 # --------------------------------------------------------------------------- #
@@ -266,14 +278,16 @@ def test_cli_hole_b_rejects_referee_path_method_name(tmp_path):
 def test_cli_records_poisoned_vendor_as_metadata(tmp_path):
     """Main-baseline behaviour: vendor/dose do not travel inside the envelope,
     so the CLI write-back gate does not scan them; they are recorded verbatim
-    as grouping metadata. The heldout-layer gate still covers them (above)."""
+    as grouping metadata. The heldout-layer gate still covers them (above), and
+    the §2-B save gate now backstops the CLI too: a board whose vendor group is
+    missing a trap measurement cannot be written, so the CLI refuses it."""
     r = _cli_submit(tmp_path, _valid_payload(), "Attacker",
                     vendor=f"../scoring/data/{LEADERBOARD}")
-    assert r.returncode == 0, r.stdout + r.stderr
-    assert "accepted" in r.stdout
-    board = json.loads((tmp_path / "board.json").read_text(encoding="utf-8"))
-    assert any(e["vendor"] == f"../scoring/data/{LEADERBOARD}"
-               for e in board["entries"]), "vendor was not recorded verbatim"
+    assert r.returncode == 1, r.stdout + r.stderr
+    assert "REJECT" in r.stdout
+    assert "no trap measured" in r.stdout + r.stderr
+    assert not (tmp_path / "board.json").exists(), (
+        "a submission whose vendor group has no trap was written to the board")
 
 
 def test_cli_records_poisoned_dose_as_metadata(tmp_path):

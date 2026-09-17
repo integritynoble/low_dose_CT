@@ -1,0 +1,455 @@
+{
+  "schema_version": "0.1.0",
+  "task": {
+    "label": "SKE-Gaussian20HU-s2px",
+    "signal": {
+      "sigma_px": 2.0,
+      "peak_contrast_hu": 20.0,
+      "location_known": true
+    },
+    "observer": {
+      "cnr": {
+        "rose_criterion": 3.0
+      },
+      "cho": {
+        "channels": "dog",
+        "n_channels": 4
+      },
+      "npwe": {
+        "eye_filter": "rho*exp(-rho/0.2)"
+      }
+    },
+    "noise_roi_hu_band": [
+      10.0,
+      120.0
+    ]
+  },
+  "entries": [
+    {
+      "id": "seed-blur",
+      "method": "gaussian-blur",
+      "kind": "seed-trap",
+      "permanent": true,
+      "trap": true,
+      "placeholder": false,
+      "vendor": null,
+      "dose": null,
+      "config": {
+        "sigma_px": 1.0,
+        "kernel_size": 5,
+        "module": "pwm_ldct_recon.models.GaussianBlur (WS-3)"
+      },
+      "source": {
+        "file": "WS-1_dataset/output/aapm_r3_roi_detectability.json",
+        "schema": "aapm-r3-roi-detectability/v1",
+        "sha256": "9987864a1d60bed445ba6f1a4c08a344e8ba5217666e954f6a544557a32d55fc",
+        "generated_at": "2026-08-22T19:36:01",
+        "corpus": "AAPM 2016 LDCT grand challenge, held-out test (4 patients), 1mm B30, FD vs QD real pairing",
+        "patients": [
+          "aapm-0003",
+          "aapm-0005",
+          "aapm-0006",
+          "aapm-0009"
+        ],
+        "protocol": "detectability-freq-v1 on find_tissue_roi patches (HU band [10,120], low Sobel gradient, low internal std, seed 42, 32x32 px), 48 ROIs per patient",
+        "aggregation": "per-patient mean over the 4 held-out test patients",
+        "refreshed_at": "2026-09-05"
+      },
+      "metrics": {
+        "psnr_db": 41.62701493902994,
+        "ssim": 0.9653218340698881,
+        "cnr_mean": 0.17063560072817718,
+        "cho_auc_mean": 1.0,
+        "npwe_mean": 220804.5630688496,
+        "bander_roi": 0.4315421991344855,
+        "bander_full": 0.42997330961502483,
+        "roi_tm_auc": 0.9895833333333334,
+        "task": "SKE-Gaussian20HU-s2px"
+      },
+      "submitted_at": "2026-09-16T18:21:36.179453+00:00",
+      "notes": "Permanent Gaussian blur trap (sigma=1.0 px, 5x5), measured on the AAPM held-out test (4 patients, Siemens, real QD pairing) under detectability-freq-v1; see `source` for the file and its hash. Highest SSIM, highest PSNR and highest CNR on that run, last on ROI band energy by 8.9-15.6x: high fidelity does not imply detectability."
+    },
+    {
+      "id": "seed-blur:GE",
+      "method": "gaussian-blur [GE]",
+      "kind": "seed-trap",
+      "permanent": true,
+      "trap": true,
+      "placeholder": false,
+      "vendor": "GE",
+      "dose": "0.25",
+      "config": {
+        "sigma_px": 1.0,
+        "kernel_size": 5,
+        "module": "pwm_ldct_recon.models.GaussianBlur (WS-3)"
+      },
+      "source": {
+        "file": "WS-1_dataset/output/aapm_lidc_cross_vendor_spread.json",
+        "schema": "aapm-lidc-cross-vendor-spread/v1",
+        "sha256": "c436407412c6e419745bddf23aa10a0b8466015dd12a4ad104299c3aabe4f086",
+        "generated_at": "2026-08-22T21:01:52",
+        "dose_points": {
+          "LIDC_sim": "r=0.25 (lowdose_sim projection-domain, seed 42)",
+          "AAPM_real": "r=0.25 official real QD"
+        },
+        "protocol": "detectability-freq-v1 on find_tissue_roi patches (HU band [10,120], low Sobel gradient, low internal std, seed 42, 32x32 px)",
+        "aggregation": "per-patient mean within each vendor group",
+        "added_at": "2026-09-05",
+        "corpus": "LIDC lowdose_sim r=0.25 (seed 42)",
+        "n_patients": 2,
+        "reported_separation_ratio": 9.674255870751027
+      },
+      "metrics": {
+        "psnr_db": 40.68572623027117,
+        "ssim": 0.9209226369857788,
+        "cnr_mean": 4.8088624181101896,
+        "cho_auc_mean": 1.0,
+        "bander_roi": 0.045245933213797,
+        "bander_full": 0.2509224449453622,
+        "roi_tm_auc": 0.9895833333333334,
+        "task": "SKE-Gaussian20HU-s2px"
+      },
+      "submitted_at": "2026-09-16T18:21:36.179453+00:00",
+      "notes": "Permanent Gaussian blur trap as measured in the GE group (LIDC lowdose_sim r=0.25 (seed 42), 2 patients). Present so the Rung 5 requirement that the trap separate in every vendor group can be checked from the board."
+    },
+    {
+      "id": "seed-blur:Philips",
+      "method": "gaussian-blur [Philips]",
+      "kind": "seed-trap",
+      "permanent": true,
+      "trap": true,
+      "placeholder": false,
+      "vendor": "Philips",
+      "dose": "0.25",
+      "config": {
+        "sigma_px": 1.0,
+        "kernel_size": 5,
+        "module": "pwm_ldct_recon.models.GaussianBlur (WS-3)"
+      },
+      "source": {
+        "file": "WS-1_dataset/output/aapm_lidc_cross_vendor_spread.json",
+        "schema": "aapm-lidc-cross-vendor-spread/v1",
+        "sha256": "c436407412c6e419745bddf23aa10a0b8466015dd12a4ad104299c3aabe4f086",
+        "generated_at": "2026-08-22T21:01:52",
+        "dose_points": {
+          "LIDC_sim": "r=0.25 (lowdose_sim projection-domain, seed 42)",
+          "AAPM_real": "r=0.25 official real QD"
+        },
+        "protocol": "detectability-freq-v1 on find_tissue_roi patches (HU band [10,120], low Sobel gradient, low internal std, seed 42, 32x32 px)",
+        "aggregation": "per-patient mean within each vendor group",
+        "added_at": "2026-09-05",
+        "corpus": "LIDC lowdose_sim r=0.25 (seed 42)",
+        "n_patients": 2,
+        "reported_separation_ratio": 12.803654465402388
+      },
+      "metrics": {
+        "psnr_db": 43.581771895681854,
+        "ssim": 0.9869370975842078,
+        "cnr_mean": 0.20756659662744237,
+        "cho_auc_mean": 1.0,
+        "bander_roi": 0.24936490377459875,
+        "bander_full": 0.4166925496969569,
+        "roi_tm_auc": 0.9895833333333334,
+        "task": "SKE-Gaussian20HU-s2px"
+      },
+      "submitted_at": "2026-09-16T18:21:36.179453+00:00",
+      "notes": "Permanent Gaussian blur trap as measured in the Philips group (LIDC lowdose_sim r=0.25 (seed 42), 2 patients). Present so the Rung 5 requirement that the trap separate in every vendor group can be checked from the board."
+    },
+    {
+      "id": "seed-blur:Siemens",
+      "method": "gaussian-blur [Siemens]",
+      "kind": "seed-trap",
+      "permanent": true,
+      "trap": true,
+      "placeholder": false,
+      "vendor": "Siemens",
+      "dose": "0.25",
+      "config": {
+        "sigma_px": 1.0,
+        "kernel_size": 5,
+        "module": "pwm_ldct_recon.models.GaussianBlur (WS-3)"
+      },
+      "source": {
+        "file": "WS-1_dataset/output/aapm_lidc_cross_vendor_spread.json",
+        "schema": "aapm-lidc-cross-vendor-spread/v1",
+        "sha256": "c436407412c6e419745bddf23aa10a0b8466015dd12a4ad104299c3aabe4f086",
+        "generated_at": "2026-08-22T21:01:52",
+        "dose_points": {
+          "LIDC_sim": "r=0.25 (lowdose_sim projection-domain, seed 42)",
+          "AAPM_real": "r=0.25 official real QD"
+        },
+        "protocol": "detectability-freq-v1 on find_tissue_roi patches (HU band [10,120], low Sobel gradient, low internal std, seed 42, 32x32 px)",
+        "aggregation": "per-patient mean within each vendor group",
+        "added_at": "2026-09-05",
+        "corpus": "LIDC lowdose_sim r=0.25 (seed 42)",
+        "n_patients": 2,
+        "reported_separation_ratio": 9.461958071041304
+      },
+      "metrics": {
+        "psnr_db": 36.93872655591893,
+        "ssim": 0.8405405518909295,
+        "cnr_mean": 0.09848642185169176,
+        "cho_auc_mean": 1.0,
+        "bander_roi": 0.1223033657914374,
+        "bander_full": 0.1914244989515192,
+        "roi_tm_auc": 0.9895833333333334,
+        "task": "SKE-Gaussian20HU-s2px"
+      },
+      "submitted_at": "2026-09-16T18:21:36.179453+00:00",
+      "notes": "Permanent Gaussian blur trap as measured in the Siemens group (LIDC lowdose_sim r=0.25 (seed 42), 2 patients). Present so the Rung 5 requirement that the trap separate in every vendor group can be checked from the board."
+    },
+    {
+      "id": "seed-blur:Toshiba",
+      "method": "gaussian-blur [Toshiba]",
+      "kind": "seed-trap",
+      "permanent": true,
+      "trap": true,
+      "placeholder": false,
+      "vendor": "Toshiba",
+      "dose": "0.25",
+      "config": {
+        "sigma_px": 1.0,
+        "kernel_size": 5,
+        "module": "pwm_ldct_recon.models.GaussianBlur (WS-3)"
+      },
+      "source": {
+        "file": "WS-1_dataset/output/aapm_lidc_cross_vendor_spread.json",
+        "schema": "aapm-lidc-cross-vendor-spread/v1",
+        "sha256": "c436407412c6e419745bddf23aa10a0b8466015dd12a4ad104299c3aabe4f086",
+        "generated_at": "2026-08-22T21:01:52",
+        "dose_points": {
+          "LIDC_sim": "r=0.25 (lowdose_sim projection-domain, seed 42)",
+          "AAPM_real": "r=0.25 official real QD"
+        },
+        "protocol": "detectability-freq-v1 on find_tissue_roi patches (HU band [10,120], low Sobel gradient, low internal std, seed 42, 32x32 px)",
+        "aggregation": "per-patient mean within each vendor group",
+        "added_at": "2026-09-05",
+        "corpus": "LIDC lowdose_sim r=0.25 (seed 42)",
+        "n_patients": 2,
+        "reported_separation_ratio": 18.962875643689227
+      },
+      "metrics": {
+        "psnr_db": 40.36947279508346,
+        "ssim": 0.9115665163844824,
+        "cnr_mean": 3.459680516229598,
+        "cho_auc_mean": 1.0,
+        "bander_roi": 0.05920958469662685,
+        "bander_full": 0.22311928788604293,
+        "roi_tm_auc": 0.9895833333333334,
+        "task": "SKE-Gaussian20HU-s2px"
+      },
+      "submitted_at": "2026-09-16T18:21:36.179453+00:00",
+      "notes": "Permanent Gaussian blur trap as measured in the Toshiba group (LIDC lowdose_sim r=0.25 (seed 42), 2 patients). Present so the Rung 5 requirement that the trap separate in every vendor group can be checked from the board."
+    },
+    {
+      "id": "seed-blur:AAPM-Siemens-real",
+      "method": "gaussian-blur [AAPM-Siemens-real]",
+      "kind": "seed-trap",
+      "permanent": true,
+      "trap": true,
+      "placeholder": false,
+      "vendor": "AAPM-Siemens-real",
+      "dose": "0.25",
+      "config": {
+        "sigma_px": 1.0,
+        "kernel_size": 5,
+        "module": "pwm_ldct_recon.models.GaussianBlur (WS-3)"
+      },
+      "source": {
+        "file": "WS-1_dataset/output/aapm_lidc_cross_vendor_spread.json",
+        "schema": "aapm-lidc-cross-vendor-spread/v1",
+        "sha256": "c436407412c6e419745bddf23aa10a0b8466015dd12a4ad104299c3aabe4f086",
+        "generated_at": "2026-08-22T21:01:52",
+        "dose_points": {
+          "LIDC_sim": "r=0.25 (lowdose_sim projection-domain, seed 42)",
+          "AAPM_real": "r=0.25 official real QD"
+        },
+        "protocol": "detectability-freq-v1 on find_tissue_roi patches (HU band [10,120], low Sobel gradient, low internal std, seed 42, 32x32 px)",
+        "aggregation": "per-patient mean within each vendor group",
+        "added_at": "2026-09-05",
+        "corpus": "AAPM 2016 real QD pairing",
+        "n_patients": 4,
+        "reported_separation_ratio": 8.930558159281748
+      },
+      "metrics": {
+        "psnr_db": 41.62701493902994,
+        "ssim": 0.9653218340698881,
+        "cnr_mean": 0.17063560072817718,
+        "cho_auc_mean": 1.0,
+        "bander_roi": 0.4315421991344855,
+        "bander_full": 0.42997330961502483,
+        "roi_tm_auc": 0.9895833333333334,
+        "task": "SKE-Gaussian20HU-s2px"
+      },
+      "submitted_at": "2026-09-16T18:21:36.179453+00:00",
+      "notes": "Permanent Gaussian blur trap as measured in the AAPM-Siemens-real group (AAPM 2016 real QD pairing, 4 patients). Present so the Rung 5 requirement that the trap separate in every vendor group can be checked from the board."
+    },
+    {
+      "id": "seed-ws3-reference",
+      "method": "WS-3 reference (unrolled + deep-ensemble)",
+      "kind": "seed-reference",
+      "permanent": false,
+      "trap": false,
+      "placeholder": true,
+      "vendor": null,
+      "dose": null,
+      "metrics": {
+        "psnr_db": 8.495,
+        "ssim": 5.1e-05,
+        "cnr_mean": null,
+        "cho_auc_mean": 0.5,
+        "npwe_mean": 0.0,
+        "task": "SKE-Gaussian20HU-s2px"
+      },
+      "submitted_at": "2026-09-16T18:21:36.179453+00:00",
+      "notes": "Seed entry from WS-3 reference method v1. Placeholder numbers from WS-3 self-test; refresh from the pinned RunBundle before launch."
+    },
+    {
+      "id": "sub-GE",
+      "method": "vendor-GE",
+      "kind": "submission",
+      "permanent": false,
+      "trap": false,
+      "placeholder": false,
+      "vendor": "GE",
+      "dose": "0.25",
+      "metrics": {
+        "psnr_db": 41.6,
+        "ssim": 0.965,
+        "cnr_mean": 14.0,
+        "cho_auc_mean": 1.0,
+        "npwe_mean": 220804.56,
+        "bander_roi": 0.4377,
+        "task": "SKE-Gaussian20HU-s2px"
+      },
+      "submitted_at": "2026-09-15T00:00:00+00:00",
+      "notes": "fixture"
+    },
+    {
+      "id": "sub-Philips",
+      "method": "vendor-Philips",
+      "kind": "submission",
+      "permanent": false,
+      "trap": false,
+      "placeholder": false,
+      "vendor": "Philips",
+      "dose": "0.25",
+      "metrics": {
+        "psnr_db": 41.6,
+        "ssim": 0.965,
+        "cnr_mean": 14.0,
+        "cho_auc_mean": 1.0,
+        "npwe_mean": 220804.56,
+        "bander_roi": 3.1928,
+        "task": "SKE-Gaussian20HU-s2px"
+      },
+      "submitted_at": "2026-09-15T00:00:00+00:00",
+      "notes": "fixture"
+    },
+    {
+      "id": "sub-Siemens",
+      "method": "vendor-Siemens",
+      "kind": "submission",
+      "permanent": false,
+      "trap": false,
+      "placeholder": false,
+      "vendor": "Siemens",
+      "dose": "0.25",
+      "metrics": {
+        "psnr_db": 41.6,
+        "ssim": 0.965,
+        "cnr_mean": 14.0,
+        "cho_auc_mean": 1.0,
+        "npwe_mean": 220804.56,
+        "bander_roi": 1.1572,
+        "task": "SKE-Gaussian20HU-s2px"
+      },
+      "submitted_at": "2026-09-15T00:00:00+00:00",
+      "notes": "fixture"
+    }
+  ],
+  "trap_rank": {
+    "index": "bander_roi",
+    "verdict": "NO_CLAIM",
+    "trap_value": 0.4315421991344855,
+    "n_compared": 0,
+    "min_ratio_required": null,
+    "min_ratio_observed": null,
+    "ranked": [],
+    "violations": [],
+    "note": "no non-placeholder entry reports bander_roi; there is nothing to rank the trap against and the board makes no detectability claim",
+    "checked_at": "2026-09-16T18:21:36.179453+00:00"
+  },
+  "trap_rank_by_vendor": {
+    "by": "vendor",
+    "verdict": "NO_CLAIM",
+    "min_ratio_required": null,
+    "n_groups": 5,
+    "groups": {
+      "AAPM-Siemens-real": {
+        "index": "bander_roi",
+        "verdict": "NO_CLAIM",
+        "trap_value": 0.4315421991344855,
+        "n_compared": 0,
+        "min_ratio_required": null,
+        "min_ratio_observed": null,
+        "ranked": [],
+        "violations": [],
+        "note": "no non-placeholder entry reports bander_roi; there is nothing to rank the trap against and the board makes no detectability claim",
+        "checked_at": "2026-09-16T18:21:36.179453+00:00"
+      },
+      "GE": {
+        "index": "bander_roi",
+        "verdict": "NO_CLAIM",
+        "trap_value": 0.045245933213797,
+        "n_compared": 0,
+        "min_ratio_required": null,
+        "min_ratio_observed": null,
+        "ranked": [],
+        "violations": [],
+        "note": "no non-placeholder entry reports bander_roi; there is nothing to rank the trap against and the board makes no detectability claim",
+        "checked_at": "2026-09-16T18:21:36.179453+00:00"
+      },
+      "Philips": {
+        "index": "bander_roi",
+        "verdict": "NO_CLAIM",
+        "trap_value": 0.24936490377459875,
+        "n_compared": 0,
+        "min_ratio_required": null,
+        "min_ratio_observed": null,
+        "ranked": [],
+        "violations": [],
+        "note": "no non-placeholder entry reports bander_roi; there is nothing to rank the trap against and the board makes no detectability claim",
+        "checked_at": "2026-09-16T18:21:36.179453+00:00"
+      },
+      "Siemens": {
+        "index": "bander_roi",
+        "verdict": "NO_CLAIM",
+        "trap_value": 0.1223033657914374,
+        "n_compared": 0,
+        "min_ratio_required": null,
+        "min_ratio_observed": null,
+        "ranked": [],
+        "violations": [],
+        "note": "no non-placeholder entry reports bander_roi; there is nothing to rank the trap against and the board makes no detectability claim",
+        "checked_at": "2026-09-16T18:21:36.179453+00:00"
+      },
+      "Toshiba": {
+        "index": "bander_roi",
+        "verdict": "NO_CLAIM",
+        "trap_value": 0.05920958469662685,
+        "n_compared": 0,
+        "min_ratio_required": null,
+        "min_ratio_observed": null,
+        "ranked": [],
+        "violations": [],
+        "note": "no non-placeholder entry reports bander_roi; there is nothing to rank the trap against and the board makes no detectability claim",
+        "checked_at": "2026-09-16T18:21:36.179453+00:00"
+      }
+    },
+    "violations": [],
+    "note": "0 of 5 vendor groups had entries to rank the trap against",
+    "checked_at": "2026-09-16T18:21:36.179453+00:00"
+  },
+  "spread": {}
+}

@@ -73,13 +73,20 @@ def cmd_submit(args) -> int:
     except ValueError as exc:
         print(f"REJECT: {exc}")
         return 1
-    save(board, args.out)
+    try:
+        save(board, args.out)
+    except ValueError as exc:
+        print(f"REJECT: {exc}")
+        return 1
     for e in created:
         m = e["metrics"]
         ctx = f" vendor={e.get('vendor')} dose={e.get('dose')}" if e.get("vendor") or e.get("dose") else ""
         print(f"accepted {e['id']}: method={e['method']} psnr={m.get('psnr_db'):.3f} "
               f"cnr={m.get('cnr_mean')} cho_auc={m.get('cho_auc_mean')}{ctx}")
     print(f"leaderboard now has {len(board['entries'])} entries -> {args.out}")
+    pub = board.get("publication", {}).get("status", "pending")
+    print(f"receipt recorded; publication status: {pub} "
+          "(a receipt is not a publication)")
     return 0
 
 

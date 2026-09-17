@@ -22,14 +22,17 @@ prose. :func:`assert_trap_ranks_last` is the hard gate for a publishing path.
 """
 from __future__ import annotations
 
+import hashlib
 import json
 import statistics
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-from .task_spec import BLUR_SPEC, DISCRIMINATING_FIELDS, SCHEMA_VERSION, TASK_SPEC
-from .verify import check_paired_submission, extract_paired_methods
+from .task_spec import (BLUR_SPEC, DISCRIMINATING_FIELDS, REQUIRED_VENDOR_GROUPS,
+                        SCHEMA_VERSION, TASK_SPEC)
+from .verify import (check_claim_bound_provenance, check_paired_submission,
+                     extract_paired_methods, provenance_sha256)
 
 BLUR_ENTRY_ID = "seed-blur"
 REFERENCE_ENTRY_ID = "seed-ws3-reference"
@@ -40,6 +43,12 @@ REFERENCE_ENTRY_ID = "seed-ws3-reference"
 TRAP_RANK_PASS = "PASS"
 TRAP_RANK_FAIL = "FAIL"
 TRAP_RANK_INDETERMINATE = "INDETERMINATE"
+#: A board with nothing to rank the trap against makes no detectability claim
+#: and must not be recorded as PASS (no claim is not a pass).
+TRAP_RANK_NO_CLAIM = "NO_CLAIM"
+#: The required vendor strata (REQUIRED_VENDOR_GROUPS) are not all covered by
+#: submissions; the per-group claim cannot be certified.
+TRAP_RANK_MISSING_STRATUM = "MISSING_STRATUM"
 
 
 def _utcnow() -> str:
@@ -416,6 +425,7 @@ def trap_rank_report(entries: List[Dict], *, min_ratio: Optional[float] = None) 
                         for e, v in sorted(comparable, key=lambda p: p[1])]
 
     if not comparable:
+        report["verdict"] = TRAP_RANK_NO_CLAIM
         report["note"] = ("no non-placeholder entry reports %s; there is nothing to rank "
                           "the trap against and the board makes no detectability claim" % index)
         return report
@@ -509,8 +519,10 @@ def trap_rank_by_group(entries: List[Dict], *, by: str = "vendor",
         report["note"] = "no entry carries a %s, so there is nothing to check per group" % by
         return report
 
-    rank = {TRAP_RANK_PASS: 0, TRAP_RANK_INDETERMINATE: 1, TRAP_RANK_FAIL: 2}
-    worst = TRAP_RANK_PASS
+    rank = {TRAP_RANK_NO_CLAIM: -1, TRAP_RANK_PASS: 0,
+            TRAP_RANK_MISSING_STRATUM: 1, TRAP_RANK_INDETERMINATE: 2,
+            TRAP_RANK_FAIL: 3}
+    worst = TRAP_RANK_NO_CLAIM
     for key in sorted(groups):
         members = groups[key]
         if _trap_in(members) is None:
@@ -518,7 +530,7 @@ def trap_rank_by_group(entries: List[Dict], *, by: str = "vendor",
                           if not e.get("trap") and not e.get("placeholder")
                           and discriminating_value(e) is not None]
             block: Dict[str, Any] = {
-                "verdict": TRAP_RANK_INDETERMINATE if comparable else TRAP_RANK_PASS,
+                "verdict": TRAP_RANK_INDETERMINATE if comparable else TRAP_RANK_NO_CLAIM,
                 "trap_value": None,
                 "n_compared": len(comparable),
                 "min_ratio_observed": None,
@@ -541,6 +553,38 @@ def trap_rank_by_group(entries: List[Dict], *, by: str = "vendor",
             report["violations"].append("%s=%s: %s" % (by, key, v))
         if rank[block["verdict"]] > rank[worst]:
             worst = block["verdict"]
+
+    # Required strata (§2-B): the per-vendor claim may only be certified when
+    # every REQUIRED_VENDOR_GROUPS stratum is covered by **submissions**. A
+    # group that exists only as a seed trap is not covered: an absent real
+    # submission is not evidence that the trap separates in it. Zero covered
+    # strata is NO_CLAIM (nothing is claimed), partial coverage is
+    # MISSING_STRATUM (the claim is not certified), never PASS.
+    if by == "vendor":
+        covered = [required for required in REQUIRED_VENDOR_GROUPS
+                   if any(not e.get("trap") and not e.get("placeholder")
+                          for e in groups.get(required, []))]
+        missing = [required for required in REQUIRED_VENDOR_GROUPS
+                   if required not in covered]
+        if missing:
+            if not covered:
+                # Zero covered strata: no per-vendor claim is being made. NO_CLAIM
+                # is the floor, but a group-level FAIL / INDETERMINATE already
+                # recorded above still stands (a board with a real failure is not
+                # rescued by having no claim).
+                report["violations"].append(
+                    "no required vendor stratum (REQUIRED_VENDOR_GROUPS) carries a "
+                    "submission; there is no per-vendor claim to certify")
+                report["note"] = ("no required vendor stratum carries a submission; "
+                                  "the board makes no per-vendor detectability claim")
+            else:
+                report["violations"].append(
+                    "missing required vendor stratum: %s; the per-group claim cannot be "
+                    "certified until every REQUIRED_VENDOR_GROUPS group carries a submission"
+                    % ", ".join(missing))
+                report["note"] = "required vendor strata not fully covered: %s" % ", ".join(missing)
+                if rank[worst] < rank[TRAP_RANK_MISSING_STRATUM]:
+                    worst = TRAP_RANK_MISSING_STRATUM
 
     report["verdict"] = worst
     checked = [k for k, b in report["groups"].items() if b["n_compared"]]
@@ -582,6 +626,15 @@ def add_submission(leaderboard: Dict, result: Dict, method: str,
         violations = check_paired_submission(m)
         if violations:
             raise ValueError(f"method '{name}' not publishable: {'; '.join(violations)}")
+
+    # Claim-bound provenance (§2-D): the numbers must be bound to the evidence
+    # they claim. A submission with no claim, a claim pointing at a different
+    # task/protocol, or hashes that do not match its evidence is refused as a
+    # whole -- after the numeric gate, so a numerically invalid method is still
+    # named first.
+    claim_violations = check_claim_bound_provenance(result)
+    if claim_violations:
+        raise ValueError("submission claim provenance: " + "; ".join(claim_violations))
 
     created: List[Dict] = []
     now = submitted_at or _utcnow()
@@ -688,11 +741,92 @@ def load(path: str | Path) -> Dict:
     return board
 
 
+def _save_gate_violations(board: Dict) -> List[str]:
+    """§2-C: the full gate chain a direct ``save()`` must run before writing.
+
+    Applies the same gates a CLI submission runs, so a direct write cannot bypass
+    them: entry-wise ``check_paired_submission`` (paired rule + §2-A task
+    identity), the global trap-rank gate, and the per-required-stratum gate
+    (§2-B). A board with nothing to rank (NO_CLAIM) is writable but makes no
+    publishable claim; FAIL / INDETERMINATE / MISSING_STRATUM block the write.
+    """
+    violations: List[str] = []
+    entries = board.get("entries", [])
+    assert_trap_present(entries)
+    for e in entries:
+        if e.get("trap") or e.get("placeholder"):
+            continue
+        method_errors = check_paired_submission(e.get("metrics", {}))
+        for err in method_errors:
+            violations.append("entry '%s': %s" % (e.get("id"), err))
+    tr = trap_rank_report(entries)
+    if tr["verdict"] in (TRAP_RANK_FAIL, TRAP_RANK_INDETERMINATE):
+        for v in tr["violations"]:
+            violations.append("trap-rank: " + v)
+    bg = trap_rank_by_group(entries, by="vendor")
+    if bg["verdict"] in (TRAP_RANK_FAIL, TRAP_RANK_INDETERMINATE):
+        for v in bg["violations"]:
+            violations.append("strata: " + v)
+    # MISSING_STRATUM / NO_CLAIM are recorded states, not invalid evidence: a
+    # board whose required strata are not all covered is writable with
+    # receipt.gate.strata != PASS and publication left pending, so the absence
+    # of coverage is visible in the artifact instead of being silently refused
+    # out of existence. Publishing gates (assert_trap_separates_in_every_group)
+    # still refuse.
+    return violations
+
+
 def save(board: Dict, path: str | Path) -> None:
+    """Run the full gate chain, write the board, and attach a receipt.
+
+    §2-C: a direct save must not bypass the submission gates. This function
+    refuses to write a board that fails the paired gate, the task-identity gate,
+    the trap-rank gate, or the required-strata gate, and keeps a failed
+    diagnostic record at ``<path>.failed.json`` when it does. A board that
+    passes is written together with a **receipt** (submitted_at, gate results,
+    the SHA-256 of the input board, and the failed-diagnostics path, which is
+    null on success) and a separate ``publication`` field that defaults to
+    ``pending``: a receipt is evidence that the board was written, not that it
+    was released.
+    """
     assert_trap_present(board.get("entries", []))
-    # Refresh the trap-rank verdict so no board is written without one. This
-    # records a FAIL rather than refusing to write it: the failure is the finding.
+    input_sha256 = provenance_sha256(board)
+    violations = _save_gate_violations(board)
+
+    if violations:
+        failed_path = Path(str(path) + ".failed.json")
+        failed = {
+            "schema": "ws4-save-failed/v1",
+            "saved_path": str(Path(path)),
+            "submitted_at": _utcnow(),
+            "input_sha256": input_sha256,
+            "gate_violations": violations,
+        }
+        failed_path.write_text(json.dumps(failed, indent=2, ensure_ascii=False) + "\n",
+                               encoding="utf-8")
+        raise ValueError("board not publishable: " + "; ".join(violations)
+                         + " (failed diagnostic: %s)" % failed_path)
+
     board["trap_rank"] = trap_rank_report(board.get("entries", []))
     board["trap_rank_by_vendor"] = trap_rank_by_group(board.get("entries", []), by="vendor")
+    board["receipt"] = {
+        "schema": "ws4-save-receipt/v1",
+        "submitted_at": _utcnow(),
+        "input_sha256": input_sha256,
+        "gate": {
+            "check_submission_result": "ok",
+            "task_identity": "ok",
+            "trap_rank": board["trap_rank"]["verdict"],
+            "strata": board["trap_rank_by_vendor"]["verdict"],
+        },
+        "failed_diagnostics": None,
+    }
+    board["publication"] = {
+        "schema": "ws4-publication/v1",
+        "status": "pending",
+        "published_at": None,
+        "note": ("A receipt is not a publication: this board has been written but "
+                 "has not been released."),
+    }
     Path(path).write_text(json.dumps(board, indent=2, ensure_ascii=False) + "\n",
                           encoding="utf-8")

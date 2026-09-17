@@ -1,0 +1,72 @@
+{
+  "schema_version": "0.1.0",
+  "maintained_by": "WS-4 leaderboard (rung closed by registry, not by agent)",
+  "updated_at": "2026-09-04",
+  "rungs": [
+    {
+      "rung": 1,
+      "title": "Detectability-first baseline (task stated, stated observer, blur test, routine paired gate)",
+      "supported_data": [
+        "SKE Gaussian lesion, sigma=2.0px, 20HU, location_known=True (task_spec.TASK_SPEC)",
+        "CNR(Rose>=3) + CHO(DOG-4) + NPWE observer channels",
+        "Permanent Gaussian blur trap (sigma=1.0px, 5x5) always on board",
+        "Paired fidelity+detectability gate (both numbers or neither) + discriminating-index rule: bander_roi (detectability-freq-v1 ROI BandER) required; CNR/CHO-AUC/NPWE are transparency-only and do not satisfy the gate alone (enforced 2026-09-04)"
+      ],
+      "status": "done",
+      "reason": "Full held-out run complete on AAPM 10 (splits/aapm_{train,val,test}.txt; RED-CNN/CTformer/LEARN + blur trap; fidelity PSNR/SSIM/LPIPS + detectability CNR/CHO-AUC/NPWE + frequency-domain BandER/TM-AUC; per-split + per-patient in WS-1 output/aapm_paired_baselines_v2.json + _summary.md). Task-spec calibration 2026-08-21: insertion protocol NOT discriminative on real anatomy (CHO AUC saturated 1.000, blur-vs-model gap <=0.02); frequency-domain BandER IS discriminative — blur 0.247 vs RED-CNN 0.636 / CTformer 1.040 / LEARN 0.631 while blur scores the highest SSIM (0.929) -> blur trap 'high fidelity, low detectability' confirmed. Gate alignment 2026-09-04: the discriminative/transparency split declared here is now enforced in code -- task_spec.DISCRIMINATING_FIELDS=('bander_roi',) is required and TRANSPARENCY_FIELDS=(cnr_mean,cho_auc_mean,npwe_mean) no longer satisfy the gate alone. Previously any one insertion-based index sufficed, so a submission could pass on a metric the permanent trap wins (trap CNR exceeds RED-CNN 1.11-1.19x, CoreDiff 1.08-1.13x, CTformer 1.90-2.23x on the simulated arm). The same omission dropped bander_roi during extract_paired_methods, making the leaderboard carry-through and the Rung 5 bander_roi spread block unreachable; both now populate. See WS-4 OPTIMIZATIONS_LOG.md P0-1b. Remaining before full closure: independent recomputation by a domain verifier (Rung 2 routine).",
+      "workspace": "WS-1_dataset, WS-3_reference_method, WS-4_leaderboard",
+      "gate": "scoring/verify.py::check_paired_submission; leaderboard.py::assert_trap_present; leaderboard.py::assert_trap_ranks_last (trap ranks last on the discriminating index, 2026-09-05)"
+    },
+    {
+      "rung": 2,
+      "title": "Real paired low-dose data + geometric pairing validation",
+      "supported_data": [
+        "AAPM 2016 10 training patients FD+QD paired (staged at E:\\AAPM_staged\\Training_Image_Data\\1mm B30\\{FD_1mm,QD_1mm})",
+        "DICOM ImagePositionPatient geometric pairing (>0.99 correlation target)"
+      ],
+      "status": "done",
+      "reason": "10/10 geometric pairing validated (Pearson=1.0, 0 unmatched, 0 violations; WS-1 output/aapm_pairing_validation.json); complete held-out paired run executed on FD/QD pairs (train 3 / val 3 / test 4, 4 baselines + blur trap; WS-1 output/aapm_paired_baselines.json + _summary.md). Mayo LDCT-PD and prospective acquisition remain removed from v1.0 scope.",
+      "workspace": "WS-1_dataset (v1.0)",
+      "gate": "scoring/gates.py::check_pairing_validation (executable, both-direction probes shipped, 2026-09-05); WS-1 baselines dicom_pairing (run on AAPM 10)"
+    },
+    {
+      "rung": 4,
+      "title": "Dose-detectability curve (multi-dose, knee named)",
+      "supported_data": [
+        "AAPM real paired FD multi-dose points: r=0.25 official real QD + lowdose_sim projection-domain r=0.10/0.50 (seed 42)",
+        "Dose-detectability curve (ROI BandER) with named knee"
+      ],
+      "status": "done",
+      "reason": "Full curve on AAPM 4 test patients (3 dose points x 4 models + blur trap; WS-1 output/aapm_dose_detectability_curve.png + .json + _summary.md). Knee (first dose ratio where ROI BandER reaches tau=0.5): red_cnn/ctformer/learn = 0.500, blur not_reached (BandER stays 0.18-0.43). Real-data knee right-shifted vs LIDC simulated version (rose-crossing knee 0.33/0.29/0.25). Simulated dose points run on 48-slice detectability subset (full-volume projection simulation infeasible; trade-off declared).",
+      "workspace": "WS-1_dataset (v0.5 dose points)",
+      "gate": "scoring/gates.py::check_dose_curve (executable, both-direction probes shipped, 2026-09-05); WS-1 output/aapm_dose_detectability_curve.png + .json + _summary.md"
+    },
+    {
+      "rung": 5,
+      "title": "Per-vendor / per-dose spread (dual-metric, no cross-vendor averaging)",
+      "supported_data": [
+        "Method adjustment 2026-08-22: no external multi-vendor submissions exist -> project's own held-out results treated as the on-board submission set (own-data proxy for external submissions)",
+        "Per-vendor board: LIDC four vendors (GE/Philips/Siemens/Toshiba, 2 patients each, lowdose_sim r=0.25) + AAPM Siemens real paired QD (4 held-out test patients) x RED-CNN/CTformer/LEARN + blur trap",
+        "Per-dose board: AAPM Siemens FD with r=0.10 (lowdose_sim) / r=0.25 (official real QD) / r=0.50 (lowdose_sim) x same 4 models",
+        "Spread block in leaderboard.json extended to frequency-domain BandER (psnr_db + bander_roi + cnr_mean span/std per group); no cross-vendor/dose averaging"
+      ],
+      "status": "done",
+      "reason": "Per-vendor spread gate PASS: blur trap separates in 5/5 vendor groups (ratio 8.9-19.0x >= 3x, blur last in detectability) and vendor effect significant on Kruskal-Wallis over per-slice ROI BandER (H=328.3, p<0.001, 4 LIDC vendors x 96 per-slice samples per model) so per-vendor reporting (never averaging) is statistically justified. Per-dose spread gate PASS: blur trap separates in 3/3 dose points (ratio 8.9-23.1x); dose levels are distinct acquisition conditions (protocol-level no-average constraint) + exact permutation Friedman (repeated measures, 4 patients) supports a dose effect in 3/4 models (red_cnn/learn/blur p=0.0417; ctformer p=0.1250 due to one non-monotonic patient). Full tables in WS-1 output/aapm_per_dose_spread.json + _summary.md. compute_spread + README updated with the adjustment (own-data proxy, constraints unchanged: per-vendor/per-dose grouping, never average across groups, blur trap must separate in every group). Remaining before full closure: independent recomputation by a domain verifier (Rung 2 routine).",
+      "workspace": "WS-4_leaderboard, WS-1_dataset",
+      "gate": "leaderboard.py::compute_spread; WS-1 output/aapm_per_dose_spread.json + _summary.md ; leaderboard.py::trap_rank_by_group (trap separates inside every vendor group, from the board, 2026-09-05)"
+    },
+    {
+      "rung": 6,
+      "title": "Cross-vendor generalization (leave-one-vendor-out, independent verification)",
+      "supported_data": [
+        "LIDC four-vendor (GE/Philips/Siemens/Toshiba, 2 patients each, lowdose_sim r=0.25)",
+        "AAPM Siemens real paired QD (held-out test 4 patients)",
+        "ROI BandER + CNR/CHO/NPWE per vendor"
+      ],
+      "status": "done",
+      "reason": "Full cross-vendor spread run complete (WS-1 output/aapm_lidc_cross_vendor_spread.json + _summary.md): blur-trap separates in all 5 vendor groups (blur ROI BandER < min model, ratio 8.9-19.0x >= 3x gate; blur ranks last 4/4 in every group); vendor effect significant on Kruskal-Wallis over per-slice ROI BandER (H=328.3, p<0.001, 4 LIDC vendors x 96 per-slice samples per model) so per-vendor spread reporting (never average) is statistically justified; fidelity (PSNR) vendor effect not significant (p=0.077-0.346) - detectability is the discriminative dimension. Caveats: GE/Toshiba near-zero FD high-frequency denominators regularized (2026-08-22, adaptive epsilon floor = 1e-4 x full-image FD energy): ROI BandER now comparable across vendors (GE/Toshiba group means 0.6-9.2 vs 1e5-1e13 previously; blur separation preserved 9.5-19.0x, blur ranks 4/4, gate verdict unchanged PASS); pooled patient-level MWU blur-vs-model is not re-computed in the regularized run (per-slice not persisted) and is not used as a gate criterion. Remaining before full closure: independent recomputation by a domain verifier (Rung 2 routine).",
+      "workspace": "WS-1_dataset, WS-4_leaderboard",
+      "gate": "WS-1 output/aapm_lidc_cross_vendor_spread.json + _summary.md ; leaderboard.py::trap_rank_by_group (trap separates inside every vendor group, from the board, 2026-09-05)"
+    }
+  ]
+}
