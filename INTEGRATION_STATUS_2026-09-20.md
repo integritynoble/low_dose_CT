@@ -45,7 +45,11 @@ Environment: existing `.venv-ldct-integration`, Python 3.11 on Linux.
   committed log-derived amended verdicts match.
 - `python3 Heyang-paper/make_tables.py --check`: all tables current.
 - No `test_img/L506` path found in objects reachable from checked Heyang head.
-- `git diff --check`: clean.
+- `git diff --check` for integration edits: clean. The full inherited diff
+  also contains CRLF JSON and historical whitespace warnings; artifact bytes
+  were preserved rather than rewritten for formatting.
+- Initial GitHub CI found one overlong line in Heyang's new WS-2 documentation
+  test; split its diagnostic expression without changing its assertion.
 
 No native Windows run, GPU inference, WS-3 torch tests, image/control experiment,
 PDF rebuild, live sandbox execution, data copy or external adoption verification
