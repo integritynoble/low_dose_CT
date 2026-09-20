@@ -186,8 +186,11 @@ acceptance.
 ---
 
 ## Appendix — placeholder index (verified by sweep, 2026-05-27)
-Reproduce with: `grep -rn '\\todo{' WS-1_dataset/paper_draft/manuscript.tex` and
-`grep -rn '\[CONFIRM' WS-1_dataset`.
+Reproduce with:
+```bash
+grep -rn '\\todo{' WS-1_dataset/paper_draft/manuscript.tex
+grep -rn '\[CONFIRM' WS-1_dataset
+```
 
 **Manuscript `\todo` (2026-05-27 sweep — retained as history, superseded):** 53 `\todo{` occurrences
 across 29 lines; 3 are non-fillable (1 status comment + the `\todotable`/`\todofig` macro defs) →
@@ -208,6 +211,23 @@ across 29 lines; 3 are non-fillable (1 status comment + the `\todotable`/`\todof
 >    `manuscript_v1.tex` (v1.0 target).
 > The `[CONFIRM]` index below is unchanged from the 2026-05-27 sweep and was **not** re-derived in this
 > refresh; the `\todo` counts in this block supersede the numbers above.
+
+> **Dated amendment 2026-09-18 — appendix counts re-verified at HEAD `3823498` (full-repo sweep).**
+> 1. Submission manuscript `paper_draft/manuscript.tex` still contains **0 `\todo{`** (re-verified);
+>    the **53/50 counts above are the 2026-05-27 historical value**, kept only as history.
+> 2. `manuscript_v1.tex` (v1.0 target draft, **non-current — not in the submission package**)
+>    still carries **62 `\todo{`** occurrences; `manuscript_tex_pre_ctformer_retrain.tex`
+>    (pre-retrain archive, non-current) carries 10.
+> 3. Full-repo sweep 2026-09-18: **388 `\todo`-family markers across 37 files** (md/tex/py;
+>    regex `\todo\{|\todotable|\todofig`), of which this checklist itself accounts for 22 and the
+>    non-current WS-2b / WS-3 / WS-4 manuscripts for the bulk.
+> 4. Full-repo `[CONFIRM]` sweep 2026-09-18: **83 markers across 18 files**; **81 are substantive
+>    decision markers** (unchanged from the 2026-09-15 audit). The **2 remaining markers are grep
+>    command-example lines** — this appendix (L190) and `physionet_listing/deposit_procedure.md`
+>    (L111) — now fenced as code blocks below so they are not miscounted as decision markers.
+> The per-file tables in Appendices A/B/C below remain the 2026-05-27 snapshot and are
+> **historical values**; per-file counts have since drifted (e.g. `listing.md` now 7 `[CONFIRM]`,
+> `reporting_summary.md` 9, `cover_letter.md` 6 — full table in PENDING_ITEMS_AUDIT_2026-09-18.md).
 
 **`[CONFIRM]` markers — three classes** (raw `grep -o` counts; each deliverable also has ~1
 convention-header mention that is descriptive, not fillable):

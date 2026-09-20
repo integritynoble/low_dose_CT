@@ -2,7 +2,7 @@
 
 - **复算者角色**：独立复算者（independent recalculator），使用独立工具链（独立目录 `r6_recalc/`、独立 venv、作者随附 A1–A5 资产 + A3/A4 复算脚本）。
 - **复算范围**：手稿 R6 段落的 3 项声明：
-  1. blur trap 8 组（4 vendor × 2 dose 轨道）ROI BandER 分离 8.9–23.1× 且 blur rank 4/4；
+  1. blur trap 5 组（4 LIDC vendor + AAPM real reference）ROI BandER 分离 8.9–23.1× 且 blur rank 4/4；
   2. vendor 效应 patient-level permutation KW 各模型 p<0.05 且方向一致；
   3. dose 效应 exact-permutation Friedman 3/4 模型 p≈0.0417 / CTformer p≈0.1250。
 - **复算约束**：所有产物只写入 `r6_recalc/`，未触碰作者的 `baselines/results/`（仅只读读取作对照）。
@@ -129,7 +129,7 @@
 
 | 复算项 | 判定 |
 |---|---|
-| ① blur trap 8 组 ROI BandER 分离 8.9–23.1× 且 blur rank 4/4 | **PASS**（GE 9.73× / Philips 13.01× / Siemens 9.46× / Toshiba 18.83× / AAPM 8.93×，blur 全 4/4 最后） |
+| ① blur trap 5 组 ROI BandER 分离 8.9–23.1× 且 blur rank 4/4 | **PASS**（GE 9.73× / Philips 13.01× / Siemens 9.46× / Toshiba 18.83× / AAPM 8.93×，blur 全 4/4 最后） |
 | ② vendor 效应 permutation KW 各模型 p<0.05 且方向一致 | **PASS**（red_cnn 0.0038 / ctformer 0.0088 / learn 0.0045 / blur 0.0080，逐位一致） |
 | ③ dose 效应 exact Friedman 3/4 p≈0.0417、CTformer p≈0.1250 | **PASS**（逐位一致） |
 | 步骤 3 冒烟（blur seed42 全指标） | **PASS**（bit-identical） |

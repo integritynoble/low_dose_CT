@@ -12,6 +12,9 @@ from .leaderboard import (BLUR_ENTRY_ID, REFERENCE_ENTRY_ID, TRAP_RANK_FAIL,
 from .heldout import (HeldOutSet, OWN_PRINCIPAL, SubmissionEnvelope,
                       assert_no_write_path, authorize_write, make_heldout_set,
                       referee_append)
+from .verifier import (Verdict, check_claim_and_provenance,
+                       check_publish_eligibility, check_runbundle_structure,
+                       verify_published_vs_live, verify_runbundle)
 from .observer_sensitivity import (OBSERVER_A, OBSERVER_B, publish_observer_channels,
                                    rank_shift_report, report_observer_sensitivity)
 from .rung_registry import load_registry, render_markdown, update_status, validate_registry
@@ -30,6 +33,8 @@ __all__ = [
     "TRAP_RANK_NO_CLAIM", "TRAP_RANK_MISSING_STRATUM",
     "HeldOutSet", "OWN_PRINCIPAL", "SubmissionEnvelope", "assert_no_write_path",
     "authorize_write", "make_heldout_set", "referee_append",
+    "Verdict", "check_claim_and_provenance", "check_publish_eligibility",
+    "check_runbundle_structure", "verify_published_vs_live", "verify_runbundle",
     "OBSERVER_A", "OBSERVER_B", "publish_observer_channels", "rank_shift_report",
     "report_observer_sensitivity",
     "load_registry", "render_markdown", "update_status", "validate_registry",

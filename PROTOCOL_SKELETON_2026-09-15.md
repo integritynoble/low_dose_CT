@@ -80,6 +80,7 @@ Placeholders — exact frozen commands `[UNRESOLVED: owner=Heyang, decision_need
   `python -c "import scoring.leaderboard as L; L.trap_rank_report(...)"` from `WS-4_leaderboard` with `PYTHONPATH=WS-4_leaderboard`.
 - Full §4 agent audit (Linux only; see readiness note):
   `PYTHONPATH=<pillcam_agent>:<ldct_agent checkout> LDCT_REPO=<this repo> python -m unittest discover -s tests -p 'test_ldct_*.py'`
+  > `pillcam_agent` 为 15 日工作站共享核心目录（/home/S248103/pwm/pillcam_agent），非独立 GitHub 仓库；本机无此目录，§4 完整审计需在该工作站执行，或由 Director 提供可达路径。
 
 Each reported command must be followed by its stdout/stderr + exit code in results.
 
@@ -131,6 +132,6 @@ Frozen protocol status: owner accepted = `not-yet` until all `[UNRESOLVED]` fiel
 2. All numeric/margin/endpoint values are explicitly unresolved — none are invented.
 3. No dose-reduction claim is made; only detectability-retention on the declared task is in scope.
 4. Board by-vendor results are currently vacuous (`NO_CLAIM`, 0 comparable entries per group).
-5. Full §4 agent audit requires Linux + `pillcam_agent` shared core (not present on this Windows machine).
+5. Full §4 agent audit requires Linux + `pillcam_agent` shared core（15 日工作站共享核心目录，非独立 GitHub 仓库；本机不可用）。
 6. BANDER-2/BANDER-6 measurements await authorized imaging assets (owner: Heyang).
 *（内容由AI生成，仅供参考）*

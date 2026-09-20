@@ -55,18 +55,34 @@ pdflatex manuscript
 - Code Availability with stable URLs
 - Reference list
 
-**Placeholder (`\todo{}` markers) — fill as v0.5 phase work lands:**
+**Placeholder status (updated 2026-09-18 against the current submission draft `manuscript.tex`):**
+the previous placeholder list is superseded item-by-item below — resolved items map to the
+table/figure that now carries them; only the last four remain open:
 
-- Per-source train / val / test counts (deterministic from seed; populate at release)
-- LIDC manufacturer / kernel heterogeneity tables (extract from LIDC metadata)
-- Per-vendor full-dose effective-mAs distributions
-- Real-vs-simulated low-dose discrepancy figure (Figure 1; requires AAPM 2016 access — v1.0 roadmap)
-- Inter-rater agreement metrics (extracted from existing LIDC 4-reader annotations; AAPM/Mayo top-up calibration is v1.0)
-- Baseline reproduction performance table (after WS-3 baselines reproduce on v0.5)
-- 5-tuple credential summary table (after WS-2 v0.1 pilot)
-- PhysioNet URL (when v0.5 listing goes live)
-- L3 spec contract address (after registry deployment)
-- Top-up annotation budget total
+- Per-source train / val / test counts — **resolved**: `tab:cohort_v05` (LIDC 589 / 216 / 205 /
+  1{,}010; AAPM 2016 appears only as the v1.0 validation subset, not part of v0.5)
+- LIDC manufacturer / kernel heterogeneity tables — **resolved**: `tab:acquisition_v05`
+  (per-source acquisition parameters regenerated from `metadata.json` by
+  `analysis/extract_acquisition.py`) and `tab:demographics_v05`
+- Per-vendor full-dose effective-mAs distributions — **resolved within `tab:acquisition_v05`**
+  (exact per-scan values exposed by the loader without imposing a single value)
+- Real-vs-simulated low-dose discrepancy figure — **superseded**: `fig:sim_vs_real_v05` exists
+  but is flagged "partly realised, superseded" in SUBMISSION_CHECKLIST.md L127; the current
+  draft's real-data figures are `fig:aapm_dose_detectability_curve` + `tab:metrics_discrimination`
+  (frequency-domain BandER as the discriminating index)
+- Inter-rater agreement metrics — **resolved**: `tab:irr_v05` (pairwise Cohen's κ per reader-ID
+  group via `pipelines/pwm_ldct_prep/interrater_metrics.py`)
+- Baseline reproduction performance table — **resolved**: `tab:baselines_v05`
+  (PSNR/SSIM/LPIPS on the same n = 764 test slices per dose) + paired `tab:detectability_v05`
+- 5-tuple credential summary table — **still open** (after the WS-2 companion manuscript; not
+  in the v0.5 submission draft)
+- PhysioNet URL — **still open** (when v0.5 listing goes live)
+- L3 spec contract address — **still open** (L3 demoted to optional mirror; URL at deposit)
+- Top-up annotation budget total — **still open** (`\todo{$X}` tracked in SUBMISSION_CHECKLIST §3)
+
+> Historical note: the items above were listed as `\todo{}`-driven placeholders in earlier
+> README revisions; the current submission draft no longer uses `\todo{}` markers for the
+> resolved items (0 `\todo{` in the current `manuscript.tex`, verified 2026-09-18).
 
 ## v0.5 — what this draft does NOT yet contain (intentional)
 

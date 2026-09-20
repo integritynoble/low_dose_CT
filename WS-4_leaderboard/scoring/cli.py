@@ -142,6 +142,36 @@ def cmd_observer_sensitivity(args) -> int:
     return 0
 
 
+def cmd_verify_bundle(args) -> int:
+    verdict = verify_runbundle(
+        args.bundle,
+        live_result=(_load_result(args.live) if args.live else None),
+        entries=None,  # S4 pre-check needs the candidate board; pipeline never writes it
+        method_name="submission",
+        vendor=args.vendor,
+        dose=args.dose,
+        run_ws1_gates=not args.skip_ws1_gates)
+    print(f"verify-bundle: {verdict.summary()}")
+    for stage in ("S1", "S2", "S3", "S4"):
+        viol = verdict.violations.get(stage, [])
+        if stage in verdict.skipped:
+            print(f"  {stage}: SKIPPED")
+        elif viol:
+            print(f"  {stage}: REJECT ({len(viol)} violation(s))")
+            for v in viol:
+                print(f"    - {v}")
+        else:
+            print(f"  {stage}: PASS")
+    if "S3" in verdict.skipped:
+        print("  (S3 live execution is a container/data-machine dependency; "
+              "the numeric comparison is exercised by verify_published_vs_live)")
+    if "S4" in verdict.skipped:
+        print("  (S4 pre-check needs the candidate board entries; the final "
+              "write goes through `python -m scoring.cli submit`, which runs "
+              "the full §2-C gate chain)")
+    return 0 if verdict.ok else 1
+
+
 def cmd_rung_status(args) -> int:
     reg = load_registry(args.registry)
     if args.markdown:
@@ -195,6 +225,18 @@ def main(argv=None) -> int:
     p.add_argument("--registry", default=str(DEFAULT_REGISTRY))
     p.add_argument("--markdown", action="store_true")
     p.set_defaults(func=cmd_rung_status)
+
+    p = sub.add_parser("verify-bundle",
+                       help="S1-S4 verification pipeline on a RunBundle (Phase 1, 1.2)")
+    p.add_argument("--bundle", required=True,
+                   help="path to the RunBundle directory (contract §1)")
+    p.add_argument("--live", default=None,
+                   help="optional live results.json from sandbox execution (S3)")
+    p.add_argument("--vendor", default=None, help="measurement vendor label")
+    p.add_argument("--dose", default=None, help="measurement dose level label")
+    p.add_argument("--skip-ws1-gates", action="store_true",
+                   help="skip the Rung 2/3/4 WS-1 artifact gates (S2)")
+    p.set_defaults(func=cmd_verify_bundle)
 
     args = ap.parse_args(argv)
     return args.func(args)
