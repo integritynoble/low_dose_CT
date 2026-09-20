@@ -1,5 +1,7 @@
 # PWM Low-Dose CT Grand Challenge
 
+**Heyang — current assignment:** [Review and next steps, 20 September](HEYANG_NEXT_2026-09-20.md). Finish `Heyang-paper/` first; then follow the ordered CT + agent tasks.
+
 [![CI](https://github.com/integritynoble/low_dose_CT/actions/workflows/ci.yml/badge.svg?branch=heyang)](https://github.com/integritynoble/low_dose_CT/actions/workflows/ci.yml)
 [![WS-3 CI](https://github.com/integritynoble/low_dose_CT/actions/workflows/ws3-ci.yml/badge.svg?branch=heyang)](https://github.com/integritynoble/low_dose_CT/actions/workflows/ws3-ci.yml)
 
