@@ -23,6 +23,7 @@ from __future__ import annotations
 import argparse
 import glob
 import json
+import math
 import os
 from typing import Any, Dict, List, Optional
 
@@ -62,6 +63,10 @@ def _seed_mean(doc: Dict[str, Any], dose: str, field: str) -> Optional[float]:
         det = ((doc["per_seed"][seed].get("per_dose") or {}).get(dose) or {}).get("detectability") or {}
         v = det.get(field)
         if isinstance(v, (int, float)):
+            # An invalid contribution invalidates the fallback; do not silently
+            # change the seed set or turn a boolean into a numeric CNR.
+            if not _finite(v):
+                return None
             vals.append(float(v))
     if not vals:
         return None
@@ -69,7 +74,8 @@ def _seed_mean(doc: Dict[str, Any], dose: str, field: str) -> Optional[float]:
 
 
 def _finite(v: Optional[float]) -> bool:
-    return isinstance(v, (int, float)) and v not in (float("inf"), float("-inf"))
+    return (isinstance(v, (int, float)) and not isinstance(v, bool)
+            and math.isfinite(v))
 
 
 def collect(results_dir: str) -> Dict[str, Any]:

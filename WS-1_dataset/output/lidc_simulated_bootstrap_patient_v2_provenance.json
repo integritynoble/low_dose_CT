@@ -1,0 +1,90 @@
+{
+  "schema": "ldct-patient-bootstrap-run/v1",
+  "recorded_at": "2026-09-14T13:30:34.231309+00:00",
+  "source_branch_commit": "929c21e72673656350ea621dc2e8df0024790635",
+  "hash_kind": "sha256 of recorded file bytes",
+  "generator": {
+    "path": "WS-1_dataset/analysis/bootstrap_lidc_sim.py",
+    "sha256": "681cc4115504a569745fcb9b1cec3844de1f05085a81c94c9702837e68586997"
+  },
+  "result": {
+    "path": "WS-1_dataset/output/lidc_simulated_bootstrap_stats_full764_patient_v2.json",
+    "sha256": "6516d2454cba537058248a40c5881041d292d993c8eb4e0ae76af4e0075a4130"
+  },
+  "legacy_invalid_patient_result": {
+    "path": "WS-1_dataset/output/lidc_simulated_bootstrap_stats_full764_patient.json",
+    "sha256": "9102116ac2bf14e82ad9f74aee6c5adaa470c5afd661f32aebeb0fc17cdd6bfc"
+  },
+  "inputs": [
+    {
+      "path": "WS-1_dataset/baselines/results/blur_results_det_full764.json",
+      "sha256": "aa046be6a372566ed05281f29efa39a1a02078c9b91383d2206361a05932438c",
+      "n_patients": 3,
+      "slice_counts": [
+        238,
+        261,
+        265
+      ]
+    },
+    {
+      "path": "WS-1_dataset/baselines/results/corediff_results_det_full764.json",
+      "sha256": "f437681ffe49568a0db09c485a303e0adff2c20851dbc41ac2394025995eb77d",
+      "n_patients": 3,
+      "slice_counts": [
+        238,
+        261,
+        265
+      ]
+    },
+    {
+      "path": "WS-1_dataset/baselines/results/ctformer_results_det_full764.json",
+      "sha256": "2187e3b0c0ed2d09896d6919e537d9ddddb62ccc00901c48d4a5a1f580fb15c8",
+      "n_patients": 3,
+      "slice_counts": [
+        238,
+        261,
+        265
+      ]
+    },
+    {
+      "path": "WS-1_dataset/baselines/results/learn_results_det_full764.json",
+      "sha256": "e0c84ab6a4ce2660c366f1b9f85c6528e4b81fcc281bd4c61ff7cb78688ab848",
+      "n_patients": 3,
+      "slice_counts": [
+        238,
+        261,
+        265
+      ]
+    },
+    {
+      "path": "WS-1_dataset/baselines/results/red_cnn_results_det_full764.json",
+      "sha256": "3e49c67b3797e1954ea83d32b547d213413ba962e8e0f904d394c5685690a439",
+      "n_patients": 3,
+      "slice_counts": [
+        238,
+        261,
+        265
+      ]
+    }
+  ],
+  "python": "3.11.16",
+  "numpy": "2.4.6",
+  "B": 4000,
+  "seed": 20260831,
+  "bootstrap_method": "patient-block-replacement-paired-dose/v2",
+  "statistical_status": "exploratory; three patients; population coverage not established",
+  "command": [
+    "python",
+    "WS-1_dataset/analysis/bootstrap_lidc_sim.py",
+    "--unit",
+    "patient",
+    "--pooling",
+    "distinct",
+    "--B",
+    "4000",
+    "--seed",
+    "20260831",
+    "--out",
+    "WS-1_dataset/output/lidc_simulated_bootstrap_stats_full764_patient_v2.json"
+  ]
+}

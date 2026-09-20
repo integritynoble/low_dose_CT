@@ -59,7 +59,8 @@ def _utcnow() -> str:
 #: :func:`seed_blur_entry` is the per-patient mean over this one run; nothing is
 #: mixed across protocols. ``tests/test_trap_numbers.py`` re-reads the file and
 #: fails if the literals drift from it, so a re-run cannot silently move the
-#: board's trap.
+#: board's trap. Hashes use LF-normalized source bytes; CRLF checkout conversion
+#: is not a new measurement. All other byte changes still require review.
 TRAP_SOURCE = {
     "file": "WS-1_dataset/output/aapm_r3_roi_detectability.json",
     "schema": "aapm-r3-roi-detectability/v1",

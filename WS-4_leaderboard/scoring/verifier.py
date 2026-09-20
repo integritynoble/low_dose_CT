@@ -87,10 +87,12 @@ class Verdict:
 
     @property
     def ok(self) -> bool:
-        """Green only when no stage reported any violation."""
-        return not any(self.violations.values())
+        """Green only when every required stage ran without violations."""
+        return not self.skipped and not any(self.violations.values())
 
     def summary(self) -> str:
+        if not any(self.violations.values()) and self.skipped:
+            return "INCOMPLETE  (skipped: " + ", ".join(self.skipped) + ")"
         if self.ok:
             parts = [f"{s}: PASS" for s in ("S1", "S2", "S3", "S4")]
             return "ALL PASS  (" + ", ".join(parts) + ")"
@@ -286,7 +288,7 @@ def _walk_pairs(published: Any, live: Any, path: str, violations: List[str]) -> 
         return
     if isinstance(published, (int, float)) and isinstance(live, (int, float)):
         if isinstance(published, bool) or isinstance(live, bool):
-            if published != live:
+            if type(published) is not type(live) or published != live:
                 violations.append(f"boolean value differs at {path}: "
                                   f"published={published!r} live={live!r}")
             return
@@ -387,6 +389,8 @@ def verify_runbundle(bundle_path: str | Path, *,
                                     run_ws1_gates=run_ws1_gates)
     verdict.violations["S2"] = [v for k, vs in s2.items()
                                 if k != "skipped" for v in vs]
+    if not run_ws1_gates:
+        verdict.skipped.append("S2 rung gates disabled")
     if s2.get("skipped"):
         verdict.skipped.extend(s2["skipped"])
 

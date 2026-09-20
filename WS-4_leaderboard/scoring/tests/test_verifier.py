@@ -203,7 +203,9 @@ def test_verify_runbundle_end_to_end_marks_s3_and_s4_skipped(tmp_path):
     assert not verdict.violations["S2"]
     assert "S3" in verdict.skipped
     assert "S4" in verdict.skipped
-    assert verdict.ok
+    assert not verdict.ok
+    assert "INCOMPLETE" in verdict.summary()
+    assert "ALL PASS" not in verdict.summary()
 
 
 def test_verify_runbundle_reports_s1_rejections_first(tmp_path):
@@ -220,3 +222,14 @@ def test_verify_runbundle_s3_with_live_document(tmp_path):
     verdict = verify_runbundle(bundle, live_result=live, run_ws1_gates=False)
     assert not verdict.violations.get("S3")
     assert "S3" not in verdict.skipped
+
+
+@pytest.mark.parametrize("published,live", [(True, 1), (False, 0), (1, True)])
+def test_s3_rejects_boolean_numeric_type_substitution(published, live):
+    assert verify_published_vs_live({"value": published}, {"value": live})
+
+
+def test_verdict_cannot_certify_skipped_rung_checks():
+    verdict = Verdict(runbundle="example", skipped=["S2 rung gates disabled"])
+    assert not verdict.ok
+    assert "INCOMPLETE" in verdict.summary()
