@@ -1,3 +1,5 @@
+> **Historical handoff.** For the current assignment, read [20 September: paper first, then CT + agent tasks](HEYANG_NEXT_2026-09-20.md). The dated observations below are preserved as history.
+
 # Review and next steps — heyang, 8 September 2026
 
 Supersedes the ordered list in [`HEYANG_NEXT_STEPS.md`](HEYANG_NEXT_STEPS.md), which was written against
