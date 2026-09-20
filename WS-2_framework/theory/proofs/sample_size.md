@@ -96,9 +96,9 @@ Placement SD $s$ is extracted from the simulation via $\hat s = \text{half-width
 
 **Reading the table:**
 
-* For lung-nodule detection at the typical operating point AUC $\approx 0.92$, achieving $\varepsilon = 0.02$ requires $n \geq 808$ — substantially larger than the WS-1 v0.5 cohort of 208 unique paired patients. This is the gap the manuscript's $\varepsilon$ specification must address.
-* At a more permissive $\varepsilon = 0.05$, the same operating point needs $n \geq 129$, which is comfortably within the v0.5 cohort.
-* For credentials issued at AUC $\geq 0.97$ (near-perfect classifiers), $\varepsilon = 0.02$ is achievable with $n \geq 258$, marginally above the v0.5 cohort but achievable with a small cohort expansion or by using DeLong-based half-widths that are slightly tighter than bootstrap percentile (per [`estimator.md`](estimator.md) §3.3).
+* For lung-nodule detection at the typical operating point AUC $\approx 0.92$, achieving $\varepsilon = 0.02$ requires $n \geq 808$ — substantially larger than the WS-1 1.0 cohort of 208 unique paired patients. This is the gap the manuscript's $\varepsilon$ specification must address.
+* At a more permissive $\varepsilon = 0.05$, the same operating point needs $n \geq 129$, which is comfortably within the 1.0 cohort.
+* For credentials issued at AUC $\geq 0.97$ (near-perfect classifiers), $\varepsilon = 0.02$ is achievable with $n \geq 258$, marginally above the 1.0 cohort but achievable with a small cohort expansion or by using DeLong-based half-widths that are slightly tighter than bootstrap percentile (per [`estimator.md`](estimator.md) §3.3).
 
 ---
 
@@ -133,7 +133,7 @@ The CLT-based formula (S1) is the right operational default; Bernstein (S4) is a
 **Default canonical operating point for AUC credentials in the WS-2 manuscript:** at v0.3 the manuscript should adopt **$\varepsilon = 0.05$ for AUC tasks** as the field default, replacing the v0.1 / v0.2 implicit $\varepsilon = 0.02$. The justification is straightforward:
 
 1. **Clinical equivalence margins for diagnostic-task AUC are typically 0.03–0.05** in the reader-study literature (e.g.\ multiple reader multiple case [MRMC] studies routinely report non-inferiority margins in this range). $\varepsilon = 0.02$ is tighter than this clinical default and not motivated by a clinical argument in the v0.1 manuscript.
-2. **At $\varepsilon = 0.05$ the table in §3.2 shows $n \approx 130$–$250$ across the AUC range**, which is comfortably within the WS-1 v0.5 cohort of 208 unique paired patients. Credentials at this margin are *issuable today*.
+2. **At $\varepsilon = 0.05$ the table in §3.2 shows $n \approx 130$–$250$ across the AUC range**, which is comfortably within the WS-1 1.0 cohort of 208 unique paired patients. Credentials at this margin are *issuable today*.
 3. **The framework remains parametric in $\varepsilon$** — users who have a clinical argument for a tighter margin can specify it; the library will require the corresponding larger cohort. Adopting $\varepsilon = 0.05$ as the default is a recommendation, not a constraint.
 
 **For Dice and per-patient contrast-recovery,** $\varepsilon = 0.02$ remains the recommended default — the sample-size requirements at typical $\sigma_\Delta$ values (Dice $\sigma_\Delta \approx 0.05$–$0.10$; CR $\sigma_\Delta \approx 0.05$) are modest under (S1), as the §3.1 table shows.

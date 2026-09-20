@@ -71,7 +71,7 @@ Both candidates are findable in the literature in principle; neither has been de
 
 When Phase 1 pilot CT data lands, the test is straightforward:
 
-1. For each of the three baselines $M_i$, compute the 5-tuple credential at the pre-registered $r_0 = 0.25$ on the WS-1 v0.5 cohort.
+1. For each of the three baselines $M_i$, compute the 5-tuple credential at the pre-registered $r_0 = 0.25$ on the WS-1 1.0 cohort.
 2. For each baseline at which $r_0 = 0.25$ produced a `PASS` verdict, compute credentials at $r \in \{0.40, 0.55, 0.70, 0.85\}$ on the same cohort.
 3. Plot the population-mean performance gap $\hat\mu(r)$ against $r$ for each baseline.
 4. **Predicted by the conjecture:** $\hat\mu(r) \in (-\varepsilon, \varepsilon)$ for all $r \geq r_0$. **Predicted by the naive monotonicity:** $\hat\mu(r)$ is monotone non-increasing in $|r - 1|$.

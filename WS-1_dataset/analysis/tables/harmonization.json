@@ -1,0 +1,60 @@
+{
+  "aggregate_mode": "pooled",
+  "bins": 160,
+  "max_slices_per_series": 26,
+  "n_metadata_files": 120,
+  "per_vendor": 30,
+  "provenance": {
+    "combined_sha256": "42d8803c11df8850cca117654cc2d2a7b3c06d8576bdf41b423a3013c00c5738",
+    "n_files": 120
+  },
+  "sample_seed": 42,
+  "thin_mm": 1.5,
+  "vendors": [
+    {
+      "label": "GE Medical Systems",
+      "max_slices_read": 26,
+      "n_series": 30,
+      "spacing_overlap_pct": 29.166666666666668,
+      "thickness_overlap_pct": 35.13513513513514,
+      "vendor": "GE MEDICAL SYSTEMS",
+      "w1_hu": 13.209720081472184
+    },
+    {
+      "label": "Philips",
+      "max_slices_read": 26,
+      "n_series": 30,
+      "spacing_overlap_pct": 35.00000000000003,
+      "thickness_overlap_pct": 51.35135135135136,
+      "vendor": "Philips",
+      "w1_hu": 69.16857535861233
+    },
+    {
+      "label": "Siemens",
+      "max_slices_read": 26,
+      "n_series": 30,
+      "spacing_overlap_pct": 32.50000000000001,
+      "thickness_overlap_pct": 59.45945945945946,
+      "vendor": "SIEMENS",
+      "w1_hu": 11.878456515800275
+    },
+    {
+      "label": "Toshiba",
+      "max_slices_read": 26,
+      "n_series": 30,
+      "spacing_overlap_pct": 24.999999999999996,
+      "thickness_overlap_pct": null,
+      "vendor": "TOSHIBA",
+      "w1_hu": 76.2241431158653
+    }
+  ],
+  "window_hu": [
+    -1100.0,
+    500.0
+  ],
+  "worst_pair": {
+    "vendor_a": "Philips",
+    "vendor_b": "Toshiba",
+    "w1_hu": 144.85356222963185
+  }
+}

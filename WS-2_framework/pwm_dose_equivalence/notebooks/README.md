@@ -29,7 +29,7 @@ Across the four tutorials you will see:
 * BCa estimator opt-in for visible-skew bootstrap distributions (added in v0.2.0)
 * The small-$n$ anti-conservativeness warning (n < 30 for non-AUC) per `proofs/estimator.md` §4c (V3-11)
 * Content-addressed framework hash verification (SHA-256 of the v0.2 framework spec)
-* The cohort-sizing implication: same WS-1 v0.5 n ≈ 208 cohort is comfortable for Dice but INDETERMINATE-dominated for AUC at the typical lung-nodule operating point
+* The cohort-sizing implication: same WS-1 1.0 n ≈ 208 cohort is comfortable for Dice but INDETERMINATE-dominated for AUC at the typical lung-nodule operating point
 * How to extend the framework to a new modality (Tutorial 4) — define your own `T_r` operator, pass it through the existing `signal_equivalence_credential` API; the library does not need to be modified
 
 ## Cross-references

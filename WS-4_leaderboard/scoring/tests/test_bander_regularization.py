@@ -217,9 +217,10 @@ def test_bootstrap_detects_rank_break_when_blur_not_lowest():
 # 3. Source contract: temp run scripts still carry the regularised floor
 # --------------------------------------------------------------------------- #
 
-_TEMP_DIR = Path(
-    r"C:\Users\ufl\AppData\Roaming\Tencent\Marvis\User\oAN1i2UYfvOcqvWo-7R7BX4MGNvY"
-    r"\workspace\conv_1a0188c6c5a_fce73b28b42c\temp"
+_TEMP_DIR = Path.home() / (
+    "AppData/Roaming/Tencent/Marvis/User/"
+    "oAN1i2UYfvOcqvWo-7R7BX4MGNvY/workspace/"
+    "conv_1a0188c6c5a_fce73b28b42c/temp"
 )
 _RUN_SCRIPTS = ["run_lidc_r6.py", "run_aapm_r3.py", "run_aapm_r4.py",
                 "run_observer_real.py"]

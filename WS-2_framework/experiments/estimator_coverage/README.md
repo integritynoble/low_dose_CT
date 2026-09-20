@@ -68,7 +68,7 @@ Full 27-cell table and discussion in [`../../theory/proofs/estimator.md`](../../
 * `delong` auto-selected when `task.metric == "auc"`
 * `bca` opt-in only
 
-**Combined cohort-sizing implication:** the WS-1 v0.5 cohort ($n \approx 208$) at the typical AUC ≈ 0.92 lung-nodule operating point is *exactly* in the regime where P(`PASS`) under the null is sensitive to $n$. Expansion to $n \approx 500$ would lift the typical null verdict from ~40 % PASS to ~94 % PASS. Below that, expect INDETERMINATE-but-truly-equivalent outcomes; absence of `PASS` is not evidence of non-equivalence.
+**Combined cohort-sizing implication:** the WS-1 1.0 cohort ($n \approx 208$) at the typical AUC ≈ 0.92 lung-nodule operating point is *exactly* in the regime where P(`PASS`) under the null is sensitive to $n$. Expansion to $n \approx 500$ would lift the typical null verdict from ~40 % PASS to ~94 % PASS. Below that, expect INDETERMINATE-but-truly-equivalent outcomes; absence of `PASS` is not evidence of non-equivalence.
 
 ---
 

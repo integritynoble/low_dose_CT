@@ -12,7 +12,7 @@ The manuscript is `paper_draft/manuscript.tex` v0.3 (24 pp incl. Supplementary S
 git clone git@github.com:integritynoble/low_dose_CT.git
 cd low_dose_CT/WS-2_framework/pwm_dose_equivalence
 pip install -e ".[test]"
-pytest                               # expect: 81 passed, 100% coverage
+pytest                               # expect: 157 passed, 100% coverage
 ```
 
 Requires Python 3.10+, NumPy ≥ 1.24, SciPy ≥ 1.10.
@@ -220,7 +220,7 @@ A reviewer can locate any concrete numerical claim in the manuscript by consulti
 | `pwm-signal-equivalence/v0.2` schema_version | `framework_hash.py` `FRAMEWORK_SPEC` | §6 above |
 | 60/100% library coverage (manuscript §software_rigor) | `pwm_dose_equivalence/` test suite (v0.1.0 numbers per V3-3) | `pytest --cov` |
 | AUC default ε = 0.05 (vs non-AUC ε = 0.02) | `proofs/sample_size.md` §5 | §7 above shows formula-derivation |
-| INDETERMINATE-dominated regime for WS-1 v0.5 cohort (n ≈ 208) at AUC = 0.92 | `proofs/estimator.md` §4a "Cohort-sizing implication" | §3 above; inspect P(`PASS`) at AUC = 0.92, n = 200 |
+| INDETERMINATE-dominated regime for WS-1 1.0 cohort (n ≈ 208) at AUC = 0.92 | `proofs/estimator.md` §4a "Cohort-sizing implication" | §3 above; inspect P(`PASS`) at AUC = 0.92, n = 200 |
 | CR small-n anti-conservativeness (n < 30) | `proofs/estimator.md` §4c | §4 above; inspect `cr_results.json` |
 | Library version 0.2.2 / schema v0.2 (§Code availability) | `pyproject.toml` + V3-8 framing | `pip show pwm_dose_equivalence` |
 | `mask_family` rides inside Π (§framework / C5) | `proofs/mri_mask.md` | textual; no number to re-derive |

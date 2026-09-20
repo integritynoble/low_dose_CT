@@ -108,8 +108,12 @@ Replace the placeholders with the minted DOIs across **all four** docs and rebui
 | `\todo{CID}` (optional IPFS mirror) | `manuscript.tex` (can omit) |
 | `[CONFIRM]` DOIs | `listing.md`, `reporting_summary.md`, `cover_letter.md` |
 Then: rebuild `manuscript.pdf` (pdflatex ×2 + bibtex), confirm the Data/Code-Availability statements
-match across all four, and run the SUBMISSION_CHECKLIST sweep (`grep -rn '\\todo{'` / `'\[CONFIRM'`
-should be empty except the schema `[CONFIRM:…]` defaults).
+match across all four, and run the SUBMISSION_CHECKLIST sweep:
+```bash
+grep -rn '\\todo{' WS-1_dataset/paper_draft/manuscript.tex
+grep -rn '\[CONFIRM' WS-1_dataset
+```
+(should be empty except the schema `[CONFIRM:…]` defaults).
 
 ## Verification
 - `pwm_ldct_loader.validate(deposit)` → ok (manifest verifies, no unresolved de-id hits).

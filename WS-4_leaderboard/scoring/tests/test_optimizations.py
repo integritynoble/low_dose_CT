@@ -14,6 +14,24 @@ from scoring import (BLUR_ENTRY_ID, OWN_PRINCIPAL, SubmissionEnvelope,
                      update_status, validate_registry)
 from scoring.heldout import (HELDOUT_FILE_NAME, LEADERBOARD_FILE_NAME,
                              check_submission_cannot_write_back)
+from scoring.task_spec import TASK_LABEL
+from scoring.verify import provenance_sha256
+
+
+def claim_block():
+    """§2-D: a self-consistent claim + evidence block bound to the WS-4 task."""
+    manifest = {"corpus": "LIDC lowdose_sim", "r": 0.25, "seed": 42, "n_patients": 2}
+    weights = {"arch": "conv", "params": 1000}
+    return {
+        "claim": {
+            "task_id": TASK_LABEL,
+            "protocol_id": "detectability-freq-v1",
+            "data_manifest_sha256": provenance_sha256(manifest),
+            "model_sha256": provenance_sha256(weights),
+            "evaluator_version": "pwm_ldct_recon-2026-09-14",
+        },
+        "evidence": {"data_manifest": manifest, "model_weights": weights},
+    }
 
 
 # --------------------------------------------------------------------------- #
@@ -118,6 +136,7 @@ def test_spread_by_vendor_and_dose():
                "detectability": {"cnr_mean": 5.0, "cho_auc_mean": 0.9,
                                  "bander_roi": 0.63,
                                  "task": "SKE-Gaussian20HU-s2px"}}}}}
+    result.update(claim_block())
     add_submission(board, result, method="M1", vendor="Siemens", dose="0.25")
     add_submission(board, result, method="M1", vendor="GE", dose="0.25")
     add_submission(board, result, method="M1", vendor="Siemens", dose="0.50")
@@ -151,6 +170,7 @@ def test_submission_updates_board_spread_block():
                "detectability": {"cnr_mean": 5.0, "cho_auc_mean": 0.9,
                                  "bander_roi": 0.63,
                                  "task": "SKE-Gaussian20HU-s2px"}}}}}
+    result.update(claim_block())
     add_submission(board, result, method="M1", vendor="Siemens", dose="0.25")
     assert board["spread"]["Siemens"]["n_entries"] == 1
 

@@ -1,3 +1,5 @@
+> **20 September priority update:** Heyang is assigned to finish the reproduction paper as soon as possible. See [the current assignment](../HEYANG_NEXT_2026-09-20.md) for required corrections and completion criteria.
+
 # Heyang-paper — cross-environment reproduction of the low-dose CT evaluation
 
 A Technical Note drafted from work already committed in this repository. Scope, rationale and the

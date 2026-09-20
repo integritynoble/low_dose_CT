@@ -10,11 +10,28 @@ import pytest
 
 from scoring import add_submission, check_paired_submission, new_leaderboard, save
 from scoring.task_spec import (DETECTABILITY_FIELDS, FIDELITY_FIELDS,
-                               FREQ_SUPPLEMENTARY_FIELDS)
+                               FREQ_SUPPLEMENTARY_FIELDS, TASK_LABEL)
+from scoring.verify import provenance_sha256
 
 FIELDS = FIDELITY_FIELDS + DETECTABILITY_FIELDS + FREQ_SUPPLEMENTARY_FIELDS
 INVALID = [float('nan'), float('inf'), float('-inf'), True, False, '0.63', [], {}]
 WS4 = Path(__file__).resolve().parents[2]
+
+
+def claim_block():
+    """§2-D: a self-consistent claim + evidence block bound to the WS-4 task."""
+    manifest = {"corpus": "LIDC lowdose_sim", "r": 0.25, "seed": 42, "n_patients": 2}
+    weights = {"arch": "conv", "params": 1000}
+    return {
+        "claim": {
+            "task_id": TASK_LABEL,
+            "protocol_id": "detectability-freq-v1",
+            "data_manifest_sha256": provenance_sha256(manifest),
+            "model_sha256": provenance_sha256(weights),
+            "evaluator_version": "pwm_ldct_recon-2026-09-14",
+        },
+        "evidence": {"data_manifest": manifest, "model_weights": weights},
+    }
 
 
 def metrics():
@@ -50,9 +67,12 @@ def test_invalid_later_method_does_not_partially_mutate_board():
     board = new_leaderboard()
     before = copy.deepcopy(board)
     payload = {'validation': {'paired_methods': {
-        'good': {'psnr_db': 40.0, 'detectability': {'bander_roi': 3.85}},
-        'bad': {'psnr_db': 40.0, 'detectability': {'bander_roi': float('nan')}},
+        'good': {'psnr_db': 40.0,
+                 'detectability': {'bander_roi': 3.85, 'task': TASK_LABEL}},
+        'bad': {'psnr_db': 40.0,
+                'detectability': {'bander_roi': float('nan'), 'task': TASK_LABEL}},
     }}}
+    payload.update(claim_block())
     with pytest.raises(ValueError, match='finite number'):
         add_submission(board, payload, method='mixed')
     assert board == before
@@ -66,9 +86,12 @@ def test_cli_refuses_invalid_evidence_before_writing(tmp_path, existing_board, v
         save(new_leaderboard(), board_path)
     before = board_path.read_bytes() if existing_board else None
     payload = {'validation': {'paired_methods': {
-        'good': {'psnr_db': 40.0, 'detectability': {'bander_roi': 3.85}},
-        'bad': {'psnr_db': 40.0, 'detectability': {'bander_roi': value}},
+        'good': {'psnr_db': 40.0,
+                 'detectability': {'bander_roi': 3.85, 'task': TASK_LABEL}},
+        'bad': {'psnr_db': 40.0,
+                'detectability': {'bander_roi': value, 'task': TASK_LABEL}},
     }}}
+    payload.update(claim_block())
     result_path = tmp_path / 'result.json'
     result_path.write_text(json.dumps(payload), encoding='utf-8')
     env = dict(os.environ, PYTHONPATH=str(WS4), PYTHONDONTWRITEBYTECODE='1')
@@ -84,7 +107,9 @@ def test_cli_refuses_invalid_evidence_before_writing(tmp_path, existing_board, v
 
 def test_cli_valid_submission_publishes(tmp_path):
     result_path = tmp_path / 'result.json'
-    result_path.write_text(json.dumps(metrics()), encoding='utf-8')
+    payload = metrics()
+    payload.update(claim_block())
+    result_path.write_text(json.dumps(payload), encoding='utf-8')
     board_path = tmp_path / 'board.json'
     result = subprocess.run(
         [sys.executable, '-m', 'scoring.cli', 'submit', '--result', str(result_path),

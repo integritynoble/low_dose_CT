@@ -21,9 +21,11 @@ from __future__ import annotations
 import pytest
 
 from scoring import (BLUR_ENTRY_ID, TRAP_RANK_FAIL, TRAP_RANK_INDETERMINATE,
-                     TRAP_RANK_PASS, add_submission, assert_trap_ranks_last,
-                     check_trap_rank, load, new_leaderboard, save, sort_entries,
-                     trap_rank_report)
+                     TRAP_RANK_NO_CLAIM, TRAP_RANK_PASS, add_submission,
+                     assert_trap_ranks_last, check_trap_rank, load,
+                     new_leaderboard, save, sort_entries, trap_rank_report)
+from scoring.task_spec import TASK_LABEL
+from scoring.verify import provenance_sha256
 
 
 def entry(entry_id, *, bander_roi=None, cnr=None, ssim=None, psnr=None,
@@ -72,10 +74,12 @@ def test_healthy_board_passes_and_reports_its_separation():
 
 
 def test_placeholder_only_board_is_sound_and_says_why():
-    """A fresh board carries no real entries; that is not a failure."""
+    """A fresh board carries no real entries; that is not a failure, but it is
+    also not a PASS -- an empty coverage must never read as a certified board
+    (§2-B: zero comparisons are a no-claim, not a pass)."""
     board = new_leaderboard()
     report = board["trap_rank"]
-    assert report["verdict"] == TRAP_RANK_PASS
+    assert report["verdict"] == TRAP_RANK_NO_CLAIM
     assert report["n_compared"] == 0
     assert "nothing to rank" in report["note"]
     assert_trap_ranks_last(board["entries"])       # must not raise
@@ -85,7 +89,7 @@ def test_placeholder_entries_never_count_as_comparisons():
     entries = healthy_board()[:1] + [entry("seed", bander_roi=0.001, placeholder=True)]
     report = trap_rank_report(entries)
     assert report["n_compared"] == 0               # the 0.001 seed is not a finding
-    assert report["verdict"] == TRAP_RANK_PASS
+    assert report["verdict"] == TRAP_RANK_NO_CLAIM
 
 
 # --------------------------------------------------------------- refuses
@@ -150,10 +154,18 @@ def test_the_board_records_the_verdict_on_submission_rather_than_hiding_it():
     """
     board = new_leaderboard()          # the seed trap carries its measured numbers
     board["entries"].append(entry("real_model", bander_roi=3.854, cnr=5.19))
+    manifest = {"corpus": "LIDC lowdose_sim", "r": 0.25, "seed": 42, "n_patients": 2}
+    weights = {"arch": "conv", "params": 1000}
     result = {"validation": {"paired_methods": {"oversmoother": {
         "psnr_db": 41.6, "ssim": 0.965,
         "detectability": {"bander_roi": 0.10, "cnr_mean": 14.0,
-                          "task": "SKE-Gaussian20HU-s2px"}}}}}
+                          "task": "SKE-Gaussian20HU-s2px"}}}},
+        "claim": {"task_id": TASK_LABEL,
+                  "protocol_id": "detectability-freq-v1",
+                  "data_manifest_sha256": provenance_sha256(manifest),
+                  "model_sha256": provenance_sha256(weights),
+                  "evaluator_version": "pwm_ldct_recon-2026-09-14"},
+        "evidence": {"data_manifest": manifest, "model_weights": weights}}
     # the paired gate admits it: it reports fidelity and the discriminating index
     created = add_submission(board, result, method="OverSmoother")
     assert len(created) == 1
@@ -195,7 +207,8 @@ def test_saved_board_carries_a_fresh_verdict(tmp_path):
     board.pop("trap_rank")
     path = tmp_path / "board.json"
     save(board, path)
-    assert load(path)["trap_rank"]["verdict"] == TRAP_RANK_PASS
+    # no real entries yet: the fresh verdict is a no-claim, never a PASS
+    assert load(path)["trap_rank"]["verdict"] == TRAP_RANK_NO_CLAIM
 
 
 # --------------------------------------------------------------- non-vacuity guard
@@ -234,6 +247,7 @@ def test_an_entry_without_the_index_sorts_below_every_entry_that_has_it():
 from scoring import (assert_trap_separates_in_every_group,  # noqa: E402
                      trap_rank_by_group)
 from scoring.leaderboard import VENDOR_TRAP_MEASUREMENTS  # noqa: E402
+from scoring.leaderboard import TRAP_RANK_MISSING_STRATUM  # noqa: E402
 
 #: the weakest real model in each vendor group, from
 #: aapm_lidc_cross_vendor_spread.json's `separation.min_model_roi_ber`
@@ -258,7 +272,8 @@ def test_every_vendor_group_carries_its_own_trap():
     groups = trap_rank_by_group(new_leaderboard()["entries"], by="vendor")
     assert set(groups["groups"]) == set(VENDOR_TRAP_MEASUREMENTS)
     assert groups["n_groups"] == 5
-    assert groups["verdict"] == TRAP_RANK_PASS      # seeded, nothing to rank yet
+    # seeded groups with no real members are a no-claim, not a PASS (§2-B)
+    assert groups["verdict"] == TRAP_RANK_NO_CLAIM
 
 
 def test_multi_vendor_board_separates_in_all_five_groups():
@@ -290,7 +305,12 @@ def test_the_global_check_would_wrongly_fail_a_low_band_energy_vendor():
     })
     assert trap_rank_report(board["entries"])["verdict"] == TRAP_RANK_FAIL   # spurious
     per_group = trap_rank_by_group(board["entries"], by="vendor", min_ratio=3.0)
-    assert per_group["verdict"] == TRAP_RANK_PASS                            # correct
+    # §2-B: a single covered vendor cannot certify the per-vendor claim (the
+    # other REQUIRED_VENDOR_GROUPS strata are missing), so the overall verdict
+    # is MISSING_STRATUM -- but the GE group itself separates cleanly, which is
+    # exactly the point this test exists to pin.
+    assert per_group["verdict"] == TRAP_RANK_MISSING_STRATUM
+    assert per_group["groups"]["GE"]["verdict"] == TRAP_RANK_PASS
     assert per_group["groups"]["GE"]["min_ratio_observed"] > 8.0
 
 

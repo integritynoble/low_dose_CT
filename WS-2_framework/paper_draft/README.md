@@ -30,7 +30,7 @@ Most of the *intellectual* content is in:
 - **Methods** — full Section 4:
   - 4.1 The framework, formally — Definition 1 (aggregate) + Definition 2 (per-patient), with $\Pi$ explicitly carrying acquisition-protocol metadata so the 5-tuple shape survives modality transitions; modality-specific $T_r$ table.
   - 4.2 Six type-signature clarifications (C1-C6) — the "SHARPEN" points from [`../theory/dose-equivalence-framework.md`](../theory/dose-equivalence-framework.md).
-  - 4.3 Estimator — ground-truth protocol borrowed from WS-1 v0.5; label-noise refusal threshold; population-claim-vs-sample-evidence separation; paired bootstrap + sample-size formula + BCa option for AUC-boundary regime.
+  - 4.3 Estimator — ground-truth protocol borrowed from WS-1 1.0; label-noise refusal threshold; population-claim-vs-sample-evidence separation; paired bootstrap + sample-size formula + BCa option for AUC-boundary regime.
   - 4.4 Open-source library — single-call API signature.
   - 4.5 Content-addressed credential schema — SHA-256 hash of framework definition; three resolver backends (local / PyPI / PWM registry); the on-chain registry is a deployment option, not the methodological substance.
 

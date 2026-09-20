@@ -1,0 +1,37 @@
+{
+  "validation": {
+    "paired_methods": {
+      "oversmoother": {
+        "psnr_db": 41.6,
+        "ssim": 0.965,
+        "detectability": {
+          "bander_roi": 3.854,
+          "cnr_mean": 14.0,
+          "cho_auc_mean": 1.0,
+          "npwe_mean": 220804.56,
+          "roi_tm_auc": 0.9896,
+          "task": "SKE-Gaussian20HU-s2px"
+        }
+      }
+    }
+  },
+  "claim": {
+    "task_id": "SKE-Gaussian20HU-s2px",
+    "protocol_id": "detectability-freq-v1",
+    "data_manifest_sha256": "5cc35efbc3f93db35bf93f75f71c20d4dc49ddbcf46754241fde4928f5efff85",
+    "model_sha256": "887ebe30ee00e84a1a8e0763011f3c9c0ff74b22ec55495415fabbd4490137fb",
+    "evaluator_version": "pwm_ldct_recon-2026-09-14"
+  },
+  "evidence": {
+    "data_manifest": {
+      "corpus": "LIDC lowdose_sim",
+      "r": 0.25,
+      "seed": 42,
+      "n_patients": 2
+    },
+    "model_weights": {
+      "arch": "conv",
+      "params": 1000
+    }
+  }
+}

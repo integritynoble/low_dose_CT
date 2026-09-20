@@ -116,5 +116,3 @@ Independent-groups permutation KW for per-dose is reported as reference only (in
 - Per-dose board is AAPM Siemens only (no LIDC multi-dose per vendor exists).
 - Simulated dose points (r=0.10/0.50) were run on the 48-slice detectability subset (full-volume projection simulation infeasible; trade-off declared in R4).
 - Per-vendor statistics reuse R6 results (regularized run); per-dose Friedman uses exact enumeration (no approximation).
-*（内容由AI生成，仅供参考）*
-*（内容由AI生成，仅供参考）*

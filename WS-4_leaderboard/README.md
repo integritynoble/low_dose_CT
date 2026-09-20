@@ -134,7 +134,7 @@ The clinical framing of dose-equivalence ("at what dose ratio can we still confi
 
 | Path | Purpose | Status |
 |---|---|---|
-| `scoring/` | Containerized scoring service; S1-S4 verification pipeline | **P0 done**: paired §4 gate + permanent blur seed; **P1 done**: held-out no-write-path gate (`heldout.py`), spread-by-vendor/dose (`spread` CLI; extended to frequency-domain BandER, R5 closed via own-data proxy 2026-08-22); **P2 done (synthetic)**: observer channels + sensitivity report; **P3 done**: Rung 1-6 registry (`data/rung_registry.json`, `RUNG_REGISTRY.md`). See `scoring/README.md`; sandbox + web pending Phase 1 |
+| `scoring/` | Containerized scoring service; S1-S4 verification pipeline | **P0 done**: paired §4 gate + permanent blur seed; **P1 done**: held-out no-write-path gate (`heldout.py`), spread-by-vendor/dose (`spread` CLI; extended to frequency-domain BandER, R5 closed via own-data proxy 2026-08-22); **P2 done (synthetic)**: observer channels + sensitivity report; **P3 done**: Rung 1-6 registry (`scoring/data/rung_registry.json`; workspace-root `RUNG_REGISTRY.md` = `WS-4_leaderboard/RUNG_REGISTRY.md` from the repo root). See `scoring/README.md`; sandbox + web pending Phase 1 |
 | `web/` | Public leaderboard at lowdosect.pwm.platformai.org | pending Phase 1 |
 | `submission_contract/` | Specification of what a RunBundle must contain | pending Phase 1 |
 | `launch_event/` | RSNA / ISBI 2028 prep — slot logistics, sponsor outreach, prize fund | pending Phase 2 |
@@ -162,4 +162,3 @@ The clinical framing of dose-equivalence ("at what dose ratio can we still confi
 - [`../WS-3_reference_method/`](../WS-3_reference_method/) — provides one of the seed entries
 - [`../pwm_integration/l3_spec.md`](../pwm_integration/l3_spec.md) — submission contract format
 - [`../pwm_integration/l2_spec.md`](../pwm_integration/l2_spec.md) — credential requirement for submissions
-*（内容由AI生成，仅供参考）*

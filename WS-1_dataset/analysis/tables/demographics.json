@@ -1,0 +1,76 @@
+{
+  "aggregate": {
+    "age": {
+      "max": 88.0,
+      "median": 61.0,
+      "min": 14.0,
+      "n": 204,
+      "q1": 49.75,
+      "q3": 70.0
+    },
+    "bmi": {
+      "max": null,
+      "median": null,
+      "min": null,
+      "n": 0,
+      "q1": null,
+      "q3": null
+    },
+    "indication": {},
+    "n_patients": 1010,
+    "scan_year": {
+      "max": null,
+      "median": null,
+      "min": null,
+      "n": 0,
+      "q1": null,
+      "q3": null
+    },
+    "sex": {
+      "F": 140,
+      "M": 140,
+      "n_known": 280,
+      "pct_known": 27.722772277227723
+    }
+  },
+  "by_source": {
+    "lidc": {
+      "age": {
+        "max": 88.0,
+        "median": 61.0,
+        "min": 14.0,
+        "n": 204,
+        "q1": 49.75,
+        "q3": 70.0
+      },
+      "bmi": {
+        "max": null,
+        "median": null,
+        "min": null,
+        "n": 0,
+        "q1": null,
+        "q3": null
+      },
+      "indication": {},
+      "n_patients": 1010,
+      "scan_year": {
+        "max": null,
+        "median": null,
+        "min": null,
+        "n": 0,
+        "q1": null,
+        "q3": null
+      },
+      "sex": {
+        "F": 140,
+        "M": 140,
+        "n_known": 280,
+        "pct_known": 27.722772277227723
+      }
+    }
+  },
+  "provenance": {
+    "combined_sha256": "20476a8105319e6192eebf233e274a4f6f5f787a574bd605809963f3160df870",
+    "n_files": 1010
+  }
+}

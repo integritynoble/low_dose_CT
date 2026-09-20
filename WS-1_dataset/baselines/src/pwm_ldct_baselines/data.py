@@ -21,7 +21,15 @@ def denormalize(a: np.ndarray) -> np.ndarray:
 
 
 class PairedSlices(Dataset):
-    """(low, full) single-channel [1,H,W] tensors in [0,1], plus dose_ratio / source / kind."""
+    """(low, full) single-channel [1,H,W] tensors in [0,1], plus dose_ratio / source / kind / patient_id.
+
+    ``__getitem__`` returns a 6-tuple ``(low, full, dose_ratio, source, kind,
+    patient_id)``.  The trailing ``patient_id`` (a str, unique per subject in the
+    harmonized tree) is threaded through from ``pwm_ldct_loader.LowDoseCTDataset``
+    so downstream per-slice outputs (eval.py per_slice blocks, patient-level
+    bootstrap) can group slices by patient.  Existing consumers that unpack
+    ``for low, full, *_ in loader`` keep working unchanged.
+    """
 
     def __init__(self, root: str, split: str, dose_ratio: float = 0.25, prefer_real_ld: bool = True,
                  sources: Optional[Sequence[str]] = None, seed: int = 42):
@@ -36,4 +44,5 @@ class PairedSlices(Dataset):
         s = self.ds[i]
         low = torch.from_numpy(normalize(s["low_dose"])).unsqueeze(0)
         full = torch.from_numpy(normalize(s["full_dose"])).unsqueeze(0)
-        return low, full, float(s["dose_ratio"]), s["source"], (s["low_dose_kind"] or "")
+        return (low, full, float(s["dose_ratio"]), s["source"],
+                (s["low_dose_kind"] or ""), s["patient_id"])

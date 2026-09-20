@@ -42,6 +42,14 @@ BLUR_SPEC = {
 
 SCHEMA_VERSION = "0.1.0"
 
+# Required vendor strata (Rung 5/6, §2-B). A submission set is only allowed to
+# claim per-vendor trap separation / spread when it covers **every** vendor group
+# of the authoritative cross-vendor run ``aapm_lidc_cross_vendor_spread.json``
+# (WS-1 output, schema ``aapm-lidc-cross-vendor-spread/v1``): GE, Philips,
+# Siemens, Toshiba (LIDC lowdose_sim r=0.25). ``AAPM-Siemens-real`` is the
+# real-quarter-dose reference group, not a required submission stratum.
+REQUIRED_VENDOR_GROUPS = ("GE", "Philips", "Siemens", "Toshiba")
+
 # Fidelity fields that must be paired with a detectability field (§4 both-or-neither).
 FIDELITY_FIELDS = ("psnr_db", "ssim")
 

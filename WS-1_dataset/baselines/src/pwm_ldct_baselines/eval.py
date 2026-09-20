@@ -52,11 +52,12 @@ def _eval_loader(model, ds, dev, only_real=False, task: Optional[TaskSpec] = Non
     pvals: list = []   # per-slice PSNR (same order as lows / fulls)
     svals: list = []   # per-slice SSIM
     lvals: list = []   # per-slice LPIPS (None when the package is unavailable)
+    pids: list = []    # per-slice patient_id, same order/length as pvals/cnr
     lows: list = []
     fulls: list = []
     scanned = 0
     with torch.no_grad():
-        for low, full, _ratio, _src, kind in loader:
+        for low, full, _ratio, _src, kind, pid in loader:
             scanned += 1
             if only_real and kind[0] != "real":
                 # real low-dose is absent in some trees (e.g. LIDC-only v0.5):
@@ -74,6 +75,7 @@ def _eval_loader(model, ds, dev, only_real=False, task: Optional[TaskSpec] = Non
             ss += _ss
             pvals.append(float(_ps))
             svals.append(float(_ss))
+            pids.append(str(pid[0]) if pid is not None else None)
             lv = M.lpips(out, full)
             lvals.append(float(lv) if lv is not None else None)
             if lv is not None:
@@ -114,6 +116,9 @@ def _eval_loader(model, ds, dev, only_real=False, task: Optional[TaskSpec] = Non
             # Per-slice detail (added for sample-level bootstrap; aggregates above unchanged):
             # cnr / cho_auc / npwe are per-slice observer results, psnr / ssim / lpips are
             # per-slice fidelity metrics over the same slices in the same order.
+            # patient_id is the per-slice subject id (same order/length as the vectors
+            # above) so patient-level block bootstrap can group slices by patient
+            # without needing a separate slice->patient map.
             "per_slice": {
                 "psnr": pvals,
                 "ssim": svals,
@@ -121,6 +126,7 @@ def _eval_loader(model, ds, dev, only_real=False, task: Optional[TaskSpec] = Non
                 "cnr": det["cnr_values"],
                 "cho_auc": det["cho_auc_values"],
                 "npwe": det["npwe_values"],
+                "patient_id": pids,
             },
         }
     return res

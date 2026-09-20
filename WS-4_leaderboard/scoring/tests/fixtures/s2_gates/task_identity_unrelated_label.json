@@ -1,0 +1,9 @@
+{
+  "psnr_db": 41.6,
+  "ssim": 0.965,
+  "bander_roi": 3.854,
+  "cnr_mean": 14.0,
+  "cho_auc_mean": 1.0,
+  "npwe_mean": 220804.56,
+  "task": "SKE-Gaussian10HU-s2px"
+}

@@ -22,6 +22,8 @@ the WS-3 package (the leaderboard is the referee, not a contestant).
 """
 from __future__ import annotations
 
+import hashlib
+import json
 import math
 from typing import Any, Dict, List
 
@@ -30,8 +32,15 @@ from .task_spec import (
     DISCRIMINATING_FIELDS,
     FIDELITY_FIELDS,
     FREQ_SUPPLEMENTARY_FIELDS,
+    TASK_LABEL,
     TRANSPARENCY_FIELDS,
 )
+
+#: The versioned detectability protocol every WS-4 number must have been measured
+#: under (task_spec's signal + ROI protocol). Claim-bound provenance (§2-D) ties
+#: a submission to this protocol id and rejects numbers whose claim names a
+#: different protocol.
+PROTOCOL_ID = "detectability-freq-v1"
 
 
 def _as_dict(value: Any) -> Dict:
@@ -112,6 +121,20 @@ def check_paired_submission(metrics: Dict) -> List[str]:
     if not isinstance(metrics, dict):
         return ["metrics is not an object"]
 
+    # Task identity (§2-A): every submission must declare the WS-4 task it was
+    # measured on. A missing, non-string or different ``task`` means the numbers
+    # were measured on a task other than the one the board scores, so they are
+    # not comparable and must not be published under this board's identity.
+    task = metrics.get("task")
+    if task is None:
+        errors.append("submission does not declare the WS-4 task it was measured on "
+                      "(task must be %r)" % TASK_LABEL)
+    elif not isinstance(task, str):
+        errors.append("submission task must be a string, got %s" % type(task).__name__)
+    elif task != TASK_LABEL:
+        errors.append("submission task %r is not the WS-4 task %r; numbers measured "
+                      "on a different task are not comparable" % (task, TASK_LABEL))
+
     for field in FIDELITY_FIELDS + DETECTABILITY_FIELDS + FREQ_SUPPLEMENTARY_FIELDS:
         value = metrics.get(field)
         if value is None:
@@ -156,3 +179,112 @@ def check_submission_result(result: Dict) -> Dict[str, List[str]]:
     if not methods:
         return {"submission": ["no paired metrics found in result"]}
     return {name: check_paired_submission(m) for name, m in methods.items()}
+
+
+# ---------------------------------------------------------------------------
+# §2-D claim-bound provenance
+# ---------------------------------------------------------------------------
+
+def _canonical_bytes(obj: Any) -> bytes:
+    """Deterministic JSON serialisation used for every provenance hash."""
+    return json.dumps(obj, sort_keys=True, ensure_ascii=False,
+                      separators=(",", ":")).encode("utf-8")
+
+
+def provenance_sha256(obj: Any) -> str:
+    """SHA-256 of a canonicalised JSON object (data manifest / model weights)."""
+    return hashlib.sha256(_canonical_bytes(obj)).hexdigest()
+
+
+def _collect_patient_ids(result: Any, found: set) -> None:
+    """Collect every ``patient_id`` (or ``patient_ids`` list) anywhere in the
+    result. The bootstrap gate uses this to tell a real patient-level submission
+    from a stack of slices masquerading as independent patients."""
+    if isinstance(result, dict):
+        for key, value in result.items():
+            if key == "patient_id" and isinstance(value, str) and value.strip():
+                found.add(value)
+            elif key == "patient_ids" and isinstance(value, list):
+                for pid in value:
+                    if isinstance(pid, str) and pid.strip():
+                        found.add(pid)
+            else:
+                _collect_patient_ids(value, found)
+    elif isinstance(result, list):
+        for item in result:
+            _collect_patient_ids(item, found)
+
+
+def check_claim_bound_provenance(result: Dict) -> List[str]:
+    """§2-D: the submission's numbers must be bound to the evidence they claim.
+
+    A result is publishable only when it declares a **claim** naming the versioned
+    task / protocol id, the hashes of the data manifest and the model weights it
+    was produced from, and the evaluator version -- and when the hashes actually
+    match the evidence shipped with the result. Without this, an unverifiable
+    number could be published under the board's identity, and a claim pointing at
+    a different task or protocol must be refused rather than silently recorded.
+
+    Also enforced here: a claim that requests patient-level bootstrap must carry
+    ``patient_id`` evidence. Bootstrap aggregation over slices without patient
+    identity would let one patient's many slices count as many independent
+    patients (see ``bootstrap_lidc_sim`` patient_id refusal).
+
+    Returns a list of violations; empty list = provenance gate passes.
+    """
+    errors: List[str] = []
+    claim = _as_dict(result.get("claim"))
+    evidence = _as_dict(result.get("evidence"))
+
+    if not claim:
+        errors.append(
+            "submission declares no claim (claim.task_id / claim.protocol_id / "
+            "claim.data_manifest_sha256 / claim.model_sha256 / "
+            "claim.evaluator_version are required): without provenance the "
+            "submission is not publishable")
+        return errors
+
+    required = ("task_id", "protocol_id", "data_manifest_sha256",
+                "model_sha256", "evaluator_version")
+    for key in required:
+        if not claim.get(key):
+            errors.append("claim.%s is missing or empty" % key)
+
+    if claim.get("task_id") is not None and claim["task_id"] != TASK_LABEL:
+        errors.append("claim.task_id %r is not the WS-4 task %r; the numbers are "
+                      "claimed for a different task and are not comparable"
+                      % (claim["task_id"], TASK_LABEL))
+    if claim.get("protocol_id") is not None and claim["protocol_id"] != PROTOCOL_ID:
+        errors.append("claim.protocol_id %r is not the expected %r; the numbers "
+                      "were not measured under detectability-freq-v1"
+                      % (claim["protocol_id"], PROTOCOL_ID))
+
+    if claim.get("data_manifest_sha256"):
+        manifest = evidence.get("data_manifest")
+        if not isinstance(manifest, dict):
+            errors.append("claim declares data_manifest_sha256 but "
+                          "evidence.data_manifest is missing or not an object")
+        elif provenance_sha256(manifest) != claim["data_manifest_sha256"]:
+            errors.append("claim.data_manifest_sha256 does not match the "
+                          "evidence.data_manifest shipped with the result")
+
+    if claim.get("model_sha256"):
+        weights = evidence.get("model_weights")
+        if not isinstance(weights, dict):
+            errors.append("claim declares model_sha256 but evidence.model_weights "
+                          "is missing or not an object")
+        elif provenance_sha256(weights) != claim["model_sha256"]:
+            errors.append("claim.model_sha256 does not match the "
+                          "evidence.model_weights shipped with the result")
+
+    if (claim.get("bootstrap_level") == "patient"
+            or claim.get("aggregation") == "patient-level"):
+        patient_ids: set = set()
+        _collect_patient_ids(result, patient_ids)
+        if not patient_ids:
+            errors.append(
+                "claim requests patient-level bootstrap but the result carries no "
+                "patient_id anywhere; slices of one patient could be counted as "
+                "independent patients")
+
+    return errors

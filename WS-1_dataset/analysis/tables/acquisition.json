@@ -1,0 +1,85 @@
+{
+  "lidc": {
+    "exposure_mas": {
+      "max": 11200.0,
+      "median": 230.0,
+      "min": 0.0,
+      "n": 1010,
+      "q1": 32.0,
+      "q3": 943.0
+    },
+    "kvp": {
+      "120.0": 813,
+      "130.0": 30,
+      "135.0": 66,
+      "140.0": 101
+    },
+    "kvp_typical": 120.0,
+    "manufacturer": {
+      "GE MEDICAL SYSTEMS": 670,
+      "Philips": 73,
+      "SIEMENS": 201,
+      "TOSHIBA": 66
+    },
+    "models": {
+      "Aquilion": 66,
+      "Brilliance 16P": 53,
+      "Brilliance 40": 9,
+      "Brilliance 64": 5,
+      "Brilliance16": 6,
+      "Definition": 3,
+      "Emotion 6": 29,
+      "Emotion Duo": 1,
+      "LightSpeed Plus": 56,
+      "LightSpeed Power": 10,
+      "LightSpeed Pro 16": 79,
+      "LightSpeed QX/i": 99,
+      "LightSpeed Ultra": 162,
+      "LightSpeed VCT": 62,
+      "LightSpeed16": 202,
+      "Sensation 16": 114,
+      "Sensation 64": 54
+    },
+    "n_series": 1010,
+    "pitch": {
+      "max": 1.375,
+      "median": 0.9375,
+      "min": 0.9375,
+      "n": 132,
+      "q1": 0.9375,
+      "q3": 0.984375
+    },
+    "recon_kernels": {
+      "B": 22,
+      "B20s": 1,
+      "B30f": 103,
+      "B30s": 3,
+      "B31f": 20,
+      "B31s": 25,
+      "B40s": 1,
+      "B45f": 34,
+      "B50f": 2,
+      "B70f": 12,
+      "BONE": 221,
+      "C": 7,
+      "D": 44,
+      "FC01": 59,
+      "FC03": 3,
+      "FC10": 4,
+      "LUNG": 69,
+      "STANDARD": 380
+    },
+    "slice_thickness_mm": {
+      "max": 5.0,
+      "median": 2.0,
+      "min": 0.6,
+      "n": 1010,
+      "q1": 1.25,
+      "q3": 2.5
+    }
+  },
+  "provenance": {
+    "combined_sha256": "20476a8105319e6192eebf233e274a4f6f5f787a574bd605809963f3160df870",
+    "n_files": 1010
+  }
+}

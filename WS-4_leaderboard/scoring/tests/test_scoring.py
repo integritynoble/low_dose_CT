@@ -9,6 +9,24 @@ import pytest
 from scoring import (BLUR_ENTRY_ID, add_submission, blur_entry, check_paired_submission,
                      check_submission_result, load, new_leaderboard, save,
                      sort_entries)
+from scoring.task_spec import TASK_LABEL
+from scoring.verify import provenance_sha256
+
+
+def claim_block():
+    """§2-D: a self-consistent claim + evidence block bound to the WS-4 task."""
+    manifest = {"corpus": "LIDC lowdose_sim", "r": 0.25, "seed": 42, "n_patients": 2}
+    weights = {"arch": "conv", "params": 1000}
+    return {
+        "claim": {
+            "task_id": TASK_LABEL,
+            "protocol_id": "detectability-freq-v1",
+            "data_manifest_sha256": provenance_sha256(manifest),
+            "model_sha256": provenance_sha256(weights),
+            "evaluator_version": "pwm_ldct_recon-2026-09-14",
+        },
+        "evidence": {"data_manifest": manifest, "model_weights": weights},
+    }
 
 
 def paired_metrics(psnr=15.0, ssim=0.8, cnr=4.2, auc=0.93, npwe=123.0,
@@ -99,7 +117,8 @@ def test_paired_gate_opens_when_bander_roi_present():
 def test_paired_gate_accepts_bander_roi_without_transparency_indices():
     """BandER alone satisfies the detectability side; transparency is optional."""
     assert check_paired_submission(
-        {"psnr_db": 39.5, "ssim": 0.93, "bander_roi": 0.636}) == []
+        {"psnr_db": 39.5, "ssim": 0.93, "bander_roi": 0.636,
+         "task": TASK_LABEL}) == []
 
 
 def test_blur_trap_is_rejected_on_cnr_but_caught_by_bander():
@@ -140,6 +159,7 @@ def test_submit_accepts_paired_and_keeps_trap(tmp_path):
     result = {"validation": {"paired_methods": {
         "mymethod": {"psnr_db": 17.0, "ssim": 0.9,
                      "detectability": paired_metrics(cnr=5.1, auc=0.97)}}}}
+    result.update(claim_block())
     created = add_submission(board, result, method="MyMethod")
     assert len(created) == 1
     assert blur_entry(board["entries"]) is not None  # trap still present
@@ -186,11 +206,12 @@ def test_cli_end_to_end(tmp_path):
     import subprocess, sys
     board = tmp_path / "board.json"
     sub = tmp_path / "submission.json"
-    sub.write_text(json.dumps({
+    submission = {
         "validation": {"paired_methods": {
             "algo": {"psnr_db": 18.0, "ssim": 0.91,
-                     "detectability": paired_metrics(cnr=6.0, auc=0.99)}}}}),
-        encoding="utf-8")
+                     "detectability": paired_metrics(cnr=6.0, auc=0.99)}}}}
+    submission.update(claim_block())
+    sub.write_text(json.dumps(submission), encoding="utf-8")
     env_root = str(Path(__file__).resolve().parents[2])
     base = [sys.executable, "-m", "scoring.cli"]
 
