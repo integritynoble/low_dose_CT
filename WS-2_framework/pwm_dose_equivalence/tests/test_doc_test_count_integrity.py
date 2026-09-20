@@ -89,7 +89,11 @@ def test_documented_pytest_counts_match_fresh_collection() -> None:
 
 def test_documented_pytest_counts_are_consistent_across_docs() -> None:
     values = {tuple(v) for v in _documented_expectations().values()}
+    documented = {
+        str(k.relative_to(PACKAGE_DIR.parent)): v
+        for k, v in _documented_expectations().items()
+    }
     assert len(values) == 1, (
         "docs disagree on the expected pytest count: "
-        f"{ {str(k.relative_to(PACKAGE_DIR.parent)): v for k, v in _documented_expectations().items()} }"
+        f"{documented}"
     )

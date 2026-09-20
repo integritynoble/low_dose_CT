@@ -90,25 +90,51 @@ def patient_ids_for(model_doc: dict, seed: str, dose: str) -> np.ndarray:
             f"needs the patient_id vector; re-run eval.py §B and commit new JSONs "
             f"before using --unit patient."
         )
+    if not isinstance(ids, list):
+        raise SystemExit(
+            f"model {model_doc['model']!r} dose {dose!r}: patient_id must be a JSON list"
+        )
     if len(ids) != len(vals):
         raise SystemExit(
             f"model {model_doc['model']!r} dose {dose!r}: per_slice.patient_id "
             f"length {len(ids)} != per_slice.cnr length {len(vals)}; the vectors "
             f"must be aligned."
         )
+    if not ids or any(not isinstance(pid, str) or not pid.strip() for pid in ids):
+        raise SystemExit(
+            f"model {model_doc['model']!r} dose {dose!r}: patient_id must be a "
+            "nonempty vector of nonblank subject identifiers"
+        )
     return np.asarray(ids)
 
 
-def _patient_mask(ids: np.ndarray, rng: np.random.Generator) -> np.ndarray:
-    """Boolean mask selecting the slices of the patients drawn with replacement.
+def _patient_pool_ids(model_doc: dict, dose: str, pooling: str) -> np.ndarray:
+    """Check that every seed identifies the same ordered, distinct slice pool."""
+    if pooling != "distinct":
+        raise SystemExit("--unit patient requires --pooling distinct")
+    maps = [patient_ids_for(model_doc, seed, dose)
+            for seed in model_doc["per_seed"]]
+    if not maps or any(not np.array_equal(maps[0], other) for other in maps[1:]):
+        raise SystemExit(
+            f"model {model_doc['model']!r} dose {dose!r}: patient_id vectors "
+            "differ between seeds; identical CNR values do not establish alignment"
+        )
+    return maps[0]
+
+
+def _patient_indices(ids: np.ndarray, rng: np.random.Generator) -> np.ndarray:
+    """Slice indices for whole patient blocks drawn with replacement.
 
     Patient-level (block) bootstrap: draw ``n_patients`` patients with
-    replacement and keep every slice of every drawn patient.  The mask is the
-    same length as ``ids`` and can be applied to any aligned pool.
+    replacement and append every slice each time its patient is drawn.
+    Repeated patients must repeat their blocks; a Boolean membership mask
+    would discard multiplicity. Apply the same indices to paired methods
+    and dose levels. The statistic remains a mean/median of pooled slices,
+    not an equally weighted mean of patient means.
     """
     patients = np.unique(ids)
     chosen = rng.choice(patients, size=patients.size, replace=True)
-    return np.isin(ids, chosen)
+    return np.concatenate([np.flatnonzero(ids == pid) for pid in chosen])
 
 
 def _resample_rep(pool: np.ndarray, ids: np.ndarray | None, use_median: bool,
@@ -124,7 +150,7 @@ def _resample_rep(pool: np.ndarray, ids: np.ndarray | None, use_median: bool,
         return representative(pool[idx], use_median)
     if ids is None:
         raise SystemExit("--unit patient requires per_slice.patient_id vectors")
-    return representative(pool[_patient_mask(ids, rng)], use_median)
+    return representative(pool[_patient_indices(ids, rng)], use_median)
 
 
 def _seed_hashes(model_doc: dict, dose: str) -> set[str]:
@@ -213,9 +239,12 @@ def bootstrap_model(
         pools[dose], ident = build_pool(model_doc, dose, pooling)
         identical = identical and ident
         if unit == "patient":
-            # first seed == the slice set used for the distinct pool; its
-            # patient_id vector is the aligned block map.
-            ids[dose] = patient_ids_for(model_doc, list(model_doc["per_seed"])[0], dose)
+            ids[dose] = _patient_pool_ids(model_doc, dose, pooling)
+            if not np.array_equal(ids[DOSES[0]], ids[dose]):
+                raise SystemExit(
+                    f"model {name!r}: patient_id vectors differ between doses; "
+                    "paired dose-curve bootstrap needs identical slice->patient maps"
+                )
 
     observed_rep = {d: representative(pools[d], use_median) for d in DOSES}
     obs_knee, obs_kind = knee(observed_rep)
@@ -226,12 +255,20 @@ def bootstrap_model(
 
     for _ in range(B):
         rep = {}
+        # These doses were measured on the same patients. One cluster draw
+        # preserves their dependence when constructing a dose-curve knee.
+        patient_idx = _patient_indices(ids[DOSES[0]], rng) if unit == "patient" else None
         for dose in DOSES:
             pool = pools[dose]
-            r = _resample_rep(pool, ids.get(dose), use_median, rng, unit)
+            r = (representative(pool[patient_idx], use_median)
+                 if patient_idx is not None else
+                 _resample_rep(pool, None, use_median, rng, unit))
             rep[dose] = r
             draws[dose].append(r)
-        k, kind = knee(rep)
+        if unit == "patient" and any(not np.isfinite(v) for v in rep.values()):
+            k, kind = None, "nan"
+        else:
+            k, kind = knee(rep)
         kinds[kind] += 1
         if k is not None:
             knees.append(k)
@@ -242,7 +279,7 @@ def bootstrap_model(
             return None
         return [float(np.percentile(arr, 2.5)), float(np.percentile(arr, 97.5))]
 
-    return {
+    result = {
         "use_median": use_median,
         "n_per_dose": int(pools[DOSES[0]].size),
         "n_distinct_slices": int(
@@ -256,6 +293,38 @@ def bootstrap_model(
         "draw_kinds": kinds,
         "per_dose_rep_95ci": {d: ci(draws[d]) for d in DOSES},
     }
+    if unit == "patient":
+        result["n_patients"] = int(np.unique(ids[DOSES[0]]).size)
+        # Every replacement draw contributes to this summary. Conditioning
+        # on reaching the threshold would silently discard uncertainty, and
+        # the observed boundary category must not collapse an interval when
+        # some replacement samples cross between the tested dose levels.
+        if B == 0:
+            knee_status = "unavailable_no_draws"
+        elif kinds["not_reached"] or kinds["nan"]:
+            knee_status = "unavailable_incomplete_draws"
+        elif kinds["below_r010"]:
+            knee_status = "percentile_with_left_censoring"
+        else:
+            knee_status = "percentile"
+        result["knee_95ci"] = (
+            ci(knees) if knee_status.startswith("percentile") else None
+        )
+        result["knee_95ci_status"] = knee_status
+        result["knee_left_censoring"] = {
+            "lowest_tested_dose": DOSE_RATIO[DOSES[0]],
+            "observed": obs_kind == "below_r010",
+            "n_draws": kinds["below_r010"],
+        }
+        result["knee_95ci_note"] = (
+            "Percentiles use all replacement draws of the exploratory interpolated "
+            "CNR threshold crossing. A crossing at or below the lowest tested dose "
+            "is left-censored and encoded at that dose, not measured exactly there. "
+            "The interval is unavailable if any draw does not reach the threshold "
+            "or has nonfinite dose statistics; draw_kinds records those counts. "
+            "This does not establish a clinical minimum-dose interval."
+        )
+    return result
 
 
 def bootstrap_separation(
@@ -284,12 +353,17 @@ def bootstrap_separation(
         for dose in DOSES:
             bp, _ = build_pool(blur, dose, pooling)
             mp, _ = build_pool(doc, dose, pooling)
+            if unit == "patient" and bp.size != mp.size:
+                raise SystemExit(
+                    f"blur vs {name!r} dose {dose!r}: paired pools have different "
+                    "lengths; patient-level bootstrap must not truncate unmatched slices"
+                )
             n = min(bp.size, mp.size)
             obs = representative(bp[:n], False) / representative(mp[:n], use_median)
             if unit == "patient":
-                ids_b = patient_ids_for(blur, list(blur["per_seed"])[0], dose)
-                ids_m = patient_ids_for(doc, list(doc["per_seed"])[0], dose)
-                if not np.array_equal(ids_b[:n], ids_m[:n]):
+                ids_b = _patient_pool_ids(blur, dose, pooling)
+                ids_m = _patient_pool_ids(doc, dose, pooling)
+                if not np.array_equal(ids_b, ids_m):
                     raise SystemExit(
                         f"blur vs {name!r} dose {dose!r}: patient_id vectors differ "
                         f"between paired models; patient-level paired bootstrap needs "
@@ -298,11 +372,11 @@ def bootstrap_separation(
             ratios = []
             for _ in range(B):
                 if unit == "patient":
-                    mask = _patient_mask(ids_b[:n], rng)
-                    den = representative(mp[:n][mask], use_median)
+                    idx = _patient_indices(ids_b, rng)
+                    den = representative(mp[idx], use_median)
                     if not np.isfinite(den) or den == 0:
                         continue
-                    ratios.append(representative(bp[:n][mask], False) / den)
+                    ratios.append(representative(bp[idx], False) / den)
                 else:
                     idx = rng.integers(0, n, n)
                     den = representative(mp[idx], use_median)
@@ -317,6 +391,8 @@ def bootstrap_separation(
                 else None,
                 "n_pairs": int(n),
             }
+            if unit == "patient":
+                per_dose[dose]["n_patients"] = int(np.unique(ids_b).size)
         out[f"blur_vs_{name}"] = per_dose
     return out
 
@@ -390,13 +466,19 @@ def main() -> None:
     }
     if args.unit == "patient":
         out["unit"] = "patient"
+        out["bootstrap_method"] = "patient-block-replacement-paired-dose/v2"
         out["note"] = (
             "Patient-level block bootstrap: patients are drawn with replacement "
-            "and every slice of a drawn patient enters the resampled pool "
-            "(blocks = patients), characterising inter-patient heterogeneity. "
+            "and every slice enters once for each time its patient is drawn "
+            "(blocks = patients). Dose levels share a draw for each knee; "
+            "each method/blur ratio uses paired blocks. "
+            "The estimand is the mean/median of pooled slices, with patient counts "
+            "reported separately; few patients limit population-level inference. "
             "Requires per_slice.patient_id emitted by the §B eval.py; pooling "
             "is fixed to distinct. unit=slice remains the published "
-            "slice-level bootstrap."
+            "slice-level bootstrap, including its historical boundary-knee summary; "
+            "patient mode reports all-draw percentile bounds with explicit censoring "
+            "and withholds a complete interval for unreached/nonfinite draws."
         )
 
     # pooling=distinct writes the canonical stats file the manuscript cites;
@@ -424,9 +506,19 @@ def main() -> None:
     for name, m in models.items():
         k = m["observed_knee"]
         kc = m["knee_95ci"]
-        ks = f"{k:.3f} {kc}" if m["observed_kind"] == "interp" else f"<={k:.2f}"
+        if m["observed_kind"] == "interp":
+            ks = f"{k:.3f} {kc}"
+        elif m["observed_kind"] == "below_r010":
+            ks = f"<={k:.2f} (left-censored)"
+        else:
+            ks = m["observed_kind"]
+        if args.unit == "patient":
+            ks += f"; draw interval={kc} ({m['knee_95ci_status']})"
         print(f"  {name:16s} knee {ks}")
         for d in DOSES:
+            if m["per_dose_rep_95ci"][d] is None:
+                print(f"      {d:10s} CI unavailable (no finite draws)")
+                continue
             lo, hi = m["per_dose_rep_95ci"][d]
             print(
                 f"      {d:10s} rep={m['observed_rep_cnr'][d]:8.3f} "

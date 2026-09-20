@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 from pathlib import Path
 
 import pytest
@@ -37,17 +38,9 @@ FIELD_PATHS = {
     "roi_tm_auc": ("freq_roi", "roi_tm_auc"),
 }
 
-
-def _source_sha256(raw: bytes) -> str:
-    """The source run's digest, line-ending-proof.
-
-    The hash recorded in ``leaderboard.TRAP_SOURCE`` is the file's LF form: that
-    is what the index holds and what a Linux/CI checkout writes. Hashing the raw
-    on-disk bytes made the constant platform-dependent -- a Windows checkout with
-    ``core.autocrlf`` wrote CRLF and no LF machine could ever reproduce it.
-    Normalising the bytes first makes the constant mean the same thing on both.
-    """
-    return hashlib.sha256(raw.replace(b"\r\n", b"\n").replace(b"\r", b"\n")).hexdigest()
+def _source_digest(raw: bytes) -> str:
+    """Ignore checkout CRLF conversion, retaining all other provenance bytes."""
+    return hashlib.sha256(raw.replace(b"\r\n", b"\n")).hexdigest()
 
 
 needs_ws1 = pytest.mark.skipif(not SOURCE.exists(),
@@ -55,9 +48,10 @@ needs_ws1 = pytest.mark.skipif(not SOURCE.exists(),
 
 
 @needs_ws1
-def test_trap_metrics_still_match_their_source_run():
-    raw = SOURCE.read_bytes()
-    assert _source_sha256(raw) == TRAP_SOURCE["sha256"], (
+@pytest.mark.parametrize("line_ending", [b"\n", b"\r\n"], ids=["LF", "CRLF"])
+def test_trap_metrics_still_match_their_source_run(line_ending):
+    raw = SOURCE.read_bytes().replace(b"\r\n", b"\n").replace(b"\n", line_ending)
+    assert _source_digest(raw) == TRAP_SOURCE["sha256"], (
         "the source run has changed on disk; re-read it and refresh the trap "
         "deliberately rather than updating this hash")
     doc = json.loads(raw)
@@ -143,9 +137,10 @@ needs_vendor_file = pytest.mark.skipif(not VENDOR_SOURCE.exists(),
 
 
 @needs_vendor_file
-def test_vendor_trap_metrics_still_match_their_source_run():
-    raw = VENDOR_SOURCE.read_bytes()
-    assert _source_sha256(raw) == VENDOR_TRAP_SOURCE["sha256"], (
+@pytest.mark.parametrize("line_ending", [b"\n", b"\r\n"], ids=["LF", "CRLF"])
+def test_vendor_trap_metrics_still_match_their_source_run(line_ending):
+    raw = VENDOR_SOURCE.read_bytes().replace(b"\r\n", b"\n").replace(b"\n", line_ending)
+    assert _source_digest(raw) == VENDOR_TRAP_SOURCE["sha256"], (
         "the cross-vendor run has changed on disk; re-read it and refresh the "
         "per-vendor traps deliberately rather than updating this hash")
     doc = json.loads(raw)
@@ -184,6 +179,19 @@ def test_the_board_recomputes_the_separation_the_source_reports():
             doc["separation"][vendor]["ratio_min_model_over_blur"], rel=1e-9), vendor
     assert min(b["min_ratio_observed"] for b in report["groups"].values()) == pytest.approx(8.93, abs=0.01)
     assert max(b["min_ratio_observed"] for b in report["groups"].values()) == pytest.approx(18.96, abs=0.01)
+
+
+@pytest.mark.parametrize("source", [TRAP_SOURCE, VENDOR_TRAP_SOURCE], ids=["AAPM", "cross-vendor"])
+def test_line_ending_normalization_does_not_hide_changed_source_values(source):
+    path = REPO_ROOT / source["file"]
+    if not path.exists():
+        pytest.skip("WS-1 source artifact not present beside WS-4")
+    raw = path.read_bytes().replace(b"\r\n", b"\n")
+    # Change a number without changing whitespace or key order.
+    changed, count = re.subn(rb'(:\s*)(-?\d+\.\d+)', rb'\g<1>987654321.125', raw, count=1)
+    assert count == 1, "expected a numeric source field"
+    assert json.loads(changed) != json.loads(raw)
+    assert _source_digest(changed.replace(b"\n", b"\r\n")) != source["sha256"]
 
 
 def test_the_aapm_vendor_trap_is_the_same_measurement_as_the_canonical_trap():

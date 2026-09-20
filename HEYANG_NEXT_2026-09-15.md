@@ -1,3 +1,5 @@
+> **20 September priority update:** Heyang is assigned to finish the reproduction paper as soon as possible. See [the current assignment](HEYANG_NEXT_2026-09-20.md) for required corrections and completion criteria.
+
 # heyang — next steps, updated 15 September 2026
 
 Supersedes the execution portions of HEYANG_NEXT_2026-09-13.md for the tasks

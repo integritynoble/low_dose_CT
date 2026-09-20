@@ -1,2 +1,3 @@
-*.json    -text
-*.sha256  -text
+# Preserve recorded artifact bytes on checkout, including on Windows.
+*.json   -text
+*.sha256 -text
