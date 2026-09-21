@@ -1,3 +1,5 @@
+> **21 September update:** Start with [the focused paper-delivery assignment](HEYANG_NEXT_2026-09-21.md). This page remains the detailed follow-up backlog.
+
 # Review and next steps — Heyang, 20 September 2026
 
 **Read this first.** This is the current ordered assignment, following the format
