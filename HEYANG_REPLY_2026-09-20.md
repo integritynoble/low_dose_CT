@@ -1,0 +1,49 @@
+# Heyang progress reply — 20 September 2026
+
+This file is the single progress index for
+[HEYANG_NEXT_2026-09-20.md](HEYANG_NEXT_2026-09-20.md). Status values are
+restricted to IN PROGRESS / DONE / BLOCKED; evidence entries name real files,
+commit hashes and measured results only.
+
+- **CT checkout**: `D:\ZHY\low_dose_CT-heyang` branch `heyang`, HEAD
+  `3472815abcfa7c6faf2679a75f27e5c9cf250e83` (merge origin/main, sync 2026-09-20)
+- **Agent checkout**: `D:\ZHY\ldct_agent-main` branch `heyang`, HEAD `c2a75c5`
+- **Shared core**: `pillcam_agent` (research-agents) — no checkout on this
+  machine; core head/version cannot be recorded until an authorized checkout is
+  shared (blocker for task 2).
+- **Worktree**: 15 pre-existing uncommitted changes (Heyang-paper prose + WS-4
+  scoring/web development) are intentionally NOT included in this commit.
+
+## Progress index
+
+| Task | Status | Commit / evidence | Remaining blocker | ETA |
+|---|---|---|---|---|
+| 0 — sync and acknowledgement | DONE | CT `heyang` HEAD `3472815` (merge origin/main, no history rewrite); agent branch HEAD `c2a75c5`; this file is the acknowledgement | Shared core `pillcam_agent` checkout/path not yet shared (no local checkout, core head unrecordable) | 2026-09-21 |
+| 1 — paper package (1.1–1.5) | IN PROGRESS | 1.1/1.2/1.3: [ENV_RECON_AND_MANUSCRIPT_FIX_2026-09-21.md](C:\Users\ufl\AppData\Roaming\Tencent\Marvis\User\oAN1i2UYfvOcqvWo-7R7BX4MGNvY\workspace\conv_5848855f38b4411189d7a61a80701333\output\ENV_RECON_AND_MANUSCRIPT_FIX_2026-09-21.md); worktree edits `Heyang-paper/manuscript.tex` (19 prose fixes) + `Heyang-paper/README.md` (6 fixes); `make_tables.py --check` and `recompare_per_metric.py --check` both exit 0; count confirmed 375 total = 5 seeds x 3 doses x 5 quantities x 5 methods | 1.4 owner-only metadata (author order / affiliations / ORCIDs / corresponding author / CRediT / declarations) not yet provided; reference-environment records (OS/GPU/driver/CUDA/Python/PyTorch/NumPy/commands) unrecoverable unless owner supplies them; 1.5 not delivered, 5 `\todo{}` remain (author metadata, third-environment decision, data/code availability, CRediT, competing interests) | 1.5 after 1.4 owner input; paper ETA depends on metadata reply |
+| 2 — Windows CT + agent receipt | IN PROGRESS | [WINDOWS_COMPAT_RECEIPT_2026-09-21.md](C:\Users\ufl\AppData\Roaming\Tencent\Marvis\User\oAN1i2UYfvOcqvWo-7R7BX4MGNvY\workspace\conv_5848855f38b4411189d7a61a80701333\output\WINDOWS_COMPAT_RECEIPT_2026-09-21.md); CT commands run natively on Windows 11 (26100), PowerShell 5.1, versions recorded | `ldct_agent` all entry points (unittest + CLI) BLOCKED at import (`ImportError: needs shared core 'research-agents'`), exit 1, no business logic executed; core head unrecordable; needs authorized core checkout + `RESEARCH_CORE` | after shared core path is provided |
+| 3 — publication-state UI/CLI | DONE | [RELEASE_STATUS_VISIBILITY_2026-09-21.md](C:\Users\ufl\AppData\Roaming\Tencent\Marvis\User\oAN1i2UYfvOcqvWo-7R7BX4MGNvY\workspace\conv_5848855f38b4411189d7a61a80701333\output\RELEASE_STATUS_VISIBILITY_2026-09-21.md); worktree edits `WS-4_leaderboard/scoring/verifier.py`, `cli.py`, `leaderboard.py`, `web/app.js|index.html|style.css`, new `tests/test_publication_status.py` (23 assertions) + fixtures; 7-state screenshots verified; hard constraint: no skipped/pending case labeled published/verified | none (agent repo out of scope for this task) | 2026-09-21 |
+| 4 — evaluator-bound provenance | DONE | [PROVENANCE_BINDING_2026-09-21.md](C:\Users\ufl\AppData\Roaming\Tencent\Marvis\User\oAN1i2UYfvOcqvWo-7R7BX4MGNvY\workspace\conv_5848855f38b4411189d7a61a80701333\output\PROVENANCE_BINDING_2026-09-21.md); new `WS-4_leaderboard/scoring/binding.py`, `tests/test_input_binding.py` (19 cases), edits to `verify.py` / `leaderboard.py` / `cli.py` / `__init__.py`; three binding loops close at runtime (model bytes, asset manifest, patient mapping); direct-save bypass rejected | live S3 runtime and authorized data source not ready — no source-data authentication claimed (post-local scope in the assignment) | 2026-09-21 (local fixtures); live S3 separate |
+| 5a — BANDER diagnostics | IN PROGRESS | [BANDER_DIAG_AUDIT_2026-09-21.md](C:\Users\ufl\AppData\Roaming\Tencent\Marvis\User\oAN1i2UYfvOcqvWo-7R7BX4MGNvY\workspace\conv_5848855f38b4411189d7a61a80701333\output\BANDER_DIAG_AUDIT_2026-09-21.md); 9-14 evidence inventory COMPLETE (D1/D2 session-only items declared unrecoverable); BANDER-6 COMPLETE with PARTIAL sub-item; driver/params/checkpoints/per-patient output recoverable from `freq_aapm_real_r025_*.json` + `ckpt_hashes.txt` | BANDER-2 (five controls on real slices, R3-matched ROIs) needs new computation, awaits authorization to run `bander/control-matrix` `a42ad27` `scripts/bander_controls.py` on the authorized image machine; BANDER-6 matched-control values incomplete on the control side | after owner authorization for BANDER-2 run |
+| 5b — copy/deposit receipt | DONE | [COPIES_DEPOSIT_RECEIPT_2026-09-21.md](C:\Users\ufl\AppData\Roaming\Tencent\Marvis\User\oAN1i2UYfvOcqvWo-7R7BX4MGNvY\workspace\conv_5848855f38b4411189d7a61a80701333\output\COPIES_DEPOSIT_RECEIPT_2026-09-21.md); V1–V5 PASS: substrate 364/364 hash match, checkpoint 5/5 match; redacted manifest + file counts + checksums (`checksums_substrate_364`, `checksums_ct_key_artifacts`, `checksums_ldct_agent`, all measured 2026-09-21); receipt itself COMPLETE | off-machine copy NOT on disk: no v0.5 substrate found under local OneDrive; needs OneDrive/Teams shared-folder access; share token kept out of the repository | copy action after OneDrive access |
+
+## Owner input needed (one compact list)
+
+1. Paper metadata (task 1.4): author order, affiliations, ORCIDs, corresponding
+   author, CRediT, declarations.
+2. Reference-environment records, if held (task 1.1): OS version, GPU model/count,
+   driver, CUDA/cuDNN, Python/PyTorch/NumPy versions, original run commands
+   (pip freeze / nvidia-smi archive / confirmed container tag), or accept the
+   stated Methods limitation.
+3. Shared core access (task 2 / task 0): authorized `pillcam_agent`
+   (research-agents) checkout or path to set `RESEARCH_CORE`.
+4. Authorization to run BANDER-2 (task 5a): `bander/control-matrix` `a42ad27`
+   `scripts/bander_controls.py` on the authorized image machine (CPU
+   deterministic; no expensive inference rerun).
+5. OneDrive/Teams shared-folder access for the off-machine substrate copy
+   (task 5b).
+
+## Not pushed
+
+This file and the worktree changes are committed on `heyang` only; nothing has
+been pushed. The 15 pre-existing uncommitted changes remain uncommitted local
+work awaiting their own review.
