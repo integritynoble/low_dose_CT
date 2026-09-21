@@ -1,6 +1,6 @@
 # §3 reply — the discriminating index is gameable at both ends, and what the 3.9–6.7× is made of
 
-Responding to [`HEYANG_NEXT_2026-09-13.md`](HEYANG_NEXT_2026-09-13.md) §3, which was written against `main` @ `72ba063`.
+Responding to [`heyang/HEYANG_NEXT_2026-09-13.md`](HEYANG_NEXT_2026-09-13.md) §3, which was written against `main` @ `72ba063`.
 Written against **`heyang` @ `b520f9ab`** ("Merge origin/main (5ffe30d) into heyang: take main as authoritative", 13 September 2026), the current HEAD of this checkout.
 
 Scope: §3 (a) and (b), plus one factual correction to §3's premise. Nothing else was touched — no commit, no push, no edit to any tracked file, no training and no weight change. (a) required **inference-only** re-runs of the existing checkpoints, because no existing observation record answers it (see §2.1).

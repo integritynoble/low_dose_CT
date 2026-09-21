@@ -19,11 +19,11 @@ Fresh fetch on 21 September found:
 Your published work is already merged through PR #26, and the detailed new
 assignment is on main through PR #27. The remote heyang branch does not yet
 contain that handoff or the subsequent integration fixes. No
-`HEYANG_REPLY_2026-09-20.md` was found on the checked branch. This describes
+`heyang/HEYANG_REPLY_2026-09-20.md` was found on the checked branch. This describes
 remote evidence only; it does not imply you have done no local work.
 
 Open PRs #20 (WS-2 prose) and #1/#2 (dependencies) were checked; none is a new
-Heyang paper delivery. The earlier [integration review](INTEGRATION_STATUS_2026-09-20.md)
+Heyang paper delivery. The earlier [integration review](../INTEGRATION_STATUS_2026-09-20.md)
 records verification and its limits. No new tests or image experiments were
 run for this status-only check, and yesterday's test counts are not new results.
 
@@ -36,7 +36,7 @@ working branch without rewriting history. Read this page and the 20 September
 assignment. If local changes already address an item, publish/link those changes
 instead of implementing it again.
 
-Update **`HEYANG_REPLY_2026-09-20.md`**, keeping the same reply index rather than
+Update **`heyang/HEYANG_REPLY_2026-09-20.md`**, keeping the same reply index rather than
 creating another competing status file. Add a dated 21 September section with:
 
 - Your current CT and agent heads and any local work not yet pushed.

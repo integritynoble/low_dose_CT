@@ -117,5 +117,5 @@ definition counterexample or validate clinical performance.
    after scientific review. This integration does not endorse those claims.
 
 Before resuming, fetch and compare the current remote heads and update this
-record and [Heyang's handoff](HEYANG_NEXT_2026-09-13.md). Do not mark unavailable
+record and [Heyang's handoff](heyang/HEYANG_NEXT_2026-09-13.md). Do not mark unavailable
 workstation evidence complete or infer that a field-level question is settled.

@@ -14,7 +14,7 @@ _Compiled 2026-09-14 at `24e2883`, read from each manuscript's own header rather
 | WS-4 | State of the Field: Year 1 of the PWM Low-Dose CT Challenge | **npj Digital Medicine** | Annual review |
 | H | What tolerance a benchmark comparison actually needs — cross-environment reproduction | **Medical Physics** (primary) / **Scientific Reports** (alternative) | Technical Note |
 
-Rows WS-1 to WS-4 are read from the `%% Target venue:` header of each `paper_draft/manuscript.tex`. Row H is proposed in [`HEYANG_PAPER_SCOPE_REPRODUCTION.md`](HEYANG_PAPER_SCOPE_REPRODUCTION.md) and is not yet drafted. WS-5 and WS-6 hold no manuscript.
+Rows WS-1 to WS-4 are read from the `%% Target venue:` header of each `paper_draft/manuscript.tex`. Row H is proposed in [`heyang/HEYANG_PAPER_SCOPE_REPRODUCTION.md`](heyang/HEYANG_PAPER_SCOPE_REPRODUCTION.md) and is not yet drafted. WS-5 and WS-6 hold no manuscript.
 
 ## What the shape of this plan implies
 

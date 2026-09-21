@@ -62,7 +62,7 @@ explicitly closed with evidence.
 
 ## Assignment and release state
 
-The owner's new priority is recorded in `HEYANG_NEXT_2026-09-20.md`: **Heyang
+The owner's new priority is recorded in `heyang/HEYANG_NEXT_2026-09-20.md`: **Heyang
 finishes Heyang-paper as soon as possible**, ahead of further feature work.
 The assignment requires evidence-bounded interpretation, exact environments,
 artifact-derived numbers, owner metadata and a matching rebuilt PDF. The current

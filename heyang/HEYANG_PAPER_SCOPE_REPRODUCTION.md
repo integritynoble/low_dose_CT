@@ -1,6 +1,6 @@
 # A separable paper: what tolerance a benchmark comparison actually needs
 
-_Written 2026-09-14 against `e7efa20` · companions: [Heyang's handoff](HEYANG_NEXT_2026-09-13.md), [Director decisions](DIRECTOR_DECISIONS.md), [the recalculation report](WS-1_dataset/R6_recalc/R6_recalc_report.md)_
+_Written 2026-09-14 against `e7efa20` · companions: [Heyang's handoff](HEYANG_NEXT_2026-09-13.md), [Director decisions](../DIRECTOR_DECISIONS.md), [the recalculation report](../WS-1_dataset/R6_recalc/R6_recalc_report.md)_
 
 **What this is.** A scope for one self-contained paper, extracted from work already done, chosen so that it perturbs none of the five planned manuscripts. It is a proposal, not an assignment, not an authorship decision, and not permission to change any score, tolerance, registry status, dataset or release. It draws no new measurement; everything it cites is committed.
 
@@ -29,11 +29,11 @@ Two nearby pieces of work were considered and rejected for this purpose, for the
 
 ## 3. What already exists
 
-The independent recalculation was run as a genuine replication, not a re-seed, and its provenance is unusually complete. All paths below are in [`WS-1_dataset/R6_recalc/`](WS-1_dataset/R6_recalc/).
+The independent recalculation was run as a genuine replication, not a re-seed, and its provenance is unusually complete. All paths below are in [`WS-1_dataset/R6_recalc/`](../WS-1_dataset/R6_recalc).
 
 **A different environment, not a different seed.** Python 3.12.10 in a separate venv, torch 2.3.0+cu121, torchvision 0.18.0, numpy 1.26.4, on Windows with 2× RTX 4090 and driver 591.86 — against the on-board Linux stack. Different operating system, CUDA build and torch version. This is the part most reproducibility studies cannot offer.
 
-**Fingerprints, committed.** Source-commit SHA plus per-file SHA256 verification of six critical files; `task_spec.json` SHA256; five checkpoint hashes ([`ckpt_hashes.txt`](WS-1_dataset/R6_recalc/hashes/ckpt_hashes.txt)); 364 LIDC and 25 AAPM data-tree hashes; a 57-line `pip freeze`. Twenty-seven result artifacts under `results/`.
+**Fingerprints, committed.** Source-commit SHA plus per-file SHA256 verification of six critical files; `task_spec.json` SHA256; five checkpoint hashes ([`ckpt_hashes.txt`](../WS-1_dataset/R6_recalc/hashes/ckpt_hashes.txt)); 364 LIDC and 25 AAPM data-tree hashes; a 57-line `pip freeze`. Twenty-seven result artifacts under `results/`.
 
 **The decisive ablation, already run.** The pre-registered absolute 1e-6 criterion failed for red_cnn, ctformer and corediff, and passed for blur and learn. Route (a) tested the hypothesis that the residual was cuDNN kernel non-determinism, which predicted zero difference under deterministic kernels. It was run with `cudnn.deterministic=True`, `cudnn.benchmark=False`, `use_deterministic_algorithms(True)` and `CUBLAS_WORKSPACE_CONFIG=:4096:8`, at a cost of about 48 GPU-hours, **by Heyang on the machine holding the checkpoints and data trees**. The result was `n_diffs = 0`, bit-identical — so the prediction failed and the residual is a systematic cross-environment offset, not kernel non-determinism.
 
@@ -43,7 +43,7 @@ That failed prediction is the paper's spine. A reproduction study that merely re
 
 ## 4. What is left
 
-English write-up; reframing from project-internal audit to a general lesson; and a per-metric characterization of the residual computed from the differences already in [`comparison_full764.json`](WS-1_dataset/R6_recalc/results/comparison_full764.json). No GPU time, no new data, no new collaborator, no clinician, and no dependency on any open rung.
+English write-up; reframing from project-internal audit to a general lesson; and a per-metric characterization of the residual computed from the differences already in [`comparison_full764.json`](../WS-1_dataset/R6_recalc/results/comparison_full764.json). No GPU time, no new data, no new collaborator, no clinician, and no dependency on any open rung.
 
 The re-derivation is already executable and currently passes:
 
@@ -61,7 +61,7 @@ Two further limits, both already established elsewhere in this repository and no
 
 **Medical Physics**, as a Technical Note, is the primary recommendation — it is AAPM's journal and the AAPM 2016 challenge was published there, so the readership is the one that cares whether these numbers reproduce. **Scientific Reports** is the alternative if this paper should sit in Nature Portfolio with the rest of the plan. *Physics in Medicine & Biology* and *Journal of Medical Imaging* also fit.
 
-ReScience C appeared in this file's first draft and is withdrawn: it is for independent third-party replication, and this is self-reproduction within the project. See [`PAPER_TARGET_JOURNALS.md`](PAPER_TARGET_JOURNALS.md) for the full register and the reasoning. Modest by construction — that is the point, not a shortcoming.
+ReScience C appeared in this file's first draft and is withdrawn: it is for independent third-party replication, and this is self-reproduction within the project. See [`PAPER_TARGET_JOURNALS.md`](../PAPER_TARGET_JOURNALS.md) for the full register and the reasoning. Modest by construction — that is the point, not a shortcoming.
 
 ## 7. Two decisions for the owner, before it starts
 
