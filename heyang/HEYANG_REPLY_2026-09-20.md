@@ -1,3 +1,14 @@
+---
+AIGC:
+    Label: "1"
+    ContentProducer: 001191440300708461136T1XGW3
+    ProduceID: 3492397679226d6505949fd36ce12be5_50be9eb4b5a611f19286525400638852
+    ReservedCode1: wYvLR+GBiV555OxnniuvT6vG+Ls2bXPgop/FqW0oIyKJfQ0f+MwiwFSPKYWQNKp7AxjdSPnjgxn2RillpjNU8g/iDVHfKdcRl3DwKXcI3PJPdFv6vTLtCnJVXWDOG3dKQ/yUWV3ovNMHLQ0Eu6fpfHXMQmLbVeVeFOwXyJG0CQ8skkk38GjnJwG4E6E=
+    ContentPropagator: 001191440300708461136T1XGW3
+    PropagateID: 3492397679226d6505949fd36ce12be5_50be9eb4b5a611f19286525400638852
+    ReservedCode2: wYvLR+GBiV555OxnniuvT6vG+Ls2bXPgop/FqW0oIyKJfQ0f+MwiwFSPKYWQNKp7AxjdSPnjgxn2RillpjNU8g/iDVHfKdcRl3DwKXcI3PJPdFv6vTLtCnJVXWDOG3dKQ/yUWV3ovNMHLQ0Eu6fpfHXMQmLbVeVeFOwXyJG0CQ8skkk38GjnJwG4E6E=
+---
+
 # Heyang progress reply — 20 September 2026
 
 This file is the single progress index for
@@ -47,3 +58,35 @@ commit hashes and measured results only.
 This file and the worktree changes are committed on `heyang` only; nothing has
 been pushed. The 15 pre-existing uncommitted changes remain uncommitted local
 work awaiting their own review.
+
+## 2026-09-21 status (HEYANG_NEXT_2026-09-21.md step 1)
+
+- **CT head**: `82bf1397` (merge origin/main `1b1fdca`, 2026-09-21). Re-fetched
+  origin on 2026-09-21: no new remote commits (`origin/main` still `1b1fdca`),
+  `.git/MERGE_HEAD` clean — no further merge needed.
+- **Agent head**: `c2a75c5` (`ldct_agent-main`, branch `heyang`).
+- **Local work not yet pushed**: (a) progress-index commit `cadc2d7`
+  (HEYANG_REPLY only, renamed root → `heyang/`; framework appended AIGC
+  frontmatter + notice); (b) this merge `82bf1397`; (c) 15 pre-existing
+  worktree changes still uncommitted: `Heyang-paper/manuscript.tex` (19 prose
+  fixes + 5 `\todo`), `Heyang-paper/README.md` (6 fixes),
+  `reproducible_manifest.json` (line-ending only), WS-4 scoring 5 files, web 3
+  files, untracked `binding.py` + 2 tests + fixtures.
+- **Paper package ETA**: 2026-09-23, subject to owner confirmation (adjustable).
+
+### Owner input — 2026-09-21 (compact)
+
+1. Author order / affiliations / ORCIDs / corresponding author / CRediT /
+   competing interests → blocks manuscript author block and task 1.4.
+2. Data/code availability decision (existing rights; code availability does not
+   grant image/checkpoint redistribution) → blocks `data availability` paragraph.
+3. Journal target confirmation (MP Tech Note vs Sci Rep) → blocks journal-target
+   declaration.
+4. Third-environment GPU study decision → blocks upgrade options in the paper.
+5. Reference-environment records, if held (OS/GPU/driver/CUDA/PyTorch/NumPy/
+   original commands) → blocks task 1.1 methods-limitation statement.
+6. Shared core access (`pillcam_agent` checkout / `RESEARCH_CORE`) → blocks
+   tasks 2 and 0.
+7. BANDER-2 authorization → blocks task 5a.
+8. OneDrive/Teams shared-folder access → blocks task 5b off-machine copy.
+*（内容由AI生成，仅供参考）*
