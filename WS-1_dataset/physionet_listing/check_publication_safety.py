@@ -141,7 +141,7 @@ def main() -> int:
             print("\nThese are reachable in history. Removing them in a new commit is "
                   "NOT enough -- every clone still serves them. Removing them for real "
                   "means a git filter-repo rewrite and a force push, after which every "
-                  "collaborator must re-clone. See HEYANG_RECLONE_2026-09-05.md.",
+                  "collaborator must re-clone. See heyang/HEYANG_RECLONE_2026-09-05.md.",
                   file=sys.stderr)
         else:
             print("\nThis was a tracked-files scan only. Re-run with --history before "

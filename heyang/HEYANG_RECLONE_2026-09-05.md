@@ -1,6 +1,6 @@
 # Heyang: please re-clone this repository (history was rewritten on 2026-09-05)
 
-_From the owner. Counterpart of `DIRECTOR_DECISIONS.md` §2; see also `HEYANG_NEXT_STEPS.md`._
+_From the owner. Counterpart of `DIRECTOR_DECISIONS.md` §2; see also `heyang/HEYANG_NEXT_STEPS.md`._
 
 ## What happened
 

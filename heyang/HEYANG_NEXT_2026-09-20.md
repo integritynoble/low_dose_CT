@@ -52,7 +52,7 @@ connect through `LDCT_REPO`; the shared core stays a dependency.
   causal interpretation, tolerance language and reference-environment details
   need task 1 below. A generated table is not a review of the surrounding prose.
 - **Your pending list's A-1/A-2 are complete.** The changes described as uncommitted
-  in `PENDING_DECISION_LIST_2026-09-20.md` were pushed as `d515825` and merged.
+  in `heyang/PENDING_DECISION_LIST_2026-09-20.md` were pushed as `d515825` and merged.
   Merging draft code does not ratify its `[CONFIRM]` defaults or remove DRAFT.
 
 ## What to do next, in order
@@ -235,7 +235,7 @@ needed. Do not start a third-environment GPU study before delivering the paper.
 
 ## Where to put your answers, and what to do if you disagree
 
-Commit **`HEYANG_REPLY_2026-09-20.md`** on your branch as the single progress index.
+Commit **`heyang/HEYANG_REPLY_2026-09-20.md`** on your branch as the single progress index.
 Link detailed logs/artifacts rather than copying them into many handoffs. Use:
 
 | Task | Status | Commit / evidence | Remaining blocker | ETA |
@@ -270,6 +270,6 @@ Checked after fresh fetch on 20 September:
 Open CT PRs #20 (WS-2 prose) and #1/#2 (dependencies) were checked before editing;
 this assignment does not duplicate or merge them. No later Heyang push was
 visible; local workstation progress and acknowledgement remain unverified.
-Read [the integration review](INTEGRATION_STATUS_2026-09-20.md) for the original
+Read [the integration review](../INTEGRATION_STATUS_2026-09-20.md) for the original
 heads, repairs and limits. PR #26 subsequently merged that reviewed candidate;
 this handoff records the confirmed merged status.

@@ -2,7 +2,7 @@
 
 # Review and next steps — heyang, 8 September 2026
 
-Supersedes the ordered list in [`HEYANG_NEXT_STEPS.md`](HEYANG_NEXT_STEPS.md), which was written against
+Supersedes the ordered list in [`heyang/HEYANG_NEXT_STEPS.md`](HEYANG_NEXT_STEPS.md), which was written against
 `86cce03`. **This was written against `ee0c6a6`, thirty-four commits and about 3,700 lines after that page**, so several
 of its items are done and one of its assumptions has changed. Read this first and that page second. Main will
 have moved again by the time you read this; the claims below name the commit they were checked at.

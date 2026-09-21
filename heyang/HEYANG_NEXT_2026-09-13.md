@@ -2,7 +2,7 @@
 
 # heyang — next steps, updated 14 September 2026
 
-Supersedes [`HEYANG_NEXT_2026-09-08.md`](HEYANG_NEXT_2026-09-08.md). Original assignments were
+Supersedes [`heyang/HEYANG_NEXT_2026-09-08.md`](HEYANG_NEXT_2026-09-08.md). Original assignments were
 written against `main` @ `72ba063`; the 14 September scientific and implementation review used
 `main` @ `646daa6c3a01ab807dc729982115c57bdec3ff3a`. Branch divergence, test counts and merge conflicts
 below are historical observations: recheck them on the commits you actually merge.
@@ -10,7 +10,7 @@ The 14 September audit used source inspection and bounded helper/script checks. 
 tests could not collect because the audit interpreter lacked pytest; it established no current
 full-suite pass and did not rerun image experiments.
 
-**14 September update.** The review of [`FIELD_COLLAPSE_PROBLEMS.md`](FIELD_COLLAPSE_PROBLEMS.md)
+**14 September update.** The review of [`FIELD_COLLAPSE_PROBLEMS.md`](../FIELD_COLLAPSE_PROBLEMS.md)
 found that fixing its seven benchmark problems does not by itself establish a useful dose reduction,
 a best reconstruction method, or field-wide adoption. This file now includes the additional work and
 acceptance criteria in §§3c–3e. They are proposed tasks, not completed experiments or permission to
@@ -41,7 +41,7 @@ replacement-multiplicity defect, now repaired on the review branch with paired-d
 draws and a separately versioned numeric rerun. The 764-slice evaluation contains
 **three distinct patient identifiers**, so those intervals remain exploratory.
 
-See [the integration status](INTEGRATION_STATUS_2026-09-14.md) for the test commands,
+See [the integration status](../INTEGRATION_STATUS_2026-09-14.md) for the test commands,
 corrected artifacts and review blockers. The branch is not a scientific
 certification or approval to merge all manuscript claims. BANDER-2/4/6, the
 off-machine copy/deposit receipt, native Windows checks and source metadata
@@ -199,7 +199,7 @@ The current evidence leaves both metric direction and diagnostic interpretation 
 
 - **Current direction (higher better):** the direction-analysis script prints noise-control values
   near 183 and 1598, but these are **hard-coded values** in
-  [`scripts/prepare-bander-direction-fix.py`](scripts/prepare-bander-direction-fix.py), not an
+  [`scripts/prepare-bander-direction-fix.py`](../scripts/prepare-bander-direction-fix.py), not an
   image experiment rerun by the 14 September review. Recover the generating artifact and input/ROI
   provenance before treating those numbers as verified measurements. Descending energy can reward
   added high-frequency content; the real-anatomy controls in §3b test this directly.
@@ -331,9 +331,9 @@ repairs in §§3c–3d are also prerequisites for treating an eventual result as
 | Group checks enumerate only groups present in the submission | Check against the required-stratum manifest; missing groups remain unverified |
 | CLI submission saves and prints `accepted` without the publication assertion | Separate receipt, preserved diagnostic evidence and approved publication |
 
-Source: [`verify.py`](WS-4_leaderboard/scoring/verify.py),
-[`leaderboard.py`](WS-4_leaderboard/scoring/leaderboard.py),
-[`cli.py`](WS-4_leaderboard/scoring/cli.py). These are reproduced helper/source findings, not a claim
+Source: [`verify.py`](../WS-4_leaderboard/scoring/verify.py),
+[`leaderboard.py`](../WS-4_leaderboard/scoring/leaderboard.py),
+[`cli.py`](../WS-4_leaderboard/scoring/cli.py). These are reproduced helper/source findings, not a claim
 that a live website published invalid results. The registry load/save helpers also ignore the error
 list returned by `validate_registry`; surface those failures rather than treating a well-formed-looking
 status record as proof that its check ran.
@@ -356,7 +356,7 @@ are checked. This closes an engineering defect; the metric still needs task vali
 
 ## 3d. Correct framework claims — framework author and statistician lead
 
-**Added 14 September.** The [current WS-2 manuscript](WS-2_framework/paper_draft/manuscript.tex)
+**Added 14 September.** The [current WS-2 manuscript](../WS-2_framework/paper_draft/manuscript.tex)
 says its per-patient condition implies aggregate equivalence. That implication is false as written.
 Let the patient performance difference be 0 for 95% of patients and −1 for 5%. With margin 0.02,
 `Pr(abs(difference) < 0.02) = 0.95`, so the stated per-patient condition holds. But the absolute
@@ -371,7 +371,7 @@ performance, important patient/subgroup failures and uncertainty in their estima
 claims; cohort ROC AUC is not an undefined per-patient score to average.
 
 Also reconcile the CT physical-validation assertion in
-[`predicted_vs_measured_dose.md`](WS-2_framework/theory/proofs/predicted_vs_measured_dose.md)
+[`predicted_vs_measured_dose.md`](../WS-2_framework/theory/proofs/predicted_vs_measured_dose.md)
 with the AAPM noise-insertion provenance. That reference alone cannot certify simulator-to-physical
 patient-acquisition equivalence.
 
@@ -385,7 +385,7 @@ the framework implementation.
 ## 3e. Define the scientific result that would make this benchmark decisive
 
 **Added 14 September.** Treat “domain collapse” as a goal of settling specified LDCT claims with
-independent evidence. The [WS-3 plan](WS-3_reference_method/README.md) deliberately targets an
+independent evidence. The [WS-3 plan](../WS-3_reference_method/README.md) deliberately targets an
 improvable top-quartile reference. A trustworthy benchmark can still find that no tested method
 achieves a useful dose reduction; an operational leaderboard does not entail a breakthrough or adoption.
 
@@ -506,7 +506,7 @@ share should be restricted to named people rather than anyone-with-the-link befo
 slices already there, and what the repository needs back is a table of numbers, not pixels. Upload the
 results and a short note on what you found; a negative result is a full answer. That supplies the
 requested real-anatomy control evidence without moving restricted arrays. It advances
-[`FIELD_COLLAPSE_PROBLEMS.md`](FIELD_COLLAPSE_PROBLEMS.md) §1; full closure still needs the
+[`FIELD_COLLAPSE_PROBLEMS.md`](../FIELD_COLLAPSE_PROBLEMS.md) §1; full closure still needs the
 independent task validation and uncertainty specified there and in §3e above.
 
 ---
@@ -516,7 +516,7 @@ independent task validation and uncertainty specified there and in §3e above.
 - **The repository is public** as of 13 September. If you have a clone from before **5 September**,
   please **re-clone rather than pull**: eight Mayo-derived `L506_*.npy` files were removed from git
   history entirely on the 5th, and a hard reset does not delete objects a clone already holds. See
-  [`HEYANG_RECLONE_2026-09-05.md`](HEYANG_RECLONE_2026-09-05.md).
+  [`heyang/HEYANG_RECLONE_2026-09-05.md`](HEYANG_RECLONE_2026-09-05.md).
 - **CoreDiff is un-vendored.** Upstream carries no licence, so publishing a copy was not ours to do.
   `vendor/CoreDiff/fetch.sh` retrieves it. `corediff_wrapper.py` raises a message naming the script if
   it is missing. Every other baseline is unaffected.

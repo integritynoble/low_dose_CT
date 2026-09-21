@@ -1,6 +1,6 @@
 # Director's list — decisions and institutional access
 
-_Date: 2026-09-04 · against `main` @ `86cce03` · counterpart: [`HEYANG_NEXT_STEPS.md`](HEYANG_NEXT_STEPS.md)_
+_Date: 2026-09-04 · against `main` @ `86cce03` · counterpart: [`heyang/HEYANG_NEXT_STEPS.md`](heyang/HEYANG_NEXT_STEPS.md)_
 
 Everything here needs a decision, a signature, or an institutional relationship. None of it can be delegated to heyang, and most of it is what the rest of the project is waiting on.
 
