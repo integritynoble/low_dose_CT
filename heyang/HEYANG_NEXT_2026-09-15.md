@@ -9,7 +9,7 @@ LOCAL_TASK_PROGRESS_2026-09-15.md.
 
 **Continuation update:** the latest status check found main at `73cd127` and
 heyang still at `29955a9`. The RTX 5090 workstation completed numeric submission
-validation and regression tests; see the [local record](LOCAL_TASK_PROGRESS_2026-09-15.md#follow-up-numeric-submission-validation).
+validation and regression tests; see the [local record](../LOCAL_TASK_PROGRESS_2026-09-15.md#follow-up-numeric-submission-validation).
 In §2, continue with task identity, required coverage, publication paths and
 provenance binding. Reuse the new numeric checks rather than implementing them
 again. The integration branch `codex/heyang-integration-2026-09-14` at `a436c6e`
