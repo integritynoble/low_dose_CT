@@ -16,9 +16,10 @@ Heyang's updates before choosing the next task.
   adoption separate. The data holder's image measurements and copy operations
   remain unverified until their evidence is available.
 
-## Current owner priority — 20 September 2026
+## Current owner priority — refreshed 21 September 2026
 
 Heyang must finish `Heyang-paper/` as soon as possible. Read
-`HEYANG_NEXT_2026-09-20.md` and `INTEGRATION_STATUS_2026-09-20.md` before
+`HEYANG_NEXT_2026-09-21.md`, the 20 September backlog, and
+`INTEGRATION_STATUS_2026-09-20.md` before
 assigning more work. Preserve the paper-first priority until delivery or an
 explicit owner change; check new Heyang updates rather than inferring inactivity.
