@@ -37,6 +37,11 @@ things followed, and both are in the artifact:
    $10^{-6}$ and at $10^{-3}$ alike, because the binding quantity is of order $10^{5}$–$10^{6}$. A relative criterion
    at $10^{-4}$ admits all five, worst observed $6.36\times10^{-5}$.
 
+The per-metric relative criterion was adopted **retrospectively on 2026-09-12**, after the mismatch
+had been observed; it is a retrospective adjustment based on the observed differences, not an
+independent or prospective validation of the amended tolerance. The superseded absolute criterion
+and its original verdict are retained verbatim beside the new one.
+
 The recommendation is that a benchmark declare agreement per metric in that metric's own units, and
 treat a criterion failure as the start of an investigation rather than a formality.
 

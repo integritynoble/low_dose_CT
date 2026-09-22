@@ -1,10 +1,10 @@
 # COMPLETION_CHECKLIST — corrected paper package
 
-- **日期**：2026-09-22
+- **日期**：2026-09-22（更新于同日任务书第 3 步复跑后）
 - **仓库**：`D:\ZHY\low_dose_CT-heyang`（分支 `heyang`）
-- **依据**：`heyang/HEYANG_NEXT_2026-09-21.md` 第 4 步（前半：完成清单 + 本地提交；push/PR 待 owner 授权后执行）
+- **依据**：`heyang/HEYANG_NEXT_2026-09-21.md` 第 3-4 步（第 3 步修正论文 + 重建一致包；第 4 步前半：完成清单 + 本地提交；push/PR 待 owner 授权后执行）
 - **范围**：核对任务书第 1-4 步论文包交付状态，列出检查点/证据/状态（DONE / BLOCKED / UNRESOLVED）
-- **红线**：本清单为新增文件；未修改任何 artifact / manuscript / README；未 push；未打开 PR；工作区其他未提交改动原样保留
+- **红线**：清单为任务书新增文件；未修改任何 artifact / manuscript / README（本次提交仅含论文包 5 文件 + 本清单）；未 push；未打开 PR；仓库其他未提交改动（WS-2 manifest 行尾噪声）原样保留
 
 ---
 
@@ -13,8 +13,8 @@
 | 任务书步骤 | 状态 | 证据 |
 |---|---|---|
 | 1. Sync + status reply | DONE | `heyang/HEYANG_REPLY_2026-09-20.md` 2026-09-21 段，commit `7a9dd15`（本地，未 push） |
-| 2. CLAIM_EVIDENCE.md 台账 | DONE | `Heyang-paper/CLAIM_EVIDENCE.md`（192 行，commit `d140b71`） |
-| 3. 修正论文 + 重生成包 | DONE | manuscript.tex/README 修正、tables 重生成、manuscript.pdf 重建（commit `d140b71`） |
+| 2. CLAIM_EVIDENCE.md 台账 | DONE | `Heyang-paper/CLAIM_EVIDENCE.md`（commit `d140b71`；2026-09-22 环境表插入后行号引用同步更新） |
+| 3. 修正论文 + 重建一致包 | DONE | manuscript.tex 环境表 + README retrospective 标注 + 三命令复跑 + manuscript.pdf 重建（本次 commit，见 §5） |
 | 4. COMPLETION_CHECKLIST.md + PR 准备 | 前半 DONE / push+PR 待 owner 授权 | 本文件；push/PR **未执行**（见 §11） |
 
 ---
@@ -23,15 +23,15 @@
 
 | 检查点 | 状态 | 证据 |
 |---|---|---|
-| "original declared criterion" 替换 "pre-registered" | DONE | 无带时间戳预注册证据（U6），全文已改；ENV_RECON §3 M1/M4/M8-M10/M15/M17/M19、README R1 |
-| 容差修正标 retrospective | DONE | manuscript L243-249 显式声明追溯性调整、非独立/前瞻验证 |
+| "original declared criterion" 替换 "pre-registered" | DONE | 无带时间戳预注册证据（U6），全文已改；账本 §4 C2/C6、manuscript L69 等 |
+| 容差修正标 retrospective | DONE | manuscript L271-277 显式声明追溯性调整、非独立/前瞻验证；README 新增 retrospective 段 |
 | 因果表述缓和、不声称前瞻 | DONE | 禁用语扫描 0 命中（2026-09-22 复扫） |
-| 环境表（复算 + 参考 = 本地运行环境） | DONE | manuscript L105-117；README L54-59 |
-| 计数经 make_tables 校准（75/375/115） | DONE | manuscript L88-89、L162-163；tables/agreement.tex |
+| 环境表（复算 + 参考 = 本地运行环境） | DONE | manuscript L105-148（两环境段落 L105-121 + 环境表 Table L123-149，label `tab:env`）；README L54-59 |
+| 计数经 make_tables 校准（75/375/115） | DONE | manuscript L88-89、L190-191；tables/agreement.tex |
 | 作者无关 TODO 清零 | DONE | 剩余 5 处 \todo 全部属 owner 决策（见 §8），无技术/写作 TODO |
-| 保留诚实局限（不推广"无绝对容差可行"） | DONE | manuscript L195-202、L216-219；台账 §3 红字 |
+| 保留诚实局限（不推广"无绝对容差可行"） | DONE | manuscript L244-247、L223-230；台账 §3 红字 |
 
-## 2. 验证命令结果（2026-09-22 复跑）
+## 2. 验证命令结果（2026-09-22 任务书第 3 步复跑）
 
 | 命令 | 结果 | 状态 |
 |---|---|---|
@@ -39,14 +39,14 @@
 | `python Heyang-paper/make_tables.py --check` | `all tables current`，exit=0 | DONE |
 | `python -B WS-1_dataset/R6_recalc/recompare_per_metric.py --check` | blur/corediff/ctformer/learn/red_cnn 全 PASS、outside declared 0、overall PASS、committed verdict matches、exit=0 | DONE |
 
-## 3. manuscript.pdf 构建
+## 3. manuscript.pdf 构建（2026-09-22 重建）
 
 | 项 | 值 |
 |---|---|
-| 工具链 | MiKTeX 25.12（pdfTeX 4.23）+ bibtex（TeX 引擎在 elevated 会话被 MiKTeX 拦截，经降权调用 + `--enable-installer` 构建） |
+| 工具链 | MiKTeX（pdfTeX 4.23）+ bibtex（TeX 引擎在 elevated 会话被 MiKTeX 拦截，经降权令牌 + `--enable-installer` 构建） |
 | 编译流程 | pdflatex → bibtex → pdflatex → pdflatex，四步均 exit=0 |
-| 产物 | `Heyang-paper/manuscript.pdf`，6 页，196,214 B（SHA256 见 §7） |
-| 核验 | PASS3 无 undefined citation/reference；Table 1 嵌入正常；引用 [1]-[4] 解析；作者区 TODO 红色显示（预期，待 owner） |
+| 产物 | `Heyang-paper/manuscript.pdf`，7 页，198,198 B（SHA256 见 §7） |
+| 核验 | 无 undefined citation/reference（log 扫描）；环境表 `tab:env` 嵌入正常；关键声明文本抽查通过（"Computing environment record" / "115 of 375" / "retrospective" / "4875338"）；作者区 TODO 红色显示（预期，待 owner） |
 
 ## 4. CLAIM_EVIDENCE.md 台账（step 2）
 
@@ -56,6 +56,7 @@
 | UNRESOLVED 显式清单 | DONE：U1-U9 共 9 项（见台账 §8），缺失标 UNRESOLVED 未推断 |
 | 事实/回忆/缺失三类型标注（R/M/UNRESOLVED） | DONE |
 | 原失败与修正并存保留 | DONE（`shipped_criterion_superseded` + `routeA_rerun_evidence.do_not_overwrite`） |
+| 环境表插入后行号引用同步 | DONE（manuscript.tex 插入 28 行环境表，台账全部 L-ref 已按实测行号更新） |
 
 ## 5. 本地提交链（heyang 分支，均未 push）
 
@@ -63,32 +64,29 @@
 |---|---|
 | `cadc2d7` | Progress index update: HEYANG_REPLY_2026-09-20.md |
 | `7a9dd15` | 2026-09-21 status reply（step 1） |
-| `d140b71` | CLAIM_EVIDENCE ledger + regenerated tables/PDF (task book step 2-3)（4 文件：CLAIM_EVIDENCE.md / README.md / manuscript.pdf / manuscript.tex） |
+| `d140b71` | CLAIM_EVIDENCE ledger + regenerated tables/PDF (task book step 2-3) |
+| 本次（待提交） | step 3 论文包：manuscript.tex 环境表 + README retrospective + 台账行号同步 + PDF 重建（5 文件） |
 
-当前 HEAD = `d140b71`；upstream = `origin/heyang`，未推送提交含上述及更早同步链。
+当前 HEAD = `66e4758`；upstream = `origin/heyang`，未推送提交含上述及更早同步链。
 
 ## 6. 未提交改动（原样保留，不属于本次论文包）
 
-`git status --short` 共 13 行（9 M + 4 ??）：
+`git status --short`（提交前快照）：
 
 | 路径 | 状态 |
 |---|---|
-| `WS-2_framework/pwm_dose_equivalence/reproducibility/reproducible_manifest.json` | M |
-| `WS-4_leaderboard/scoring/__init__.py` / `cli.py` / `leaderboard.py` / `verifier.py` / `verify.py` | M（5 文件） |
-| `WS-4_leaderboard/web/app.js` / `index.html` / `style.css` | M（3 文件） |
-| `WS-4_leaderboard/scoring/binding.py` | ?? |
-| `WS-4_leaderboard/scoring/tests/fixtures/publication/` | ?? |
-| `WS-4_leaderboard/scoring/tests/test_input_binding.py` | ?? |
-| `WS-4_leaderboard/scoring/tests/test_publication_status.py` | ?? |
+| `WS-2_framework/pwm_dose_equivalence/reproducibility/reproducible_manifest.json` | M（仅行尾噪声，非任务内容） |
+
+本次论文包提交范围：`Heyang-paper/manuscript.tex`、`README.md`、`CLAIM_EVIDENCE.md`、`COMPLETION_CHECKLIST.md`、`manuscript.pdf` 共 5 文件。
 
 ## 7. artifact SHA256（2026-09-22 实测，论文包）
 
 | 文件 | SHA256 |
 |---|---|
-| Heyang-paper/manuscript.pdf | 552518715CB02AAE24ED771D3CBC612F330829C9B1D1034C4892EFB41335B1DF |
-| Heyang-paper/CLAIM_EVIDENCE.md | ED2A7538A5CB5640D0DDA84570C1EBF6399D300EA12A517490ECC535AB1973E4 |
-| Heyang-paper/manuscript.tex | 3FB65D5B47FE3E26F775E5857615F2EAA36FB1A17F0376759082881AEA736705 |
-| Heyang-paper/README.md | 21B2612A994326D28350923013C11B6FAFAB191969347243C2BF777B21AD0B1D |
+| Heyang-paper/manuscript.pdf | 6096826A5B96357E2FBC057B6FFE7DE75AD152ACFBDEA92345D72E7D46CC82DB |
+| Heyang-paper/CLAIM_EVIDENCE.md | E9E971A3ABEE0DE6BB8B094401023C157E80A809E3E8330312EC35E34777B7C4 |
+| Heyang-paper/manuscript.tex | 7FD9D16906E88B732E157191BDF8D7EEF582F605FE0EB87102ABDC239D9A00EE |
+| Heyang-paper/README.md | 24D6E7D4E5AAB4B43240566E1A18EFE99C328957301CECC54FDDFC5A7400C2C8 |
 | Heyang-paper/make_tables.py | C450699E76B5019B42B00B1F6742C4177EDAE29C429597BC4AE684A9F6EAC738 |
 | Heyang-paper/references.bib | 79430D8DBF24C88289ADC3DE1FAC30F2F35E5D8763F71AB068F28C7F42CA7E1C |
 | Heyang-paper/tables/agreement.tex | 04794EAE360F7816D68F94CFC1AE4773979CB276E3B48D9496098FAE10BABDA3 |
@@ -102,10 +100,10 @@
 | 行号 | 内容 | owner |
 |---|---|---|
 | L22 | author list, affiliations, ORCIDs, corresponding author | 作者 |
-| L261 | 是否加入第三环境（受 checkpoint/data 迁移约束） | 作者 |
-| L277 | 指向发布的 artifact / comparison JSON / 重推导 | 作者 |
-| L282 | CRediT statement | 作者 |
-| L285 | Per-author declaration | 作者 |
+| L289 | 是否加入第三环境（受 checkpoint/data 迁移约束） | 作者 |
+| L305 | 指向发布的 artifact / comparison JSON / 重推导 | 作者 |
+| L310 | CRediT statement | 作者 |
+| L313 | Per-author declaration | 作者 |
 
 ## 9. Owner 决策请求（紧凑列表）
 
@@ -115,10 +113,10 @@
 2. **单位（affiliations）** — 阻断 L22
 3. **ORCIDs** — 阻断 L22
 4. **通讯作者（corresponding author）** — 阻断 L22
-5. **CRediT 贡献声明** — 阻断 L282
-6. **Per-author declarations（利益冲突/资助/伦理）** — 阻断 L285
-7. **第三环境实验取舍** — 阻断 L261（维持现状可删 TODO）
-8. **artifact 公开发布决策** — 阻断 L277（data/code availability 措辞依赖此决定）
+5. **CRediT 贡献声明** — 阻断 L310
+6. **Per-author declarations（利益冲突/资助/伦理）** — 阻断 L313
+7. **第三环境实验取舍** — 阻断 L289（维持现状可删 TODO）
+8. **artifact 公开发布决策** — 阻断 L305（data/code availability 措辞依赖此决定）
 
 ## 10. code/data availability 语言准备（待 owner 定稿）
 
@@ -133,12 +131,12 @@
 
 | 项 | 状态 | 说明 |
 |---|---|---|
-| push heyang 到 origin | 未执行 | 本地提交 `d140b71`（及 `7a9dd15`、`cadc2d7` 等）均在本地；任务硬约束"禁止 push"，需 owner 明确授权 |
-| 开 paper PR against main | 未执行 | 需先 push；PR 拟包含 Heyang-paper 论文包 4 文件 + 本清单，标题建议 "Corrected Heyang paper package (CLAIM_EVIDENCE + regenerated tables/PDF)" |
+| push heyang 到 origin | 未执行 | 本地提交均在本地；任务硬约束"禁止 push"，需 owner 明确授权 |
+| 开 paper PR against main | 未执行 | 需先 push；PR 拟包含 Heyang-paper 论文包 5 文件 + 本清单 |
 | 更新 heyang/HEYANG_REPLY_2026-09-20.md 索引 | 未执行 | 任务书第 4 步要求链接包与清单；属 PR 准备后段，待授权 |
 
 ---
 
 ## 总结
 
-论文包四步中第 1-3 步与第 4 步前半已 DONE（HEAD `d140b71`，未 push）；剩余均为 owner 决策/授权项：8 项作者输入（§9）、push/PR（§11）、第三环境取舍、artifact 公开发布。未提交的 WS-2/WS-4 13 行改动原样保留，未纳入任何提交。
+任务书第 1-3 步与第 4 步前半已 DONE（最新论文包 commit 待提交，未 push）；剩余均为 owner 决策/授权项：8 项作者输入（§9）、push/PR（§11）、第三环境取舍、artifact 公开发布。未提交的 WS-2 manifest 行尾噪声原样保留，未纳入任何提交。

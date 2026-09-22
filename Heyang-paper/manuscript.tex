@@ -120,6 +120,34 @@ This is a reproduction across environments, not a re-seed within one. That disti
 a re-seed tests the pipeline's internal determinism, whereas a different library stack tests whether
 the published number is a property of the method or of the machine.
 
+\begin{table}[ht]
+\centering
+\begin{tabular}{@{}ll@{}}
+\toprule
+Field & Record \\
+\midrule
+OS & Windows \\
+GPU & 2$\times$ NVIDIA RTX 4090 \\
+GPU driver & 591.86 \\
+Python & 3.12.10 \\
+PyTorch & 2.3.0+cu121 \\
+torchvision & 0.18.0+cu121 \\
+NumPy & 1.26.4 \\
+SciPy & 1.13.1 \\
+scikit-image & 0.23.2 \\
+tifffile & 2024.9.20 \\
+mkl & 2021.4.0 (SHA-256-verified wheel) \\
+Dependency freeze & 57-line \texttt{env\_pip\_freeze.txt} \\
+Source baseline & commit \texttt{4875338} \\
+\bottomrule
+\end{tabular}
+\caption{\textbf{Computing environment record.} The recomputation environment and the reference
+environment --- the local run environment, by the owner's decision --- are both covered by this
+single project-runtime record; the complete 57-line freeze and the hashes are committed under
+\texttt{WS-1\_dataset/R6\_recalc/hashes/}.}
+\label{tab:env}
+\end{table}
+
 \subsection{Provenance control}
 
 Inputs were pinned by hash rather than by description: the source commit, with per-file SHA-256
