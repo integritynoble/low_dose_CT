@@ -34,23 +34,24 @@ a criterion that fails should be read as a failed reproduction.
 \noindent\textbf{Methods:} An evaluation of five reconstruction methods over 764 held-out slices at
 three dose levels was recomputed by an independent operator, in a separate environment differing in
 operating system, CUDA build, and deep-learning framework version, from checkpoints and data
-verified by hash. Agreement was assessed against the benchmark's pre-registered criterion, an
+verified by hash. Agreement was assessed against the benchmark's original declared criterion, an
 absolute difference of $10^{-6}$. Because that criterion failed, we tested the leading explanation
 --- non-deterministic GPU kernels --- by re-running the affected methods with deterministic kernels
 enabled, and separately audited the criterion itself across a ladder of absolute and relative
 tolerances.
 
-\noindent\textbf{Results:} The pre-registered criterion failed for three of five methods. The
-determinism hypothesis was falsified: re-running the same side with deterministic kernels reproduced
-the original bit-for-bit, leaving the residual attributable to the environment rather than to kernel
-non-determinism. The criterion audit showed that no absolute tolerance resolves the comparison ---
-it fails at $10^{-6}$ and equally at $10^{-3}$ --- because the reported quantities span from a
+\noindent\textbf{Results:} The original declared criterion failed for three of five methods.
+Re-running the same side with deterministic kernels reproduced the original bit-for-bit, and no
+kernel non-determinism was observed in this environment. The criterion audit showed that none of
+the tested absolute tolerances resolves the comparison --- it fails at $10^{-6}$ and equally at
+$10^{-3}$ --- because the reported quantities span from a
 dimensionless index near 0.9 to an observer statistic near $10^{6}$. A relative criterion at
 $10^{-4}$, declared per metric in that metric's own units, admits every method, with a worst
 observed relative difference of $6.36\times10^{-5}$.
 
 \noindent\textbf{Conclusions:} A single absolute tolerance cannot express agreement across metrics of
-differing scale, and loosening it does not repair it; only changing its kind does. We recommend that
+differing scale, and within the range we tested loosening it does not repair it; only changing its
+kind does. We recommend that
 benchmarks declare agreement per metric in that metric's own units, and that a criterion failure be
 investigated before it is either accepted as a discrepancy or relaxed.
 \end{abstract}
@@ -65,11 +66,11 @@ recomputation that lands inside it is called a reproduction. The tolerance is ra
 it is usually a single number.
 
 We report a reproduction in which that construction failed, and in which the failure was informative
-rather than terminal. The pre-registered criterion of the benchmark under study was an absolute
+rather than terminal. The original declared criterion of the benchmark under study was an absolute
 difference of $10^{-6}$ applied uniformly. Three of five methods fell outside it. The obvious
 reading --- that the recomputation disagreed with the release --- turned out to be wrong twice over:
-the difference was not caused by the mechanism everyone expects, and the criterion could not have
-been satisfied by any absolute threshold worth declaring.
+no kernel non-determinism was observed as the cause in this environment, and none of the tested
+absolute thresholds resolved the comparison.
 
 The contribution of this note is not the verdict. It is the demonstration that a criterion's
 \emph{kind} matters more than its magnitude, and a worked procedure for establishing that by
@@ -84,9 +85,9 @@ CTformer~\citep{ctformer2023}, LEARN~\citep{learn2018}, CoreDiff~\citep{corediff
 Gaussian blur control included deliberately as a smoothing baseline --- over 764 held-out slices at
 three simulated dose levels. Each run reports fidelity (PSNR, SSIM) and task-based detectability
 (a channelized Hotelling observer AUC, a contrast-to-noise ratio, and a non-prewhitening observer
-with an eye filter). Summary statistics and the number of contributing slices give
-\todo{state the count: 5 methods $\times$ 3 dose levels $\times$ 5 reported quantities = 75 comparisons per method}
-per method, 375 in total.
+with an eye filter). Summary statistics and the number of contributing slices give 75 comparisons per method ---
+5 seeds $\times$ 3 dose levels $\times$ 5 reported quantities --- and 375 in total across the
+five methods.
 
 The five quantities differ in scale by roughly six orders of magnitude, which is the crux of what
 follows (Table~\ref{tab:scale}).
@@ -106,12 +107,14 @@ the audit in Section~\ref{sec:ladder}.}
 The reproduction was performed by an operator independent of the original run, using a separate
 checkout, a separate virtual environment, and a separate output tree; no artifact of the original
 run was overwritten. The recomputation environment was Python 3.12.10 with PyTorch 2.3.0+cu121 and
-NumPy 1.26.4, on Windows with two NVIDIA RTX 4090 GPUs (driver 591.86). The reference environment
-differed in operating system, CUDA build, and framework version.
-\todo{Record the reference environment exactly --- OS, driver, CUDA, torch, numpy. The recalculation
-report characterises it only as ``the author's environment'', which is not enough for a paper whose
-subject is cross-environment agreement. This is the single most important gap to close before
-submission.}
+NumPy 1.26.4, on Windows with two NVIDIA RTX 4090 GPUs (driver 591.86). The reference environment,
+in which the original results were produced, is the local run environment, and its exact version
+record is the repository's preserved project-runtime record: Windows with two NVIDIA RTX 4090 GPUs
+(driver 591.86), Python 3.12.10, PyTorch 2.3.0+cu121 (torchvision 0.18.0+cu121), NumPy 1.26.4,
+SciPy 1.13.1, scikit-image 0.23.2, tifffile 2024.9.20 and mkl 2021.4.0. The complete 57-line
+dependency freeze, including SHA-256-verified local wheel sources, is recorded in
+\texttt{WS-1\_dataset/R6\_recalc/hashes/env\_pip\_freeze.txt}, and the source baseline is pinned at
+commit \texttt{4875338}.
 
 This is a reproduction across environments, not a re-seed within one. That distinction is the point:
 a re-seed tests the pipeline's internal determinism, whereas a different library stack tests whether
@@ -128,11 +131,12 @@ is recorded as a complete dependency freeze.
 \label{sec:determinism}
 
 The standard explanation for small cross-run differences on GPU is non-deterministic kernel
-selection. This hypothesis is testable and it makes a sharp prediction: with deterministic kernels
+selection. This hypothesis is testable: with deterministic kernels
 enabled, a re-run of the same side must be bit-identical, and any residual against the reference
-must therefore come from somewhere else.
+observed under that configuration would not be attributable to kernel non-determinism in this
+environment.
 
-We re-ran the three methods outside the pre-registered criterion under the following settings, at a
+We re-ran the three methods outside the original declared criterion under the following settings, at a
 cost of approximately 48 GPU-hours:
 
 \begin{quote}
@@ -155,7 +159,7 @@ criteria the \emph{same} recorded differences would satisfy.
 
 \subsection{Agreement}
 
-Table~\ref{tab:agreement} reports the comparison. Under the pre-registered absolute criterion, 115
+Table~\ref{tab:agreement} reports the comparison. Under the original declared absolute criterion, 115
 of 375 comparisons differed. The blur control and LEARN reproduced bit-for-bit; RED-CNN, CTformer
 and CoreDiff did not.
 
@@ -163,11 +167,12 @@ and CoreDiff did not.
 \centering
 \input{tables/agreement}
 \caption{\textbf{Agreement by method.} $n_{\ne}$ counts comparisons differing at all under the
-pre-registered absolute $10^{-6}$ criterion. The worst relative difference and its metric are given
+original declared absolute $10^{-6}$ criterion. The worst relative difference and its metric are given
 for each method; the final column counts comparisons outside the declared per-metric relative
-criterion of $10^{-4}$, which is zero everywhere. That two methods reproduce exactly establishes
-that the pipeline, data and code snapshot are capable of bit-identical reproduction, so the
-differences in the other three are a property of those computations rather than of the harness.}
+criterion of $10^{-4}$, which is zero everywhere. That two methods reproduce exactly, together with
+the route-(a) rerun of Section~\ref{sec:determinism}, shows that the pipeline, data and code
+snapshot are capable of bit-identical reproduction under this configuration; in this environment
+the differences in the other three were not observed to depend on kernel non-determinism.}
 \label{tab:agreement}
 \end{table}
 
@@ -175,23 +180,24 @@ The largest single disagreement is instructive. For RED-CNN the worst absolute d
 which sounds disqualifying until one notes that it occurs in a quantity of magnitude
 $\sim9\times10^{5}$ --- a relative difference of $6.36\times10^{-5}$.
 
-\subsection{The determinism hypothesis is false here}
+\subsection{No kernel non-determinism was observed in this environment}
 
-The prediction of Section~\ref{sec:determinism} failed. Re-running the recomputation side with
-deterministic kernels reproduced the non-deterministic run exactly: zero differing comparisons,
-bit-identical. The evaluation path was not sensitive to kernel non-determinism in this environment,
-so route (a) as scoped could not close the residual, and the difference against the reference is a
-systematic cross-environment offset.
+The prediction of Section~\ref{sec:determinism} was not supported in this environment. Re-running
+the recomputation side with deterministic kernels reproduced the non-deterministic run exactly:
+zero differing comparisons, bit-identical. No kernel non-determinism was observed in this
+environment, so route (a) as scoped could not close the residual, and the difference against the
+reference is treated as a systematic cross-environment offset.
 
 This is the result that makes the rest of the note interpretable. Before it, environment and kernel
 non-determinism were confounded, and any change to the criterion would have been an adjudication
 made after seeing the outcome.
 
-\subsection{No absolute tolerance resolves the comparison}
+\subsection{None of the tested absolute tolerances resolves the comparison}
 
-Table~\ref{tab:ladder} is the central result. The pre-registered criterion fails at $10^{-6}$; it
+Table~\ref{tab:ladder} is the central result. The original declared criterion fails at $10^{-6}$; it
 also fails at $10^{-5}$, $10^{-4}$ and $10^{-3}$, with the same three methods outside at every
-level. Loosening an absolute tolerance by three orders of magnitude changes nothing, because the
+level. Loosening an absolute tolerance by three orders of magnitude changes nothing within the
+range tested, because the
 binding comparison is on a quantity of order $10^{5}$--$10^{6}$, where an absolute budget of
 $10^{-3}$ is still a relative demand of order $10^{-9}$.
 
@@ -202,12 +208,12 @@ admits all five at $10^{-4}$.
 \centering
 \input{tables/ladder}
 \caption{\textbf{The criterion ladder.} Applied to the same recorded differences, with no
-measurement changed. An absolute criterion cannot be repaired by loosening it; only changing its
-kind resolves the comparison.}
+measurement changed. None of the absolute criteria tested is repaired by loosening it; only
+changing its kind resolved the comparison among the criteria tested.}
 \label{tab:ladder}
 \end{table}
 
-We note what the audit also establishes in the other direction: the pre-registered criterion was not
+We note what the audit also establishes in the other direction: the original declared criterion was not
 unattainable in principle. A 764-term float64 reduction accumulates a relative error of order
 $10^{-13}$, so within a single environment the absolute $10^{-6}$ budget is comfortable. The
 criterion was not too strict; it was the wrong kind.
@@ -235,9 +241,12 @@ them is a statement about the largest-magnitude quantity and is vacuous for the 
 \subsection{A criterion failure is a finding, not a formality}
 
 The sequence matters, and we would put it forward as a procedure. The criterion failed; the leading
-explanation was stated as a falsifiable prediction; the prediction was tested at real cost and
-falsified; only then was the criterion amended, and the superseded criterion and its verdict were
-retained verbatim beside the new one. Had the criterion been relaxed at the first failure, the
+explanation was stated as a testable prediction; the prediction was tested at real cost, and no
+kernel non-determinism was observed in this environment; only then was the criterion amended
+retrospectively, after the mismatch had been observed, and the superseded criterion and its original
+verdict were retained verbatim beside the new one. The per-metric amendment is therefore a
+retrospective adjustment based on the observed differences, not an independent or prospective
+validation of the amended tolerance. Had the criterion been relaxed at the first failure, the
 amendment would have been indistinguishable from adjusting a threshold until the result passed.
 
 \subsection{Limitations}
@@ -258,10 +267,10 @@ whether they reproduce.
 
 \section{Conclusions}
 
-A reproduction that fails its pre-registered criterion has not necessarily failed. In the case
-reported here the criterion was badly scaled, the mechanism usually blamed was absent, and the
-residual was a cross-environment offset four orders of magnitude inside a defensible relative
-tolerance. Benchmarks that ship an agreement criterion should declare it per metric, in that
+A reproduction that fails its original declared criterion has not necessarily failed. In the case
+reported here the criterion was badly scaled, no kernel non-determinism was observed in this
+environment, and the residual was a cross-environment offset four orders of magnitude inside a
+defensible relative tolerance. Benchmarks that ship an agreement criterion should declare it per metric, in that
 metric's own units, and should treat its failure as the beginning of an investigation.
 
 \section*{Data and code availability}

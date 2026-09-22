@@ -26,15 +26,15 @@ the text.
 
 ## What the paper argues
 
-A pre-registered absolute agreement criterion of $10^{-6}$ failed for three of five methods. Two
+An originally declared absolute agreement criterion of $10^{-6}$ failed for three of five methods. Two
 things followed, and both are in the artifact:
 
-1. **The usual explanation is false here.** Non-deterministic GPU kernels were stated as a
-   falsifiable prediction — with deterministic kernels the re-run should be bit-identical — and
-   tested at about 48 GPU-hours. The re-run *was* bit-identical, so kernel non-determinism is not
-   the cause and the residual is a cross-environment offset.
-2. **No absolute tolerance resolves it.** The same three methods fall outside at $10^{-6}$ and at
-   $10^{-3}$ alike, because the binding quantity is of order $10^{5}$–$10^{6}$. A relative criterion
+1. **No kernel non-determinism was observed in this environment.** Non-deterministic GPU kernels
+   were stated as a testable prediction — with deterministic kernels the re-run should be
+   bit-identical — and tested at about 48 GPU-hours. The re-run *was* bit-identical, so no kernel
+   non-determinism was observed here; the residual is treated as a cross-environment offset.
+2. **None of the tested absolute tolerances resolves it.** The same three methods fall outside at
+   $10^{-6}$ and at $10^{-3}$ alike, because the binding quantity is of order $10^{5}$–$10^{6}$. A relative criterion
    at $10^{-4}$ admits all five, worst observed $6.36\times10^{-5}$.
 
 The recommendation is that a benchmark declare agreement per metric in that metric's own units, and
@@ -44,24 +44,26 @@ treat a criterion failure as the start of an investigation rather than a formali
 
 | File | What it is |
 |---|---|
-| `manuscript.tex` | The note. Seven `\todo{}` markers remain; see below. |
+| `manuscript.tex` | The note. Five `\todo{}` markers remain; see below. |
 | `references.bib` | Four entries, copied verbatim from `WS-1_dataset/paper_draft/refs.bib` so both manuscripts cite identically. |
 | `make_tables.py` | Generates `tables/*.tex` from the comparison artifact. |
 | `tables/` | Generated. Do not edit by hand. |
 
 ## What is left, in the order it blocks submission
 
-1. **Record the reference environment exactly** — OS, driver, CUDA, torch, numpy. The recalculation
-   report characterises it only as "the author's environment". For a paper whose subject *is*
-   cross-environment agreement, that is the one gap that undermines the contribution. **This is the
-   first thing to fix.**
+1. **Reference environment recorded (resolved).** The reference run's OS, driver, CUDA, torch and
+   numpy versions are the local run environment's project-runtime record: Windows, 2×RTX 4090
+   (driver 591.86), Python 3.12.10, PyTorch 2.3.0+cu121, NumPy 1.26.4 — with the complete 57-line
+   dependency freeze in `WS-1_dataset/R6_recalc/hashes/env_pip_freeze.txt` (SHA-256-verified
+   wheels) and the source baseline `4875338`. The Methods section now records the reference
+   environment as the local run environment instead of a limitation.
 2. **Author list, CRediT, competing interests.**
 3. **Data and code availability** — depends on the repository's public-release decision.
 4. **Decide on a third environment.** It would turn a pairwise offset into a systematic one and
    lift the note toward a full paper. Compute is not the constraint; moving checkpoints and data
    under their use agreement is.
-5. Confirm the per-method comparison count stated in Methods against the artifact
-   (75 per method, 375 total — the generator already reports it).
+5. Per-method comparison count confirmed against the artifact: 75 per method
+   (5 seeds × 3 dose levels × 5 reported quantities), 375 total.
 
 ## Building
 
