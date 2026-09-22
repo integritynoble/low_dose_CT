@@ -27,7 +27,7 @@ import json
 import statistics
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Set
 
 from .task_spec import (BLUR_SPEC, DISCRIMINATING_FIELDS, REQUIRED_VENDOR_GROUPS,
                         SCHEMA_VERSION, TASK_LABEL, TASK_SPEC)
@@ -569,6 +569,7 @@ def trap_rank_by_group(entries: List[Dict], *, by: str = "vendor",
                           for e in groups.get(required, []))]
         missing = [required for required in REQUIRED_VENDOR_GROUPS
                    if required not in covered]
+        report["missing_strata"] = missing
         if missing:
             if not covered:
                 # Zero covered strata: no per-vendor claim is being made. NO_CLAIM

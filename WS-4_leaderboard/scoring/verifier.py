@@ -613,12 +613,12 @@ def board_publication_status(board: Dict, *,
 
     strata = board.get("trap_rank_by_vendor")
     if isinstance(strata, dict) and strata.get("verdict") == "MISSING_STRATUM":
-        missing = [g for g in strata.get("groups", {}) if g not in ()]
+        missing = strata.get("missing_strata") or []
         return PublicationStatus(
             PUBLISH_MISSING_LAYER,
             "missing required publication layer: required vendor strata not fully "
-            "covered (trap_rank_by_vendor.verdict=MISSING_STRATUM); per-group claim "
-            "cannot be certified",
+            "covered (trap_rank_by_vendor.verdict=MISSING_STRATUM; uncovered: %s); "
+            "per-group claim cannot be certified" % (", ".join(missing) or "not recorded"),
             published=False, verified=False)
 
     if status is None:

@@ -362,3 +362,32 @@ def test_traps_are_kept_out_of_the_spread_they_would_otherwise_set():
     for vendor in MIN_MODEL:
         assert spread[vendor]["n_entries"] == 1          # the submission, not the trap
         assert spread[vendor]["bander_roi_span"] == 0.0  # one value, no span
+
+
+def test_missing_strata_are_named_on_the_report_and_in_publication_status():
+    """The uncovered REQUIRED_VENDOR_GROUPS strata are recorded, not just counted.
+
+    board_publication_status used to compute a list it never used; it now reads
+    ``missing_strata`` off the report so a reader sees which strata block the claim.
+    """
+    from scoring.leaderboard import REQUIRED_VENDOR_GROUPS
+    from scoring.verifier import PUBLISH_MISSING_LAYER, board_publication_status
+
+    board = new_leaderboard()
+    board["entries"].append({
+        "id": "sub-ge", "method": "a-real-ge-model", "trap": False, "placeholder": False,
+        "vendor": "GE", "dose": "0.25",
+        "metrics": {"psnr_db": 40.0, "ssim": 0.95, "bander_roi": 0.40},
+    })
+    report = trap_rank_by_group(board["entries"], by="vendor", min_ratio=3.0)
+    assert report["verdict"] == TRAP_RANK_MISSING_STRATUM
+    expected = [g for g in REQUIRED_VENDOR_GROUPS if g != "GE"]
+    assert report["missing_strata"] == expected
+
+    board["receipt"] = {}
+    board["trap_rank_by_vendor"] = report
+    st = board_publication_status(board)
+    assert st.state == PUBLISH_MISSING_LAYER
+    for group in expected:
+        assert group in st.detail
+    assert "GE," not in st.detail
