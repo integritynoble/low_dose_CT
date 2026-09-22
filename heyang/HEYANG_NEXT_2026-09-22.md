@@ -68,8 +68,32 @@ Resolve it in the text, not by weakening the table:
   to a cross-environment difference is UNRESOLVED. The title claim
   "cross-environment reproduction" has to be reconsidered under that reading.
 
+**Refinement (owner session, 22 Sep).** The repository does more than fail to
+evidence the difference; for two of the three named axes it records the
+opposite. `WS-1_dataset/R6_recalc/R6_recalc_report.md:36` says the author's
+nominal container was `pytorch/pytorch:2.3.0-cuda12.1-cudnn8-runtime`, the
+Docker daemon was not running, and the recomputation therefore **replicated the
+same torch/CUDA versions in a venv**. So "differing in CUDA build and
+deep-learning framework version" is contradicted by the run's own record: the
+nominal tag and the venv are both torch 2.3.0 / CUDA 12.1. Only "operating
+system" survives even nominally (container Linux vs Windows host), and only as M.
+
+That makes the second branch the default. Unless the owner produces a dated
+record of the original run's stack by the time you start this task, write the
+second branch now and log the decision as "attribution UNRESOLVED, no reference
+record; owner may reopen with a record". Every place to change, located by
+`grep -n "cross-environment\|different library\|differing in" manuscript.tex`
+at `01e7672`: L20 (title), L35-37 (abstract), L118-120, L217, L300. Suggested
+title direction, owner to confirm: "…A two-run reproduction of a low-dose CT
+evaluation". Keep the paper's actual contribution intact: an absolute criterion
+fails on a pipeline whose residual is ~1e-7 relative, and the kind of criterion,
+not the number, is the finding. That claim does not need an environment
+difference.
+
 Add a row to `CLAIM_EVIDENCE.md` §8 for whichever way it resolves, and state in
-§7 which of C1/C4/C10/C12 the change touches.
+§7 which of C1/C4/C10/C12 the change touches. Also correct ledger §6.2 row 3:
+"容器 tag 确证文件" is not merely absent. The run report records that the tag
+was *not* used.
 
 **Done when:** no sentence in the manuscript asserts an environment difference
 the repository cannot evidence, and the ledger records the decision and its
@@ -102,6 +126,24 @@ explicitly, and say which command reproduces them. If you keep SHA-256, compute
 it on Linux-normalised (LF) content or on `git cat-file blob` output, not on the
 Windows working copy.
 
+Re-checked on Linux: the committed `manuscript.tex` hashes to `33a02d8e…`, and
+its CRLF form to exactly your `7FD9D169…`, which confirms the cause.
+`CLAIM_EVIDENCE.md` `E9E971A3…` matches neither form of any of its committed
+versions.
+
+Two practical points. First, do not put `COMPLETION_CHECKLIST.md` into its own §7
+table: a file cannot contain its own hash, so leave it out (the suggested command
+above lists it only for the reviewer's run). Second, the simplest form that
+survives any checkout, whatever `core.autocrlf` is set to:
+
+```bash
+C=<commit>; for f in $(git ls-tree -r --name-only $C Heyang-paper | grep -v COMPLETION_CHECKLIST); do
+  printf '%s  %s\n' "$(git cat-file blob $C:$f | sha256sum | cut -c1-64)" "$f"; done
+```
+
+This hashes git's stored bytes, so it gives the same answer on Windows and Linux.
+Put the command, the commit and the output in §7.
+
 **Done when:** a reviewer on a clean checkout can run one named command and get
 every value in §7, and §7 names the commit it was measured at.
 
@@ -127,7 +169,17 @@ evidence is "on my machine" is BLOCKED, not DONE.
 resolves inside the repository, or is explicitly marked unpublishable with a
 reason.
 
-### 4. Two code cleanups in WS-4
+### 4. Two code cleanups in WS-4 — cleanups DONE by owner session; one question left for you
+
+**Status 22 Sep:** both cleanups are fixed on branch `fix/ws4-cleanups-2026-09-22`
+(`7085a7d`). `Set` is imported. `trap_rank_by_group` now records
+`missing_strata`, and `board_publication_status` names the uncovered strata in
+the MISSING_LAYER detail instead of computing a dead list. A new test
+`test_missing_strata_are_named_on_the_report_and_in_publication_status` covers
+the change. Suite: 313 passed / 10 skipped (baseline 312 / 10). pyflakes
+reported `undefined name 'Set'` and the unused `missing` before the change and
+reports neither after. Do not redo these; pull and rebase. The original
+description is kept below for the record.
 
 Both are in the merged code and neither is caught by CI (the matrix only lints
 `WS-2_framework`):
@@ -148,8 +200,30 @@ it means an ordinary slice-level submission can never reach a clean PASS on all
 four binding checks. If that is intended, say so in the docstring; if not,
 distinguish "not applicable" from "claimed but unbound".
 
-**Done when:** both fixed with a test or a lint run recorded, and the
-patient-mapping question answered either way in the code.
+**Refinement: the patient-mapping question is not cosmetic, so it is now the
+whole of task 4.** Follow the path: `verifier.py:250-259` puts every binding
+UNVERIFIED line into `skipped_unverified`, and `verifier.py:427-432` then marks
+the bundle "not certified". A slice-level submission always gets
+`patient_mapping: NO_BINDING_DECLARED` = UNVERIFIED, so **under
+`bind_inputs=True` no slice-level submission can ever be certified**, however
+well its model bytes, manifest and identity bind. The current board is
+slice-level. As shipped, input binding therefore caps every real entry at
+INCOMPLETE.
+
+Recommended answer: add a fourth state `NOT_APPLICABLE` (with a `BIND_NA`
+constant). Return it only when the claim declares no patient-level aggregation
+**and** the result carries no `patient_id` anywhere. It adds nothing to
+`unverified`, and `BindingResult.status` ignores it. If a result carries patient
+ids but declares no patient bootstrap, keep it UNVERIFIED, because ids without a
+declared use are still unbound. Tests: (a) a slice-level result with the other
+three checks passing is certified; (b) a result with patient ids and no
+declaration stays UNVERIFIED; (c) the existing NO_BINDING_DECLARED test is
+updated to the new state. If you decide the cap is intended, say so in the
+docstring and in `submission_contract.md`, because it changes what a submitter
+can achieve.
+
+**Done when:** the patient-mapping question is answered in the code with the
+tests above (or the documented alternative), and the suite passes.
 
 ### 5. Then resume the 20 September backlog
 
