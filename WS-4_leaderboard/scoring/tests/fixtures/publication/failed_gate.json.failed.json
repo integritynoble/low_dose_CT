@@ -1,0 +1,10 @@
+{
+  "schema": "ws4-save-failed/v1",
+  "saved_path": "D:\\ZHY\\low_dose_CT-heyang\\WS-4_leaderboard\\scoring\\tests\\fixtures\\publication\\failed_gate.json",
+  "submitted_at": "2026-09-21T00:00:00+00:00",
+  "input_sha256": "abc",
+  "gate_violations": [
+    "entry 'sub-1-my-method': detectability missing the discriminating index bander_roi",
+    "trap-rank: entry 'sub-1-my-method' scores bander_roi=0.30, at or below the permanent blur trap (0.43)"
+  ]
+}

@@ -33,7 +33,8 @@ from .heldout import (SubmissionEnvelope, check_submission_cannot_write_back)
 from .leaderboard import (assert_trap_separates_in_every_group, check_trap_rank)
 from .task_spec import (DETECTABILITY_FIELDS, FIDELITY_FIELDS,
                         FREQ_SUPPLEMENTARY_FIELDS, TASK_LABEL)
-from .verify import check_claim_bound_provenance, check_submission_result
+from .verify import (check_claim_bound_provenance, check_input_bound_provenance,
+                     check_submission_result)
 
 #: R6 recalc absolute tolerance for published-vs-live numeric comparison
 #: (``WS-1_dataset/R6_recalc``; red-line field - do not change).
@@ -207,7 +208,8 @@ def check_claim_and_provenance(result: Dict, *,
                                method_name: str = "submission",
                                vendor: Optional[str] = None,
                                dose: Optional[str] = None,
-                               run_ws1_gates: bool = True) -> Dict[str, List[str]]:
+                               run_ws1_gates: bool = True,
+                               bind_inputs: bool = False) -> Dict[str, List[str]]:
     """S2: compose the existing provenance / identity / write-path gates.
 
     Returns ``{check_name: [violations]}``. Checks:
@@ -216,6 +218,18 @@ def check_claim_and_provenance(result: Dict, *,
                             §2-A task identity, per method block)
     * ``claim``          -- ``verify.check_claim_bound_provenance`` (§2-D five
                             required fields + evidence hash binding)
+    * ``input_bound``    -- ``verify.check_input_bound_provenance`` (Task 4:
+                            runtime byte/hash binding of model checkpoint files,
+                            ASSET_MANIFEST membership, patient mapping and
+                            method/task/dose identity). Only run when
+                            ``bind_inputs=True`` so existing JSON-only fixtures
+                            keep their historical verdict. Binding *violations*
+                            are returned under this key (hard rejection); inputs
+                            that cannot be verified (missing checkpoint /
+                            placeholder manifest hash / no fixed patient source)
+                            are returned under ``skipped_unverified`` -- never
+                            certified, but not a rejection either, so the bundle
+                            stays INCOMPLETE.
     * ``no_write_path``  -- ``heldout.check_submission_cannot_write_back`` (P1-3
                             envelope; method_name / vendor / dose are scanned too)
     * ``rung_2/3/4``     -- ``gates`` rung evidence gates against the WS-1
@@ -232,6 +246,17 @@ def check_claim_and_provenance(result: Dict, *,
         if errs:
             out["paired+task"].append(f"method '{name}': " + "; ".join(errs))
     out["claim"] = check_claim_bound_provenance(result)
+
+    if bind_inputs:
+        # Task 4 (2026-09-21): runtime input-binding. Hard violations reject the
+        # bundle; UNVERIFIED inputs are reported as skipped (never certified) so
+        # the bundle stays INCOMPLETE instead of claiming a verified state.
+        input_bound = check_input_bound_provenance(result, method=method_name,
+                                                   vendor=vendor, dose=dose)
+        out["input_bound"] = input_bound["binding"]["violations"]
+        if input_bound["binding"]["unverified"]:
+            out.setdefault("skipped_unverified", []).extend(
+                input_bound["binding"]["unverified"])
 
     envelope = SubmissionEnvelope(method_name=method_name, result=result,
                                   vendor=vendor, dose=dose)
@@ -357,7 +382,8 @@ def verify_runbundle(bundle_path: str | Path, *,
                      method_name: str = "submission",
                      vendor: Optional[str] = None,
                      dose: Optional[str] = None,
-                     run_ws1_gates: bool = True) -> Verdict:
+                     run_ws1_gates: bool = True,
+                     bind_inputs: bool = False) -> Verdict:
     """Run S1 -> S2 -> S3 -> S4 on a RunBundle directory.
 
     ``live_result`` supplies the S3 live execution output; ``None`` marks S3 as
@@ -365,6 +391,9 @@ def verify_runbundle(bundle_path: str | Path, *,
     ``entries`` supplies the candidate board entries for the S4 pre-check;
     ``None`` marks S4 as ``SKIPPED`` (the pipeline itself never writes the
     board - publishing goes through ``leaderboard.save()``).
+    ``bind_inputs=True`` additionally runs the Task 4 runtime input-binding
+    checks (model checkpoint bytes / ASSET_MANIFEST / patient mapping); its
+    violations reject the bundle, its UNVERIFIED inputs keep it INCOMPLETE.
     """
     bundle = Path(bundle_path)
     verdict = Verdict(runbundle=str(bundle))
@@ -386,13 +415,21 @@ def verify_runbundle(bundle_path: str | Path, *,
 
     s2 = check_claim_and_provenance(result, method_name=method_name,
                                     vendor=vendor, dose=dose,
-                                    run_ws1_gates=run_ws1_gates)
+                                    run_ws1_gates=run_ws1_gates,
+                                    bind_inputs=bind_inputs)
     verdict.violations["S2"] = [v for k, vs in s2.items()
-                                if k != "skipped" for v in vs]
+                                if k not in ("skipped", "skipped_unverified")
+                                for v in vs]
     if not run_ws1_gates:
         verdict.skipped.append("S2 rung gates disabled")
     if s2.get("skipped"):
         verdict.skipped.extend(s2["skipped"])
+    # Task 4: inputs that could not be runtime-verified stay unverified, so the
+    # bundle is INCOMPLETE rather than certified.
+    if s2.get("skipped_unverified"):
+        verdict.skipped.append(
+            "S2 input binding UNVERIFIED: %d input(s) could not be runtime-bound; "
+            "result is not certified" % len(s2["skipped_unverified"]))
 
     if live_result is None:
         verdict.skipped.append("S3")
@@ -404,3 +441,248 @@ def verify_runbundle(bundle_path: str | Path, *,
     else:
         verdict.violations["S4"] = check_publish_eligibility(entries)
     return verdict
+
+
+# ---------------------------------------------------------------------------
+# Task 3 (2026-09-21): publication-state visibility
+#
+# A board receipt is not a publication. The states below are the five-state
+# classification the assignment requires (NO_CLAIM / missing layer /
+# INCOMPLETE / rejected / published). Two hard constraints are enforced here:
+#
+#   * pending / skipped / BLOCKED items are never reported as ``published``
+#     or ``verified`` (``PublicationStatus.published`` and ``.verified`` are
+#     only True for a referee-verified publication);
+#   * a published view must cite *referee* verification evidence
+#     (``publication.referee_evidence``), never a submitter-controlled flag.
+#     ``publication.status == "published"`` without referee evidence is
+#     downgraded to INCOMPLETE, not trusted.
+#
+# The classification composes the existing S1-S4 pipeline and the board
+# artifact (``leaderboard.json`` receipt / publication / trap_rank /
+# trap_rank_by_vendor); it does not re-implement any gate.
+# ---------------------------------------------------------------------------
+
+PUBLISH_NO_CLAIM = "NO_CLAIM"
+PUBLISH_MISSING_LAYER = "MISSING_LAYER"
+PUBLISH_INCOMPLETE = "INCOMPLETE"
+PUBLISH_REJECTED = "REJECTED"
+PUBLISH_PUBLISHED = "PUBLISHED"
+
+#: Human-readable labels for the five states.
+PUBLISH_LABELS = {
+    PUBLISH_NO_CLAIM: "NO_CLAIM (no publication claim)",
+    PUBLISH_MISSING_LAYER: "MISSING_LAYER (unpublishable: a required publication layer is absent)",
+    PUBLISH_INCOMPLETE: "INCOMPLETE (claimed but not complete / not released)",
+    PUBLISH_REJECTED: "REJECTED (publication refused)",
+    PUBLISH_PUBLISHED: "PUBLISHED (referee-verified)",
+}
+
+
+@dataclass
+class PublicationStatus:
+    """Five-state publication classification for one object.
+
+    ``state`` is one of the ``PUBLISH_*`` constants. ``detail`` explains the
+    decision in one line. ``published`` is True only for a referee-verified
+    PUBLISHED state; ``verified`` mirrors the referee-evidence check and stays
+    False for pending / skipped / submitter-flagged items.
+    """
+
+    state: str
+    detail: str
+    published: bool = False
+    verified: bool = False
+    evidence: Optional[Dict] = None
+
+
+def _referee_evidence(pub: Dict) -> Optional[Dict]:
+    """Return referee verification evidence, or None when it is not trustworthy.
+
+    A submitter-controlled ``status`` flag is not evidence. Only a dict carrying
+    the referee identity, a verification timestamp and an evidence digest counts.
+    """
+    ev = pub.get("referee_evidence")
+    if not isinstance(ev, dict):
+        return None
+    if not ev.get("referee") or not ev.get("verified_at"):
+        return None
+    if not ev.get("evidence_sha256"):
+        return None
+    return ev
+
+
+def _gate_failures(board: Dict) -> List[str]:
+    """Collect board-level gate failures that refuse publication.
+
+    A written board's receipt records the gates that ran at save time; a
+    FAIL / INDETERMINATE verdict there means the write was refused (or, for a
+    hand-edited artifact, the board must not be treated as publishable). The
+    live ``trap_rank`` / ``trap_rank_by_vendor`` blocks are re-read so a stale
+    receipt cannot hide a failing gate.
+    """
+    failures: List[str] = []
+    receipt = board.get("receipt")
+    if isinstance(receipt, dict):
+        gate = receipt.get("gate")
+        if isinstance(gate, dict):
+            for key, verdict in gate.items():
+                if isinstance(verdict, str) and verdict.upper() in ("FAIL", "INDETERMINATE"):
+                    failures.append(f"receipt.gate.{key}={verdict}")
+    for block_name in ("trap_rank", "trap_rank_by_vendor"):
+        block = board.get(block_name)
+        if isinstance(block, dict):
+            verdict = block.get("verdict")
+            if verdict in ("FAIL", "INDETERMINATE"):
+                failures.append(f"{block_name}.verdict={verdict}")
+    return failures
+
+
+def board_publication_status(board: Dict, *,
+                             board_path: Optional[str | Path] = None) -> PublicationStatus:
+    """Five-state publication status for a saved leaderboard.
+
+    ``board_path`` is only used to detect a ``<path>.failed.json`` save-failure
+    diagnostic (``leaderboard.save()`` writes one when the gate chain refuses a
+    board). Classification order:
+
+    1. REJECTED -- explicit ``publication.status == "rejected"``;
+    2. REJECTED -- a ``.failed.json`` diagnostic exists next to the board;
+    3. REJECTED -- any gate verdict on the receipt / trap blocks is FAIL or
+       INDETERMINATE;
+    4. NO_CLAIM -- no ``publication`` block and no ``receipt``: the board makes
+       no publishable claim;
+    5. PUBLISHED -- ``publication.status == "published"`` **and** referee
+       verification evidence is present; otherwise the flag is not trusted and
+       the state stays INCOMPLETE (never published);
+    6. MISSING_LAYER -- required vendor strata are not fully covered
+       (``trap_rank_by_vendor.verdict == MISSING_STRATUM``); the per-group
+       claim cannot be certified;
+    7. INCOMPLETE -- pending / receipt-without-publication / any other
+       unfinished path.
+    """
+    pub = board.get("publication") if isinstance(board.get("publication"), dict) else {}
+    receipt = board.get("receipt")
+    status = pub.get("status")
+
+    if isinstance(status, str) and status.lower() == "rejected":
+        return PublicationStatus(PUBLISH_REJECTED,
+                                 "publication.status is 'rejected'; publication was refused",
+                                 published=False, verified=False)
+
+    if board_path is not None:
+        failed_path = Path(str(board_path) + ".failed.json")
+        if failed_path.is_file():
+            try:
+                failed = json.loads(failed_path.read_text(encoding="utf-8"))
+                n = len(failed.get("gate_violations", []))
+            except Exception:  # noqa: BLE001 - unreadable diagnostic is still a refusal record
+                n = -1
+            return PublicationStatus(
+                PUBLISH_REJECTED,
+                f"save gate refused this board ({failed_path.name}); "
+                f"{n if n >= 0 else 'unreadable'} gate violation(s) recorded",
+                published=False, verified=False)
+
+    failures = _gate_failures(board)
+    if failures:
+        return PublicationStatus(
+            PUBLISH_REJECTED,
+            "gate failure recorded: " + "; ".join(failures),
+            published=False, verified=False)
+
+    if not pub and receipt is None:
+        return PublicationStatus(
+            PUBLISH_NO_CLAIM,
+            "board carries no receipt or publication block; there is no publishable claim",
+            published=False, verified=False)
+
+    if isinstance(status, str) and status.lower() == "published":
+        evidence = _referee_evidence(pub)
+        if evidence is not None:
+            return PublicationStatus(
+                PUBLISH_PUBLISHED,
+                "published with referee-verified evidence",
+                published=True, verified=True, evidence=evidence)
+        return PublicationStatus(
+            PUBLISH_INCOMPLETE,
+            "publication.status says 'published' but no referee-verified evidence is "
+            "attached; a submitter-controlled flag is not verification, so this is NOT "
+            "treated as published",
+            published=False, verified=False)
+
+    strata = board.get("trap_rank_by_vendor")
+    if isinstance(strata, dict) and strata.get("verdict") == "MISSING_STRATUM":
+        missing = [g for g in strata.get("groups", {}) if g not in ()]
+        return PublicationStatus(
+            PUBLISH_MISSING_LAYER,
+            "missing required publication layer: required vendor strata not fully "
+            "covered (trap_rank_by_vendor.verdict=MISSING_STRATUM); per-group claim "
+            "cannot be certified",
+            published=False, verified=False)
+
+    if status is None:
+        return PublicationStatus(
+            PUBLISH_INCOMPLETE,
+            "receipt exists but publication block is missing/empty; release status "
+            "is undefined (a receipt is not a publication)",
+            published=False, verified=False)
+
+    return PublicationStatus(
+        PUBLISH_INCOMPLETE,
+        f"publication.status='{status}'; not released (a receipt is not a publication)",
+        published=False, verified=False)
+
+
+def verdict_publication_status(verdict: Verdict) -> PublicationStatus:
+    """Five-state publication status for a verified RunBundle.
+
+    Maps an S1-S4 ``Verdict`` onto the same five states. A bundle that passed
+    every required stage is *publishable*, not *published*: publication requires
+    a board save and referee evidence, so the state stays INCOMPLETE with an
+    explicit 'not released' detail.
+    """
+    if not any(verdict.violations.values()) and verdict.skipped:
+        return PublicationStatus(
+            PUBLISH_INCOMPLETE,
+            "claimed but incomplete: stage(s) skipped -> "
+            + ", ".join(verdict.skipped),
+            published=False, verified=False)
+    if any(verdict.violations.values()):
+        return PublicationStatus(
+            PUBLISH_REJECTED,
+            "rejected: " + ", ".join(
+                f"{s}: {len(v)} violation(s)" for s, v in verdict.violations.items() if v),
+            published=False, verified=False)
+    return PublicationStatus(
+        PUBLISH_INCOMPLETE,
+        "verification passed (S1-S4) but not published; publication requires a "
+        "board save and referee verification evidence",
+        published=False, verified=False)
+
+
+def entry_publication_status(entry: Dict, *,
+                             board_state: Optional[PublicationStatus] = None) -> PublicationStatus:
+    """Five-state publication status for one leaderboard entry.
+
+    Traps and placeholders are not publication objects and are reported as
+    NO_CLAIM with an explanatory detail (they never become PUBLISHED). A real
+    submission inherits the board state: publishing happens at board level and
+    an entry cannot be 'published' on a board whose own state is not PUBLISHED.
+    """
+    if entry.get("trap"):
+        return PublicationStatus(
+            PUBLISH_NO_CLAIM, "permanent control trap; not a publication object",
+            published=False, verified=False)
+    if entry.get("placeholder"):
+        return PublicationStatus(
+            PUBLISH_NO_CLAIM, "placeholder entry; not a publication object",
+            published=False, verified=False)
+    if board_state is None:
+        return PublicationStatus(
+            PUBLISH_NO_CLAIM, "no board state supplied; cannot certify this entry",
+            published=False, verified=False)
+    return PublicationStatus(board_state.state, board_state.detail,
+                             published=board_state.published,
+                             verified=board_state.verified,
+                             evidence=board_state.evidence)

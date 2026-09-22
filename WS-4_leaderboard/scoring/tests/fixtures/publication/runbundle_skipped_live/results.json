@@ -1,0 +1,43 @@
+{
+  "validation": {
+    "paired_methods": {
+      "my-method": {
+        "name": "my-method",
+        "psnr_db": 32.1,
+        "ssim": 0.91,
+        "detectability": {
+          "task": "SKE-Gaussian20HU-s2px",
+          "bander_roi": 0.72,
+          "cnr_mean": 1.2,
+          "cho_auc_mean": 0.85,
+          "npwe_mean": 5.0,
+          "bander_full": 0.7,
+          "roi_tm_auc": 0.8
+        }
+      }
+    }
+  },
+  "claim": {
+    "task_id": "SKE-Gaussian20HU-s2px",
+    "protocol_id": "detectability-freq-v1",
+    "data_manifest_sha256": "f0aef7859de188cf719ca43369f11424fe4c74b9f574cacf13de890cbaecad86",
+    "model_sha256": "76c9dd287e68d8b640c8c0024ed743e25321d40b98faff5091da5011b1413e30",
+    "evaluator_version": "ws4-eval/v1"
+  },
+  "evidence": {
+    "data_manifest": {
+      "patients": [
+        "aapm-0003",
+        "aapm-0005"
+      ],
+      "dose_grid": [
+        "r025"
+      ]
+    },
+    "model_weights": {
+      "checkpoint": "model.pt",
+      "framework": "torch",
+      "sha": "abc123"
+    }
+  }
+}
