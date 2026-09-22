@@ -1,8 +1,9 @@
 # Heyang — tasks and replies
 
-**Start here:** [Current assignment — 21 September](HEYANG_NEXT_2026-09-21.md).
-Finish [Heyang-paper](../Heyang-paper/) as soon as possible, then work through
-[the detailed follow-up backlog](HEYANG_NEXT_2026-09-20.md).
+**Start here:** [Current assignment — 22 September](HEYANG_NEXT_2026-09-22.md).
+The 21 September task book is merged into `main` (`c765d1b`, PR #30); the
+22 September page reviews it and carries the open corrections. The
+[20 September backlog](HEYANG_NEXT_2026-09-20.md) stays open behind it.
 
 All Heyang task handoffs, reviews and replies live in this folder. Add future
 assignments and replies here. Paths in command blocks and inline code are
@@ -12,9 +13,9 @@ relative to the repository root unless a working directory is stated.
 
 | Document | Purpose |
 |---|---|
-| [21 September assignment](HEYANG_NEXT_2026-09-21.md) | Sync, ETA, paper claim/evidence ledger, corrected manuscript/PDF and completion receipt |
-| [20 September backlog](HEYANG_NEXT_2026-09-20.md) | Windows CT + agent checks, publication states, provenance, BANDER and backup evidence |
-| `heyang/HEYANG_REPLY_2026-09-20.md` | Requested progress index; not yet received in the checked remote branch |
+| [22 September review and assignment](HEYANG_NEXT_2026-09-22.md) | Review of the merged 21 September delivery; environment-claim contradiction, verifiable hashes, evidence documents, WS-4 cleanups |
+| [20 September backlog](HEYANG_NEXT_2026-09-20.md) | Windows CT + agent checks, publication states, provenance, BANDER and backup evidence — tasks 2, 5a, 5b still open |
+| [Progress index](HEYANG_REPLY_2026-09-20.md) | Heyang's single reply index; report every task status here |
 | [Paper scope](HEYANG_PAPER_SCOPE_REPRODUCTION.md) | Historical proposal; apply the current assignment's interpretation corrections |
 
 ## Earlier assignments and evidence
@@ -22,6 +23,7 @@ relative to the repository root unless a working directory is stated.
 These retain their dates and original evidence. Read the current assignment
 before following an older priority, channel instruction or status claim.
 
+- [21 September assignment](HEYANG_NEXT_2026-09-21.md) (delivered and merged)
 - [15 September tasks](HEYANG_NEXT_2026-09-15.md)
 - [13 September tasks and data-holder instructions](HEYANG_NEXT_2026-09-13.md)
 - [8 September review and tasks](HEYANG_NEXT_2026-09-08.md)
