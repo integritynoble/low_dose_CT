@@ -65,9 +65,9 @@
 | `cadc2d7` | Progress index update: HEYANG_REPLY_2026-09-20.md |
 | `7a9dd15` | 2026-09-21 status reply（step 1） |
 | `d140b71` | CLAIM_EVIDENCE ledger + regenerated tables/PDF (task book step 2-3) |
-| 本次（待提交） | step 3 论文包：manuscript.tex 环境表 + README retrospective + 台账行号同步 + PDF 重建（5 文件） |
+| `5b3659c` | step 3 论文包：manuscript.tex 环境表 + README retrospective + 台账行号同步 + PDF 重建（5 文件） |
 
-当前 HEAD = `66e4758`；upstream = `origin/heyang`，未推送提交含上述及更早同步链。
+当前 HEAD = `5b3659c`；已 push 至 `origin/heyang`（2026-09-22，fast-forward，0/0 分叉）。
 
 ## 6. 未提交改动（原样保留，不属于本次论文包）
 
@@ -131,12 +131,12 @@
 
 | 项 | 状态 | 说明 |
 |---|---|---|
-| push heyang 到 origin | 未执行 | 本地提交均在本地；任务硬约束"禁止 push"，需 owner 明确授权 |
-| 开 paper PR against main | 未执行 | 需先 push；PR 拟包含 Heyang-paper 论文包 5 文件 + 本清单 |
-| 更新 heyang/HEYANG_REPLY_2026-09-20.md 索引 | 未执行 | 任务书第 4 步要求链接包与清单；属 PR 准备后段，待授权 |
+| push heyang 到 origin | DONE | 2026-09-22 授权后执行；`origin/heyang` = `5b3659c`（fast-forward，0/0 分叉） |
+| 开 paper PR against main | DONE | **PR #30**：https://github.com/integritynoble/low_dose_CT/pull/30 （base `main` <- head `heyang`，Open，等待 owner 审查） |
+| 更新 heyang/HEYANG_REPLY_2026-09-20.md 索引 | DONE | 2026-09-22 段已链接包与清单（见本次提交） |
 
 ---
 
 ## 总结
 
-任务书第 1-3 步与第 4 步前半已 DONE（最新论文包 commit 待提交，未 push）；剩余均为 owner 决策/授权项：8 项作者输入（§9）、push/PR（§11）、第三环境取舍、artifact 公开发布。未提交的 WS-2 manifest 行尾噪声原样保留，未纳入任何提交。
+任务书第 1-4 步全部 DONE：论文包已提交（`5b3659c`）、已 push（`origin/heyang`）、paper PR **#30** 已开（base `main`，等待 owner 审查）；作者批准前不投稿。剩余均为 owner 决策项：8 项作者输入（§9）、第三环境取舍、artifact 公开发布。未提交的 WS-2 manifest 行尾噪声原样保留，未纳入任何提交。

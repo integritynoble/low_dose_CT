@@ -1,14 +1,3 @@
----
-AIGC:
-    Label: "1"
-    ContentProducer: 001191440300708461136T1XGW3
-    ProduceID: 3492397679226d6505949fd36ce12be5_50be9eb4b5a611f19286525400638852
-    ReservedCode1: wYvLR+GBiV555OxnniuvT6vG+Ls2bXPgop/FqW0oIyKJfQ0f+MwiwFSPKYWQNKp7AxjdSPnjgxn2RillpjNU8g/iDVHfKdcRl3DwKXcI3PJPdFv6vTLtCnJVXWDOG3dKQ/yUWV3ovNMHLQ0Eu6fpfHXMQmLbVeVeFOwXyJG0CQ8skkk38GjnJwG4E6E=
-    ContentPropagator: 001191440300708461136T1XGW3
-    PropagateID: 3492397679226d6505949fd36ce12be5_50be9eb4b5a611f19286525400638852
-    ReservedCode2: wYvLR+GBiV555OxnniuvT6vG+Ls2bXPgop/FqW0oIyKJfQ0f+MwiwFSPKYWQNKp7AxjdSPnjgxn2RillpjNU8g/iDVHfKdcRl3DwKXcI3PJPdFv6vTLtCnJVXWDOG3dKQ/yUWV3ovNMHLQ0Eu6fpfHXMQmLbVeVeFOwXyJG0CQ8skkk38GjnJwG4E6E=
----
-
 # Heyang progress reply — 20 September 2026
 
 This file is the single progress index for
@@ -83,4 +72,35 @@ work awaiting their own review.
    tasks 2 and 0.
 7. BANDER-2 authorization → blocks task 5a.
 8. OneDrive/Teams shared-folder access → blocks task 5b off-machine copy.
-*（内容由AI生成，仅供参考）*
+
+## 2026-09-22 status (task book steps 3-4)
+
+- **CT head**: `5b3659c` (task book step 3 paper package; pushed to
+  `origin/heyang` 2026-09-22, fast-forward, 0/0 divergence).
+- **Task 3 - corrected paper package**: DONE, commit `5b3659c`.
+  - `Heyang-paper/manuscript.tex`: environment table `tab:env` (L123-149);
+    README retrospective paragraph; no unsupported causal/universal claims
+    (re-scan 0 hits); remaining `\todo{}` all owner-decision fields.
+  - Re-run and recorded: `make_tables.py`, `make_tables.py --check`,
+    `recompare_per_metric.py --check` - all exit 0 (5 methods PASS, outside
+    declared 0, overall PASS, committed verdict matches).
+  - `Heyang-paper/manuscript.pdf` rebuilt: 7 pages, 198,198 B; no undefined
+    citation/reference; tables current.
+  - `Heyang-paper/CLAIM_EVIDENCE.md`: manuscript line refs re-synced after the
+    environment-table insertion (0 stale refs).
+- **Task 4 - completion receipt**: DONE.
+  - [COMPLETION_CHECKLIST.md](Heyang-paper/COMPLETION_CHECKLIST.md): source
+    commit, artifact hashes, verification/build results, remaining TODO owners,
+    compact owner decision list (8 items), code/data availability language
+    (code availability does not grant image/checkpoint redistribution).
+  - Paper package pushed: `origin/heyang` = `5b3659c`.
+  - Paper PR: **#30** <https://github.com/integritynoble/low_dose_CT/pull/30>
+    (base `main` <- head `heyang`, open, ready for owner review; no submission
+    until authors approve).
+- **Owner decision list (compact, see checklist section 9)**: author order /
+  affiliations / ORCIDs / corresponding author; CRediT; per-author
+  declarations; third-environment choice; artifact release decision. Blocks
+  manuscript L22 / L289 / L305 / L310 / L313.
+- **Not committed**: `WS-2_framework/pwm_dose_equivalence/reproducibility/
+  reproducible_manifest.json` (line-ending noise only, non-task content) left
+  as-is.
