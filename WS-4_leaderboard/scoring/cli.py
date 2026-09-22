@@ -24,7 +24,10 @@ from .leaderboard import (REFERENCE_ENTRY_ID, add_submission, blur_entry,
                           compute_spread, load, new_leaderboard, save)
 from .observer_sensitivity import publish_observer_channels, report_observer_sensitivity
 from .rung_registry import DEFAULT_REGISTRY, load_registry, render_markdown
-from .verify import check_submission_result
+from .verifier import (PUBLISH_LABELS, board_publication_status,
+                       entry_publication_status, verdict_publication_status,
+                       verify_runbundle)
+from .verify import (check_input_bound_provenance, check_submission_result)
 
 DEFAULT_BOARD = Path(__file__).resolve().parent / "data" / "leaderboard.json"
 
@@ -150,7 +153,8 @@ def cmd_verify_bundle(args) -> int:
         method_name="submission",
         vendor=args.vendor,
         dose=args.dose,
-        run_ws1_gates=not args.skip_ws1_gates)
+        run_ws1_gates=not args.skip_ws1_gates,
+        bind_inputs=getattr(args, "bind_inputs", False))
     print(f"verify-bundle: {verdict.summary()}")
     for stage in ("S1", "S2", "S3", "S4"):
         viol = verdict.violations.get(stage, [])
@@ -169,7 +173,141 @@ def cmd_verify_bundle(args) -> int:
         print("  (S4 pre-check needs the candidate board entries; the final "
               "write goes through `python -m scoring.cli submit`, which runs "
               "the full §2-C gate chain)")
+    if args.provenance_detail:
+        # Task 4: show the runtime input-binding detail regardless of the
+        # verdict so an operator can see exactly what was bound and what stayed
+        # unverified. Reuses the public entry point (no extra gate logic).
+        binding = check_input_bound_provenance(
+            _load_result(args.bundle.rstrip("\\/") + "/results.json"),
+            method="submission", vendor=args.vendor, dose=args.dose)
+        print("  input binding:")
+        for name, status in binding["binding"]["checks"].items():
+            print(f"    {name}: {status} -- {binding['binding']['details'][name]}")
+        for v in binding["binding"]["violations"]:
+            print(f"    FAIL: {v}")
+        for v in binding["binding"]["unverified"]:
+            print(f"    UNVERIFIED: {v}")
     return 0 if verdict.ok else 1
+
+
+def cmd_provenance_check(args) -> int:
+    """Task 4 (2026-09-21): runtime input-binding report for a results.json.
+
+    Pure read-only evidence computation: model checkpoint bytes, ASSET_MANIFEST
+    membership and patient mapping are bound against runtime filesystem facts;
+    nothing is certified and nothing is written. Exit code is 0 only when every
+    check PASSes; UNVERIFIED is reported (never certified) but still exits 1 so
+    an unverified result cannot be mistaken for a verified one in scripting.
+    """
+    result = _load_result(args.result)
+    binding = check_input_bound_provenance(
+        result, method=args.method, vendor=args.vendor, dose=args.dose,
+        bundle_dir=args.bundle_dir, checkpoint_dir=args.checkpoint_dir,
+        manifest_path=args.manifest, splits_dir=args.splits_dir)
+    status = binding["binding"]["status"]
+    print(f"input binding: {status}")
+    for name, chk in binding["binding"]["checks"].items():
+        print(f"  {name}: {chk} -- {binding['binding']['details'][name]}")
+    for v in binding["binding"]["unverified"]:
+        print(f"  UNVERIFIED: {v}")
+    for v in binding["binding"]["violations"]:
+        print(f"  FAIL: {v}")
+    for v in binding.get("claim", []):
+        print(f"  CLAIM: {v}")
+    if args.json:
+        import json as _json
+        print(_json.dumps({"status": status, "binding": binding["binding"],
+                           "claim": binding.get("claim", [])},
+                          indent=2, ensure_ascii=False))
+    if status == "PASS" and not binding.get("claim"):
+        return 0
+    return 1
+
+
+def cmd_publication_status(args) -> int:
+    """Task 3: make publication states visible (NO_CLAIM / missing layer /
+    INCOMPLETE / rejected / published) for a saved board or a RunBundle.
+
+    Never labels a pending / skipped / BLOCKED item as verified or published:
+    ``published`` is only reported for a referee-verified publication.
+    """
+    if args.bundle is not None:
+        verdict = verify_runbundle(
+            args.bundle,
+            live_result=(_load_result(args.live) if args.live else None),
+            entries=None,
+            method_name=args.method or "submission",
+            vendor=args.vendor,
+            dose=args.dose,
+            run_ws1_gates=not args.skip_ws1_gates,
+            bind_inputs=getattr(args, "bind_inputs", False))
+        st = verdict_publication_status(verdict)
+        payload = {
+            "kind": "runbundle",
+            "path": args.bundle,
+            "state": st.state,
+            "label": PUBLISH_LABELS[st.state],
+            "detail": st.detail,
+            "published": st.published,
+            "verified": st.verified,
+            "stages": {
+                "S1": "PASS" if not verdict.violations.get("S1") else "REJECT",
+                "S2": "PASS" if not verdict.violations.get("S2") else "REJECT",
+                "S3": "SKIPPED" if "S3" in verdict.skipped else (
+                    "PASS" if not verdict.violations.get("S3") else "REJECT"),
+                "S4": "SKIPPED" if "S4" in verdict.skipped else (
+                    "PASS" if not verdict.violations.get("S4") else "REJECT"),
+            },
+        }
+        if args.json:
+            print(json.dumps(payload, ensure_ascii=False, indent=2))
+            return 0
+        print(f"RunBundle publication status for {args.bundle}")
+        print(f"  state:    {st.state}  ({PUBLISH_LABELS[st.state]})")
+        print(f"  detail:   {st.detail}")
+        print(f"  published: {str(st.published).lower()}   verified: {str(st.verified).lower()}")
+        print(f"  stages:   S1={payload['stages']['S1']} S2={payload['stages']['S2']} "
+              f"S3={payload['stages']['S3']} S4={payload['stages']['S4']}")
+        return 0
+
+    board = load(args.leaderboard)
+    st = board_publication_status(board, board_path=args.leaderboard)
+    pub = board.get("publication") if isinstance(board.get("publication"), dict) else {}
+    entries = []
+    for e in board.get("entries", []):
+        es = entry_publication_status(e, board_state=st)
+        entries.append({"id": e.get("id"), "method": e.get("method"),
+                        "state": es.state, "detail": es.detail,
+                        "published": es.published, "verified": es.verified})
+    payload = {
+        "kind": "leaderboard",
+        "path": args.leaderboard,
+        "state": st.state,
+        "label": PUBLISH_LABELS[st.state],
+        "detail": st.detail,
+        "published": st.published,
+        "verified": st.verified,
+        "publication": pub,
+        "receipt_present": isinstance(board.get("receipt"), dict),
+        "entries": entries,
+    }
+    if args.json:
+        print(json.dumps(payload, ensure_ascii=False, indent=2))
+        return 0
+    print(f"WS-4 publication status for {args.leaderboard}")
+    print(f"  board state: {st.state}  ({PUBLISH_LABELS[st.state]})")
+    print(f"  detail:      {st.detail}")
+    print(f"  published:   {str(st.published).lower()}   verified: {str(st.verified).lower()}")
+    print(f"  receipt:     {'present' if isinstance(board.get('receipt'), dict) else 'absent'}   "
+          f"publication.status: {pub.get('status', '<missing>')}")
+    tr = board.get("trap_rank", {})
+    bg = board.get("trap_rank_by_vendor", {})
+    print(f"  gates:       trap_rank={tr.get('verdict', 'n/a')}  "
+          f"strata={bg.get('verdict', 'n/a')}")
+    print("  entries:")
+    for row in entries:
+        print(f"    {row['id']:<28} {row['state']:<14} {row['detail']}")
+    return 0
 
 
 def cmd_rung_status(args) -> int:
@@ -236,7 +374,58 @@ def main(argv=None) -> int:
     p.add_argument("--dose", default=None, help="measurement dose level label")
     p.add_argument("--skip-ws1-gates", action="store_true",
                    help="skip the Rung 2/3/4 WS-1 artifact gates (S2)")
+    p.add_argument("--provenance-detail", action="store_true",
+                   help="task 4: also print the runtime input-binding detail "
+                        "(model bytes / ASSET_MANIFEST / patient mapping)")
+    p.add_argument("--bind-inputs", action="store_true",
+                   help="task 4: run the runtime input-binding checks inside S2 "
+                        "(model bytes / ASSET_MANIFEST / patient mapping); "
+                        "violations reject the bundle, UNVERIFIED keeps it "
+                        "INCOMPLETE")
     p.set_defaults(func=cmd_verify_bundle)
+
+    p = sub.add_parser(
+        "provenance-check",
+        help="task 4: runtime input-binding report for a results.json "
+             "(model bytes / ASSET_MANIFEST / patient mapping / identity)")
+    p.add_argument("--result", required=True,
+                   help="path to a results.json (RunBundle contract §1)")
+    p.add_argument("--method", default=None, help="submission method context")
+    p.add_argument("--vendor", default=None, help="measurement vendor context")
+    p.add_argument("--dose", default=None, help="measurement dose level context")
+    p.add_argument("--bundle-dir", default=None,
+                   help="RunBundle directory; checkpoint files are looked up here first")
+    p.add_argument("--checkpoint-dir", default=None,
+                   help="checkpoint directory; checkpoint files are looked up here second")
+    p.add_argument("--manifest", default=None,
+                   help="ASSET_MANIFEST.md path (default WS-1_dataset/R6_recalc/ASSET_MANIFEST.md)")
+    p.add_argument("--splits-dir", default=None,
+                   help="splits directory with split_assignment.csv (default WS-1_dataset/splits)")
+    p.add_argument("--json", action="store_true",
+                   help="emit a machine-readable JSON document")
+    p.set_defaults(func=cmd_provenance_check)
+
+    p = sub.add_parser(
+        "publication-status",
+        help="task 3: five-state publication visibility for a board or RunBundle")
+    p.add_argument("--leaderboard", default=str(DEFAULT_BOARD),
+                   help="saved leaderboard JSON (default scoring/data/leaderboard.json)")
+    p.add_argument("--bundle", default=None,
+                   help="optional RunBundle directory; report its verification state instead")
+    p.add_argument("--live", default=None,
+                   help="with --bundle: optional live results.json from sandbox execution (S3)")
+    p.add_argument("--method", default=None, help="with --bundle: method name")
+    p.add_argument("--vendor", default=None, help="with --bundle: measurement vendor label")
+    p.add_argument("--dose", default=None, help="with --bundle: measurement dose level label")
+    p.add_argument("--skip-ws1-gates", action="store_true",
+                   help="with --bundle: skip the Rung 2/3/4 WS-1 artifact gates (S2)")
+    p.add_argument("--bind-inputs", action="store_true",
+                   help="with --bundle: run the task 4 runtime input-binding "
+                        "checks inside S2 (model bytes / ASSET_MANIFEST / "
+                        "patient mapping)")
+    p.add_argument("--json", action="store_true",
+                   help="emit a machine-readable JSON document")
+    p.set_defaults(func=cmd_publication_status)
 
     args = ap.parse_args(argv)
     return args.func(args)

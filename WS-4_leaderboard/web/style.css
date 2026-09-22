@@ -62,6 +62,34 @@ body {
 
 .status { padding: 10px 20px 0; font-size: 13px; color: var(--muted); }
 
+/* Task 3: publication-state visibility (preview vs published). */
+.pub-banner {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  padding: 10px 20px;
+  margin: 0;
+  font-size: 13px;
+  border-bottom: 1px solid var(--line);
+}
+.pub-banner .pub-detail { flex: 1 1 auto; }
+.pub-banner .pub-note { color: var(--muted); }
+.pub-badge {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 11px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.pub-no-claim     { background: #eceff3; color: #5a6572; }
+.pub-missing-layer{ background: #fff0e0; color: #9a5b00; }
+.pub-incomplete   { background: #fff8d6; color: #8a6d00; }
+.pub-rejected     { background: #fde3e3; color: #a12c2c; }
+.pub-published    { background: #e2f3e4; color: #1e7a2c; }
+.pub-cell { text-align: left; }
+
 .table-wrap {
   overflow-x: auto;
   padding: 16px 20px 40px;

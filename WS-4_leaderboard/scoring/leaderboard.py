@@ -30,9 +30,11 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 from .task_spec import (BLUR_SPEC, DISCRIMINATING_FIELDS, REQUIRED_VENDOR_GROUPS,
-                        SCHEMA_VERSION, TASK_SPEC)
-from .verify import (check_claim_bound_provenance, check_paired_submission,
-                     extract_paired_methods, provenance_sha256)
+                        SCHEMA_VERSION, TASK_LABEL, TASK_SPEC)
+from .binding import _collect_patient_ids as _collect_patient_ids_from_result
+from .verify import (check_claim_bound_provenance, check_input_bound_provenance,
+                     check_paired_submission, extract_paired_methods,
+                     provenance_sha256)
 
 BLUR_ENTRY_ID = "seed-blur"
 REFERENCE_ENTRY_ID = "seed-ws3-reference"
@@ -606,7 +608,8 @@ def assert_trap_separates_in_every_group(entries: List[Dict], *, by: str = "vend
 def add_submission(leaderboard: Dict, result: Dict, method: str,
                    submitted_at: Optional[str] = None,
                    vendor: Optional[str] = None,
-                   dose: Optional[str] = None) -> List[Dict]:
+                   dose: Optional[str] = None,
+                   binding_context: Optional[Dict] = None) -> List[Dict]:
     """Gate a submission and append it to the leaderboard.
 
     Returns the list of created entries (one per paired method block in ``result``).
@@ -616,6 +619,12 @@ def add_submission(leaderboard: Dict, result: Dict, method: str,
 
     ``vendor`` / ``dose`` are the measurement context of the submission; they are kept
     per-entry so rankings can report spread without averaging across vendors (Rung 6).
+
+    ``binding_context`` (Task 4, optional) forwards the runtime binding probe
+    locations (keys: ``bundle_dir`` / ``checkpoint_dir`` / ``manifest_path`` /
+    ``splits_dir``). When omitted the repository defaults are probed, so the
+    binding snapshot is still computed from runtime filesystem facts rather than
+    from self-reported JSON.
     """
     methods = extract_paired_methods(result)
     if not methods:
@@ -639,6 +648,24 @@ def add_submission(leaderboard: Dict, result: Dict, method: str,
 
     created: List[Dict] = []
     now = submitted_at or _utcnow()
+    # Task 4: snapshot the claim/evidence and the runtime input-binding verdict
+    # at submission time. The snapshot is written into each created entry so a
+    # later direct save can re-verify it instead of trusting a self-reported
+    # "verified" flag; a board entry that carries a claim must carry this
+    # evaluator-owned evidence. Missing external files (checkpoints / manifest /
+    # split source) produce UNVERIFIED states, never certified ones, and do not
+    # block an otherwise valid submission (the numeric gates already ran).
+    binding = check_input_bound_provenance(
+        result, method=method, vendor=vendor, dose=dose,
+        **(dict(binding_context or {})))
+    binding_dict = binding["binding"] if isinstance(binding, dict) else {}
+    claim_snapshot = result.get("claim") if isinstance(result.get("claim"), dict) else {}
+    evidence_snapshot = result.get("evidence") if isinstance(result.get("evidence"), dict) else {}
+    # Task 4: the result-level patient ids are snapshotted next to the claim so a
+    # later save-time recompute can re-run patient-mapping binding without having
+    # to trust the board entry's metrics block.
+    snap_patient_ids: Set[str] = set()
+    _collect_patient_ids_from_result(result, snap_patient_ids)
     for name, m in methods.items():
         metrics = {k: m[k] for k in ("psnr_db", "ssim", "cnr_mean", "cho_auc_mean",
                                      "npwe_mean", "task") if k in m}
@@ -659,6 +686,19 @@ def add_submission(leaderboard: Dict, result: Dict, method: str,
             "metrics": metrics,
             "submitted_at": now,
             "notes": "Paired submission accepted by WS-4 gate (§4 both-or-neither).",
+            # Task 4 (2026-09-21): evaluator-owned provenance snapshot. A hash of
+            # the shipped JSON proves internal consistency only; the runtime
+            # binding verdict records what could actually be verified against the
+            # filesystem at submission time. "ok" without "unverified" is the only
+            # state that certifies inputs; anything else stays unverified/pending.
+            "provenance": {
+                "schema": "ws4-provenance-binding/v1",
+                "claim": claim_snapshot,
+                "evidence": evidence_snapshot,
+                "claim_bound_sha256": provenance_sha256(claim_snapshot),
+                "patient_ids": sorted(snap_patient_ids),
+                "input_binding": binding_dict,
+            },
         }
         leaderboard["entries"].append(entry)
         created.append(entry)
@@ -760,6 +800,59 @@ def _save_gate_violations(board: Dict) -> List[str]:
         method_errors = check_paired_submission(e.get("metrics", {}))
         for err in method_errors:
             violations.append("entry '%s': %s" % (e.get("id"), err))
+        # Task 4 (2026-09-21): a direct save must not be able to smuggle in a
+        # forged provenance snapshot. An entry that carries a claim snapshot
+        # (only ``add_submission`` legitimately creates one) is re-verified here:
+        # the snapshot must be internally consistent, bound to this task, and the
+        # identity fields must agree with the entry's own method/vendor/dose. A
+        # forged or self-certifying snapshot is refused instead of being written
+        # as if the gate had seen it.
+        prov = e.get("provenance")
+        if isinstance(prov, dict) and isinstance(prov.get("claim"), dict):
+            claim_snap = prov["claim"]
+            evidence_snap = prov.get("evidence") if isinstance(prov.get("evidence"), dict) else {}
+            snap_result = {"claim": claim_snap, "evidence": evidence_snap}
+            snap_pids = prov.get("patient_ids")
+            if isinstance(snap_pids, list):
+                snap_result["patient_ids"] = snap_pids
+            claim_errors = check_claim_bound_provenance(snap_result)
+            for err in claim_errors:
+                violations.append("entry '%s': provenance claim snapshot is not "
+                                  "internally consistent: %s" % (e.get("id"), err))
+            if claim_snap.get("task_id") not in (None, TASK_LABEL):
+                violations.append("entry '%s': provenance claim names task_id %r, "
+                                  "not this board's %r"
+                                  % (e.get("id"), claim_snap.get("task_id"),
+                                     TASK_LABEL))
+            claim_method = claim_snap.get("method_name")
+            if claim_method and str(claim_method) != str(e.get("method")):
+                violations.append("entry '%s': provenance claim names method %r "
+                                  "but the entry is %r"
+                                  % (e.get("id"), claim_method, e.get("method")))
+            # Task 4: a claim that declares vendor/dose must agree with the
+            # entry's own measurement context, otherwise a direct board edit
+            # could rebind the numbers to a different stratum.
+            claim_vendor = claim_snap.get("vendor")
+            if claim_vendor and str(claim_vendor) != str(e.get("vendor")):
+                violations.append("entry '%s': provenance claim names vendor %r "
+                                  "but the entry is %r"
+                                  % (e.get("id"), claim_vendor, e.get("vendor")))
+            claim_dose = claim_snap.get("dose") or claim_snap.get("dose_level")
+            if claim_dose and str(claim_dose) != str(e.get("dose")):
+                violations.append("entry '%s': provenance claim names dose %r "
+                                  "but the entry is %r"
+                                  % (e.get("id"), claim_dose, e.get("dose")))
+            binding = prov.get("input_binding")
+            if isinstance(binding, dict) and binding.get("ok") is True:
+                # "ok" alone never certifies; a FAIL snapshot is refused. An
+                # UNVERIFIED snapshot is not a violation: per task book 4,
+                # "when trusted evidence is absent, keep the result
+                # unverified/pending instead of certifying it", so it stays
+                # writable as pending and is only never certified.
+                if binding.get("violations"):
+                    violations.append("entry '%s': provenance snapshot carries "
+                                      "binding violations (%d); cannot be ok"
+                                      % (e.get("id"), len(binding.get("violations"))))
     tr = trap_rank_report(entries)
     if tr["verdict"] in (TRAP_RANK_FAIL, TRAP_RANK_INDETERMINATE):
         for v in tr["violations"]:
@@ -777,7 +870,8 @@ def _save_gate_violations(board: Dict) -> List[str]:
     return violations
 
 
-def save(board: Dict, path: str | Path) -> None:
+def save(board: Dict, path: str | Path, *,
+         binding_context: Optional[Dict] = None) -> None:
     """Run the full gate chain, write the board, and attach a receipt.
 
     §2-C: a direct save must not bypass the submission gates. This function
@@ -789,10 +883,61 @@ def save(board: Dict, path: str | Path) -> None:
     null on success) and a separate ``publication`` field that defaults to
     ``pending``: a receipt is evidence that the board was written, not that it
     was released.
+
+    ``binding_context`` (Task 4, optional) forwards the runtime binding probe
+    locations to the save-time recompute (keys: ``bundle_dir`` /
+    ``checkpoint_dir`` / ``manifest_path`` / ``splits_dir``). When omitted the
+    repository defaults are probed. Every claim-carrying entry's input-binding
+    snapshot is **recomputed from the filesystem at save time**; a hand-edited
+    snapshot that claims ``ok`` while the runtime facts contradict it is refused
+    (runtime violations) or downgraded to UNVERIFIED (runtime fact unavailable),
+    so a direct-save edit cannot smuggle in a self-certified binding.
     """
     assert_trap_present(board.get("entries", []))
     input_sha256 = provenance_sha256(board)
     violations = _save_gate_violations(board)
+
+    # Task 4 (2026-09-21): recompute every claim-carrying entry's input binding
+    # from the runtime filesystem. A snapshot written by ``add_submission`` is
+    # re-derived here so bytes changed between submission and save are caught; a
+    # forged snapshot added by a direct board edit is refused when the runtime
+    # facts contradict it. Entries without a claim snapshot keep historical
+    # behaviour and are not touched. The identity context is taken from the
+    # entry's own vendor/dose so a legitimate add_submission snapshot stays at
+    # its original PASS state; the claim/method identity itself was already
+    # checked in ``_save_gate_violations``.
+    binding_context = dict(binding_context or {})
+    for e in board.get("entries", []):
+        prov = e.get("provenance") if isinstance(e.get("provenance"), dict) else None
+        if not prov or not isinstance(prov.get("claim"), dict):
+            continue
+        claim_snap = prov["claim"]
+        evidence_snap = prov.get("evidence") if isinstance(prov.get("evidence"), dict) else {}
+        snap_result: Dict[str, Any] = {"claim": claim_snap, "evidence": evidence_snap}
+        snap_pids = prov.get("patient_ids")
+        if isinstance(snap_pids, list):
+            snap_result["patient_ids"] = snap_pids
+        recomputed = check_input_bound_provenance(
+            snap_result,
+            vendor=e.get("vendor") if isinstance(e.get("vendor"), str) else None,
+            dose=e.get("dose") if isinstance(e.get("dose"), str) else None,
+            **binding_context)
+        recomputed_claim = recomputed.get("claim") or []
+        recomputed_binding = recomputed.get("binding") or {}
+        rb_violations = recomputed_binding.get("violations") or []
+        if recomputed_claim:
+            for err in recomputed_claim:
+                violations.append("entry '%s': provenance claim snapshot is not "
+                                  "internally consistent at save: %s"
+                                  % (e.get("id"), err))
+        if rb_violations:
+            for err in rb_violations:
+                violations.append("entry '%s': runtime input binding contradicts "
+                                  "the provenance snapshot: %s" % (e.get("id"), err))
+        else:
+            # Replace the stored snapshot with the runtime recompute so a
+            # hand-edited "ok" cannot outlive the filesystem facts.
+            prov["input_binding"] = recomputed_binding
 
     if violations:
         failed_path = Path(str(path) + ".failed.json")
@@ -810,8 +955,21 @@ def save(board: Dict, path: str | Path) -> None:
 
     board["trap_rank"] = trap_rank_report(board.get("entries", []))
     board["trap_rank_by_vendor"] = trap_rank_by_group(board.get("entries", []), by="vendor")
+    # Task 4 (2026-09-21): every claim-carrying entry must be input-bound or
+    # marked UNVERIFIED at save time. The summary below is derived from the
+    # entry-level provenance snapshots; a direct save that hand-edits a snapshot
+    # is refused earlier in ``_save_gate_violations``.
+    prov_summary: Dict[str, Any] = {"entries": 0, "pass": 0, "unverified": 0, "fail": 0}
+    for e in board.get("entries", []):
+        prov = e.get("provenance") if isinstance(e.get("provenance"), dict) else None
+        if not prov:
+            continue
+        prov_summary["entries"] += 1
+        binding = prov.get("input_binding") if isinstance(prov.get("input_binding"), dict) else {}
+        status = binding.get("status", "UNVERIFIED")
+        prov_summary[status.lower()] = prov_summary.get(status.lower(), 0) + 1
     board["receipt"] = {
-        "schema": "ws4-save-receipt/v1",
+        "schema": "ws4-save-receipt/v2",
         "submitted_at": _utcnow(),
         "input_sha256": input_sha256,
         "gate": {
@@ -820,6 +978,7 @@ def save(board: Dict, path: str | Path) -> None:
             "trap_rank": board["trap_rank"]["verdict"],
             "strata": board["trap_rank_by_vendor"]["verdict"],
         },
+        "input_binding": prov_summary,
         "failed_diagnostics": None,
     }
     board["publication"] = {

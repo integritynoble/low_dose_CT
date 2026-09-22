@@ -288,3 +288,58 @@ def check_claim_bound_provenance(result: Dict) -> List[str]:
                 "independent patients")
 
     return errors
+
+
+# ---------------------------------------------------------------------------
+# Task 4 (2026-09-21): input-bound provenance
+#
+# ``check_claim_bound_provenance`` proves *internal consistency* of the submitted
+# JSON (claim hashes match the shipped evidence objects). It does not prove that
+# those bytes were actually evaluated. ``check_input_bound_provenance`` adds the
+# runtime byte/hash binding of the three input classes -- model checkpoint file
+# bytes, ASSET_MANIFEST membership, and slice/result patient mapping against a
+# fixed split source -- plus method/task/dose identity binding. It is a pure
+# read-only evidence computation: it never certifies, never writes, and never
+# invents a hash.
+# ---------------------------------------------------------------------------
+
+def check_input_bound_provenance(result: Dict, *,
+                                 method: Optional[str] = None,
+                                 vendor: Optional[str] = None,
+                                 dose: Optional[str] = None,
+                                 bundle_dir: Optional[str] = None,
+                                 checkpoint_dir: Optional[str] = None,
+                                 manifest_path: Optional[str] = None,
+                                 splits_dir: Optional[str] = None) -> Dict:
+    """Runtime input-binding checks for a submitted result (Task 4).
+
+    Composes the JSON-internal gate (``check_claim_bound_provenance``) with the
+    runtime three-class binding from :mod:`scoring.binding`. Every binding fact is
+    computed from the filesystem (checkpoint bytes via ``hashlib``, parsed
+    ASSET_MANIFEST, parsed fixed split source); no self-reported JSON field is
+    accepted as a binding source on its own.
+
+    Returns a dict::
+
+        {"claim": [internal-consistency violations],
+         "binding": {"status": PASS|UNVERIFIED|FAIL,
+                     "ok": bool,
+                     "checks": {check: status},
+                     "details": {check: detail},
+                     "violations": [...],   # FAIL: hard rejection
+                     "unverified": [...]}}  # UNVERIFIED: not certified
+
+    The result must stay unverified / pending whenever ``unverified`` is
+    non-empty; only ``ok`` and an empty ``unverified`` together certify inputs.
+    """
+    from .binding import check_input_binding
+
+    claim_errors = check_claim_bound_provenance(result)
+    binding = check_input_binding(
+        result, method=method, vendor=vendor, dose=dose,
+        bundle_dir=bundle_dir, checkpoint_dir=checkpoint_dir,
+        manifest_path=manifest_path, splits_dir=splits_dir)
+    return {
+        "claim": claim_errors,
+        "binding": binding.to_dict(),
+    }

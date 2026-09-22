@@ -1,6 +1,10 @@
 """scoring package for the WS-4 leaderboard."""
 from .task_spec import BLUR_SPEC, TASK_SPEC
-from .verify import check_paired_submission, check_submission_result, extract_paired_methods
+from .binding import (BIND_FAIL, BIND_PASS, BIND_UNVERIFIED, BindingResult,
+                      check_input_binding, check_model_bytes, sha256_file)
+from .verify import (check_claim_bound_provenance, check_input_bound_provenance,
+                     check_paired_submission, check_submission_result,
+                     extract_paired_methods)
 from .leaderboard import (BLUR_ENTRY_ID, REFERENCE_ENTRY_ID, TRAP_RANK_FAIL,
                           TRAP_RANK_INDETERMINATE, TRAP_RANK_MISSING_STRATUM,
                           TRAP_RANK_NO_CLAIM, TRAP_RANK_PASS, add_submission,
