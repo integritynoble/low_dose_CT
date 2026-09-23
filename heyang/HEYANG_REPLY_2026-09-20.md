@@ -104,3 +104,54 @@ work awaiting their own review.
 - **Not committed**: `WS-2_framework/pwm_dose_equivalence/reproducibility/
   reproducible_manifest.json` (line-ending noise only, non-task content) left
   as-is.
+
+---
+
+## 2026-09-23（HEYANG_NEXT_2026-09-22.md 任务 1-4）
+
+- **CT head**: 任务 2/3/4 提交 `21fd395` + 本进度索引提交（均本地，未 push）。
+
+- **Task 2 - reproducible hashes**: DONE, commit `21fd395`.
+  - 9-22 版 §7 哈希按 CRLF 工作区字节计算，无法在 git 提交上复现；已按 git
+    存储字节（LF，`core.autocrlf=true` 规范化）重算，记录于
+    [COMPLETION_CHECKLIST.md §7](Heyang-paper/COMPLETION_CHECKLIST.md)。
+  - 复现：`git ls-files -s Heyang-paper/<file>` 取 blob SHA1；
+    `git show HEAD:Heyang-paper/<file> | sha256sum` 取 SHA256（基线 = 21fd395）。
+  - 提交后实测核验：9 个论文包文件 SHA256 与 §7 表格**全部一致**；其中仅
+    `CLAIM_EVIDENCE.md` 因任务 3 引用替换而变化，`manuscript.pdf` 198,198 B
+    等其余 9 文件与 `5b3659c`/`01e7672` 逐字节一致（论文包内容未被改动）。
+
+- **Task 3 - evidence 入仓**: DONE, commit `21fd395`.
+  - 6 个证据文档已入仓 [heyang/evidence/](evidence/)（ENV_RECON / WINDOWS_COMPAT /
+    RELEASE_STATUS / PROVENANCE_BINDING / BANDER_DIAG / COPIES_DEPOSIT，均为
+    2026-09-21 版）：已剥离 AI 水印与 frontmatter，敏感信息扫描（token/secret/
+    凭据/手机号/身份证/分享 URL）0 命中。
+  - 本文件 6 个本地绝对路径链接与 [CLAIM_EVIDENCE.md](Heyang-paper/CLAIM_EVIDENCE.md)
+    4 处 ENV_RECON 引用均已替换为仓库内相对路径。
+
+- **Task 4 - WS-4 code cleanup**: DONE, commit `21fd395`.
+  - `WS-4_leaderboard/scoring/leaderboard.py`: `Set` 缺失导入已补（L672 使用
+    `Set[str]`）。
+  - `WS-4_leaderboard/scoring/verifier.py`: 删除未使用变量 `missing`
+    （MISSING_STRATUM 分支恒真过滤残留）。
+  - 验证：`py_compile` OK；`pytest scoring/tests` = **312 passed / 10 skipped**
+    （与本机 9-22 复跑一致）；其中 `test_publication_status.py` 23 个用例
+    全部通过（覆盖 MISSING_LAYER 分支）。
+  - **patient-mapping UNVERIFIED 意图**（PROVENANCE_BINDING §3.3）：该状态是
+    有意保守设计，不是失败。仅当 claim 声明 `bootstrap_level == "patient"`
+    时才启用映射核对；未声明 → `UNVERIFIED: NO_BINDING_DECLARED`（如实标注，
+    不视为已绑定）；声明了 `patient_source` 但来源文件缺失/解析为空 →
+    FAIL 或 UNVERIFIED（无法证实）；`patient_ids` 缺失 → FAIL。运行时缺外部
+    文件（checkpoints / manifest / split source）一律产出 UNVERIFIED，
+    **绝不认证**（"ok without unverified" 是唯一可认证态）。快照绑定状态在
+    `save()` 写盘前重验，快照 FAIL 即拒绝。
+
+- **Task 1 - 环境表 vs 论文主张（等 owner 决策）**: BLOCKED on owner.
+  - 矛盾：摘要/方法称跨环境差异（"separate environment differing in operating
+    system, CUDA build, and deep-learning framework version"），但 `tab:env`
+    显示参考环境 = 本地运行环境（owner 2026-09-21 已澄清，ENV_RECON 记录在仓）。
+  - 决策点：**改文**（摘要/方法表述与"参考环境 = 本地运行环境"对齐，删除跨环境
+    张力措辞）或**改表/保留叙事**（维持跨环境抽象表述，需 owner 确认可辩护）。
+  - 拍板后 Agent 再执行 ledger §8 加行、§7 标 C1/C4/C10/C12 及对应提交。
+- **Not committed**: `WS-2_framework/pwm_dose_equivalence/reproducibility/
+  reproducible_manifest.json`（行尾噪声，非任务内容）原样保留。
