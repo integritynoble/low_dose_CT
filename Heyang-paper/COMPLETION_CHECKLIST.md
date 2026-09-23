@@ -69,6 +69,8 @@
 
 当前 HEAD = `5b3659c`；已 push 至 `origin/heyang`（2026-09-22，fast-forward，0/0 分叉）。
 
+**2026-09-23（HEYANG_NEXT_2026-09-22.md 任务 2/3/4）**：本清单所在提交为 §7 哈希与 `heyang/HEYANG_REPLY_2026-09-20.md` 索引的基线。提交内容：`heyang/evidence/` 6 证据文件入仓（已剥离 AI 水印与 frontmatter，经敏感信息扫描 0 命中）、`HEYANG_REPLY` 6 个本地绝对路径链接替换为仓库相对路径、`CLAIM_EVIDENCE.md` 4 处 ENV_RECON 引用改为仓库内相对链接、WS-4 `leaderboard.py` 补 `Set` 导入 / `verifier.py` 删除未用变量、§7 哈希按 git 存储字节重算（LF 约定）。
+
 ## 6. 未提交改动（原样保留，不属于本次论文包）
 
 `git status --short`（提交前快照）：
@@ -79,19 +81,27 @@
 
 本次论文包提交范围：`Heyang-paper/manuscript.tex`、`README.md`、`CLAIM_EVIDENCE.md`、`COMPLETION_CHECKLIST.md`、`manuscript.pdf` 共 5 文件。
 
-## 7. artifact SHA256（2026-09-22 实测，论文包）
+## 7. artifact SHA256（可复现版，2026-09-23 重算）
 
-| 文件 | SHA256 |
-|---|---|
-| Heyang-paper/manuscript.pdf | 6096826A5B96357E2FBC057B6FFE7DE75AD152ACFBDEA92345D72E7D46CC82DB |
-| Heyang-paper/CLAIM_EVIDENCE.md | E9E971A3ABEE0DE6BB8B094401023C157E80A809E3E8330312EC35E34777B7C4 |
-| Heyang-paper/manuscript.tex | 7FD9D16906E88B732E157191BDF8D7EEF582F605FE0EB87102ABDC239D9A00EE |
-| Heyang-paper/README.md | 24D6E7D4E5AAB4B43240566E1A18EFE99C328957301CECC54FDDFC5A7400C2C8 |
-| Heyang-paper/make_tables.py | C450699E76B5019B42B00B1F6742C4177EDAE29C429597BC4AE684A9F6EAC738 |
-| Heyang-paper/references.bib | 79430D8DBF24C88289ADC3DE1FAC30F2F35E5D8763F71AB068F28C7F42CA7E1C |
-| Heyang-paper/tables/agreement.tex | 04794EAE360F7816D68F94CFC1AE4773979CB276E3B48D9496098FAE10BABDA3 |
-| Heyang-paper/tables/ladder.tex | BBA99F885559CC1FE4943A001B6D2EA6CA5BA5F2C1608B0FD9DB87042206CFF7 |
-| Heyang-paper/tables/scale.tex | 2E1BE9DB359864B9A0B417D77CF088CAA789D6CE3969794A206CF5A23B0A680C |
+**计算对象**：git 存储字节（仓库 `core.autocrlf=true` 规范化后，行尾 **LF**）。9-22 版 §7 哈希系 CRLF 工作区字节计算、无法在 git 提交上复现，故按任务书 9-22 任务 2 重算；**基线 = 本清单所在提交**（见 §5 提交链最新行）。
+
+| 文件 | SHA256（git 存储字节） | blob SHA1 |
+|---|---|---|
+| Heyang-paper/manuscript.pdf | 6096826A5B96357E2FBC057B6FFE7DE75AD152ACFBDEA92345D72E7D46CC82DB | 2c6c3e2c |
+| Heyang-paper/manuscript.tex | 33A02D8E75F7161E7BDD3D874F25CCE2ADB130E4E67018174AF823F4D7493618 | 647af9cc |
+| Heyang-paper/README.md | 1126F5DFB706EC25BB4DEC0BC380169BC2FEA9D5E1A0BFA9B6BD54341BE4ECE9 | 9506fbc5 |
+| Heyang-paper/CLAIM_EVIDENCE.md | 742B85546E7524A1F0EE94E9FA7B409E2EEC096043EDD8D63CB387E4754531D4 | 19e676a5 |
+| Heyang-paper/make_tables.py | 6C41E7F00914C0E96D11B8614330380F69A9CBFCBF533DF659325C2C55DBEDBF | ad040ea8 |
+| Heyang-paper/references.bib | 935FB2866FCCE55668DB852F6C93C7CE09B96C01A3FCFA14784256097F7A8D75 | 8810e186 |
+| Heyang-paper/tables/agreement.tex | 13069AECD0A9BBB4C579A1ACFA97BC5193250634E61A21F7C81587134AC1B7D5 | c7a301d4 |
+| Heyang-paper/tables/ladder.tex | A1A3C5DAF05BE4212ACAACEB9B4E7B7414C4718F5CC4B03436A956A1604D2932 | 50a06f54 |
+| Heyang-paper/tables/scale.tex | 0DAFCDAAC8E7F6FE40B5317B9A22DD3C8A1957E8F81CD4AF6D8BC745BB0A1045 | e918f81d |
+
+**复现命令**：
+- blob：`git ls-files -s Heyang-paper/<file>`（第三字段）
+- SHA256：`git show HEAD:Heyang-paper/<file> | sha256sum`（Windows：`(git show HEAD:Heyang-paper/<file>) | Get-FileHash -Algorithm SHA256`）
+
+**一致性说明**：10 个论文包文件中仅 `CLAIM_EVIDENCE.md` 因任务 3（ENV_RECON 证据引用改为仓库内相对链接）哈希变化；其余 9 文件与 `5b3659c` / `01e7672` 版本逐字节一致（含 `manuscript.pdf` 198,198 B 未变），佐证论文包内容未被本次任务改动。
 
 其他关键 artifact 哈希（台账 §6.1）：task_spec `AE7AE799BB8C24075C39BC6BCC7B07EE623DDB06292E968147446110F55D2D4C`；5 个 checkpoint 哈希见 `WS-1_dataset/R6_recalc/hashes/ckpt_hashes.txt`。
 

@@ -27,7 +27,7 @@ import json
 import statistics
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Set
 
 from .task_spec import (BLUR_SPEC, DISCRIMINATING_FIELDS, REQUIRED_VENDOR_GROUPS,
                         SCHEMA_VERSION, TASK_LABEL, TASK_SPEC)
