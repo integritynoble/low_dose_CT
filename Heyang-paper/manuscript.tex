@@ -32,8 +32,9 @@ criterion must look like to survive a reproduction in a different computing envi
 a criterion that fails should be read as a failed reproduction.
 
 \noindent\textbf{Methods:} An evaluation of five reconstruction methods over 764 held-out slices at
-three dose levels was recomputed by an independent operator, in a separate environment differing in
-operating system, CUDA build, and deep-learning framework version, from checkpoints and data
+three dose levels was recomputed by an independent operator in a separate environment --- Linux
+(Ubuntu 24.04 LTS) instead of Windows, with platform-specific CUDA/cuDNN/driver builds at the same
+nominal PyTorch 2.3.0+cu121 stack --- from checkpoints and data
 verified by hash. Agreement was assessed against the benchmark's original declared criterion, an
 absolute difference of $10^{-6}$. Because that criterion failed, we tested the leading explanation
 --- non-deterministic GPU kernels --- by re-running the affected methods with deterministic kernels
@@ -106,8 +107,9 @@ the audit in Section~\ref{sec:ladder}.}
 
 The reproduction was performed by an operator independent of the original run, using a separate
 checkout, a separate virtual environment, and a separate output tree; no artifact of the original
-run was overwritten. The recomputation environment was Python 3.12.10 with PyTorch 2.3.0+cu121 and
-NumPy 1.26.4, on Windows with two NVIDIA RTX 4090 GPUs (driver 591.86). The reference environment,
+run was overwritten. The recomputation environment was Ubuntu 24.04.3 LTS (WSL2) with Python 3.12.3,
+PyTorch 2.3.0+cu121, and NumPy 1.26.4, on the same two NVIDIA RTX 4090 GPUs (driver 591.86) exposed
+through WSL passthrough, with platform-specific cuDNN 8.9.2.26. The reference environment,
 in which the original results were produced, is the local run environment, and its exact version
 record is the repository's preserved project-runtime record: Windows with two NVIDIA RTX 4090 GPUs
 (driver 591.86), Python 3.12.10, PyTorch 2.3.0+cu121 (torchvision 0.18.0+cu121), NumPy 1.26.4,
@@ -117,34 +119,39 @@ dependency freeze, including SHA-256-verified local wheel sources, is recorded i
 commit \texttt{4875338}.
 
 This is a reproduction across environments, not a re-seed within one. That distinction is the point:
-a re-seed tests the pipeline's internal determinism, whereas a different library stack tests whether
-the published number is a property of the method or of the machine.
+a re-seed tests the pipeline's internal determinism, whereas a different library stack --- here,
+Linux (Ubuntu 24.04 LTS) instead of Windows, with platform-specific CUDA/cuDNN/driver builds at the
+same nominal PyTorch 2.3.0+cu121 stack (Table~\ref{tab:env}) --- tests whether the published number
+is a property of the method or of the machine.
 
 \begin{table}[ht]
 \centering
-\begin{tabular}{@{}ll@{}}
+\begin{tabular}{@{}lll@{}}
 \toprule
-Field & Record \\
+Field & Reference / recalc (Windows) & Independent re-run (Linux) \\
 \midrule
-OS & Windows \\
-GPU & 2$\times$ NVIDIA RTX 4090 \\
-GPU driver & 591.86 \\
-Python & 3.12.10 \\
-PyTorch & 2.3.0+cu121 \\
-torchvision & 0.18.0+cu121 \\
-NumPy & 1.26.4 \\
-SciPy & 1.13.1 \\
-scikit-image & 0.23.2 \\
-tifffile & 2024.9.20 \\
-mkl & 2021.4.0 (SHA-256-verified wheel) \\
-Dependency freeze & 57-line \texttt{env\_pip\_freeze.txt} \\
-Source baseline & commit \texttt{4875338} \\
+OS & Windows & Ubuntu 24.04.3 LTS (WSL2) \\
+GPU & 2$\times$ NVIDIA RTX 4090 & 2$\times$ NVIDIA RTX 4090 (WSL passthrough) \\
+GPU driver & 591.86 & 591.86 (WSL passthrough) \\
+Python & 3.12.10 & 3.12.3 \\
+PyTorch & 2.3.0+cu121 & 2.3.0+cu121 \\
+torchvision & 0.18.0+cu121 & 0.18.0+cu121 \\
+cuDNN & not separately recorded & 8.9.2.26 (nvidia-cudnn-cu12) \\
+NumPy & 1.26.4 & 1.26.4 \\
+SciPy & 1.13.1 & 1.13.1 \\
+scikit-image & 0.23.2 & 0.23.2 \\
+tifffile & 2024.9.20 & 2026.3.3 \\
+mkl & 2021.4.0 (SHA-256-verified wheel) & --- \\
+Dependency freeze & 57-line \texttt{env\_pip\_freeze.txt} & \texttt{pip freeze} of \texttt{.venv\_r6} \\
+Source baseline & commit \texttt{4875338} & commit \texttt{b0686eb} (editable) \\
+Re-run date & --- & 2026-09-23/24 \\
 \bottomrule
 \end{tabular}
-\caption{\textbf{Computing environment record.} The recomputation environment and the reference
-environment --- the local run environment, by the owner's decision --- are both covered by this
-single project-runtime record; the complete 57-line freeze and the hashes are committed under
-\texttt{WS-1\_dataset/R6\_recalc/hashes/}.}
+\caption{\textbf{Computing environment record.} The reference environment --- the local run
+environment, by the owner's decision --- is recorded in the left column; the recomputation
+environment --- an independent Linux re-run on 2026-09-23/24, with all 375 comparisons within the
+relative tolerance $10^{-4}$ --- is recorded in the right column. The complete 57-line freeze and
+the hashes are committed under \texttt{WS-1\_dataset/R6\_recalc/hashes/}.}
 \label{tab:env}
 \end{table}
 

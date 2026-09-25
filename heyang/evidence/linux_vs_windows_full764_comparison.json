@@ -1,0 +1,186 @@
+{
+ "generated": "2026-09-24T23:38:02.362203",
+ "rel_tolerance": 0.0001,
+ "per_model": {
+  "blur": {
+   "status": "PASS",
+   "n_checked": 75,
+   "n_diffs": 0,
+   "worst_absdiff": 1.4210854715202004e-14,
+   "worst_reldiff": 3.411694945381733e-16,
+   "per_metric": {
+    "cho_auc_mean": {
+     "max_absdiff": 0.0,
+     "max_reldiff": 0.0,
+     "rel1e-4": "PASS"
+    },
+    "cnr_mean": {
+     "max_absdiff": 0.0,
+     "max_reldiff": 0.0,
+     "rel1e-4": "PASS"
+    },
+    "npwe_mean": {
+     "max_absdiff": 0.0,
+     "max_reldiff": 0.0,
+     "rel1e-4": "PASS"
+    },
+    "psnr": {
+     "max_absdiff": 1.4210854715202004e-14,
+     "max_reldiff": 3.411694945381733e-16,
+     "rel1e-4": "PASS"
+    },
+    "ssim": {
+     "max_absdiff": 0.0,
+     "max_reldiff": 0.0,
+     "rel1e-4": "PASS"
+    }
+   },
+   "diffs": []
+  },
+  "red_cnn": {
+   "status": "PASS",
+   "n_checked": 75,
+   "n_diffs": 0,
+   "worst_absdiff": 0.0,
+   "worst_reldiff": 0.0,
+   "per_metric": {
+    "cho_auc_mean": {
+     "max_absdiff": 0.0,
+     "max_reldiff": 0.0,
+     "rel1e-4": "PASS"
+    },
+    "cnr_mean": {
+     "max_absdiff": 0.0,
+     "max_reldiff": 0.0,
+     "rel1e-4": "PASS"
+    },
+    "npwe_mean": {
+     "max_absdiff": 0.0,
+     "max_reldiff": 0.0,
+     "rel1e-4": "PASS"
+    },
+    "psnr": {
+     "max_absdiff": 0.0,
+     "max_reldiff": 0.0,
+     "rel1e-4": "PASS"
+    },
+    "ssim": {
+     "max_absdiff": 0.0,
+     "max_reldiff": 0.0,
+     "rel1e-4": "PASS"
+    }
+   },
+   "diffs": []
+  },
+  "learn": {
+   "status": "PASS",
+   "n_checked": 75,
+   "n_diffs": 0,
+   "worst_absdiff": 1.1641532182693481e-10,
+   "worst_reldiff": 1.4269387164860856e-16,
+   "per_metric": {
+    "cho_auc_mean": {
+     "max_absdiff": 0.0,
+     "max_reldiff": 0.0,
+     "rel1e-4": "PASS"
+    },
+    "cnr_mean": {
+     "max_absdiff": 0.0,
+     "max_reldiff": 0.0,
+     "rel1e-4": "PASS"
+    },
+    "npwe_mean": {
+     "max_absdiff": 1.1641532182693481e-10,
+     "max_reldiff": 1.4269387164860856e-16,
+     "rel1e-4": "PASS"
+    },
+    "psnr": {
+     "max_absdiff": 0.0,
+     "max_reldiff": 0.0,
+     "rel1e-4": "PASS"
+    },
+    "ssim": {
+     "max_absdiff": 0.0,
+     "max_reldiff": 0.0,
+     "rel1e-4": "PASS"
+    }
+   },
+   "diffs": []
+  },
+  "ctformer": {
+   "status": "PASS",
+   "n_checked": 75,
+   "n_diffs": 0,
+   "worst_absdiff": 0.0334675827762112,
+   "worst_reldiff": 4.4127719483885376e-07,
+   "per_metric": {
+    "cho_auc_mean": {
+     "max_absdiff": 0.0,
+     "max_reldiff": 0.0,
+     "rel1e-4": "PASS"
+    },
+    "cnr_mean": {
+     "max_absdiff": 2.083072028646882e-06,
+     "max_reldiff": 4.4127719483885376e-07,
+     "rel1e-4": "PASS"
+    },
+    "npwe_mean": {
+     "max_absdiff": 0.0334675827762112,
+     "max_reldiff": 2.0294969999720002e-07,
+     "rel1e-4": "PASS"
+    },
+    "psnr": {
+     "max_absdiff": 1.4588437124984921e-08,
+     "max_reldiff": 2.6372573532489907e-10,
+     "rel1e-4": "PASS"
+    },
+    "ssim": {
+     "max_absdiff": 2.4965296496759493e-09,
+     "max_reldiff": 2.512366359189306e-09,
+     "rel1e-4": "PASS"
+    }
+   },
+   "diffs": []
+  },
+  "corediff": {
+   "status": "PASS",
+   "n_checked": 75,
+   "n_diffs": 0,
+   "worst_absdiff": 1.7946701784385368,
+   "worst_reldiff": 1.4610660164386265e-05,
+   "per_metric": {
+    "cho_auc_mean": {
+     "max_absdiff": 0.0,
+     "max_reldiff": 0.0,
+     "rel1e-4": "PASS"
+    },
+    "cnr_mean": {
+     "max_absdiff": 0.00014320151013968996,
+     "max_reldiff": 1.4610660164386265e-05,
+     "rel1e-4": "PASS"
+    },
+    "npwe_mean": {
+     "max_absdiff": 1.7946701784385368,
+     "max_reldiff": 2.0197521883037006e-06,
+     "rel1e-4": "PASS"
+    },
+    "psnr": {
+     "max_absdiff": 3.0607954215611244e-07,
+     "max_reldiff": 5.736457755707288e-09,
+     "rel1e-4": "PASS"
+    },
+    "ssim": {
+     "max_absdiff": 3.432728212793279e-09,
+     "max_reldiff": 3.4769900341058366e-09,
+     "rel1e-4": "PASS"
+    }
+   },
+   "diffs": []
+  }
+ },
+ "overall": "PASS",
+ "summary": {
+  "total_checked": 375,
+  "total_diffs": 0
+ }
+}

@@ -101,7 +101,9 @@
 
 ## 6. 两个计算环境
 
-### 6.1 复算（recomputation）环境 — 字段全部 R
+> 更新（2026-09-25，任务1收尾）：manuscript 叙事已按决策采用方案 A —— recomputation 侧以 2026-09-23/24 的 Linux（WSL Ubuntu）独立复算为准（见 §6.2），与本机 Windows 参考侧构成真实跨 OS。原 §6.1 的 Windows 复算保留为历史证据侧（route (a) 确定性重跑与容差阶梯的证据均出自该侧）。
+
+### 6.1 本机 Windows 复算（历史证据侧；route (a) 与容差阶梯的证据来源）— 字段全部 R
 
 | 字段 | 值 | 日志/artifact 来源 |
 |---|---|---|
@@ -121,7 +123,23 @@
 | 数据 manifest | LIDC sim 364 项 / AAPM held-out 25 项 | `hashes/data_hashes.txt`、`hashes/aapm_hashes.txt`；`manuscript.tex` L155 |
 | route (a) 内核设置/耗时 | cudnn.deterministic=True 等 4 项；585.4/422.8/1824.1 min rc=0 | `R6_recalc_report.md` §10.1（L240-245） |
 
-### 6.2 参考（reference）环境 — 身份裁定 R、独立记录 UNRESOLVED
+### 6.2 Linux 独立复算（2026-09-23/24，论文叙事 recomputation 侧）— 字段全部 R
+
+| 字段 | 值 | 日志/artifact 来源 |
+|---|---|---|
+| OS | Ubuntu 24.04.3 LTS（WSL2，内核 6.6.87.2-microsoft-standard-WSL2） | `evidence/env_diff_record_Linux_recalc_2026-09-25.md` §2（`/etc/os-release` 实测） |
+| GPU / 驱动 | 2× NVIDIA RTX 4090（WSL passthrough）/ 591.86 | 同上（`nvidia-smi`） |
+| Python | 3.12.3（独立 venv `.venv_r6`） | 同上（`pip freeze`） |
+| PyTorch / torchvision | 2.3.0+cu121 / 0.18.0+cu121 | 同上 |
+| cuDNN | 8.9.2.26（nvidia-cudnn-cu12） | 同上 |
+| NumPy | 1.26.4 | 同上 |
+| scipy / scikit-image / tifffile | 1.13.1 / 0.23.2 / 2026.3.3 | 同上 |
+| 包安装 | editable `git+https://github.com/integritynoble/low_dose_CT.git@b0686eb` | 同上（`.venv_r6/bin/pip freeze`） |
+| 数据 / 权重 | `~/r6_recalc_linux/data`（364 文件 / 24G，manifest.sha256 校验）；checkpoints 同参考侧 5 权重 | 同上 §2 |
+| 运行记录 | smoke 09-23 15:32 → blur 09-23 17:24 → ctformer 09-23 19:41 → learn 09-23 21:26 → red_cnn 09-24 08:28 → corediff 09-24 21:04；日志 `~/r6_recalc_linux/r6_out/*.log`（仓库外） | 同上 §2 |
+| 比对结果 | 5 模型 × 75 = 375 项比对全部 PASS（rel 容差 1e-4，worst reldiff 1.5e-5）；blur 3.4e-16 / red_cnn 0 / learn 1.4e-16 / ctformer 4.4e-07 / corediff 1.5e-05 | `evidence/linux_vs_windows_full764_comparison.json`；`manuscript.tex` tab:env caption |
+
+### 6.3 参考（reference）环境 — 身份裁定 R、独立记录 UNRESOLVED
 
 | 项 | 状态 | 依据 |
 |---|---|---|
@@ -141,23 +159,33 @@
 | C1 | 5 方法、764 slices、3 剂量、独立操作者复算（abstract Methods L34-41） | `compare_full764.py` DOSES/METRICS；`data_hashes.txt`（364）；`ckpt_hashes.txt`；`manuscript.tex` L107-109 | `python -B WS-1_dataset/R6_recalc/recompare_per_metric.py --check` |
 | C2 | 原始声明判据为 absolute 1e-6（abstract Methods L37-38；L69） | `comparison_full764.json` `tolerance=1e-06`、`shipped_criterion_superseded.kind=absolute` | 同 C1 |
 | C3 | 原判据下三方法失败、115/375 不同（L43、L190-191） | `shipped_criterion_superseded.per_model_status`；`per_model.*.n_diffs`（115）；`tables/agreement.tex` | `make_tables.py --check` |
-| C4 | 同侧重跑逐位一致、无内核非确定性（L44-45、L213-217） | `routeA_rerun_evidence.result`；`R6_recalc_report.md` §10.2 比对 A | 只读复核同 C1 |
+| C4 | 同侧重跑逐位一致、无内核非确定性（L44-45、L213-217） | `routeA_rerun_evidence.result`；`R6_recalc_report.md` §10.2 比对 A（Windows 本机侧执行）；[2026-09-25 更新] Linux 侧跨 OS 一致性另见 `evidence/linux_vs_windows_full764_comparison.json`（blur 3.4e-16 / red_cnn 0 / learn 1.4e-16 / ctformer 4.4e-07 / corediff 1.5e-05） | 只读复核同 C1 |
 | C5 | 所测绝对容差均不解决（L45-47、L223-230） | `ladder_from_the_committed_diffs`（8 级）；`tables/ladder.tex` | `make_tables.py --check` |
 | C6 | 相对 1e-4 每指标声明通过全部方法、worst 6.36e-5（L48-50） | `criterion.per_metric`；`per_metric_declaration`；`recompare_per_metric.py --check` 输出 | 同 C1 |
 | C7 | 修正为追溯性调整、非独立验证（L271-277） | `criterion.declared_on=2026-09-12`；`shipped_criterion_superseded.note`；`routeA_rerun_evidence.do_not_overwrite`；`DIRECTOR_DECISIONS.md` §2.1 | — |
 | C8 | 75/方法、375 总计（L88-89） | `SEEDS/DOSES/METRICS` 常量；`per_model.*.n_checked=75` | — |
 | C9 | 原判据"非不可达"、是错类型（L244-247） | `tolerance_audit.finding`（764 项 float64 ~1e-13 相对） | — |
-| C10 | 两环境、参考环境=本地运行环境（L105-117） | `env_pip_freeze.txt`（57 行）；`ckpt_hashes.txt`；`data_hashes.txt`/`aapm_hashes.txt`；README L54-59 | — |
+| C10 | 两环境、参考环境=本地运行环境、复算侧=Linux（L105-117，tab:env 三列对照） | `env_pip_freeze.txt`（57 行）；`ckpt_hashes.txt`；`data_hashes.txt`/`aapm_hashes.txt`；README L54-59；[2026-09-25 更新] `evidence/env_diff_record_Linux_recalc_2026-09-25.md`（参考侧/Linux 侧字段实测）、`evidence/linux_vs_windows_full764_comparison.json`、tab:env（Windows 参考 / Linux 复算两列） | — |
 | C11 | 第一复现尝试的 checkpoint 换用事件（L249-258） | `R6_recalc_report.md`（provenance 事件记录）；hash 级 pinning | — |
-| C12 | 结论：失败判据是调查起点、按指标声明（L296-302） | 上述 C1-C11 全链 | — |
+| C12 | 结论：失败判据是调查起点、按指标声明（L296-302） | 上述 C1-C11 全链；[2026-09-25 更新] 跨 OS 独立复算一致性（Linux 375/375 PASS @ rel 1e-4）作为可复现性结论的附加证据（`evidence/linux_vs_windows_full764_comparison.json`） | — |
 
 ---
 
 ## 8. UNRESOLVED 清单
 
+### 任务1决策记录（2026-09-25，HEYANG_NEXT_2026-09-22 任务1收尾）
+
+**决策**：维持跨环境叙事（方案 A）——recomputation 侧采用 2026-09-23/24 Linux（WSL Ubuntu 24.04.3 LTS）独立复算记录；摘要 Methods（L35-37）改写为 "Linux (Ubuntu 24.04 LTS) instead of Windows, with platform-specific CUDA/cuDNN/driver builds at the same nominal PyTorch 2.3.0+cu121 stack"；Methods 复算环境改为 Ubuntu/WSL2/Python 3.12.3/cuDNN 8.9.2.26；不同 library stack 段加 tab:env 引用；tab:env 改为 Windows 参考 / Linux 复算三列对照表。未削弱环境表、未恢复 pre-registration 框架。
+
+**依据（R）**：`evidence/env_diff_record_Linux_recalc_2026-09-25.md`（参考侧字段 + Linux 侧实测：`/etc/os-release`、`.venv_r6/bin/pip freeze`、`nvidia-smi`、运行日志）；`evidence/linux_vs_windows_full764_comparison.json`（375/375 PASS @ rel 1e-4，worst reldiff 1.5e-5）。
+
+**完成标准核对**：无未经证据支持的跨环境断言 ✅（OS 轴真实不同有 R 记录；CUDA/framework 两轴如实表述为平台特定构建差异，未断言版本号不同）；ledger 记录决策依据 ✅（本行）；§7 已标 C1/C4/C10/C12。
+
+**局限**：① absolute 1e-6 失败集（115/375）、route (a) 逐位复现与容差阶梯的证据来自本机 Windows 复算（`comparison_full764.json`，§6.1），Linux 比对仅覆盖 rel 1e-4 判据——abstract Results 的失败计数不归属 Linux 复算侧；② Linux 侧原始日志与 5 个 `*_det_full764.json` 在 WSL `~/r6_recalc_linux/`（仓库外），仓库内仅比对报告与记录文件（见 U10）。
+
 | # | 项 | 缺失内容 | 影响声明 |
 |---|---|---|---|
-| U1 | 参考环境独立版本记录 | 作者原始运行时的 OS 具体版本 / GPU 型号数量 / 驱动 / CUDA/cuDNN / Python/PyTorch/NumPy 的独立记录（pip freeze / nvidia-smi / 容器 tag 确证） | C10 的"参考侧独立确证"部分 |
+| U1 | 参考环境独立版本记录 | 作者原始运行时的 OS 具体版本 / GPU 型号数量 / 驱动 / CUDA/cuDNN / Python/PyTorch/NumPy 的独立记录（pip freeze / nvidia-smi / 容器 tag 确证）；[2026-09-25] 跨环境主张已由 Linux 复算侧 R 记录支撑（`evidence/env_diff_record_Linux_recalc_2026-09-25.md`），此处仍指参考侧（作者原始运行环境）独立存档缺失 | C10 的"参考侧独立确证"部分 |
 | U2 | ASSET_MANIFEST.md SHA256 栏 | 空占位，无数值级比对 | 资产清单数值核对 |
 | U3 | 参考侧 bit-identical 独立性 | 6 文件 MATCH 出自复算者报告，非独立第三方核验 | C4/C7 的独立性表述 |
 | U4 | routeA_run.log 原始日志 | 在仓库外复算工作目录（`r6_recalc/routeA_run.log`），仓库内未提交 | C4 日志级证据 |
@@ -166,6 +194,7 @@
 | U7 | 作者元数据 | author order / affiliations / ORCIDs / corresponding author（L22 TODO） | 投稿就绪 |
 | U8 | CRediT / competing interests | L309-313 TODO | 投稿就绪 |
 | U9 | data/code 可用性措辞 | L304-305 TODO，依赖公开释放决策 | 投稿就绪 |
+| U10 | Linux 复算原始日志/逐模型输出 | WSL `~/r6_recalc_linux/r6_out/*.log` 与 5 个 `*_det_full764.json` 在仓库外；仓库内仅有比对报告 `evidence/linux_vs_windows_full764_comparison.json` 与 `evidence/env_diff_record_Linux_recalc_2026-09-25.md` | C1/C10 的 Linux 侧原始日志级证据 |
 
 ---
 
