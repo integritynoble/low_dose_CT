@@ -66,38 +66,44 @@ Two further defects in the same edit:
   mean the original reference results or the Windows recomputation, and the two
   differ (that difference is the paper). Record which file set, with hashes.
 
-**The owner decision is not recorded clearly.** The 23 September reply index
+**The owner decision was labelled inconsistently.** The 23 September reply index
 defined option A as *rewrite the text to drop the cross-environment tension*
 and option B as *keep the cross-environment narrative*. The 25 September entry
 says "owner 拍板方案 A" but implements the cross-environment narrative, and
-`env_diff_record` calls that same route "方案 B". The owner is confirming which
-was meant. **Do not start the rewrite below until the owner's choice is
-written into the reply index in the owner's own words (quote the message, with
-its date and channel).**
+`env_diff_record` calls that same route "方案 B".
 
-Then resolve it one of two ways. The attribution defect must be fixed either
-way.
+**Owner decision, 25 September 2026 (Claude Code session on the Linux
+workstation, relayed in this page):** "keep the cross-environment framing".
+The Linux run is the paper's recomputation. Copy this quote, with its date and
+source, into the reply index and `CLAIM_EVIDENCE.md` §8 as the basis for the
+task-1 row, and refer to it as *cross-environment kept*, not by letter.
 
-- **If the Linux run is the paper's recomputation (cross-environment kept):**
-  every reported number must come from Linux vs the *reference* results. Rerun
+That makes the attribution defect a results task, not a wording task:
+
+- Every reported number must come from Linux vs the *reference* results. Rerun
   `recompare_per_metric.py` (or its equivalent) for the Linux outputs against
   the reference at the declared absolute $10^{-6}$ criterion, regenerate
-  `agreement.tex` from that, and rewrite the Results, the ladder section and the
-  conclusion to whatever those numbers show — including the possibility that
-  the original criterion now passes for some or all methods, which changes the
-  paper's argument. The Linux per-model outputs (`*_det_full764.json`) and logs
-  move into the repository (closes U10); a paper cannot rest its results on
-  files that exist only in `~/r6_recalc_linux/`.
-- **If the Windows recomputation stays the paper's recomputation:** restore the
-  Methods and `tab:env` to the Windows recomputation record, and state what is
-  known — two separate runs on the same recorded stack, residual offset
-  unexplained, attribution to an environment difference UNRESOLVED (the
-  22 September wording). The Linux run may then be added as a clearly labelled
-  **additional** cross-OS check, with its own numbers and its own criterion
-  (relative $10^{-4}$, with baseline named), never as the source of the
-  reported results.
+  `agreement.tex` from that, and rewrite the Results, the ladder section and
+  the conclusion to whatever those numbers show — including the possibility
+  that the original criterion now passes for some or all methods, which
+  changes the paper's argument. Do not carry a Windows-side number into a
+  sentence that the Methods attribute to the Linux run.
+- If the Linux run was compared only against the Windows *recomputation*, not
+  the reference, the committed 375/375 PASS is not the paper's comparison; say
+  which it was and redo it against the reference.
+- The Linux per-model outputs (`*_det_full764.json`) and logs move into the
+  repository (closes U10); a paper cannot rest its results on files that exist
+  only in `~/r6_recalc_linux/`.
+- The Windows recomputation, its deterministic-kernel rerun (route (a)) and the
+  tolerance ladder are real, preserved evidence. Keep them in the repository
+  and the ledger. If the paper still cites them, label them as the earlier
+  same-OS run in the text; do not delete them and do not present them as the
+  Linux run.
+- If the Linux numbers remove the failure the paper is built around, stop after
+  the re-comparison and report the numbers before rewriting; the owner decides
+  how the argument changes.
 
-Either way: drop "driver" from the list of differing builds; add the decision,
+Also: drop "driver" from the list of differing builds; add the decision,
 its quoted source and its basis to `CLAIM_EVIDENCE.md` §8; mark in §7 which of
 C1 / C4 / C10 / C12 changed.
 
