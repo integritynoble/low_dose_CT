@@ -163,7 +163,92 @@ Optional while there: `pyflakes` also reports `hashlib` unused in
 **Done when:** the docstring states the intended state for a result that does
 not declare patient-level bootstrap.
 
-### 5. Then the 20 September backlog
+### 5. Prepare the third environment (owner decision: yes)
+
+**Owner decision, 25 September 2026 (relayed in this page):** add a third
+environment, run on the owner's native-Linux RTX 5090 workstation. Quote it in
+the reply index and `CLAIM_EVIDENCE.md` §8.
+
+Why this machine: the Linux run shares the host, the two RTX 4090s, driver
+591.86 and PyTorch 2.3.0+cu121 with the Windows side. A reviewer can fairly
+call that one machine booted two ways. The 5090 workstation differs on every
+axis the abstract names. Recorded 2026-09-25: Ubuntu 26.04 LTS (native, not
+WSL), RTX 5090 (Blackwell), driver 595.71.05, CUDA 13.2 driver runtime.
+PyTorch 2.3.0 has no kernels for this GPU generation, so the framework version
+necessarily differs as well.
+
+**Order:** start this only after task 1's re-comparison is reported. If task 1
+stops on the owner's call, this waits with it.
+
+Your part is to make the run executable by someone other than you, not to run
+it. The run happens on the owner's workstation.
+
+- **Run book** — `heyang/evidence/THIRD_ENV_RUNBOOK_2026-09-25.md`: the exact
+  commands from a clean checkout at a named commit to the five
+  `*_det_full764.json` outputs, the expected runtime per model (the Linux run
+  took about 30 h end to end), and the comparison command against the
+  **reference** results at both the declared absolute $10^{-6}$ and relative
+  $10^{-4}$ criteria, with the reference files named by hash.
+- **Environment** — pin the newest PyTorch with Blackwell (sm_120) support you
+  can justify, and list every code change the old pipeline needs to run on it.
+  Make the changes on a branch, with tests, and do not change any metric
+  definition. A change that alters a number is a finding; report it rather
+  than tuning it away.
+- **Data** — LIDC-IDRI is public on TCIA, so the 364 input files are downloaded
+  on the workstation, not copied: give the download manifest and the check
+  against `hashes/data_hashes.txt`. Confirm the licence of the collection
+  version the manifest points at.
+- **Checkpoints** — the five checkpoints are the only files that must move.
+  Write down who trained them, on what data, and under which baseline-code
+  licence, and state whether the use agreement permits the transfer. The owner
+  authorises the transfer; do not send them before that.
+- **Operator** — the run should be done by someone other than you (a third
+  operator strengthens the independence claim). Say what they need from you.
+
+**Done when:** the run book, environment branch and checkpoint-provenance note
+are committed, and the owner has what is needed to authorise the transfer and
+start the run. The paper's Limitations `\todo` (L296) is then replaced with the
+planned third environment; its results go in only after the run.
+
+### 6. Draft the availability statement and release package (owner decision: curated release)
+
+**Owner decision, 25 September 2026 (relayed in this page):** publish a
+curated release with a DOI, not the whole repository; do not redistribute
+images; release checkpoints only if the rights are confirmed, otherwise hashes
+only. Quote it in the reply index and `CLAIM_EVIDENCE.md` §8.
+
+The repository itself stays private. It carries internal task pages, working
+notes and evidence documents that are not publication material.
+
+- **Package manifest** — `Heyang-paper/RELEASE_MANIFEST.md`: every file that
+  goes into the release, why, and its SHA-256. At minimum the evaluation code,
+  the re-derivation script (`recompare_per_metric.py`), the table generator
+  (`make_tables.py`), the per-slice result JSONs and comparison JSONs the
+  paper's numbers come from, and the hash manifests (`data_hashes.txt`,
+  `aapm_hashes.txt`, `ckpt_hashes.txt`). Nothing with PHI, credentials, local
+  paths, AIGC watermarks or share tokens.
+- **Rights check** for each item: code licence (there is no top-level
+  licence; `WS-1_dataset/baselines`, `WS-1_dataset/pwm_ldct_loader` and
+  `WS-2_framework/pwm_dose_equivalence` carry their own `LICENSE` files — record
+  which licence covers each released file, and flag any file no licence covers;
+  choosing one is the owner's call),
+  dataset terms for LIDC-IDRI and the AAPM/Mayo data, and the checkpoint
+  question from task 5. Anything uncertain is listed as uncertain, not
+  assumed.
+- **Statement text** — replace the `\todo` at L312 with a draft built on
+  `COMPLETION_CHECKLIST.md` §10: code and derived results at a DOI (leave the
+  DOI as a marked placeholder), images available from TCIA / AAPM under their
+  own terms and verifiable against the listed hashes, checkpoints by hash
+  unless released. Medical Physics (the primary target) requires this
+  statement.
+- **Do not** create the Zenodo record, a public repository or a release tag.
+  The owner does that after reviewing the manifest.
+
+**Done when:** the manifest, the rights table and the drafted statement are
+committed, and every file in the manifest exists in the repository and
+reproduces its listed hash.
+
+### 7. Then the 20 September backlog
 
 Tasks 2 (native Windows CT + agent receipt), 5a (BANDER-2) and 5b (off-machine
 copy) stay blocked on the owner inputs you listed. Do not re-implement around
@@ -171,11 +256,13 @@ those blocks.
 
 ## Is the paper done?
 
-No. After the tasks above it is still blocked on owner inputs, not on you: five
-`\todo{}` remain (author list / affiliations / ORCIDs / corresponding author at
-L22, third environment at L296, artifact release at L312, CRediT at L317,
-declarations at L320), and the eight items in `COMPLETION_CHECKLIST.md` §9 are
-unanswered. Keep that list current; do not fill any of those fields yourself.
+No. The third-environment and release decisions are now made (tasks 5 and 6).
+After the tasks above the paper is still blocked on owner inputs, not on you:
+the author list / affiliations / ORCIDs / corresponding author (L22), the CRediT
+statement (L317) and per-author declarations (L320), plus the final Zenodo
+record and code licence. Keep `COMPLETION_CHECKLIST.md` §9 current — mark items
+7 (third environment) and 8 (artifact release) as decided on 25 September — and
+do not fill the owner fields yourself.
 
 ## Reporting rule
 

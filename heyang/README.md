@@ -13,7 +13,7 @@ relative to the repository root unless a working directory is stated.
 
 | Document | Purpose |
 |---|---|
-| [25 September review and assignment](HEYANG_NEXT_2026-09-25.md) | Review of the 23-25 September delivery; recomputation attribution in the paper, §7 re-hash, broken evidence links, patient-mapping docstring |
+| [25 September review and assignment](HEYANG_NEXT_2026-09-25.md) | Review of the 23-25 September delivery; recomputation attribution in the paper, §7 re-hash, broken evidence links, patient-mapping docstring, third-environment run book, release manifest and availability statement |
 | [22 September review and assignment](HEYANG_NEXT_2026-09-22.md) | Review of the merged 21 September delivery; environment-claim contradiction, verifiable hashes, evidence documents, WS-4 cleanups |
 | [20 September backlog](HEYANG_NEXT_2026-09-20.md) | Windows CT + agent checks, publication states, provenance, BANDER and backup evidence — tasks 2, 5a, 5b still open |
 | [Progress index](HEYANG_REPLY_2026-09-20.md) | Heyang's single reply index; report every task status here |
