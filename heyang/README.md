@@ -1,8 +1,8 @@
 # Heyang — tasks and replies
 
-**Start here:** [Current assignment — 22 September](HEYANG_NEXT_2026-09-22.md).
-The 21 September task book is merged into `main` (`c765d1b`, PR #30); the
-22 September page reviews it and carries the open corrections. The
+**Start here:** [Current assignment — 25 September](HEYANG_NEXT_2026-09-25.md).
+It reviews the `heyang` commits delivered against the 22 September page
+(`21fd395`..`716cd96`, not yet merged) and carries the open corrections. The
 [20 September backlog](HEYANG_NEXT_2026-09-20.md) stays open behind it.
 
 All Heyang task handoffs, reviews and replies live in this folder. Add future
@@ -13,6 +13,7 @@ relative to the repository root unless a working directory is stated.
 
 | Document | Purpose |
 |---|---|
+| [25 September review and assignment](HEYANG_NEXT_2026-09-25.md) | Review of the 23-25 September delivery; recomputation attribution in the paper, §7 re-hash, broken evidence links, patient-mapping docstring |
 | [22 September review and assignment](HEYANG_NEXT_2026-09-22.md) | Review of the merged 21 September delivery; environment-claim contradiction, verifiable hashes, evidence documents, WS-4 cleanups |
 | [20 September backlog](HEYANG_NEXT_2026-09-20.md) | Windows CT + agent checks, publication states, provenance, BANDER and backup evidence — tasks 2, 5a, 5b still open |
 | [Progress index](HEYANG_REPLY_2026-09-20.md) | Heyang's single reply index; report every task status here |
