@@ -155,3 +155,37 @@ work awaiting their own review.
   - 拍板后 Agent 再执行 ledger §8 加行、§7 标 C1/C4/C10/C12 及对应提交。
 - **Not committed**: `WS-2_framework/pwm_dose_equivalence/reproducibility/
   reproducible_manifest.json`（行尾噪声，非任务内容）原样保留。
+
+---
+
+## 2026-09-25（HEYANG_NEXT_2026-09-22.md 任务1收尾 + 交付全景）
+
+- **CT head**: 任务 1 收尾提交 `3fbf5bf`，已 push，`origin/heyang` = `3fbf5bf`；工作区干净。
+
+- **Task 1 - 环境表 vs 论文主张**: DONE（owner 2026-09-25 拍板方案 A），commit `3fbf5bf`。
+  - 决策：维持跨环境叙事，recomputation 侧采用 2026-09-23/24 Linux（WSL Ubuntu
+    24.04.3 LTS）独立复算记录；摘要 Methods 改为 "Linux (Ubuntu 24.04 LTS)
+    instead of Windows, with platform-specific CUDA/cuDNN/driver builds at the
+    same nominal PyTorch 2.3.0+cu121 stack"；Methods 复算环境改为
+    Ubuntu/WSL2/Python 3.12.3/cuDNN 8.9.2.26；tab:env 改 Windows 参考 / Linux
+    复算三列对照表。未削弱环境表、未恢复 pre-registration 框架。
+  - 证据入库：`env_diff_record_Linux_recalc_2026-09-25.md` 与
+    `linux_vs_windows_full764_comparison.json`（375/375 PASS @ rel 1e-4，worst
+    reldiff 1.5e-5）→ [heyang/evidence/](evidence/)。
+  - ledger：[CLAIM_EVIDENCE.md](Heyang-paper/CLAIM_EVIDENCE.md) §6 新增 Linux
+    复算侧（6.2）、§7 标 C1/C4/C10/C12、§8 新增任务1决策记录行、U1 更新、
+    新增 U10（Linux 原始日志在 WSL `~/r6_recalc_linux/`，仓库外）。
+  - manuscript.pdf 重建：MiKTeX 在 elevated 会话被拦截，经降权令牌手动编译
+    pdflatex ×3 + bibtex，7 页 199,389 B；`make_tables.py --check` 通过。
+  - WS-2 `reproducible_manifest.json` 行尾噪声：内容零差异（LF→CRLF），经 owner
+    确认已 `git restore` 丢弃，工作区干净。
+
+- **HEYANG_NEXT_2026-09-22.md 五任务全景**: 任务 1-4 全 DONE（任务 1 见上；
+  2/3/4 见 2026-09-23 段）；任务 5（native Windows CT / BANDER-2 a42ad27 /
+  OneDrive 副本）仍 BLOCKED on owner 输入。
+
+- **远端同步**: `origin/heyang` = `3fbf5bf`，本地 5 个提交（c765d1b、01e7672、
+  21fd395、b0686eb、3fbf5bf）已全部 push；paper PR #30 仍 Open 待 owner 审查。
+
+- **Not committed / 待办**: 无未提交工作区改动；8 项 owner 决策（作者元数据、
+  第三环境、artifact 发布等，见 COMPLETION_CHECKLIST.md §9）未答复。
