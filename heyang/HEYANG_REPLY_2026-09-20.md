@@ -243,9 +243,26 @@ work awaiting their own review.
    仓库本身保持私有；data/code availability 措辞按此起草（COMPLETION_CHECKLIST
    §10，DOI 留占位）。
 
-- **任务 5/6（owner 决定已记录，任务 5 待任务 1 后启动）**: 任务 5（第三环境
-  运行书 + 环境分支 + checkpoint 迁移授权）与任务 6（策展发布包 + DOI）由
-  HEYANG_NEXT_2026-09-25.md 承接；本文仅记录决定引述，不代为执行。
+- **Task 5 - 第三环境运行包**: DONE，commit `78ca452`（third-env/blackwell 分支，
+  运行书/环境分支/数据 manifest/checkpoint 溯源/第三方操作指南四文档入仓于
+  `WS-1_dataset/R6_recalc/third_env/`：`THIRD_ENV_RUNBOOK_2026-09-25.md`、
+  `data_manifest_LIDC_AAPM.md`、`checkpoint_provenance_license.md`、
+  `THIRD_PARTY_OPERATOR_GUIDE.md`；checkpoint 未搬运，仅哈希，等待 owner 授权传输）。
+  运行在 owner 工作站执行，非本机。
+
+- **Task 6 - 策展发布包 + availability 声明**: DONE，commit `dd694fa`（发布包三文件
+  于 `WS-1_dataset/R6_recalc/release/`：`RELEASE_MANIFEST.md`（43 项 A 类分发 + 图像/
+  权重仅哈希）、`RIGHTS_CHECKLIST.md`（10 组权利检查）、`AVAILABILITY_STATEMENT_draft.md`
+  （手稿 availability 草稿，DOI 占位）；`Heyang-paper/manuscript.tex` L318-327
+  availability 段替换原 TODO；`Heyang-paper/COMPLETION_CHECKLIST.md` §7 哈希在收尾
+  提交 `dd694fa` 重算、§8/§9 行号同步）。未建 Zenodo/公共仓库/release tag。
+
+- **任务 7 - 20 Sep backlog 三项**: 全部 BLOCKED，等 owner 输入：
+  - 任务 2（native Windows CT + pillcam_agent receipt）：需授权共享核心 checkout +
+    `RESEARCH_CORE`（`ldct_agent` 入口现 ImportError）；
+  - 任务 5a（BANDER-2）：需授权运行 BANDER-2（`bander/control-matrix` `a42ad27`）；
+  - 任务 5b（off-machine OneDrive 副本）：需 OneDrive/Teams 共享文件夹访问权限。
+  不绕过阻断自行实现。
 
 - **Not committed / 待办**: 任务 1 收尾提交全部在本地 `heyang`，未 push（owner
   授权后随任务页批次推送）；其余 owner 决策（作者元数据等 8 项，见

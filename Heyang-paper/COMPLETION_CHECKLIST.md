@@ -99,16 +99,16 @@
 
 本次论文包提交范围：`Heyang-paper/manuscript.tex`、`README.md`、`CLAIM_EVIDENCE.md`、`COMPLETION_CHECKLIST.md`、`manuscript.pdf` 共 5 文件。
 
-## 7. artifact SHA256（可复现版，2026-09-26 任务 1 收尾提交重算）
+## 7. artifact SHA256（可复现版，2026-09-26 收尾提交重算）
 
-**计算对象**：git 存储字节（仓库 `core.autocrlf=true` 规范化后，行尾 **LF**）。2026-09-26 在任务 1 收尾提交 **`1b0c0c9`** 处重算（`3fbf5bf` 曾改 9 项中 3 项、本次任务 1 改 6 项，均不可在旧基线复现）；**基线 = `1b0c0c9`**。
+**计算对象**：git 存储字节（仓库 `core.autocrlf=true` 规范化后，行尾 **LF**）。2026-09-26 在收尾提交 **`dd694fa`** 处重算（自 `1b0c0c9` 后 manuscript.tex 因任务 6 availability 段、CLAIM_EVIDENCE.md 因任务 3 链接修复变化，旧基线不可复现）；**基线 = `dd694fa`**。
 
 | 文件 | SHA256（git 存储字节） | blob SHA1 |
 |---|---|---|
 | Heyang-paper/manuscript.pdf | 2BCB37EB3B27E3F945CBA620DB1BD2B0E6BB9AA7EE426993F6F88D683437C229 | 48675680 |
-| Heyang-paper/manuscript.tex | 7EA83F18AF97048EC013686190BF1849A45230253F36EDFCB8DABCED0ED626DD | b5f8c863 |
+| Heyang-paper/manuscript.tex | CC14C20CADCECD38E605D4242C93D7615C700036EFB25912D85DEEE4494C25B4 | 09f0a8a3 |
 | Heyang-paper/README.md | 1126F5DFB706EC25BB4DEC0BC380169BC2FEA9D5E1A0BFA9B6BD54341BE4ECE9 | 9506fbc5 |
-| Heyang-paper/CLAIM_EVIDENCE.md | B5B887F3DCE59DFFD0517D2248F7931C2DE4D78E3C04DBC300E9E472F4371E29 | 52979370 |
+| Heyang-paper/CLAIM_EVIDENCE.md | FB98F97B6A50730D63AC1F9D547E24E56881704122D7AB9A46A8E4D017A95D85 | 0127f467 |
 | Heyang-paper/make_tables.py | 83FD69349C2E984FF56EE5A407CAEDAAC7BA5C394CBE8AC75461AEEE38E49B3E | c10582b2 |
 | Heyang-paper/references.bib | 935FB2866FCCE55668DB852F6C93C7CE09B96C01A3FCFA14784256097F7A8D75 | 8810e186 |
 | Heyang-paper/tables/agreement.tex | 845B2D5340E144C56B62FAD29455393D50F49E3EED7777D6F5E2D05C90CE6E41 | 90eb2b2e |
@@ -117,24 +117,24 @@
 
 **复现命令**：
 - blob：`git ls-files -s Heyang-paper/<file>`（第三字段）
-- SHA256：`git show 1b0c0c9:Heyang-paper/<file> | sha256sum`（Windows：`(git show 1b0c0c9:Heyang-paper/<file>) | Get-FileHash -Algorithm SHA256`，二进制文件用 `cmd /c "git show 1b0c0c9:Heyang-paper/<file> > tmp"` 后取哈希）
+- SHA256：`git show dd694fa:Heyang-paper/<file> | sha256sum`（Windows：`(git show dd694fa:Heyang-paper/<file>) | Get-FileHash -Algorithm SHA256`，二进制文件用 `cmd /c "git show dd694fa:Heyang-paper/<file> > tmp"` 后取哈希）
 
-**一致性说明**：9 项中 README.md、references.bib、tables/scale.tex 与 `21fd395` 版本逐字节一致（未变）；manuscript.pdf/manuscript.tex/make_tables.py/agreement.tex/ladder.tex 因任务 1（Linux 数字归位）变化、CLAIM_EVIDENCE.md 因台账更新变化——均为任务 1 预期改动，非意外漂移。其他关键 artifact 哈希（台账 §6.1）：task_spec `AE7AE799BB8C24075C39BC6BCC7B07EE623DDB06292E968147446110F55D2D4C`；5 个 checkpoint 哈希见 `WS-1_dataset/R6_recalc/hashes/ckpt_hashes.txt`。
+**一致性说明**：9 项中 README.md、references.bib、tables/scale.tex 与 `21fd395` 版本逐字节一致（未变）；manuscript.pdf/make_tables.py/agreement.tex/ladder.tex 自任务 1（Linux 数字归位）后未再变；manuscript.tex 因任务 6 availability 段替换变化、CLAIM_EVIDENCE.md 因任务 3 链接修复（`9ce3388`）变化——均为预期改动，非意外漂移。其他关键 artifact 哈希（台账 §6.1）：task_spec `AE7AE799BB8C24075C39BC6BCC7B07EE623DDB06292E968147446110F55D2D4C`；5 个 checkpoint 哈希见 `WS-1_dataset/R6_recalc/hashes/ckpt_hashes.txt`。
 
 ## 8. 剩余 TODO（4 处，全部 owner 决策；2026-09-26 行号已按当前手稿同步）
 
 | 行号 | 内容 | owner |
 |---|---|---|
 | L23 | author list, affiliations, ORCIDs, corresponding author | 作者 |
-| L318–326 | **data/code availability 已落地**（任务 6：`WS-1_dataset/R6_recalc/release/AVAILABILITY_STATEMENT_draft.md` 草稿已替换原 TODO，DOI 为 `[DOI PLACEHOLDER]`）；**待回填 DOI** | owner（DOI 注册渠道，不建 Zenodo） |
+| L318–327 | **data/code availability 已落地**（任务 6：`WS-1_dataset/R6_recalc/release/AVAILABILITY_STATEMENT_draft.md` 草稿已替换原 TODO，DOI 为 `[DOI PLACEHOLDER]`）；**待回填 DOI** | owner（DOI 注册渠道，不建 Zenodo） |
 | L330 | CRediT statement | 作者 |
 | L333 | Per-author declaration | 作者 |
 
 > **2026-09-26 任务 6（发布包）台账同步**：availability 原 TODO（旧 L319–L321）已替换为
-> 8 行声明正文（现 L319–L326，标题 L318），后续行号相应后移：CRediT 旧 L324 → 现 L330、
+> 9 行声明正文（现 L319–L327，标题 L318），后续行号相应后移：CRediT 旧 L324 → 现 L330、
 > Per-author 旧 L327 → 现 L333（grep 实测）。手稿工作区 SHA-256 变更为
 > `A67ADB6CC17BB9005ADE10D7D4F38B008DDE1AE07AAE4651574614982FCA98B6`（工作区字节）；
-> §7 哈希表的 git 存储字节基线 `1b0c0c9` 已不适用于 manuscript.tex，待下次提交时重算回填。
+> §7 哈希表已在本清单所在提交（收尾提交 `dd694fa`）处按 git 存储字节重算回填（见 §7）。
 
 > 第三环境不再列入 TODO：owner 2026-09-25 决定执行（原生 Linux RTX 5090），
 > Limitations 已改 "A third environment is planned; its results are not reported
@@ -148,12 +148,12 @@
 2. **单位（affiliations）** — 阻断 L23
 3. **ORCIDs** — 阻断 L23
 4. **通讯作者（corresponding author）** — 阻断 L23
-5. **CRediT 贡献声明** — 阻断 L324
-6. **Per-author declarations（利益冲突/资助/伦理）** — 阻断 L327
+5. **CRediT 贡献声明** — 阻断 L330
+6. **Per-author declarations（利益冲突/资助/伦理）** — 阻断 L333
 7. **第三环境实验** — **已定**（owner 2026-09-25：原生 Linux RTX 5090 工作站，
    任务 5 承接；manuscript L302-304 已写 planned，结果不写入）
-8. **artifact 公开发布决策** — 阻断 L319（data/code availability 措辞依赖此决定；
-   owner 2026-09-25 已定策展发布带 DOI，措辞见 §10）
+8. **artifact 公开发布决策** — availability 已落地（L318-327，草稿见 release/）；
+   **待回填 DOI**（owner 2026-09-25 已定策展发布带 DOI，措辞见 §10）
 
 ## 10. code/data availability 语言准备（待 owner 定稿）
 
