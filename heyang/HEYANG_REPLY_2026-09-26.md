@@ -16,11 +16,14 @@ AIGC:
 证据均指认真实文件、commit hash 与实测结果。
 
 - **CT checkout**: `D:\ZHY\low_dose_CT-heyang` 分支 `third-env/blackwell`，HEAD
-  `66680c2`（checkpoint 溯源补充，本批随汇报一起 push）
-- **本批提交链**：`78ca452` → `9297981` → `dd694fa` → `6a82550` → `9d2cdc9` →
-  `57a6411` → `66680c2`（共 7 个提交 + 本次汇报/标注提交）
-- **未推送**：以上 7 个提交此前均在本地，本次随汇报文件一并 push 到
-  `origin/third-env/blackwell`
+  `873a8c4`（AIGC 标注头，随全批已 push）
+- **本批提交链**（third-env/blackwell）：`78ca452` → `9297981` → `dd694fa` →
+  `6a82550` → `9d2cdc9` → `57a6411` → `66680c2` → `5571d1f` → `873a8c4`
+  （共 9 个提交）
+- **本批提交链**（heyang）：`7c53e8d` → `81589cc` → `5a12010` → `1b0c0c9` →
+  `9dd8789` → `16cef18` → `9ce3388`（共 7 个提交，与 third-env/blackwell 同批推送）
+- **推送状态**：两分支均已 push，工作区干净；PR #30（paper package，head
+  `heyang`）仍 Open 待 owner 审查
 
 ## Progress index
 
@@ -32,7 +35,8 @@ AIGC:
 | 0925 wrap-up（tasks 5/6 状态、§7 rehash） | DONE | `6a82550`：COMPLETION_CHECKLIST §7 在 `dd694fa` 重算；HEYANG_REPLY 索引标 tasks 5/6 DONE、backlog BLOCKED | 无 | 2026-09-25 |
 | BANDER-2 — 五 controls 在真实 AAPM 切片 + R3 同 ROI 对照 | DONE | `9d2cdc9` + `57a6411`：BANDER_CONTROLS_2026-09-26.md（五 controls，CPU 确定性，48 ROI patient-level SE：blur 0.004–0.010、ringing 0.011–0.016） | 无 | 2026-09-26 |
 | checkpoint 溯源补充（推断标注） | DONE | `66680c2`：checkpoint_provenance_license.md 从 4 个 .pt 文件内读出真实元数据（seed=42；red_cnn/learn/ctformer steps=2662、corediff steps=20000），确认均为本地 train.py 2026-08-19 产物；超参为推断标注，无日志佐证 | 不重训（owner 2026-09-26 决定）；超参如需实证需 owner 提供训练日志 | 2026-09-26 |
-| 本批收尾 — 汇报 + AIGC 标注 | DONE | 本文件 + BANDER_CONTROLS_2026-09-26.md AIGC frontmatter/提示行；随全批提交 push | 无 | 2026-09-26 |
+| 本批收尾 — 汇报 + AIGC 标注 | DONE | `5571d1f`（本文件 + BANDER_CONTROLS_2026-09-26.md AIGC frontmatter/提示行）；`873a8c4`（本文件 AIGC 标注头）；随全批提交 push | 无 | 2026-09-26 |
+| heyang 分支 7 提交推送 | DONE | `7c53e8d` → `9ce3388`：Linux 复算归档（U10）、Linux-vs-reference 比较器+artifact、表格/手稿对齐、ledger 决策、§7 重哈希、链接修复；全部 push 至 `origin/heyang` | 无 | 2026-09-26 |
 
 ## 本批改动文件清单
 
@@ -43,15 +47,28 @@ AIGC:
   （task 6 同步，commit `dd694fa`）
 - `heyang/HEYANG_REPLY_2026-09-20.md`（0925 wrap-up 索引，commit `6a82550`）
 - `heyang/evidence/BANDER_CONTROLS_2026-09-26.md`（BANDER-2 对照报告，commit
-  `9d2cdc9`/`57a6411` + 本次 AIGC 标注）
+  `9d2cdc9`/`57a6411` + AIGC 标注，`5571d1f`）
 - `WS-1_dataset/R6_recalc/third_env/checkpoint_provenance_license.md`
   （溯源补充，commit `66680c2`）
+- `heyang/HEYANG_REPLY_2026-09-26.md`（本文件，commit `5571d1f` 创建 +
+  `873a8c4` AIGC 标注头 + 本次补齐更新）
+
+## heyang 分支 7 提交（同批推送）
+
+- `7c53e8d` R6: archive Linux rerun outputs/logs (U10)
+- `81589cc` R6: add Linux-vs-reference comparator + artifact
+- `5a12010` paper: regenerate tables and align manuscript to Linux rerun
+- `1b0c0c9` paper: ledger and reply index decisions
+- `9dd8789` paper: rehash section 7 at 1b0c0c9 (task-1 baseline)
+- `16cef18` docs: fix rehash commit id in section 5
+- `9ce3388` task3: fix broken relative links in REPLY/CLAIM_EVIDENCE, strip AIGC watermarks
 
 ## Not pushed → 本次已 push
 
-本批 8 个提交（7 个既有 + 本汇报/标注提交）随本次 push 一并推送到
-`origin/third-env/blackwell`；PR #30（paper package，head `heyang`）仍 Open
-待 owner 审查，不在本批。
+本批 9 个提交（third-env/blackwell，`78ca452` → `873a8c4`）已 push 至
+`origin/third-env/blackwell`；heyang 7 个提交（`7c53e8d` → `9ce3388`）已 push 至
+`origin/heyang`。PR #30（paper package，head `heyang`）仍 Open 待 owner 审查，
+不在本批。
 
 ## Owner 待办（不影响本批）
 
