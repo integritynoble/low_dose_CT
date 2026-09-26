@@ -142,4 +142,4 @@ patient-level SE（48 ROI，ddof=1）：blur 0.004–0.010；ringing 0.011–0.0
 - 结果 JSON：`heyang/evidence/BANDER_CONTROLS_real_2026-09-26.json`（含 per-patient 4 口径均值/SE、control 参数、协议、哈希、命令）
 - 提交：`git commit`（仅 commit 不 push），commit id 见下节。
 
-<!-- COMMIT_ID_PLACEHOLDER -->
+- **commit**：`9d2cdc9`（BANDER-2 产物与报告初始提交；本行回填于追加提交，见 git log，仅 commit 不 push）
