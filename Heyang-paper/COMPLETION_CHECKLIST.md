@@ -30,6 +30,7 @@
 | 计数经 make_tables 校准（75/375/115） | DONE | manuscript L88-89、L190-191；tables/agreement.tex |
 | 作者无关 TODO 清零 | DONE | 剩余 5 处 \todo 全部属 owner 决策（见 §8），无技术/写作 TODO |
 | 保留诚实局限（不推广"无绝对容差可行"） | DONE | manuscript L244-247、L223-230；台账 §3 红字 |
+| **[2026-09-26，任务 1 收尾] 数字归属 Linux vs 参考** | DONE | 头部注释与全部数字改由 `comparison_linux_full764.json`（Linux rerun vs reference）支撑；摘要失败 two of five（RED-CNN/CoreDiff）、90/375、CTformer 翻转通过；摘要/方法删除 "driver"；route (a) 标注 earlier Windows same-OS recomputation（2026-09-05/06）；Limitations 第三环境改 "a third environment is planned"（L302-304，结果不写入） |
 
 ## 2. 验证命令结果（2026-09-22 任务书第 3 步复跑）
 
@@ -38,15 +39,22 @@
 | `python Heyang-paper/make_tables.py` | 重新生成 agreement.tex / ladder.tex / scale.tex，exit=0 | DONE |
 | `python Heyang-paper/make_tables.py --check` | `all tables current`，exit=0 | DONE |
 | `python -B WS-1_dataset/R6_recalc/recompare_per_metric.py --check` | blur/corediff/ctformer/learn/red_cnn 全 PASS、outside declared 0、overall PASS、committed verdict matches、exit=0 | DONE |
+| `python WS-1_dataset/R6_recalc/compare_linux_vs_ref.py --check` | **[2026-09-26]** Linux 新 artifact 重算一致（abs/rel 双判据 + 阶梯 + 基线哈希均在比较器内生成），exit=0 | DONE |
 
-## 3. manuscript.pdf 构建（2026-09-22 重建）
+**校验脚本分工（2026-09-26，见台账 §6 前注）**：Windows 历史 artifact
+（`comparison_full764.json`）→ `recompare_per_metric.py --check`（验证保留证据，
+应仍 PASS）；Linux 新 artifact（`comparison_linux_full764.json`）→
+`compare_linux_vs_ref.py --check`。新 artifact 的 `per_model.status` 保留为 abs
+判定，勿用 `recompare_per_metric.py` 直接校验（会误报 MISMATCH）。
+
+## 3. manuscript.pdf 构建（2026-09-26 重建）
 
 | 项 | 值 |
 |---|---|
-| 工具链 | MiKTeX（pdfTeX 4.23）+ bibtex（TeX 引擎在 elevated 会话被 MiKTeX 拦截，经降权令牌 + `--enable-installer` 构建） |
-| 编译流程 | pdflatex → bibtex → pdflatex → pdflatex，四步均 exit=0 |
-| 产物 | `Heyang-paper/manuscript.pdf`，7 页，198,198 B（SHA256 见 §7） |
-| 核验 | 无 undefined citation/reference（log 扫描）；环境表 `tab:env` 嵌入正常；关键声明文本抽查通过（"Computing environment record" / "115 of 375" / "retrospective" / "4875338"）；作者区 TODO 红色显示（预期，待 owner） |
+| 工具链 | MiKTeX（pdfTeX 4.23）+ bibtex（TeX 引擎在 elevated 会话被 MiKTeX 拦截，经降权计划任务 `compile_manuscript.cmd` 构建，任务已清理） |
+| 编译流程 | pdflatex → bibtex → pdflatex → pdflatex，四步均 exit=0（无 error / undefined citation） |
+| 产物 | `Heyang-paper/manuscript.pdf`，7 页，199,429 B（SHA256 见 §7） |
+| 核验 | 无 undefined citation/reference（log 扫描）；摘要数字 "failed for two of five"、90/375、RED-CNN worst abs 34.26 与正文/表格一致；作者区 TODO 红色显示（预期，待 owner） |
 
 ## 4. CLAIM_EVIDENCE.md 台账（step 2）
 
@@ -70,6 +78,16 @@
 当前 HEAD = `5b3659c`；已 push 至 `origin/heyang`（2026-09-22，fast-forward，0/0 分叉）。
 
 **2026-09-23（HEYANG_NEXT_2026-09-22.md 任务 2/3/4）**：本清单所在提交为 §7 哈希与 `heyang/HEYANG_REPLY_2026-09-20.md` 索引的基线。提交内容：`heyang/evidence/` 6 证据文件入仓（已剥离 AI 水印与 frontmatter，经敏感信息扫描 0 命中）、`HEYANG_REPLY` 6 个本地绝对路径链接替换为仓库相对路径、`CLAIM_EVIDENCE.md` 4 处 ENV_RECON 引用改为仓库内相对链接、WS-4 `leaderboard.py` 补 `Set` 导入 / `verifier.py` 删除未用变量、§7 哈希按 git 存储字节重算（LF 约定）。
+
+**2026-09-26（HEYANG_NEXT_2026-09-25.md 任务 1 收尾）**：任务 1 收尾提交链（heyang 分支，均未 push）：
+
+| commit | 说明 |
+|---|---|
+| `7c53e8d` | R6: archive Linux rerun outputs/logs (U10)（`results/linux_rerun/` 5 JSON + 5 log + freeze，阶段 A） |
+| `81589cc` | R6: add Linux-vs-reference comparator + artifact（`compare_linux_vs_ref.py` + `results/comparison_linux_full764.json`，阶段 B） |
+| `5a12010` | paper: regenerate tables and align manuscript to Linux rerun（`make_tables.py` / `manuscript.tex` / `tables/agreement.tex` / `tables/ladder.tex` / `manuscript.pdf`，阶段 C/E/F） |
+| （本清单所在提交） | paper: ledger and reply index decisions（`CLAIM_EVIDENCE.md` / `HEYANG_REPLY_2026-09-20.md` / 本清单，阶段 G/H + 行号同步） |
+| （重哈希提交） | paper: rehash §7 at <任务 1 收尾提交>（§7 九项 SHA256 重算，基线 = 上一提交字面 hash，阶段 I） |
 
 ## 6. 未提交改动（原样保留，不属于本次论文包）
 
@@ -105,28 +123,33 @@
 
 其他关键 artifact 哈希（台账 §6.1）：task_spec `AE7AE799BB8C24075C39BC6BCC7B07EE623DDB06292E968147446110F55D2D4C`；5 个 checkpoint 哈希见 `WS-1_dataset/R6_recalc/hashes/ckpt_hashes.txt`。
 
-## 8. 剩余 TODO（5 处，全部 owner 决策）
+## 8. 剩余 TODO（4 处，全部 owner 决策；2026-09-26 行号已按当前手稿同步）
 
 | 行号 | 内容 | owner |
 |---|---|---|
-| L22 | author list, affiliations, ORCIDs, corresponding author | 作者 |
-| L289 | 是否加入第三环境（受 checkpoint/data 迁移约束） | 作者 |
-| L305 | 指向发布的 artifact / comparison JSON / 重推导 | 作者 |
-| L310 | CRediT statement | 作者 |
-| L313 | Per-author declaration | 作者 |
+| L23 | author list, affiliations, ORCIDs, corresponding author | 作者 |
+| L319 | 指向发布的 artifact / comparison JSON / 重推导（data/code availability 措辞） | 作者 |
+| L324 | CRediT statement | 作者 |
+| L327 | Per-author declaration | 作者 |
 
-## 9. Owner 决策请求（紧凑列表）
+> 第三环境不再列入 TODO：owner 2026-09-25 决定执行（原生 Linux RTX 5090），
+> Limitations 已改 "A third environment is planned; its results are not reported
+> here"（manuscript L302-304，任务 5 承接）。
+
+## 9. Owner 决策请求（紧凑列表；行号 2026-09-26 按当前手稿同步）
 
 请在评审时一次性确认以下输入，每项阻断对应字段：
 
-1. **作者顺序（author order）** — 阻断 L22 author list
-2. **单位（affiliations）** — 阻断 L22
-3. **ORCIDs** — 阻断 L22
-4. **通讯作者（corresponding author）** — 阻断 L22
-5. **CRediT 贡献声明** — 阻断 L310
-6. **Per-author declarations（利益冲突/资助/伦理）** — 阻断 L313
-7. **第三环境实验取舍** — 阻断 L289（维持现状可删 TODO）
-8. **artifact 公开发布决策** — 阻断 L305（data/code availability 措辞依赖此决定）
+1. **作者顺序（author order）** — 阻断 L23 author list
+2. **单位（affiliations）** — 阻断 L23
+3. **ORCIDs** — 阻断 L23
+4. **通讯作者（corresponding author）** — 阻断 L23
+5. **CRediT 贡献声明** — 阻断 L324
+6. **Per-author declarations（利益冲突/资助/伦理）** — 阻断 L327
+7. **第三环境实验** — **已定**（owner 2026-09-25：原生 Linux RTX 5090 工作站，
+   任务 5 承接；manuscript L302-304 已写 planned，结果不写入）
+8. **artifact 公开发布决策** — 阻断 L319（data/code availability 措辞依赖此决定；
+   owner 2026-09-25 已定策展发布带 DOI，措辞见 §10）
 
 ## 10. code/data availability 语言准备（待 owner 定稿）
 

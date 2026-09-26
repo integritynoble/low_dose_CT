@@ -189,3 +189,64 @@ work awaiting their own review.
 
 - **Not committed / 待办**: 无未提交工作区改动；8 项 owner 决策（作者元数据、
   第三环境、artifact 发布等，见 COMPLETION_CHECKLIST.md §9）未答复。
+
+---
+
+## 2026-09-26（HEYANG_NEXT_2026-09-25.md 任务 1 收尾）
+
+- **CT head**: 任务 1 收尾提交见下；本地分支 `heyang` 领先 `main`，未合并（任务 1
+  关闭后才合并，PR #30 仍 Open）。
+
+- **Task 1 - 论文数字归属 Linux vs 参考（结果任务，非措辞任务）**: DONE，commit
+  `7c53e8d`（A 归档）、`81589cc`（B 比较器+artifact）、`5a12010`（C/E/F 表格+手稿+
+  PDF）、本进度索引所在提交（G/H/I 台账+索引+重哈希）。
+  - 按 owner 决定 **cross-environment kept**（见下引述 1）执行：Linux 运行即论文
+    复算，全部数字改由 Linux vs 参考 artifact 支撑（`comparison_linux_full764.json`）。
+  - **重比较结果（Linux vs 参考，绝对 1e-6 / 相对 1e-4 双判据，375 项全量）**：
+    CTformer 翻转为通过（最大绝对差 2.9×10⁻¹¹，Windows 侧原 25 差异）；失败方法
+    **3 → 2**（仅 RED-CNN、CoreDiff），总差异 **115 → 90**（90/375 @ abs 1e-6）；
+    rel 1e-4 全 PASS（375/375，worst 6.36×10⁻⁵ RED-CNN CNR）；容差阶梯 abs 各档仍
+    仅 2 方法失败、rel@1e-4/1e-3 全通过。核心论点不变：判据的**种类**比**大小**重要。
+  - **U10 关闭**：Linux 输出/日志入仓 `WS-1_dataset/R6_recalc/results/linux_rerun/`
+    （5 `*_det_full764.json` + 5 `*.log` + `linux_pip_freeze.txt`，SHA-256 记录于
+    入仓提交）。
+  - **摘要/环境表修正**：删除 "driver"（两侧同为 591.86，实际仅 OS 与 cuDNN/wheel
+    打包不同，PyTorch 同为 2.3.0+cu121）；摘要 Methods "platform-specific
+    CUDA/cuDNN builds at the same nominal PyTorch 2.3.0+cu121 stack"；route (a)
+    确定性内核重跑标注为 **earlier Windows same-OS recomputation
+    （2026-09-05/06）**，未删除、未冒充。
+  - manuscript.pdf 重建：MiKTeX 经降权计划任务编译 pdflatex ×3 + bibtex，7 页
+    199,429 B；`make_tables.py --check`、`compare_linux_vs_ref.py --check` 均
+    exit 0；Windows 历史 artifact 由 `recompare_per_metric.py --check` 单独校验
+    （分工写入台账与清单）。
+  - 台账 `CLAIM_EVIDENCE.md`：§8 新增决定行（引述 1）、§7 标 C1/C3'/C4/C5/C6/C10/
+    C12、局限①关闭、U10 关闭；COMPLETION_CHECKLIST.md §7 哈希在任务 1 收尾提交处
+    重算（见下）。
+
+### Owner decisions, 25 September 2026（经 Linux 工作站 Claude Code 会话转达，
+记录于 HEYANG_NEXT_2026-09-25.md，逐字引述）
+
+1. **cross-environment kept**（任务 1 依据，不以方案字母称呼）：
+   > "keep the cross-environment framing"
+   The Linux run is the paper's recomputation.
+2. **第三环境 = 原生 Linux RTX 5090 工作站**（任务 5 依据）：
+   > add a third environment, run on the owner's native-Linux RTX 5090
+   > workstation
+   已记录 2026-09-25：Ubuntu 26.04 LTS（native，非 WSL）、RTX 5090
+   （Blackwell）、driver 595.71.05、CUDA 13.2 driver runtime；PyTorch 2.3.0
+   无该 GPU 代次内核，框架版本必然不同。运行书/环境分支/checkpoint 溯源由任务 5
+   在任务 1 报告后启动。
+3. **策展发布带 DOI**（任务 6 依据）：
+   > publish a curated release with a DOI, not the whole repository; do not
+   > redistribute images; release checkpoints only if the rights are confirmed,
+   > otherwise hashes only
+   仓库本身保持私有；data/code availability 措辞按此起草（COMPLETION_CHECKLIST
+   §10，DOI 留占位）。
+
+- **任务 5/6（owner 决定已记录，任务 5 待任务 1 后启动）**: 任务 5（第三环境
+  运行书 + 环境分支 + checkpoint 迁移授权）与任务 6（策展发布包 + DOI）由
+  HEYANG_NEXT_2026-09-25.md 承接；本文仅记录决定引述，不代为执行。
+
+- **Not committed / 待办**: 任务 1 收尾提交全部在本地 `heyang`，未 push（owner
+  授权后随任务页批次推送）；其余 owner 决策（作者元数据等 8 项，见
+  COMPLETION_CHECKLIST.md §9）未答复。
