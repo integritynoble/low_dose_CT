@@ -89,7 +89,7 @@ work awaiting their own review.
   - `Heyang-paper/CLAIM_EVIDENCE.md`: manuscript line refs re-synced after the
     environment-table insertion (0 stale refs).
 - **Task 4 - completion receipt**: DONE.
-  - [COMPLETION_CHECKLIST.md](Heyang-paper/COMPLETION_CHECKLIST.md): source
+  - [COMPLETION_CHECKLIST.md](../Heyang-paper/COMPLETION_CHECKLIST.md): source
     commit, artifact hashes, verification/build results, remaining TODO owners,
     compact owner decision list (8 items), code/data availability language
     (code availability does not grant image/checkpoint redistribution).
@@ -114,7 +114,7 @@ work awaiting their own review.
 - **Task 2 - reproducible hashes**: DONE, commit `21fd395`.
   - 9-22 版 §7 哈希按 CRLF 工作区字节计算，无法在 git 提交上复现；已按 git
     存储字节（LF，`core.autocrlf=true` 规范化）重算，记录于
-    [COMPLETION_CHECKLIST.md §7](Heyang-paper/COMPLETION_CHECKLIST.md)。
+    [COMPLETION_CHECKLIST.md §7](../Heyang-paper/COMPLETION_CHECKLIST.md)。
   - 复现：`git ls-files -s Heyang-paper/<file>` 取 blob SHA1；
     `git show HEAD:Heyang-paper/<file> | sha256sum` 取 SHA256（基线 = 21fd395）。
   - 提交后实测核验：9 个论文包文件 SHA256 与 §7 表格**全部一致**；其中仅
@@ -126,7 +126,7 @@ work awaiting their own review.
     RELEASE_STATUS / PROVENANCE_BINDING / BANDER_DIAG / COPIES_DEPOSIT，均为
     2026-09-21 版）：已剥离 AI 水印与 frontmatter，敏感信息扫描（token/secret/
     凭据/手机号/身份证/分享 URL）0 命中。
-  - 本文件 6 个本地绝对路径链接与 [CLAIM_EVIDENCE.md](Heyang-paper/CLAIM_EVIDENCE.md)
+  - 本文件 6 个本地绝对路径链接与 [CLAIM_EVIDENCE.md](../Heyang-paper/CLAIM_EVIDENCE.md)
     4 处 ENV_RECON 引用均已替换为仓库内相对路径。
 
 - **Task 4 - WS-4 code cleanup**: DONE, commit `21fd395`.
@@ -172,7 +172,7 @@ work awaiting their own review.
   - 证据入库：`env_diff_record_Linux_recalc_2026-09-25.md` 与
     `linux_vs_windows_full764_comparison.json`（375/375 PASS @ rel 1e-4，worst
     reldiff 1.5e-5）→ [heyang/evidence/](evidence/)。
-  - ledger：[CLAIM_EVIDENCE.md](Heyang-paper/CLAIM_EVIDENCE.md) §6 新增 Linux
+  - ledger：[CLAIM_EVIDENCE.md](../Heyang-paper/CLAIM_EVIDENCE.md) §6 新增 Linux
     复算侧（6.2）、§7 标 C1/C4/C10/C12、§8 新增任务1决策记录行、U1 更新、
     新增 U10（Linux 原始日志在 WSL `~/r6_recalc_linux/`，仓库外）。
   - manuscript.pdf 重建：MiKTeX 在 elevated 会话被拦截，经降权令牌手动编译

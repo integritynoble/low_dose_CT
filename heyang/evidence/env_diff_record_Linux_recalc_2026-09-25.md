@@ -1,14 +1,3 @@
----
-AIGC:
-    Label: "1"
-    ContentProducer: 001191440300708461136T1XGW3
-    ProduceID: 3492397679226d6505949fd36ce12be5_de20598ab88211f1b24b525400ea19b7
-    ReservedCode1: XzNK7ASGGpuSAPf0yRG1nd9jGvTgiv/ThkCtOU/QTEMf18hXMYpfcmUh+tX9FC1k+gNU3d+uZrM5dDQ6cmkwLWNBc+LAydBvb++015Wyx6VqA0WmrQWe4HjaVOucQ0tl/OQho7MrGiw4VCo8xDohYuYh6G3gxHdNXmgkKFrzs7FrH1N9n0bmF0KqWAg=
-    ContentPropagator: 001191440300708461136T1XGW3
-    PropagateID: 3492397679226d6505949fd36ce12be5_de20598ab88211f1b24b525400ea19b7
-    ReservedCode2: XzNK7ASGGpuSAPf0yRG1nd9jGvTgiv/ThkCtOU/QTEMf18hXMYpfcmUh+tX9FC1k+gNU3d+uZrM5dDQ6cmkwLWNBc+LAydBvb++015Wyx6VqA0WmrQWe4HjaVOucQ0tl/OQho7MrGiw4VCo8xDohYuYh6G3gxHdNXmgkKFrzs7FrH1N9n0bmF0KqWAg=
----
-
 # 真实环境差异记录 — 供论文摘要三轴补来源
 
 - 日期：2026-09-25
@@ -102,4 +91,3 @@ AIGC:
 | corediff | 1.5e-05 | 远低于 1e-4（worst: cnr_mean 1.5e-5 / npwe_mean 2.0e-6） |
 
 375 项全部 PASS（相对容差 1e-4），可并入论文 Results 或 Supplementary 作为跨 OS 独立复算一致的证据。
-*（内容由AI生成，仅供参考）*

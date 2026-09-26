@@ -1,14 +1,3 @@
----
-AIGC:
-    Label: "1"
-    ContentProducer: 001191440300708461136T1XGW3
-    ProduceID: 3492397679226d6505949fd36ce12be5_ecb05821b4b511f19285525400638852
-    ReservedCode1: eHybcplVJYTNPwWMYRVC+nezrK3lJSdukHWa5j7kBIcs+XXNhumD7Qx7GiyqjRwgxlf/Hhf9lQdVxmKAS8B1m3RsfoGk8lbTPb1Vtu3Q7LS8QObgll8FUVNY20ZvBj0MZFXFT5Hh6XlNDLDqHnXxhmp73YVy/OQpRvyT0EYnzbItkKqzWXcexALcSWA=
-    ContentPropagator: 001191440300708461136T1XGW3
-    PropagateID: 3492397679226d6505949fd36ce12be5_ecb05821b4b511f19285525400638852
-    ReservedCode2: eHybcplVJYTNPwWMYRVC+nezrK3lJSdukHWa5j7kBIcs+XXNhumD7Qx7GiyqjRwgxlf/Hhf9lQdVxmKAS8B1m3RsfoGk8lbTPb1Vtu3Q7LS8QObgll8FUVNY20ZvBj0MZFXFT5Hh6XlNDLDqHnXxhmp73YVy/OQpRvyT0EYnzbItkKqzWXcexALcSWA=
----
-
 # PENDING_DECISION_LIST（待办决策清单）
 
 - **生成日期**：2026-09-20
@@ -85,4 +74,3 @@ AIGC:
 4. **A-2**：A-1 提交完成后，授权后 push heyang 至远端（禁 `--force`）。
 5. **A-5**：授权 `git rm --cached` 移除 5 个 vendor 文件跟踪并补 .gitignore（不删工作区文件）。
 6. **B 类（B-6 ~ B-11）**：按外部资源就绪情况逐项推进，不阻塞 A 类决策。
-*（内容由AI生成，仅供参考）*

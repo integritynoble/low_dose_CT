@@ -89,7 +89,7 @@
 | 复跑 | 2026-09-22 复跑 `python -B WS-1_dataset/R6_recalc/recompare_per_metric.py --check`：5 方法全部 PASS、`outside declared: 0`、`overall: PASS`、`committed verdict matches the re-derivation`、exit=0 |
 | 追溯性 | `shipped_criterion_superseded.note`（保留原判据 verbatim）+ `routeA_rerun_evidence` 构成"先失败→再检验→后修正"链；`DIRECTOR_DECISIONS.md` §2.1（L98-99）裁定 route (b) 并要求两个证据块保持原样 |
 | 允许解释 | per-metric PASS 是 **2026-09-12 声明判据**下的结论；2026-09-22 复核确认已落盘判定与重推导一致 |
-| 局限 | 该修正**不是独立或前瞻验证**（manuscript L291-292 已声明）；是观察失配后对判据的追溯调整。pre-registration 时间戳证据不存在，故全文用 "original declared criterion" 而非 "pre-registered"（修正记录见 [ENV_RECON_AND_MANUSCRIPT_FIX_2026-09-21.md](evidence/ENV_RECON_AND_MANUSCRIPT_FIX_2026-09-21.md) §3 M1/M4/M8-M10/M15/M17/M19 与 README R1） |
+| 局限 | 该修正**不是独立或前瞻验证**（manuscript L291-292 已声明）；是观察失配后对判据的追溯调整。pre-registration 时间戳证据不存在，故全文用 "original declared criterion" 而非 "pre-registered"（修正记录见 [ENV_RECON_AND_MANUSCRIPT_FIX_2026-09-21.md](../heyang/evidence/ENV_RECON_AND_MANUSCRIPT_FIX_2026-09-21.md) §3 M1/M4/M8-M10/M15/M17/M19 与 README R1） |
 
 ---
 
@@ -102,7 +102,7 @@
 | 维度常量 | `WS-1_dataset/R6_recalc/compare_full764.py`：`SEEDS=["42","2023","7","12345","999"]`（5）、`DOSES=["sim_r010","sim_r025","sim_r050"]`（3）、`METRICS=["psnr","ssim","cnr_mean","cho_auc_mean","npwe_mean"]`（5）→ 5×3×5 = 75 per method |
 | 计数 | `comparison_full764.json`（Windows 历史）→ `per_model.*.n_checked=75`，5 方法 × 75 = **375 total**；`per_model.*.n_diffs` 之和 = 0+45+0+25+45 = **115**。`comparison_linux_full764.json`（Linux vs 参考，论文数字）→ `n_diffs` 之和 = 0+45+0+0+45 = **90** |
 | 交叉核验 | `Heyang-paper/tables/agreement.tex` 每方法 "Comparisons = 75" 列（当前由 `comparison_linux_full764.json` 生成）；`make_tables.py --check` exit=0 确认生成表与 artifact 一致 |
-| 旧 TODO 替换 | manuscript 原 TODO "5 methods × 3 dose levels × 5 reported quantities = 75 comparisons per method"（乘法把 5 methods 误放 per-method）已替换为上述正确推导（[ENV_RECON_AND_MANUSCRIPT_FIX_2026-09-21.md](evidence/ENV_RECON_AND_MANUSCRIPT_FIX_2026-09-21.md) §2.2 / §3 M5）；README R5 同步 |
+| 旧 TODO 替换 | manuscript 原 TODO "5 methods × 3 dose levels × 5 reported quantities = 75 comparisons per method"（乘法把 5 methods 误放 per-method）已替换为上述正确推导（[ENV_RECON_AND_MANUSCRIPT_FIX_2026-09-21.md](../heyang/evidence/ENV_RECON_AND_MANUSCRIPT_FIX_2026-09-21.md) §2.2 / §3 M5）；README R5 同步 |
 | 允许解释 | 75/375/90/115 均可由常量与 JSON 字段逐项复算 |
 | 局限 | 计数是"被检查的比较项数"，不等于"差异项数"（后者按判据不同为 0/25/45 级）；115 是 Windows 历史侧 shipped absolute 1e-6 下的差异项数，90 是 Linux vs 参考下同判据的差异项数，非 per-metric 修正后值（修正后 outside declared 均为 0） |
 
@@ -157,10 +157,10 @@
 |---|---|---|
 | 身份裁定 | R：owner 裁定参考环境 = 本地运行环境（"the reference environment, in which the original results were produced, is the local run environment"） | `manuscript.tex` L115-116；`README.md` L54-59 |
 | 版本字段 | R（以本地 project-runtime record 填充）：Windows / 2×RTX 4090 / 591.86 / Py3.12.10 / torch2.3.0+cu121 / numpy1.26.4 等 | `manuscript.tex` L116-121；`README.md` L54-57 |
-| 作者原始运行时独立记录 | **UNRESOLVED**：无原始 pip freeze / nvidia-smi 存档 / 容器 tag 确证文件 | 仓库全仓 grep 无；[ENV_RECON_AND_MANUSCRIPT_FIX_2026-09-21.md](evidence/ENV_RECON_AND_MANUSCRIPT_FIX_2026-09-21.md) §1.2 |
+| 作者原始运行时独立记录 | **UNRESOLVED**：无原始 pip freeze / nvidia-smi 存档 / 容器 tag 确证文件 | 仓库全仓 grep 无；[ENV_RECON_AND_MANUSCRIPT_FIX_2026-09-21.md](../heyang/evidence/ENV_RECON_AND_MANUSCRIPT_FIX_2026-09-21.md) §1.2 |
 | 作者标称容器 tag | M（标称非确证）：`pytorch/pytorch:2.3.0-cuda12.1-cudnn8-runtime` | `R6_recalc_report.md` §2 记录为"作者标称" |
 | ASSET_MANIFEST.md SHA256 栏 | UNRESOLVED：空占位，仅存在性核对 | `R6_recalc_report.md` §1 步骤 0 |
-| 参考侧 bit-identical 证明独立性 | UNRESOLVED：复算快照 6 文件 MATCH 出自复算者报告，非独立第三方核验 | [ENV_RECON_AND_MANUSCRIPT_FIX_2026-09-21.md](evidence/ENV_RECON_AND_MANUSCRIPT_FIX_2026-09-21.md) §1.2 |
+| 参考侧 bit-identical 证明独立性 | UNRESOLVED：复算快照 6 文件 MATCH 出自复算者报告，非独立第三方核验 | [ENV_RECON_AND_MANUSCRIPT_FIX_2026-09-21.md](../heyang/evidence/ENV_RECON_AND_MANUSCRIPT_FIX_2026-09-21.md) §1.2 |
 
 ---
 
