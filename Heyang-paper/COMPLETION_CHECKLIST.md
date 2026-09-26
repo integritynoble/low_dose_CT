@@ -126,9 +126,15 @@
 | 行号 | 内容 | owner |
 |---|---|---|
 | L23 | author list, affiliations, ORCIDs, corresponding author | 作者 |
-| L319 | 指向发布的 artifact / comparison JSON / 重推导（data/code availability 措辞） | 作者 |
-| L324 | CRediT statement | 作者 |
-| L327 | Per-author declaration | 作者 |
+| L318–326 | **data/code availability 已落地**（任务 6：`WS-1_dataset/R6_recalc/release/AVAILABILITY_STATEMENT_draft.md` 草稿已替换原 TODO，DOI 为 `[DOI PLACEHOLDER]`）；**待回填 DOI** | owner（DOI 注册渠道，不建 Zenodo） |
+| L330 | CRediT statement | 作者 |
+| L333 | Per-author declaration | 作者 |
+
+> **2026-09-26 任务 6（发布包）台账同步**：availability 原 TODO（旧 L319–L321）已替换为
+> 8 行声明正文（现 L319–L326，标题 L318），后续行号相应后移：CRediT 旧 L324 → 现 L330、
+> Per-author 旧 L327 → 现 L333（grep 实测）。手稿工作区 SHA-256 变更为
+> `A67ADB6CC17BB9005ADE10D7D4F38B008DDE1AE07AAE4651574614982FCA98B6`（工作区字节）；
+> §7 哈希表的 git 存储字节基线 `1b0c0c9` 已不适用于 manuscript.tex，待下次提交时重算回填。
 
 > 第三环境不再列入 TODO：owner 2026-09-25 决定执行（原生 Linux RTX 5090），
 > Limitations 已改 "A third environment is planned; its results are not reported
