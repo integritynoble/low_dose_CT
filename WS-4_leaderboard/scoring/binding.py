@@ -375,6 +375,11 @@ def check_patient_mapping_binding(result: Dict, claim: Dict, *,
     state is NO_BINDING / UNVERIFIED; self-reported maps in JSON are decoration
     and never a binding source, but a self-report that contradicts the fixed
     source is rejected.
+
+    NO_BINDING / UNVERIFIED is a deliberate conservative design: when a claim
+    does not declare a fixed patient-level source, the mapping is reported as
+    unverified rather than assumed, so an unbound result can never slip through
+    as if it were verified.
     """
     declares_bootstrap = (claim.get("bootstrap_level") == "patient"
                           or claim.get("aggregation") == "patient-level")

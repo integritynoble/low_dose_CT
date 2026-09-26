@@ -32,7 +32,7 @@ from typing import Any, Dict, List, Optional
 from .heldout import (SubmissionEnvelope, check_submission_cannot_write_back)
 from .leaderboard import (assert_trap_separates_in_every_group, check_trap_rank)
 from .task_spec import (DETECTABILITY_FIELDS, FIDELITY_FIELDS,
-                        FREQ_SUPPLEMENTARY_FIELDS, TASK_LABEL)
+                        FREQ_SUPPLEMENTARY_FIELDS)
 from .verify import (check_claim_bound_provenance, check_input_bound_provenance,
                      check_submission_result)
 

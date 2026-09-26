@@ -22,7 +22,6 @@ prose. :func:`assert_trap_ranks_last` is the hard gate for a publishing path.
 """
 from __future__ import annotations
 
-import hashlib
 import json
 import statistics
 from datetime import datetime, timezone
