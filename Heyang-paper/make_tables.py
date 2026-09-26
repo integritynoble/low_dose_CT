@@ -15,7 +15,7 @@ import sys
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
-ARTIFACT = HERE.parent / "WS-1_dataset" / "R6_recalc" / "results" / "comparison_full764.json"
+ARTIFACT = HERE.parent / "WS-1_dataset" / "R6_recalc" / "results" / "comparison_linux_full764.json"
 OUT = HERE / "tables"
 
 MODELS = ["blur", "learn", "ctformer", "red_cnn", "corediff"]
@@ -28,7 +28,7 @@ METRIC = {"psnr": "PSNR", "ssim": "SSIM", "cnr_mean": "CNR",
 def load() -> dict:
     if not ARTIFACT.exists():
         sys.exit("artifact not found: %s" % ARTIFACT)
-    return json.loads(ARTIFACT.read_text())
+    return json.loads(ARTIFACT.read_text(encoding="utf-8"))
 
 
 def _fmt(x: float) -> str:
@@ -106,19 +106,28 @@ TABLES = {"agreement": table_agreement, "ladder": table_ladder, "scale": table_s
 
 
 def main(argv) -> int:
+    global ARTIFACT
+    import argparse
+    ap = argparse.ArgumentParser(description=__doc__)
+    ap.add_argument("--artifact", default=str(ARTIFACT),
+                    help="comparison artifact to read (default: comparison_linux_full764.json)")
+    ap.add_argument("--check", action="store_true",
+                    help="exit 1 if any table is stale")
+    ns = ap.parse_args(argv)
+    ARTIFACT = Path(ns.artifact)
     d = load()
     OUT.mkdir(exist_ok=True)
     stale = []
     for name, fn in TABLES.items():
         text = fn(d) + "\n"
         path = OUT / ("%s.tex" % name)
-        if "--check" in argv:
+        if ns.check:
             if not path.exists() or path.read_text() != text:
                 stale.append(path.name)
         else:
             path.write_text(text)
             print("wrote %s" % path.relative_to(HERE))
-    if "--check" in argv:
+    if ns.check:
         if stale:
             print("stale: %s; run make_tables.py" % ", ".join(stale), file=sys.stderr)
             return 1

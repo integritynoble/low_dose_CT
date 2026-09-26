@@ -6,7 +6,8 @@
 %% See ../PAPER_TARGET_JOURNALS.md row H.
 %%
 %% Every number in this manuscript comes from
-%%   ../WS-1_dataset/R6_recalc/results/comparison_full764.json
+%%   ../WS-1_dataset/R6_recalc/results/comparison_linux_full764.json
+%% (the Linux rerun vs the reference onboard results)
 %% via make_tables.py. Do not type numbers into the text; add them to the
 %% generator. `python3 make_tables.py --check` fails when a table is stale.
 %% =====================================================================
@@ -33,7 +34,7 @@ a criterion that fails should be read as a failed reproduction.
 
 \noindent\textbf{Methods:} An evaluation of five reconstruction methods over 764 held-out slices at
 three dose levels was recomputed by an independent operator in a separate environment --- Linux
-(Ubuntu 24.04 LTS) instead of Windows, with platform-specific CUDA/cuDNN/driver builds at the same
+(Ubuntu 24.04 LTS) instead of Windows, with platform-specific CUDA/cuDNN builds at the same
 nominal PyTorch 2.3.0+cu121 stack --- from checkpoints and data
 verified by hash. Agreement was assessed against the benchmark's original declared criterion, an
 absolute difference of $10^{-6}$. Because that criterion failed, we tested the leading explanation
@@ -41,9 +42,10 @@ absolute difference of $10^{-6}$. Because that criterion failed, we tested the l
 enabled, and separately audited the criterion itself across a ladder of absolute and relative
 tolerances.
 
-\noindent\textbf{Results:} The original declared criterion failed for three of five methods.
-Re-running the same side with deterministic kernels reproduced the original bit-for-bit, and no
-kernel non-determinism was observed in this environment. The criterion audit showed that none of
+\noindent\textbf{Results:} The original declared criterion failed for two of five methods
+(RED-CNN, CoreDiff). In the earlier Windows same-OS recomputation, re-running the affected methods
+with deterministic kernels reproduced the original bit-for-bit, and no kernel non-determinism was
+observed in that environment. The criterion audit showed that none of
 the tested absolute tolerances resolves the comparison --- it fails at $10^{-6}$ and equally at
 $10^{-3}$ --- because the reported quantities span from a
 dimensionless index near 0.9 to an observer statistic near $10^{6}$. A relative criterion at
@@ -68,7 +70,7 @@ it is usually a single number.
 
 We report a reproduction in which that construction failed, and in which the failure was informative
 rather than terminal. The original declared criterion of the benchmark under study was an absolute
-difference of $10^{-6}$ applied uniformly. Three of five methods fell outside it. The obvious
+difference of $10^{-6}$ applied uniformly. Two of five methods fell outside it. The obvious
 reading --- that the recomputation disagreed with the release --- turned out to be wrong twice over:
 no kernel non-determinism was observed as the cause in this environment, and none of the tested
 absolute thresholds resolved the comparison.
@@ -120,7 +122,7 @@ commit \texttt{4875338}.
 
 This is a reproduction across environments, not a re-seed within one. That distinction is the point:
 a re-seed tests the pipeline's internal determinism, whereas a different library stack --- here,
-Linux (Ubuntu 24.04 LTS) instead of Windows, with platform-specific CUDA/cuDNN/driver builds at the
+Linux (Ubuntu 24.04 LTS) instead of Windows, with platform-specific CUDA/cuDNN builds at the
 same nominal PyTorch 2.3.0+cu121 stack (Table~\ref{tab:env}) --- tests whether the published number
 is a property of the method or of the machine.
 
@@ -171,8 +173,11 @@ enabled, a re-run of the same side must be bit-identical, and any residual again
 observed under that configuration would not be attributable to kernel non-determinism in this
 environment.
 
-We re-ran the three methods outside the original declared criterion under the following settings, at a
-cost of approximately 48 GPU-hours:
+We re-ran the three methods outside the original declared criterion --- RED-CNN, CTformer and
+CoreDiff --- under the following settings, at a cost of approximately 48 GPU-hours. This ablation
+was performed during the earlier Windows same-OS recomputation (2026-09-05/06); the independent
+Linux rerun was then compared directly against the reference, under which CTformer already
+reproduced within the criterion and only RED-CNN and CoreDiff remained outside:
 
 \begin{quote}
 \begin{tabular}{@{}l@{}}
@@ -194,9 +199,10 @@ criteria the \emph{same} recorded differences would satisfy.
 
 \subsection{Agreement}
 
-Table~\ref{tab:agreement} reports the comparison. Under the original declared absolute criterion, 115
-of 375 comparisons differed. The blur control and LEARN reproduced bit-for-bit; RED-CNN, CTformer
-and CoreDiff did not.
+Table~\ref{tab:agreement} reports the comparison. Under the original declared absolute criterion, 90
+of 375 comparisons differed. The blur control, LEARN and CTformer reproduced within the criterion
+(for CTformer the largest absolute difference was $2.9\times10^{-11}$); RED-CNN and CoreDiff did
+not.
 
 \begin{table}[ht]
 \centering
@@ -204,14 +210,15 @@ and CoreDiff did not.
 \caption{\textbf{Agreement by method.} $n_{\ne}$ counts comparisons differing at all under the
 original declared absolute $10^{-6}$ criterion. The worst relative difference and its metric are given
 for each method; the final column counts comparisons outside the declared per-metric relative
-criterion of $10^{-4}$, which is zero everywhere. That two methods reproduce exactly, together with
+criterion of $10^{-4}$, which is zero everywhere. That three methods reproduce exactly, together with
 the route-(a) rerun of Section~\ref{sec:determinism}, shows that the pipeline, data and code
-snapshot are capable of bit-identical reproduction under this configuration; in this environment
-the differences in the other three were not observed to depend on kernel non-determinism.}
+snapshot are capable of bit-identical reproduction under this configuration; in that earlier
+Windows environment the differences in the other two were not observed to depend on kernel
+non-determinism.}
 \label{tab:agreement}
 \end{table}
 
-The largest single disagreement is instructive. For RED-CNN the worst absolute difference is 34.3,
+The largest single disagreement is instructive. For RED-CNN the worst absolute difference is 34.26,
 which sounds disqualifying until one notes that it occurs in a quantity of magnitude
 $\sim9\times10^{5}$ --- a relative difference of $6.36\times10^{-5}$.
 
@@ -219,7 +226,8 @@ $\sim9\times10^{5}$ --- a relative difference of $6.36\times10^{-5}$.
 
 The prediction of Section~\ref{sec:determinism} was not supported in this environment. Re-running
 the recomputation side with deterministic kernels reproduced the non-deterministic run exactly:
-zero differing comparisons, bit-identical. No kernel non-determinism was observed in this
+zero differing comparisons, bit-identical. This ablation was performed during the earlier Windows
+same-OS recomputation (2026-09-05/06), and no kernel non-determinism was observed in that
 environment, so route (a) as scoped could not close the residual, and the difference against the
 reference is treated as a systematic cross-environment offset.
 
@@ -230,14 +238,14 @@ made after seeing the outcome.
 \subsection{None of the tested absolute tolerances resolves the comparison}
 
 Table~\ref{tab:ladder} is the central result. The original declared criterion fails at $10^{-6}$; it
-also fails at $10^{-5}$, $10^{-4}$ and $10^{-3}$, with the same three methods outside at every
-level. Loosening an absolute tolerance by three orders of magnitude changes nothing within the
-range tested, because the
+also fails at $10^{-5}$, $10^{-4}$ and $10^{-3}$, with the same two methods (RED-CNN and CoreDiff)
+outside at every level. Loosening an absolute tolerance by three orders of magnitude changes nothing
+within the range tested, because the
 binding comparison is on a quantity of order $10^{5}$--$10^{6}$, where an absolute budget of
 $10^{-3}$ is still a relative demand of order $10^{-9}$.
 
-A relative criterion behaves differently. It excludes two methods at $10^{-6}$ and $10^{-5}$ and
-admits all five at $10^{-4}$.
+A relative criterion behaves differently. It excludes the same two methods (RED-CNN and CoreDiff)
+at $10^{-6}$ and $10^{-5}$ and admits all five at $10^{-4}$.
 
 \begin{table}[ht]
 \centering
@@ -292,9 +300,8 @@ speaks to whether the methods compared are clinically preferable, whether the de
 surrogate used measures diagnostic content, or whether the dose levels are attainable in practice.
 
 The comparison involves two environments. A third would establish whether the offset is systematic
-across environments or particular to this pair, and this remains the clearest extension.
-\todo{Decide whether to add a third environment; the constraint is moving checkpoints and data under
-their use agreement, not compute.}
+across environments or particular to this pair, and this remains the clearest extension. A third
+environment is planned; its results are not reported here.
 
 The dose levels are simulated rather than separately acquired, and the patient counts of the
 underlying cohort are small; both limit what the reproduced numbers mean, though neither affects
