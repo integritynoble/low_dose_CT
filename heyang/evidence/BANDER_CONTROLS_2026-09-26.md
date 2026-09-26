@@ -1,3 +1,14 @@
+---
+AIGC:
+    Label: "1"
+    ContentProducer: 001191440300708461136T1XGW3
+    ProduceID: 3492397679226d6505949fd36ce12be5_f3c33544b98111f1b24b525400ea19b7
+    ReservedCode1: tpOHs8vVF3tRXfZ2Nv9j+NAT4FsY4xOVkEDm95vrK6H2nU3XFM3G92HCrMOBGKH8ZhG+WCk1mDUSu82E5MIkRKJDfEKQ+TPQdlUCIr+naB4uFzxQWkrT3xHrKndioSERLqwDUyOJREh8JdZRyGo0rRnR2pSQHvssDtzn4Yw2BAd4oXfEDThL5ClXYhs=
+    ContentPropagator: 001191440300708461136T1XGW3
+    PropagateID: 3492397679226d6505949fd36ce12be5_f3c33544b98111f1b24b525400ea19b7
+    ReservedCode2: tpOHs8vVF3tRXfZ2Nv9j+NAT4FsY4xOVkEDm95vrK6H2nU3XFM3G92HCrMOBGKH8ZhG+WCk1mDUSu82E5MIkRKJDfEKQ+TPQdlUCIr+naB4uFzxQWkrT3xHrKndioSERLqwDUyOJREh8JdZRyGo0rRnR2pSQHvssDtzn4Yw2BAd4oXfEDThL5ClXYhs=
+---
+
 # BANDER_CONTROLS_2026-09-26 — BANDER-2 五 controls 在真实 AAPM 切片 + R3 同 ROI 的对照测量
 
 - **日期**：2026-09-26
@@ -143,3 +154,4 @@ patient-level SE（48 ROI，ddof=1）：blur 0.004–0.010；ringing 0.011–0.0
 - 提交：`git commit`（仅 commit 不 push），commit id 见下节。
 
 - **commit**：`9d2cdc9`（BANDER-2 产物与报告初始提交；本行回填于追加提交，见 git log，仅 commit 不 push）
+*（内容由AI生成，仅供参考）*
