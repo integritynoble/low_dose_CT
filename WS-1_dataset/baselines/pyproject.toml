@@ -13,6 +13,10 @@ authors = [{ name = "PWM-LDCT authors" }]
 dependencies = ["numpy>=1.21", "torch>=1.12", "pwm_ldct_loader>=0.5.0"]
 
 [project.optional-dependencies]
+# Third-environment (Blackwell / RTX 50-series) compute extra: PyTorch 2.7.0 is the
+# first stable release with native sm_120 support and ships CUDA 12.8+ wheels.
+# The legacy cu121 (2.3.0) environments remain valid via the base `torch>=1.12`.
+blackwell = ["torch>=2.7.0", "torchvision>=0.22.0"]
 lpips = ["lpips>=0.1"]
 dev = ["pytest>=7"]
 

@@ -25,6 +25,36 @@ pip install -e .[dev]
 pytest                              # synthetic-data harness tests (train a step -> eval -> results.json)
 ```
 
+### Third environment (Blackwell / RTX 50-series, e.g. native Linux RTX 5090)
+
+The shipped reference/recalculation environments use torch 2.3.0+cu121 (CUDA 12.1).
+NVIDIA Blackwell GPUs (sm_120) require **CUDA 12.8+**; **PyTorch 2.7.0 is the first
+stable release with native sm_120 support** (CUDA 12.8 wheels). For a third-party
+re-run on a Blackwell host, install the `blackwell` extra (torch>=2.7.0,
+torchvision>=0.22.0) inside a fresh venv:
+
+```bash
+python -m venv .venv_t3 && source .venv_t3/bin/activate
+pip install --upgrade pip
+# Route A (recommended): official PyTorch CUDA 12.8 stable wheels
+pip install -e ../pwm_ldct_loader
+pip install -e .[blackwell,lpips] --index-url https://download.pytorch.org/whl/cu128
+pip install -e ../pwm_ldct_loader --index-url https://download.pytorch.org/whl/cu128
+# then reinstall the two editable packages WITHOUT the index override so they resolve
+# against the torch already present (do not downgrade torch):
+pip install -e ../pwm_ldct_loader
+pip install -e .[blackwell,lpips]
+# verify
+python -c "import torch; print(torch.__version__, torch.cuda.is_available(), torch.cuda.get_device_capability(0))"
+```
+
+> Route A 依赖全部经 `--index-url https://download.pytorch.org/whl/cu128` 安装；
+> 若 prefer CUDA 13.0（PyPI stable）可改用默认 PyPI + `pip install torch torchvision`，
+> 或 CUDA 13.2（experimental nightly）：`--index-url https://download.pytorch.org/whl/nightly/cu132`。
+> 本分支仅放宽运行依赖（`blackwell` extra），**不修改任何指标/协议/observer/模型定义代码**；
+> eval 语义与容器门（§7.1）不变。完整第三方运行手册见
+> [`../R6_recalc/third_env/THIRD_ENV_RUNBOOK_2026-09-25.md`](../R6_recalc/third_env/THIRD_ENV_RUNBOOK_2026-09-25.md)。
+
 `pwm_ldct_loader` must be installed, not merely present on disk: it is a `src/`-layout
 package, so an uninstalled checkout is shadowed by its own outer directory and
 `pwm_ldct_loader.schema` will not import. See
