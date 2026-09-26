@@ -86,8 +86,8 @@
 | `7c53e8d` | R6: archive Linux rerun outputs/logs (U10)（`results/linux_rerun/` 5 JSON + 5 log + freeze，阶段 A） |
 | `81589cc` | R6: add Linux-vs-reference comparator + artifact（`compare_linux_vs_ref.py` + `results/comparison_linux_full764.json`，阶段 B） |
 | `5a12010` | paper: regenerate tables and align manuscript to Linux rerun（`make_tables.py` / `manuscript.tex` / `tables/agreement.tex` / `tables/ladder.tex` / `manuscript.pdf`，阶段 C/E/F） |
-| （本清单所在提交） | paper: ledger and reply index decisions（`CLAIM_EVIDENCE.md` / `HEYANG_REPLY_2026-09-20.md` / 本清单，阶段 G/H + 行号同步） |
-| （重哈希提交） | paper: rehash §7 at <任务 1 收尾提交>（§7 九项 SHA256 重算，基线 = 上一提交字面 hash，阶段 I） |
+| `1b0c0c9` | paper: ledger and reply index decisions（`CLAIM_EVIDENCE.md` / `HEYANG_REPLY_2026-09-20.md` / 本清单，阶段 G/H + 行号同步） |
+| `3a429b7`（本清单所在提交） | paper: rehash section 7 at 1b0c0c9 (task-1 baseline)（§7 九项 SHA256 重算，基线 = 上一提交 `1b0c0c9`，阶段 I） |
 
 ## 6. 未提交改动（原样保留，不属于本次论文包）
 
@@ -99,29 +99,27 @@
 
 本次论文包提交范围：`Heyang-paper/manuscript.tex`、`README.md`、`CLAIM_EVIDENCE.md`、`COMPLETION_CHECKLIST.md`、`manuscript.pdf` 共 5 文件。
 
-## 7. artifact SHA256（可复现版，2026-09-23 重算）
+## 7. artifact SHA256（可复现版，2026-09-26 任务 1 收尾提交重算）
 
-**计算对象**：git 存储字节（仓库 `core.autocrlf=true` 规范化后，行尾 **LF**）。9-22 版 §7 哈希系 CRLF 工作区字节计算、无法在 git 提交上复现，故按任务书 9-22 任务 2 重算；**基线 = 本清单所在提交**（见 §5 提交链最新行）。
+**计算对象**：git 存储字节（仓库 `core.autocrlf=true` 规范化后，行尾 **LF**）。2026-09-26 在任务 1 收尾提交 **`1b0c0c9`** 处重算（`3fbf5bf` 曾改 9 项中 3 项、本次任务 1 改 6 项，均不可在旧基线复现）；**基线 = `1b0c0c9`**。
 
 | 文件 | SHA256（git 存储字节） | blob SHA1 |
 |---|---|---|
-| Heyang-paper/manuscript.pdf | 6096826A5B96357E2FBC057B6FFE7DE75AD152ACFBDEA92345D72E7D46CC82DB | 2c6c3e2c |
-| Heyang-paper/manuscript.tex | 33A02D8E75F7161E7BDD3D874F25CCE2ADB130E4E67018174AF823F4D7493618 | 647af9cc |
+| Heyang-paper/manuscript.pdf | 2BCB37EB3B27E3F945CBA620DB1BD2B0E6BB9AA7EE426993F6F88D683437C229 | 48675680 |
+| Heyang-paper/manuscript.tex | 7EA83F18AF97048EC013686190BF1849A45230253F36EDFCB8DABCED0ED626DD | b5f8c863 |
 | Heyang-paper/README.md | 1126F5DFB706EC25BB4DEC0BC380169BC2FEA9D5E1A0BFA9B6BD54341BE4ECE9 | 9506fbc5 |
-| Heyang-paper/CLAIM_EVIDENCE.md | 742B85546E7524A1F0EE94E9FA7B409E2EEC096043EDD8D63CB387E4754531D4 | 19e676a5 |
-| Heyang-paper/make_tables.py | 6C41E7F00914C0E96D11B8614330380F69A9CBFCBF533DF659325C2C55DBEDBF | ad040ea8 |
+| Heyang-paper/CLAIM_EVIDENCE.md | B5B887F3DCE59DFFD0517D2248F7931C2DE4D78E3C04DBC300E9E472F4371E29 | 52979370 |
+| Heyang-paper/make_tables.py | 83FD69349C2E984FF56EE5A407CAEDAAC7BA5C394CBE8AC75461AEEE38E49B3E | c10582b2 |
 | Heyang-paper/references.bib | 935FB2866FCCE55668DB852F6C93C7CE09B96C01A3FCFA14784256097F7A8D75 | 8810e186 |
-| Heyang-paper/tables/agreement.tex | 13069AECD0A9BBB4C579A1ACFA97BC5193250634E61A21F7C81587134AC1B7D5 | c7a301d4 |
-| Heyang-paper/tables/ladder.tex | A1A3C5DAF05BE4212ACAACEB9B4E7B7414C4718F5CC4B03436A956A1604D2932 | 50a06f54 |
+| Heyang-paper/tables/agreement.tex | 845B2D5340E144C56B62FAD29455393D50F49E3EED7777D6F5E2D05C90CE6E41 | 90eb2b2e |
+| Heyang-paper/tables/ladder.tex | F07A8E93E84A0AC83C271FAC61F75446A0BA089FD10911CC1AB16AF91E508194 | f48bb59b |
 | Heyang-paper/tables/scale.tex | 0DAFCDAAC8E7F6FE40B5317B9A22DD3C8A1957E8F81CD4AF6D8BC745BB0A1045 | e918f81d |
 
 **复现命令**：
 - blob：`git ls-files -s Heyang-paper/<file>`（第三字段）
-- SHA256：`git show HEAD:Heyang-paper/<file> | sha256sum`（Windows：`(git show HEAD:Heyang-paper/<file>) | Get-FileHash -Algorithm SHA256`）
+- SHA256：`git show 1b0c0c9:Heyang-paper/<file> | sha256sum`（Windows：`(git show 1b0c0c9:Heyang-paper/<file>) | Get-FileHash -Algorithm SHA256`，二进制文件用 `cmd /c "git show 1b0c0c9:Heyang-paper/<file> > tmp"` 后取哈希）
 
-**一致性说明**：10 个论文包文件中仅 `CLAIM_EVIDENCE.md` 因任务 3（ENV_RECON 证据引用改为仓库内相对链接）哈希变化；其余 9 文件与 `5b3659c` / `01e7672` 版本逐字节一致（含 `manuscript.pdf` 198,198 B 未变），佐证论文包内容未被本次任务改动。
-
-其他关键 artifact 哈希（台账 §6.1）：task_spec `AE7AE799BB8C24075C39BC6BCC7B07EE623DDB06292E968147446110F55D2D4C`；5 个 checkpoint 哈希见 `WS-1_dataset/R6_recalc/hashes/ckpt_hashes.txt`。
+**一致性说明**：9 项中 README.md、references.bib、tables/scale.tex 与 `21fd395` 版本逐字节一致（未变）；manuscript.pdf/manuscript.tex/make_tables.py/agreement.tex/ladder.tex 因任务 1（Linux 数字归位）变化、CLAIM_EVIDENCE.md 因台账更新变化——均为任务 1 预期改动，非意外漂移。其他关键 artifact 哈希（台账 §6.1）：task_spec `AE7AE799BB8C24075C39BC6BCC7B07EE623DDB06292E968147446110F55D2D4C`；5 个 checkpoint 哈希见 `WS-1_dataset/R6_recalc/hashes/ckpt_hashes.txt`。
 
 ## 8. 剩余 TODO（4 处，全部 owner 决策；2026-09-26 行号已按当前手稿同步）
 
