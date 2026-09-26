@@ -87,7 +87,7 @@
 | `81589cc` | R6: add Linux-vs-reference comparator + artifact（`compare_linux_vs_ref.py` + `results/comparison_linux_full764.json`，阶段 B） |
 | `5a12010` | paper: regenerate tables and align manuscript to Linux rerun（`make_tables.py` / `manuscript.tex` / `tables/agreement.tex` / `tables/ladder.tex` / `manuscript.pdf`，阶段 C/E/F） |
 | `1b0c0c9` | paper: ledger and reply index decisions（`CLAIM_EVIDENCE.md` / `HEYANG_REPLY_2026-09-20.md` / 本清单，阶段 G/H + 行号同步） |
-| `3a429b7`（本清单所在提交） | paper: rehash section 7 at 1b0c0c9 (task-1 baseline)（§7 九项 SHA256 重算，基线 = 上一提交 `1b0c0c9`，阶段 I） |
+| `9dd8789`（rehash 提交） | paper: rehash section 7 at 1b0c0c9 (task-1 baseline)（§7 九项 SHA256 重算，基线 = 上一提交 `1b0c0c9`，阶段 I） |
 
 ## 6. 未提交改动（原样保留，不属于本次论文包）
 
