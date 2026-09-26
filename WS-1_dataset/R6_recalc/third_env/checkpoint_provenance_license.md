@@ -1,4 +1,4 @@
-# Checkpoint 来源与许可说明（2026-09-25）
+# Checkpoint 来源与许可说明（2026-09-26 更新）
 
 > **任务 5（第三环境）交付物 4/5**
 > ⚠️ **本文件描述的 5 个权重为受控资产：发送第三方前需 owner 授权。**
@@ -24,18 +24,21 @@
 
 | 权重 | 大小 | 作者侧来源路径 | SHA256（前缀） | 训练来源 | 第三环境用途 |
 |---|---|---|---|---|---|
-| `red_cnn.pt` | 7.4 MB | `WS-1_dataset\baselines\checkpoints\red_cnn.pt` | `DF775D08…` | **训练来源未记录 / 待 owner 补充** | red_cnn eval |
-| `learn.pt` | 774 KB | `WS-1_dataset\baselines\checkpoints\learn.pt` | `3EABF525…` | **训练来源未记录 / 待 owner 补充** | learn eval |
-| `ctformer.pt` | 350 MB | `WS-1_dataset\baselines\checkpoints\ctformer.pt` | `AEAD0C15…` | **训练来源未记录 / 待 owner 补充**（早期大模型存档） | **不作为本复算对照** |
-| `corediff.pt` | 19 MB | `WS-1_dataset\baselines\checkpoints\corediff.pt` | `41ABA674…` | **训练来源未记录 / 待 owner 补充** | corediff eval |
+| `red_cnn.pt` | 7.4 MB | `WS-1_dataset\baselines\checkpoints\red_cnn.pt` | `DF775D08…` | **本地训练产物**：`baselines/train.py`（2026-08-19 落盘，REDCNN 96ch）；文件内元数据 seed=42 / steps=2662。超参数（Adam lr 1e-4、batch 1、LIDC-only train split）为 train.py 默认值与 RUN_PLAN 协议推断，**无训练日志佐证** | red_cnn eval |
+| `learn.pt` | 774 KB | `WS-1_dataset\baselines\checkpoints\learn.pt` | `3EABF525…` | **本地训练产物**：`baselines/train.py`（2026-08-19 落盘，LEARN 5-stage）；文件内元数据 seed=42 / steps=2662。超参数同上为推断项，**无训练日志佐证** | learn eval |
+| `ctformer.pt` | 350 MB | `WS-1_dataset\baselines\checkpoints\ctformer.pt` | `AEAD0C15…` | **本地训练产物**：`baselines/train.py`（2026-08-19 落盘）；文件内元数据 seed=42 / steps=2662；87.6M 参数，**早期大模型存档（未收敛）**，同哈希于 `ctformer_pre_retrain.pt`（见 `output\ctformer_retrain_report.md` §1-2）。超参数同上为推断项，**无训练日志佐证** | **不作为本复算对照** |
+| `corediff.pt` | 19 MB | `WS-1_dataset\baselines\checkpoints\corediff.pt` | `41ABA674…` | **本地训练产物**：`baselines/train.py`（2026-08-19 落盘，CoreDiff 架构）；文件内元数据 seed=42 / steps=20000。超参数同上为推断项，**无训练日志佐证** | corediff eval |
 | `ctformer_small_retrain.pt` | 9.7 MB | `WS-1_dataset\baselines\checkpoints\ctformer_small_retrain.pt` | `78C0C59C…` | **有训练记录**：`output\ctformer_retrain_report.md`（2026-08-28；compact variant embed_dim 192/depth 6/2.42M params，AdamW lr 1e-4，batch 4，20,000 steps，seed 42；初始在 CPU 训练，后续 GPU cu128 评估） | **CTformer 复算实际权重（model 字段 ctformer_small）** |
 
 **blur**：内置 trap（`get_model("blur")` 固定高斯核），**无需权重**。
 
-> **诚实披露**：除 `ctformer_small_retrain.pt` 外，仓库内**没有**其余 4 个权重的
-> 训练记录（无训练脚本/日志/报告）。此处如实标注「训练来源未记录 / 待 owner
-> 补充」，**不编造**训练来源。若 owner 后续补充训练记录，应更新本表并重新登记
-> 哈希锚点（若有变化）。
+> **诚实披露（2026-09-26 更新）**：4 个权重（red_cnn / learn / ctformer / corediff）经
+> owner 确认均为本地 `baselines/train.py` 训练产物（2026-08-19 批量落盘，非官方预训练），
+> 训练记录以**checkpoint 文件内嵌元数据**为准（seed=42；steps 见上表），已如实写入本表。
+> 但仓库内**没有**这 4 个权重的独立训练脚本/日志/报告；超参数（Adam lr 1e-4、batch 1、
+> LIDC-only train split）依据 `train.py` 默认值与 `RUN_PLAN.md` 协议**推断**，无日志佐证，
+> 上表已标注「推断项」。若 owner 后续找到训练日志，应更新本表并重新登记哈希锚点
+> （若有变化）。
 
 ---
 
